@@ -20,6 +20,7 @@ import { Card, CompanyAvatar, cn } from "@/components/ui";
 import { BOARD_NAME, formatPostDateTime } from "@/lib/board-meta";
 import { getCompany } from "@/lib/data";
 import { getPost, listComments } from "@/lib/server/board";
+import { dbConfigured } from "@/lib/server/db";
 import { isAdmin } from "@/lib/server/security";
 import { AD_SLOTS, SITE } from "@/lib/site";
 
@@ -30,7 +31,8 @@ function parseId(raw: string): number | null {
 
 export async function generateMetadata({ params }: PageProps<"/board/[id]">): Promise<Metadata> {
   const id = parseId((await params).id);
-  const post = id ? await getPost(id) : null;
+  // DB 가 없거나 잠시 연결되지 않아도 페이지 제목 때문에 화면 전체가 깨지지 않게
+  const post = id && dbConfigured() ? await getPost(id).catch(() => null) : null;
   if (!post || post.status !== 0) return { title: BOARD_NAME, robots: { index: false, follow: false } };
   const description = post.body.replace(/[#*>\[\]()]/g, "").replace(/\s+/g, " ").trim().slice(0, 140);
   // 짧은 익명 글은 검색 노출에서 빼고, 운영자 가이드·충분히 긴 글만 색인합니다.
