@@ -1,0 +1,498 @@
+@import "tailwindcss";
+
+/*
+ * 금콩 디자인 토큰 — DESIGN.md 기준
+ * - colors / typography / rounded / spacing / elevation / components 를 그대로 옮겼습니다.
+ * - 글꼴: Sohne(유료) 대신 문서가 권장하는 Inter 계열 → Inter 기반 한글 폰트 Pretendard 사용.
+ * - 일정 유형 색상은 문서 팔레트(ruby·indigo·magenta·lemon·shadow-blue·ink-mute)로만 매핑합니다.
+ */
+:root {
+  /* Brand & Accent */
+  --primary: #533afd;
+  --primary-deep: #4434d4;
+  --primary-press: #2e2b8c;
+  --primary-soft: #665efd;
+  --primary-subdued: #b9b9f9;
+  --brand-dark: #1c1e54;
+  --ruby: #ea2261;
+  --magenta: #f96bee;
+  --lemon: #9b6829;
+  --shadow-blue: #003770;
+  /* Gradient mesh 의 sherbet orange 스톱 (문서의 mesh 색 구성: cream/orange/lavender/indigo/ruby/magenta) */
+  --sherbet: #ffa26b;
+
+  /* Surface */
+  --canvas: #ffffff;
+  --canvas-soft: #f6f9fc;
+  --canvas-cream: #f5e9d4;
+  --hairline: #e3e8ee;
+  --hairline-input: #a8c3de;
+
+  /* Text */
+  --ink: #0d253d;
+  --ink-secondary: #273951;
+  --ink-mute: #64748d;
+  --ink-mute-2: #61718a;
+  --on-primary: #ffffff;
+  /* 링크·활성 텍스트 (link-on-light) */
+  --primary-text: #533afd;
+
+  /* pill-tag-soft */
+  --tag-soft-bg: #b9b9f9;
+  --tag-soft-text: #4434d4;
+
+  /* 일정 유형 (대시보드 UI 전용 의미 색) */
+  --ev-posting: #64748d;
+  --ev-posting-soft: #eef2f7;
+  --ev-doc: #ea2261;
+  --ev-doc-soft: #fde9ef;
+  --ev-written: #533afd;
+  --ev-written-soft: #eeebff;
+  --ev-interview1: #a8209b; /* magenta 계열 — 작은 글씨 대비 확보용 진한 톤 */
+  --ev-interview1-soft: #fdeefc;
+  --ev-interview2: #9b6829; /* lemon */
+  --ev-interview2-soft: #f5e9d4; /* canvas-cream */
+  --ev-final: #003770; /* shadow-blue */
+  --ev-final-soft: #e6eef7;
+
+  --mesh-opacity: 0.9;
+  color-scheme: light;
+}
+
+/* 다크 모드 — 문서의 "dashboard track flips polarity to a dark-app shell" */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #665efd;
+    --primary-deep: #533afd;
+    --primary-press: #4434d4;
+    --primary-text: #b9b9f9;
+    /* 어두운 canvas 위에서 선택 상태·featured 카드가 구분되도록 한 단계 밝은 남색 */
+    --brand-dark: #2e2b8c;
+    --ruby: #ff4d82;
+    --lemon: #d9a25c;
+    --shadow-blue: #7fb2e5;
+
+    --canvas: #0b1d31;
+    --canvas-soft: #0f2640;
+    --canvas-cream: #2b2417;
+    --hairline: #1e3651;
+    --hairline-input: #3a5a7c;
+
+    --ink: #f6f9fc;
+    --ink-secondary: #c9d6e5;
+    --ink-mute: #8fa3bb;
+    --ink-mute-2: #8fa3bb;
+
+    --tag-soft-bg: #2e2b8c;
+    --tag-soft-text: #b9b9f9;
+
+    --ev-posting: #8fa3bb;
+    --ev-posting-soft: #14304d;
+    --ev-doc: #ff4d82;
+    --ev-doc-soft: #3a1426;
+    --ev-written: #8f87ff;
+    --ev-written-soft: #221d5c;
+    --ev-interview1: #f58ff0;
+    --ev-interview1-soft: #3a1838;
+    --ev-interview2: #d9a25c;
+    --ev-interview2-soft: #2b2417;
+    --ev-final: #7fb2e5;
+    --ev-final-soft: #0f2a47;
+
+    --mesh-opacity: 0.38;
+    color-scheme: dark;
+  }
+}
+
+@theme {
+  /* 문서 팔레트 밖의 기본 색은 쓰지 않습니다 */
+  --color-*: initial;
+
+  /* rounded — DESIGN.md 이름 그대로 */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Elevation */
+  --shadow-level-1: 0 1px 3px rgba(0, 55, 112, 0.08);
+  --shadow-level-2: 0 8px 24px rgba(0, 55, 112, 0.08), 0 2px 6px rgba(0, 55, 112, 0.04);
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-deep: var(--primary-deep);
+  --color-primary-press: var(--primary-press);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-subdued: var(--primary-subdued);
+  --color-primary-text: var(--primary-text);
+  --color-brand-dark: var(--brand-dark);
+  --color-ruby: var(--ruby);
+  --color-magenta: var(--magenta);
+  --color-lemon: var(--lemon);
+  --color-shadow-blue: var(--shadow-blue);
+
+  --color-canvas: var(--canvas);
+  --color-canvas-soft: var(--canvas-soft);
+  --color-canvas-cream: var(--canvas-cream);
+  --color-hairline: var(--hairline);
+  --color-hairline-input: var(--hairline-input);
+
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-mute: var(--ink-mute);
+  --color-ink-mute-2: var(--ink-mute-2);
+  --color-on-primary: var(--on-primary);
+
+  --color-tag-soft-bg: var(--tag-soft-bg);
+  --color-tag-soft-text: var(--tag-soft-text);
+
+  --color-ev-posting: var(--ev-posting);
+  --color-ev-posting-soft: var(--ev-posting-soft);
+  --color-ev-doc: var(--ev-doc);
+  --color-ev-doc-soft: var(--ev-doc-soft);
+  --color-ev-written: var(--ev-written);
+  --color-ev-written-soft: var(--ev-written-soft);
+  --color-ev-interview1: var(--ev-interview1);
+  --color-ev-interview1-soft: var(--ev-interview1-soft);
+  --color-ev-interview2: var(--ev-interview2);
+  --color-ev-interview2-soft: var(--ev-interview2-soft);
+  --color-ev-final: var(--ev-final);
+  --color-ev-final-soft: var(--ev-final-soft);
+
+  --font-sans:
+    "Pretendard Variable", Pretendard, Inter, "SF Pro Display", -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
+
+/* ───────────── Typography (DESIGN.md typography 토큰) ───────────── */
+@utility type-display-xxl {
+  font-size: 56px;
+  font-weight: 300;
+  line-height: 1.03;
+  letter-spacing: -1.4px;
+}
+@utility type-display-xl {
+  font-size: 48px;
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: -0.96px;
+}
+@utility type-display-lg {
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.64px;
+}
+@utility type-display-md {
+  font-size: 26px;
+  font-weight: 300;
+  line-height: 1.12;
+  letter-spacing: -0.26px;
+}
+@utility type-heading-lg {
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.22px;
+}
+@utility type-heading-md {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1.4;
+  letter-spacing: -0.2px;
+}
+@utility type-heading-sm {
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+@utility type-body-lg {
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+@utility type-body-md {
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+@utility type-body-tabular {
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.4;
+  letter-spacing: -0.42px;
+  font-feature-settings: "ss01", "tnum";
+}
+@utility type-button-md {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+}
+@utility type-button-sm {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+}
+@utility type-caption {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: -0.39px;
+  font-feature-settings: "ss01", "tnum";
+}
+@utility type-micro {
+  font-size: 11px;
+  font-weight: 300;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+@utility type-micro-cap {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: 0.1px;
+}
+/* 숫자·금액·날짜에 tnum (문서: "Tabular figures for money") */
+@utility tabular {
+  font-feature-settings: "ss01", "tnum";
+}
+
+/* ───────────── Components (DESIGN.md components) ───────────── */
+@layer components {
+  /* button-*-pill: 8px 16px, rounded pill, button-md(16px/400) — 모바일은 40px 이상 터치 영역 */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 150ms,
+      border-color 150ms,
+      color 150ms;
+  }
+  .btn-sm {
+    font-size: 14px;
+  }
+  .btn-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+  @media (min-width: 768px) {
+    .btn {
+      min-height: 0;
+    }
+    .btn-icon {
+      width: 34px;
+      height: 34px;
+    }
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: var(--on-primary);
+  }
+  .btn-primary:hover {
+    background: var(--primary-deep);
+  }
+  .btn-primary:active {
+    background: var(--primary-press);
+  }
+  .btn-secondary {
+    background: var(--canvas);
+    color: var(--primary-text);
+    border-color: var(--primary-text);
+  }
+  .btn-secondary:hover {
+    background: var(--canvas-soft);
+  }
+  .btn-on-dark {
+    background: var(--brand-dark);
+    color: var(--on-primary);
+  }
+  /* 토글·필터용 변형: button-secondary 형태에 hairline 테두리 (선택 시 btn-on-dark) */
+  .btn-toggle {
+    background: var(--canvas);
+    color: var(--ink-secondary);
+    border-color: var(--hairline);
+  }
+  .btn-toggle:hover {
+    border-color: var(--hairline-input);
+  }
+
+  /* text-input: 8px 12px, rounded sm(6px), hairline-input 테두리, 포커스 시 primary */
+  .input {
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid var(--hairline-input);
+    border-radius: 6px;
+    background: var(--canvas);
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.4;
+    outline: none;
+  }
+  .input::placeholder {
+    color: var(--ink-mute);
+  }
+  .input:focus {
+    border-color: var(--primary);
+  }
+
+  /* card-feature-light / card-dashboard-mockup 공통 외형 */
+  .card {
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+  }
+  /* card-cream-band */
+  .card-cream {
+    background: var(--canvas-cream);
+    border-radius: 12px;
+  }
+  /* card-pricing-featured (deep navy) */
+  .card-featured {
+    background: var(--brand-dark);
+    color: var(--on-primary);
+    border-radius: 12px;
+  }
+
+  /* pill-tag-soft: micro-cap(10px/400), 4px 8px, pill */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 9999px;
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: 0.1px;
+    white-space: nowrap;
+  }
+  .tag-soft {
+    background: var(--tag-soft-bg);
+    color: var(--tag-soft-text);
+  }
+
+  /* link-on-light */
+  .link {
+    color: var(--primary-text);
+  }
+  .link:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+/* 기본 스타일은 base 레이어에 두어 유틸리티 클래스가 덮어쓸 수 있게 합니다 */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* body: body-md(15px/300/1.4) + ss01 전역 */
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.4;
+    font-feature-settings: "ss01";
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+/* 가로 스크롤 영역의 스크롤바 숨김 (스와이프는 유지) */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes kk-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes kk-slide-in-right {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes kk-slide-in-up {
+  from {
+    transform: translateY(32px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes kk-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ruby) 45%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.animate-fade-in {
+  animation: kk-fade-in 160ms ease-out both;
+}
+.animate-drawer-right {
+  animation: kk-slide-in-right 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.animate-drawer-up {
+  animation: kk-slide-in-up 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.animate-pulse-ring {
+  animation: kk-pulse-ring 1.8s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-drawer-right,
+  .animate-drawer-up,
+  .animate-pulse-ring {
+    animation: none;
+  }
+}

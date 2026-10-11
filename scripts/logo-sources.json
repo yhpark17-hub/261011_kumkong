@@ -1,0 +1,532 @@
+{
+    "kexim":  {
+                  "url":  "https://www.koreaexim.go.kr/humanframe/theme/resources/assets/img/content/img_ci_symbol.png",
+                  "kind":  "symbol"
+              },
+    "kinfa":  {
+                  "kind":  "symbol",
+                  "url":  "https://www.kinfa.or.kr/images/logo/sgw_logo_simple.png"
+              },
+    "ksure":  {
+                  "url":  "https://ksure.or.kr/asset/rh-kr/images/img_ci.jpg",
+                  "kind":  "wordmark",
+                  "crop":  {
+                               "left":  57,
+                               "top":  96,
+                               "width":  64,
+                               "height":  64
+                           }
+              },
+    "hf":  {
+               "kind":  "symbol",
+               "url":  "https://www.hf.go.kr/_res/hf/ko/img/sub05_04_06_04.jpg"
+           },
+    "kdb":  {
+                "kind":  "symbol",
+                "url":  "https://www.kdb.co.kr/wcmscontents/hmp/ch/bi/bi/rc/img_symbol_chbi.png"
+            },
+    "kic":  {
+                "url":  "https://kic.kr/assets/images/common/og_image_KR.png",
+                "kind":  "wordmark",
+                "crop":  {
+                             "left":  200,
+                             "top":  235,
+                             "width":  291,
+                             "height":  124
+                         }
+            },
+    "krx":  {
+                "url":  "https://data.krx.co.kr/templets/mdc/img/logo.png",
+                "kind":  "wordmark",
+                "crop":  {
+                             "left":  0,
+                             "top":  30,
+                             "width":  146,
+                             "height":  69
+                         }
+            },
+    "cgbest":  {
+                   "url":  "https://www.cgbest.co.kr/_res/cgbest/img/intro/img-wm01.png",
+                   "kind":  "symbol"
+               },
+    "kscfc":  {
+                  "kind":  "wordmark",
+                  "url":  "https://www.kfinco.co.kr/asset/images/sub/@img_LogoType07.png"
+              },
+    "mmaa":  {
+                 "kind":  "symbol",
+                 "url":  "https://www.mmaa.or.kr/cubersc/template/user/img/sub/img_ci_symbol01.png"
+             },
+    "kdbcap":  {
+                   "kind":  "symbol",
+                   "url":  "https://www.kdb.co.kr/wcmscontents/hmp/ch/bi/bi/rc/img_symbol_chbi.png"
+               },
+    "ibkcap":  {
+                   "url":  "https://www.ibk.co.kr/img/logo800.png",
+                   "kind":  "symbol",
+                   "crop":  {
+                                "left":  0,
+                                "top":  376,
+                                "width":  154,
+                                "height":  154
+                            }
+               },
+    "kfcc":  {
+                 "kind":  "symbol",
+                 "url":  "https://www.kfcc.co.kr/static/images/content/cc/img_ci01.jpg"
+             },
+    "nhbank":  {
+                   "kind":  "symbol",
+                   "url":  "https://banking.nonghyup.com/images/IP/global/ico_sapp_03.png"
+               },
+    "cu":  {
+               "kind":  "symbol",
+               "url":  "https://www.cu.co.kr/images/web/cu/sub/ci_icoGold.png"
+           },
+    "kgrowth":  {
+                    "url":  "https://www.kgrowth.or.kr/images/logo_blue.png",
+                    "kind":  "wordmark",
+                    "crop":  {
+                                 "left":  0,
+                                 "top":  0,
+                                 "width":  42,
+                                 "height":  43
+                             }
+                },
+    "kftc":  {
+                 "url":  "https://www.kftc.or.kr/resource/images/contents/img_ci_mark.png",
+                 "kind":  "symbol"
+             },
+    "kcredit":  {
+                    "url":  "https://www.kcredit.or.kr:1441/resources/images/common/common.png",
+                    "kind":  "symbol",
+                    "crop":  {
+                                 "left":  198,
+                                 "top":  50,
+                                 "width":  63,
+                                 "height":  50
+                             }
+                },
+    "kidi":  {
+                 "url":  "https://www.kidi.or.kr/resources/images/common/h_logo.jpg",
+                 "kind":  "wordmark",
+                 "crop":  {
+                              "left":  3,
+                              "top":  2,
+                              "width":  58,
+                              "height":  43
+                          }
+             },
+    "koscom":  {
+                   "url":  "https://www.koscom.co.kr/portal/images/intro/img_050101.gif",
+                   "kind":  "wordmark",
+                   "crop":  {
+                                "left":  140,
+                                "top":  74,
+                                "width":  70,
+                                "height":  70
+                            }
+               },
+    "ccrs":  {
+                 "url":  "https://www.ccrs.or.kr/type/www/img/intro/Logo.png?ver=5.2",
+                 "kind":  "wordmark",
+                 "crop":  {
+                              "left":  0,
+                              "top":  0,
+                              "width":  41,
+                              "height":  41
+                          }
+             },
+    "koreg":  {
+                  "url":  "https://www.koreg.or.kr/images/koreg/sub/ciIntr_logo02.png",
+                  "kind":  "wordmark",
+                  "crop":  {
+                               "left":  0,
+                               "top":  10,
+                               "width":  180,
+                               "height":  60
+                           }
+              },
+    "kofia":  {
+                  "url":  "https://www.kofia.or.kr/images/www/grid.jpg",
+                  "kind":  "wordmark",
+                  "crop":  {
+                               "left":  150,
+                               "top":  15,
+                               "width":  394,
+                               "height":  140
+                           }
+              },
+    "kepco":  {
+                  "url":  "https://www.kepco.co.kr/assets/images/pages/about/policy/symbol/%EC%8B%AC%EB%B3%BC%EB%A7%88%ED%81%AC.jpg",
+                  "kind":  "symbol",
+                  "crop":  {
+                               "left":  44,
+                               "top":  47,
+                               "width":  1094,
+                               "height":  711
+                           }
+              },
+    "khnp":  {
+                 "url":  "https://www.khnp.co.kr/site/main/images/contents/cts86_img01.png",
+                 "kind":  "symbol"
+             },
+    "kogas":  {
+                  "url":  "https://www.kogas.or.kr/user/resources/images/sub04/1373_cip1.png",
+                  "kind":  "symbol"
+              },
+    "kepcokdn":  {
+                     "url":  "https://www.kdn.com/korean/img/sub/img_ci1_1.png",
+                     "kind":  "symbol"
+                 },
+    "koen":  {
+                 "url":  "https://www.koenergy.kr/kosep/pb/fr/images/introduction/img_symbolMark.gif",
+                 "kind":  "wordmark",
+                 "crop":  {
+                              "left":  216,
+                              "top":  13,
+                              "width":  419,
+                              "height":  142
+                          }
+             },
+    "kospo":  {
+                  "url":  "https://www.kospo.co.kr/sites/kospo/images/contents/cip_logo.png",
+                  "kind":  "symbol"
+              },
+    "ewp":  {
+                "url":  "https://www.ewp.co.kr/images/sub/simbol01_1.png",
+                "kind":  "symbol"
+            },
+    "kowepo":  {
+                   "url":  "https://www.iwest.co.kr/sites/iwest/images/contents/ci_1.png?v=20230608-001",
+                   "kind":  "symbol"
+               },
+    "komipo":  {
+                   "url":  "https://www.komipo.co.kr/main_new4/contents/images/sub/ci_img01.png",
+                   "kind":  "symbol",
+                   "crop":  {
+                                "left":  72,
+                                "top":  52,
+                                "width":  176,
+                                "height":  176
+                            }
+               },
+    "kpx":  {
+                "url":  "https://www.kpx.or.kr/main/img/content/about_ci_cont01_img01.png",
+                "kind":  "symbol"
+            },
+    "lh":  {
+               "url":  "https://www.lh.or.kr/main/img/favicon/android-icon-192x192.png",
+               "kind":  "symbol"
+           },
+    "ex":  {
+               "url":  "https://www.ex.co.kr/images/site/new_portal/ci_img01.png",
+               "kind":  "symbol"
+           },
+    "kwater":  {
+                   "url":  "https://www.kwater.or.kr/web/images/water/kwater_mark1.gif",
+                   "kind":  "wordmark",
+                   "crop":  {
+                                "left":  249,
+                                "top":  52,
+                                "width":  414,
+                                "height":  198
+                            }
+               },
+    "kr":  {
+               "url":  "https://www.kr.or.kr/images/template/krhome/sub/06/img_060105_21.gif?2020",
+               "kind":  "symbol",
+               "crop":  {
+                            "left":  28,
+                            "top":  24,
+                            "width":  170,
+                            "height":  99
+                        }
+           },
+    "airport":  {
+                    "url":  "https://www.airport.co.kr/type/common/img/common/ico_favicon.png",
+                    "kind":  "symbol"
+                },
+    "iiac":  {
+                 "url":  "https://www.airport.kr/Web-home/og/images/apple-touch-icon.png",
+                 "kind":  "symbol"
+             },
+    "nhis":  {
+                 "url":  "https://www.nhis.or.kr/_res/nhis/_share/img/logo.png",
+                 "kind":  "wordmark",
+                 "crop":  {
+                              "left":  283,
+                              "top":  77,
+                              "width":  81,
+                              "height":  81
+                          }
+             },
+    "hira":  {
+                 "url":  "https://www.hira.or.kr/images/contents/renew_bg_ci1.png",
+                 "kind":  "symbol"
+             },
+    "comwel":  {
+                   "url":  "https://www.comwel.or.kr/_res/comwel/img/content/cybr/ci_Symbol_230619.jpg",
+                   "kind":  "symbol",
+                   "crop":  {
+                                "left":  20,
+                                "top":  26,
+                                "width":  142,
+                                "height":  146
+                            }
+               },
+    "geps":  {
+                 "url":  "https://www.geps.or.kr/twp/images/res/layout/header/logo.png",
+                 "kind":  "wordmark"
+             },
+    "ssis":  {
+                 "url":  "https://www.ssis.or.kr/images/ssis.png",
+                 "kind":  "symbol",
+                 "crop":  {
+                              "left":  240,
+                              "top":  46,
+                              "width":  326,
+                              "height":  197
+                          }
+             },
+    "kosaf":  {
+                  "url":  "https://static.kosaf.go.kr/www/images/main_202408/logo.png",
+                  "kind":  "wordmark",
+                  "crop":  {
+                               "left":  0,
+                               "top":  15,
+                               "width":  290,
+                               "height":  166
+                           }
+              },
+    "kspo":  {
+                 "url":  "https://www.kspo.or.kr/static/newsroom/img/common/favicon_180.png",
+                 "kind":  "symbol"
+             },
+    "keis":  {
+                 "url":  "https://www.keis.or.kr/keis/assets/ko/images/img-symbol-mark1@2x.png",
+                 "kind":  "symbol",
+                 "crop":  {
+                              "left":  306,
+                              "top":  84,
+                              "width":  370,
+                              "height":  332
+                          }
+             },
+    "kead":  {
+                 "url":  "https://www.kead.or.kr/assets/image/img_06_03-05a-01.png",
+                 "kind":  "symbol",
+                 "crop":  {
+                              "left":  0,
+                              "top":  0,
+                              "width":  162,
+                              "height":  192
+                          }
+             },
+    "kosha":  {
+                  "url":  "https://kosha.or.kr/images/common/logo.png",
+                  "kind":  "wordmark",
+                  "crop":  {
+                               "left":  433,
+                               "top":  0,
+                               "width":  167,
+                               "height":  176
+                           }
+              },
+    "reb":  {
+                "url":  "https://www.reb.or.kr/images/favicon/apple-icon-180x180.png",
+                "kind":  "symbol"
+            },
+    "kotra":  {
+                  "url":  "https://www.kotra.or.kr/module/upload/file/selectImageView.do?atchFileId=20000012148\u0026fileSn=0",
+                  "kind":  "symbol"
+              },
+    "kosmes":  {
+                   "url":  "https://www.kosmes.or.kr/static/nsh/img/img-ci.png",
+                   "kind":  "wordmark",
+                   "crop":  {
+                                "left":  328,
+                                "top":  214,
+                                "width":  610,
+                                "height":  132
+                            }
+               },
+    "semas":  {
+                  "url":  "https://www.semas.or.kr/common/img/img/img_ORG0105_2.png",
+                  "kind":  "symbol",
+                  "crop":  {
+                               "left":  16,
+                               "top":  15,
+                               "width":  139,
+                               "height":  111
+                           }
+              },
+    "lx":  {
+               "url":  "https://www.lx.or.kr/images/kor/content/cibi_logo01.png",
+               "kind":  "symbol"
+           },
+    "ts":  {
+               "url":  "https://www.kotsa.or.kr/web/images/favicon/apple-touch-icon.png",
+               "kind":  "symbol"
+           },
+    "kicox":  {
+                  "url":  "https://www.kicox.or.kr/images/sub/logoMix01.png",
+                  "kind":  "wordmark",
+                  "crop":  {
+                               "left":  0,
+                               "top":  0,
+                               "width":  67,
+                               "height":  62
+                           }
+              },
+    "energy":  {
+                   "url":  "https://www.energy.or.kr/common/front/home/images/introduce/img_sub0301_01.png",
+                   "kind":  "symbol"
+               },
+    "kesco":  {
+                  "url":  "https://www.kesco.or.kr/common/images/pr/sub/ci_img1.png",
+                  "kind":  "symbol",
+                  "crop":  {
+                               "left":  105,
+                               "top":  0,
+                               "width":  180,
+                               "height":  137
+                           }
+              },
+    "knbank":  {
+                   "url":  "https://www.bnkfg.com/images/common/og_logo.png",
+                   "kind":  "wordmark",
+                   "crop":  {
+                                "left":  64,
+                                "top":  56,
+                                "width":  271,
+                                "height":  89
+                            }
+               },
+    "imbank":  {
+                   "url":  "https://www.imfngroup.com/com/img/ci/iM_symbol.png",
+                   "kind":  "symbol",
+                   "crop":  {
+                                "left":  410,
+                                "top":  337,
+                                "width":  560,
+                                "height":  291
+                            }
+               },
+    "jbbank":  {
+                   "url":  "https://www.jbfg.com/assets/img/common/apple_jb.png",
+                   "kind":  "symbol"
+               },
+    "scbank":  {
+                   "url":  "https://www.standardchartered.co.kr/np/assets/images/kr/base/sc_logo_mb.png",
+                   "kind":  "symbol"
+               },
+    "hanacap":  {
+                    "url":  "https://www.hanafn.com/assets/img/favicon/apple-touch-icon.png",
+                    "kind":  "symbol"
+                },
+    "wooricap":  {
+                     "url":  "https://www.woorifg.com/common/images/ci_type1.png",
+                     "kind":  "symbol",
+                     "crop":  {
+                                  "left":  110,
+                                  "top":  1402,
+                                  "width":  528,
+                                  "height":  528
+                              }
+                 },
+    "lofa":  {
+                 "url":  "https://www.lofa.or.kr/upload/smartEditor2.8.2.1/multiupload/20000000002/2019111514134111c111b0-9baf-4a2c-adf2-fe4f1b32d01a.gif",
+                 "kind":  "symbol",
+                 "crop":  {
+                              "left":  126,
+                              "top":  66,
+                              "width":  169,
+                              "height":  169
+                          }
+             },
+    "sema":  {
+                 "url":  "https://www.sema.or.kr/images/front/about/ci1.png",
+                 "kind":  "symbol",
+                 "crop":  {
+                              "left":  50,
+                              "top":  62,
+                              "width":  350,
+                              "height":  87
+                          }
+             },
+    "fic":  {
+                "url":  "https://www.figu.or.kr/img/logo_textcIC.png",
+                "kind":  "symbol",
+                "crop":  {
+                             "left":  36,
+                             "top":  8,
+                             "width":  125,
+                             "height":  125
+                         }
+            },
+    "icfc":  {
+                 "url":  "http://www.icfc.or.kr/new_ver/himages/sub/ci.jpg",
+                 "kind":  "wordmark",
+                 "crop":  {
+                              "left":  14,
+                              "top":  26,
+                              "width":  291,
+                              "height":  138
+                          }
+             },
+    "kfiaa":  {
+                  "url":  "https://www.focu.or.kr/front/image/hin/img_hin-003-2.png",
+                  "kind":  "symbol",
+                  "crop":  {
+                               "left":  84,
+                               "top":  18,
+                               "width":  252,
+                               "height":  198
+                           }
+              },
+    "haewoon":  {
+                    "url":  "https://www.theksa.or.kr/design/theme/haewoon/images/sub/uhp-cirole-img01.jpg",
+                    "kind":  "symbol"
+                },
+    "nfcf":  {
+                 "url":  "https://www.nfcf.or.kr/images/cyber/ci01_img1.jpg",
+                 "kind":  "symbol",
+                 "crop":  {
+                              "left":  33,
+                              "top":  44,
+                              "width":  201,
+                              "height":  130
+                          }
+             },
+    "kvic":  {
+                 "url":  "https://www.kvic.or.kr/resources/img/sub/company/img_ci01.jpg",
+                 "kind":  "symbol",
+                 "crop":  {
+                              "left":  441,
+                              "top":  100,
+                              "width":  94,
+                              "height":  96
+                          }
+             },
+    "apfs":  {
+                 "url":  "https://www.apfs.kr/images/about_apfs/ci_img_2.png",
+                 "kind":  "symbol",
+                 "crop":  {
+                              "left":  39,
+                              "top":  0,
+                              "width":  130,
+                              "height":  128
+                          }
+             },
+    "fis":  {
+                "url":  "https://www.fis.kr/page/kpfis/images/contents/int_A4_01.jpg",
+                "kind":  "symbol",
+                "crop":  {
+                             "left":  389,
+                             "top":  111,
+                             "width":  321,
+                             "height":  209
+                         }
+            }
+}

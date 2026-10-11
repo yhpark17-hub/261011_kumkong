@@ -1,0 +1,3488 @@
+[
+  {
+    "id": "busanbank",
+    "name": "BNK부산은행",
+    "shortName": "부산은행",
+    "category": "bank",
+    "hq": "부산",
+    "description": "부산에 본점을 둔 BNK금융그룹 계열 지방은행으로, 부산·울산·경남 지역을 기반으로 영업한다.",
+    "homepage": "https://www.busanbank.co.kr",
+    "recruitUrl": "https://busanbank.recruiter.co.kr",
+    "alioListed": false,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "공고상 필기전형 실시. 과목·문항·시간은 미확인(공고 본문 이미지)."
+    },
+    "stats": []
+  },
+  {
+    "id": "knbank",
+    "name": "BNK경남은행",
+    "shortName": "경남은행",
+    "category": "bank",
+    "hq": "창원",
+    "description": "경남 창원에 본점을 둔 BNK금융그룹 계열 지방은행으로, 경남·울산 지역을 기반으로 영업한다.",
+    "homepage": "https://www.knbank.co.kr",
+    "recruitUrl": "https://bnkfg.recruiter.co.kr",
+    "alioListed": false,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기전형 실시(언론). 과목·문항·시간 미확인."
+    },
+    "stats": []
+  },
+  {
+    "id": "imbank",
+    "name": "iM뱅크(구 대구은행)",
+    "shortName": "iM뱅크",
+    "category": "bank",
+    "hq": "대구",
+    "description": "대구에 본점을 둔 iM금융그룹 계열 은행으로, 2024년 지방은행에서 시중은행으로 전환했다.",
+    "homepage": "https://www.imbank.co.kr",
+    "recruitUrl": "https://im.recruiter.co.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "2026년 공고의 필기 여부·과목 미확인(공고 본문 이미지)."
+    },
+    "stats": []
+  },
+  {
+    "id": "kjbank",
+    "name": "광주은행",
+    "shortName": "광주은행",
+    "category": "bank",
+    "hq": "광주",
+    "description": "광주에 본점을 둔 JB금융그룹 계열 지방은행으로, 광주·전남 지역을 기반으로 영업한다.",
+    "homepage": "https://www.kjbank.com",
+    "recruitUrl": "https://kjbank.saramin.co.kr",
+    "alioListed": false,
+    "blind": "partial",
+    "written": {
+      "ncs": {
+        "has": true,
+        "type": "NCS 직업기초능력평가",
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "대인관계능력",
+          "정보능력",
+          "자원관리능력"
+        ],
+        "questions": 60
+      },
+      "major": {
+        "type": "none"
+      },
+      "extra": [
+        "상식 40문항(경영·경제·금융·일반상식·디지털 사고 등)",
+        "인적성검사(별도 실시)"
+      ],
+      "note": "시험 시간 미기재, 장소 별도 통지."
+    },
+    "stats": []
+  },
+  {
+    "id": "jbbank",
+    "name": "전북은행",
+    "shortName": "전북은행",
+    "category": "bank",
+    "hq": "전주",
+    "description": "전북 전주에 본점을 둔 JB금융그룹 계열 지방은행으로, 전북 지역을 기반으로 영업한다.",
+    "homepage": "https://www.jbbank.co.kr",
+    "recruitUrl": "https://jbbank.recruiter.co.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "공고상 전형이 '1~4차전형'으로만 표기되어 필기 여부·과목 미확인."
+    },
+    "stats": []
+  },
+  {
+    "id": "scbank",
+    "name": "SC제일은행",
+    "shortName": "SC제일은행",
+    "category": "bank",
+    "hq": "서울",
+    "description": "스탠다드차타드그룹 계열의 외국계 시중은행으로, 서울 종로구에 본점을 두고 있다.",
+    "homepage": "https://www.standardchartered.co.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "전형 정보 미확인."
+    },
+    "stats": []
+  },
+  {
+    "id": "kbcap",
+    "name": "KB캐피탈",
+    "shortName": "KB캐피탈",
+    "category": "capital",
+    "hq": "수원",
+    "description": "KB금융그룹 계열 여신전문금융회사로, 자동차금융을 중심으로 개인·기업 금융을 제공한다.",
+    "homepage": "https://www.kbcapital.co.kr",
+    "recruitUrl": "https://jrs.jobkorea.co.kr/kbcapital",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "전형 정보 미확인."
+    },
+    "stats": []
+  },
+  {
+    "id": "shcap",
+    "name": "신한캐피탈",
+    "shortName": "신한캐피탈",
+    "category": "capital",
+    "hq": "서울",
+    "description": "신한금융그룹 계열 여신전문금융회사로, IB·기업금융 중심의 금융 서비스를 제공한다.",
+    "homepage": "https://www.shcap.co.kr",
+    "recruitUrl": "https://shcap.recruiter.co.kr/career/home",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "전형 정보 미확인(공고 이미지)."
+    },
+    "stats": []
+  },
+  {
+    "id": "hanacap",
+    "name": "하나캐피탈",
+    "shortName": "하나캐피탈",
+    "category": "capital",
+    "hq": "서울",
+    "description": "하나금융그룹 계열 여신전문금융회사로, 할부·리스 등 자동차금융과 기업금융을 제공한다.",
+    "homepage": "https://www.hanacapital.co.kr",
+    "recruitUrl": "https://hanacapital.incruit.com",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "2026년 필기 여부·과목 미확인. 2025년 공고는 필기전형 실시(언론)."
+    },
+    "stats": []
+  },
+  {
+    "id": "wooricap",
+    "name": "우리금융캐피탈",
+    "shortName": "우리금융캐피탈",
+    "category": "capital",
+    "hq": "서울",
+    "description": "우리금융그룹 계열 여신전문금융회사로, 자동차금융과 기업금융 등 금융 서비스를 제공한다.",
+    "homepage": "https://www.woorifcapital.com",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "2026 상반기 공고의 필기 구성 미확인. 직전(2025 상반기, 2024.11 공고)은 인성검사+NCS+직무지식(여신·금융일반)으로 알려짐(블로그)."
+    },
+    "stats": []
+  },
+  {
+    "id": "hcs",
+    "name": "현대캐피탈",
+    "shortName": "현대캐피탈",
+    "category": "capital",
+    "hq": "서울",
+    "description": "현대자동차그룹 계열 여신전문금융회사로, 자동차 할부·리스 등 자동차금융을 주력으로 한다.",
+    "homepage": "https://www.hyundaicapital.com",
+    "recruitUrl": "https://career.hyundaicapital.com",
+    "alioListed": false,
+    "blind": "partial",
+    "written": {
+      "ncs": {
+        "has": true,
+        "type": "인적성검사(온라인)",
+        "subjects": []
+      },
+      "major": {
+        "type": "none"
+      },
+      "extra": [
+        "코딩·과제 테스트(디지털 직군, 서류와 합산)"
+      ],
+      "note": "2025 하반기 기준. 인적성 영역·문항·시간 미공개."
+    },
+    "stats": []
+  },
+  {
+    "id": "nhcap",
+    "name": "NH농협캐피탈",
+    "shortName": "NH농협캐피탈",
+    "category": "capital",
+    "hq": "서울",
+    "description": "농협금융지주 계열 여신전문금융회사로, 오토금융·기업금융·투자금융 등을 제공한다.",
+    "homepage": "https://www.nhcapital.co.kr",
+    "recruitUrl": "https://nhcapital.saramin.co.kr",
+    "alioListed": false,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "type": "직무능력평가(NCS형)",
+        "subjects": [
+          "의사소통능력",
+          "문제해결능력",
+          "수리능력",
+          "정보능력",
+          "자원관리능력"
+        ],
+        "questions": 45,
+        "minutes": 80
+      },
+      "major": {
+        "type": "none"
+      },
+      "extra": [
+        "인적성평가 375문항 45분",
+        "직무상식평가 25문항(공통: 농업·디지털 / 일반: 금융·경제 용어)"
+      ],
+      "note": "온라인 필기(PC·웹캠·마이크·스마트폰·신분증 필요)."
+    },
+    "stats": []
+  },
+  {
+    "id": "efc",
+    "name": "엔지니어링공제조합",
+    "shortName": "엔지니어링공제",
+    "category": "mutual",
+    "hq": "서울",
+    "description": "엔지니어링·에너지 산업 사업자에게 보증·융자 등 금융서비스를 제공하는 산업통상자원부 산하 공제조합",
+    "homepage": "https://www.egic.co.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 여부·과목 공개 자료 없음"
+    },
+    "stats": []
+  },
+  {
+    "id": "lofa",
+    "name": "한국지방재정공제회",
+    "shortName": "지방재정공제회",
+    "category": "mutual",
+    "hq": "서울",
+    "description": "지방자치단체 대상 공제사업과 지방재정 투자사업 타당성조사·회계통계 업무를 수행하는 공제기관",
+    "homepage": "https://www.lofa.or.kr",
+    "recruitUrl": "https://lofa.incruit.com",
+    "alioListed": false,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "일반직만 필기 실시(연구직은 필기 없음). 필기 과목은 언론보도에 없어 미확인"
+    },
+    "stats": []
+  },
+  {
+    "id": "poba",
+    "name": "대한지방행정공제회",
+    "shortName": "행정공제회",
+    "category": "mutual",
+    "hq": "서울",
+    "description": "지방자치단체 공무원의 생활안정과 복리증진을 위한 저축·급여 등 공제사업을 운영하는 공제회",
+    "homepage": "https://www.poba.or.kr",
+    "recruitUrl": "https://poba.saramin.co.kr",
+    "alioListed": false,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "type": "직업기초능력평가(객관식)",
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "자원관리능력",
+          "정보능력"
+        ],
+        "questions": 60,
+        "minutes": 50
+      },
+      "major": {
+        "type": "integrated",
+        "minutes": 60
+      },
+      "extra": [
+        "인성검사(250문항/30분, 면접 참고자료·점수 미합산)"
+      ],
+      "note": "직무능력평가 60문항/60분: 일반은 경영·경제 통합, IT는 전산학(프로그래밍언어·SW공학·정보보안·운영체제·DB). 총점 = 직무능력 40 + 직업기초 60, 시험별 40% 미만 불합격"
+    },
+    "stats": []
+  },
+  {
+    "id": "sema",
+    "name": "과학기술인공제회",
+    "shortName": "과기공",
+    "category": "mutual",
+    "hq": "서울",
+    "description": "과학기술인의 생활안정과 복리증진을 위해 퇴직연금·저축 등 공제사업을 운영하는 기관",
+    "homepage": "https://www.sema.or.kr",
+    "recruitUrl": "https://sema.career.co.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 구성 공개 자료 미확인"
+    },
+    "stats": []
+  },
+  {
+    "id": "fic",
+    "name": "소방산업공제조합",
+    "shortName": "소방공제조합",
+    "category": "mutual",
+    "hq": "서울",
+    "description": "소방산업 사업자를 대상으로 보증·융자·공제 등 금융 지원 서비스를 제공하는 공제조합",
+    "homepage": "https://www.figu.or.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 구성 공개 자료 미확인"
+    },
+    "stats": []
+  },
+  {
+    "id": "kmbc",
+    "name": "기계설비건설공제조합",
+    "shortName": "설비공제",
+    "category": "mutual",
+    "hq": "서울",
+    "description": "기계설비건설 사업자를 대상으로 보증·융자·공제 등 금융서비스를 제공하는 공제조합",
+    "homepage": "https://www.seolbi.com",
+    "recruitUrl": "https://seolbi.career.greetinghr.com",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": true,
+        "type": "NCS 직업기초능력",
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "정보능력",
+          "자원관리능력"
+        ],
+        "minutes": 60
+      },
+      "major": {
+        "type": "single",
+        "minutes": 60
+      },
+      "extra": [
+        "인성검사(30분, 부적격 시 불합격)"
+      ],
+      "note": "전공은 5과목 중 택1"
+    },
+    "stats": []
+  },
+  {
+    "id": "icfc",
+    "name": "정보통신공제조합",
+    "shortName": "정보통신공제",
+    "category": "mutual",
+    "hq": "서울",
+    "description": "정보통신공사업자를 대상으로 보증·융자·공제 등 금융서비스를 제공하는 공제조합",
+    "homepage": "https://www.icfc.or.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 구성 공개 자료 미확인"
+    },
+    "stats": []
+  },
+  {
+    "id": "ecfc",
+    "name": "전기공사공제조합",
+    "shortName": "전기공사공제",
+    "category": "mutual",
+    "hq": "서울",
+    "description": "전기공사업법에 따라 전기공사업자에게 보증·융자·공제 등 금융서비스를 제공하는 공제조합",
+    "homepage": "https://www.ecfc.co.kr",
+    "recruitUrl": "https://job.ecfc.co.kr/job/index.html",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 구성 공개 자료 미확인"
+    },
+    "stats": []
+  },
+  {
+    "id": "cwma",
+    "name": "건설근로자공제회",
+    "shortName": "건근공",
+    "category": "mutual",
+    "hq": "서울",
+    "description": "건설근로자 퇴직공제 제도를 운영하며 고용안정과 복지증진을 지원하는 고용노동부 산하 공공기관",
+    "homepage": "https://www.cw.or.kr",
+    "recruitUrl": "https://cw.careerlink.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "type": "직업공통(NCS)",
+        "subjects": [
+          "의사소통능력",
+          "문제해결능력",
+          "수리능력",
+          "디지털능력"
+        ],
+        "questions": 50
+      },
+      "major": {
+        "type": "none"
+      },
+      "extra": [
+        "논술(직무관련 시사상식 1문항 내외, 6급만)",
+        "온라인 인성검사(252문항/30분 내외, 필기 합격자 대상)"
+      ],
+      "note": "6급: 직업공통 100점 + 논술 100점, 7급: 직업공통 100점. 전 과목 평균 6할·과목별 4할 이상 중 6배수 선발"
+    },
+    "stats": []
+  },
+  {
+    "id": "kfiaa",
+    "name": "대한소방공제회",
+    "shortName": "소방공제회",
+    "category": "mutual",
+    "hq": "서울",
+    "description": "소방공무원의 생활안정과 복지증진을 위해 저축·대여 등 공제사업을 운영하는 공제회",
+    "homepage": "https://www.focu.or.kr",
+    "recruitUrl": "https://focu.incruit.com",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 구성 공개 자료 미확인"
+    },
+    "stats": []
+  },
+  {
+    "id": "haewoon",
+    "name": "한국해운조합",
+    "shortName": "해운조합",
+    "category": "mutual",
+    "hq": "서울",
+    "description": "연안해운업계를 대상으로 해상공제·유류공급 등 공제·지원 사업을 수행하는 해운 사업자 단체",
+    "homepage": "https://www.theksa.or.kr",
+    "recruitUrl": "https://theksa.saramin.co.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 구성 공식 자료 미확인(커뮤니티에 NCS·논술 언급만 있음)"
+    },
+    "stats": []
+  },
+  {
+    "id": "nfcf",
+    "name": "산림조합중앙회",
+    "shortName": "산림조합",
+    "category": "assoc",
+    "hq": "서울",
+    "description": "산림조합의 중앙회로서 산림경영 지원, 임산물 유통, 상호금융 등 사업을 수행하는 협동조합 중앙조직",
+    "homepage": "https://www.nfcf.or.kr",
+    "recruitUrl": "https://www.nfcf.or.kr/forest/user.tdf?a=user.board.BoardApp&c=2001&board_id=GPB_RECRUIT&mc=KOR_RCT_NTC",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": false,
+        "subjects": []
+      },
+      "major": {
+        "type": "integrated",
+        "minutes": 150
+      },
+      "note": "2026 산림경영지도원 자격전형 기준: 5과목(필수 4+선택 1), 과목별 20문항 4지선다. 본회 사무직 임용전형 필기 구성은 미확인"
+    },
+    "stats": []
+  },
+  {
+    "id": "kvic",
+    "name": "한국벤처투자",
+    "shortName": "한벤투",
+    "category": "finance",
+    "hq": "서울",
+    "description": "중소벤처기업부 산하 기관으로 모태펀드 운용과 벤처투자 촉진 업무를 수행한다.",
+    "homepage": "https://www.kvic.or.kr",
+    "recruitUrl": "http://kvic.incruit.com",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "자원관리능력",
+          "정보능력",
+          "조직이해능력"
+        ],
+        "questions": 40,
+        "minutes": 40
+      },
+      "major": {
+        "type": "single",
+        "subjects": "경영학(중급회계·재무관리 포함)·경제학(미시·거시·국제)·법학(민법·상법) 중 택1, 객관식 5지선다 40문항(조정점수 적용)",
+        "minutes": 90
+      },
+      "extra": [
+        "직무논술 1문항(20점, 직무전공과 합산 90분)",
+        "인성검사(적격/부적격, 30분)"
+      ],
+      "note": "신입 일반 기준. 전공 시험시간 90분은 직무전공+직무논술 합산 시간. 경력(AI·전산)은 필기 없이 온라인 인성검사."
+    },
+    "stats": []
+  },
+  {
+    "id": "kobc",
+    "name": "한국해양진흥공사",
+    "shortName": "해진공",
+    "category": "finance",
+    "hq": "부산",
+    "description": "해양수산부 산하 공사로 선박·항만 등 해운자산 투자와 해운기업 금융 지원을 담당한다.",
+    "homepage": "https://www.kobc.or.kr",
+    "recruitUrl": "https://kobc.scout.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "조직이해능력",
+          "수리능력",
+          "자원관리능력",
+          "문제해결능력"
+        ],
+        "questions": 50,
+        "minutes": 60
+      },
+      "major": {
+        "type": "single",
+        "subjects": "직무수행능력평가A: 경영학(회계학·재무관리 포함)·경제학(미시·거시·국제) 중 택1, 객관식 5지선다 50문항",
+        "minutes": 60
+      },
+      "extra": [
+        "직무수행능력평가B: 금융기초지식 객관식 30문항(40분)",
+        "온라인 인성검사 200문항(30분, 면접 참고자료)"
+      ],
+      "note": "일반직(공통·보훈) 기준 반영비율 NCS 30%·A 40%·B 30%. 정보기술(IT)은 NCS(의사소통·조직이해·수리·기술·정보) 50문항+전산학 50문항, B 미실시."
+    },
+    "stats": []
+  },
+  {
+    "id": "apfs",
+    "name": "농업정책보험금융원",
+    "shortName": "농금원",
+    "category": "finance",
+    "hq": "서울",
+    "description": "농림축산식품부 산하 기관으로 농림수산정책자금 관리와 농어업재해보험 업무를 수행한다.",
+    "homepage": "https://www.apfs.kr",
+    "recruitUrl": "https://apfs.recruiter.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "문제해결능력",
+          "수리능력",
+          "자원관리능력",
+          "조직이해능력"
+        ]
+      },
+      "major": {
+        "type": "none"
+      },
+      "extra": [
+        "직업성격(인성) 210문항 30분, 적부 판정"
+      ],
+      "note": "직업공통(기초)능력평가. NCS 영역은 행정사무(정책금융) 기준이며 전산(의사소통·문제해결·수리·자원관리·정보), 농어업재해보험관리(의사소통·문제해결·수리·정보·조직이해)는 상이. 영역별 문항수·시간은 공고문 PDF에서 판독 불가."
+    },
+    "stats": []
+  },
+  {
+    "id": "fis",
+    "name": "한국재정정보원",
+    "shortName": "재정정보원",
+    "category": "finance",
+    "hq": "서울",
+    "description": "국가 재정정보시스템 dBrain+와 e나라도움을 운영하고 재정정보 분석을 수행하는 준정부기관이다.",
+    "homepage": "https://www.fis.kr",
+    "recruitUrl": "https://fis.hrdms.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "문제해결능력",
+          "조직이해능력",
+          "자원관리능력",
+          "수리능력"
+        ],
+        "questions": 40
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "직무수행능력평가 객관식 40문항: 행정(경영) 경영학·경제학 / 행정(국제협력) 경영학·국제학 / 전산 프로그래밍·운영체제·데이터베이스·소프트웨어공학"
+      },
+      "extra": [
+        "실기평가: AI역량검사(행정)·코딩테스트(전산), 면접 참고자료",
+        "온라인 인성검사(점수화하지 않음)"
+      ],
+      "note": "NCS 영역당 8문항. 직업기초·직무수행 중 하나라도 만점의 40% 미만 시 불합격. 행정-회계사 제한경쟁은 필기 미실시."
+    },
+    "stats": []
+  },
+  {
+    "id": "kgrowth",
+    "name": "한국성장금융투자운용",
+    "shortName": "성장금융",
+    "category": "fininfra",
+    "hq": "서울",
+    "description": "성장사다리펀드 등 정책형 모펀드를 운용하며 혁신기업 성장자금 공급을 지원하는 운용사이다.",
+    "homepage": "https://www.kgrowth.or.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 구성은 공식 자료로 확인되지 않음"
+    },
+    "stats": []
+  },
+  {
+    "id": "kftc",
+    "name": "금융결제원",
+    "shortName": "금결원",
+    "category": "fininfra",
+    "hq": "서울",
+    "description": "지급결제망과 금융공동망을 운영하며 금융인증 등 금융인프라 서비스를 제공하는 기관이다.",
+    "homepage": "https://www.kftc.or.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "전형에 필기전형이 포함되나 과목 구성은 공식 자료로 확인되지 않음"
+    },
+    "stats": []
+  },
+  {
+    "id": "fsec",
+    "name": "금융보안원",
+    "shortName": "금보원",
+    "category": "fininfra",
+    "hq": "경기 용인",
+    "description": "금융권 보안관제·침해대응과 금융보안 연구·교육을 수행하는 금융보안 전문기관이다.",
+    "homepage": "https://www.fsec.or.kr",
+    "recruitUrl": "https://fsec.incruit.com",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "문제해결능력",
+          "수리능력"
+        ]
+      },
+      "major": {
+        "type": "single",
+        "subjects": "전략기획: 경영학(경영전략·마케팅·조직행동론·재무관리·중급회계) 또는 법학(헌법·민법·상법·형법·행정법·민사소송법·형사소송법) 택1 / Tech·Security: 컴퓨터공학 또는 정보보호학 택1, 객관식 30문항+주관식 10문항"
+      },
+      "extra": [
+        "1차 필기 시 정량지표 평가(영어, 자격증 등)",
+        "2차 필기 시 자기소개서 적부심사",
+        "1차 면접 대상 온라인 인성검사(면접 참고자료)"
+      ],
+      "note": "1차 필기(NCS)·2차 필기(전공) 분리 시행. NCS 영역은 공고 표의 Tech·Security 기준 표기. Offensive Security는 이론검증시험·실기시험(모의해킹·악성코드분석)."
+    },
+    "stats": []
+  },
+  {
+    "id": "kcredit",
+    "name": "한국신용정보원",
+    "shortName": "신정원",
+    "category": "fininfra",
+    "hq": "서울",
+    "description": "신용정보법에 따른 종합신용정보집중기관으로 금융권 신용정보를 집중·관리·활용한다.",
+    "homepage": "https://www.kcredit.or.kr",
+    "recruitUrl": "https://kcredit.incruit.com",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 구성은 공식 자료로 확인되지 않음"
+    },
+    "stats": []
+  },
+  {
+    "id": "kidi",
+    "name": "보험개발원",
+    "shortName": "보험개발원",
+    "category": "fininfra",
+    "hq": "서울",
+    "description": "보험요율 산출과 보험통계 집적·분석을 수행하는 보험산업 전문 지원기관이다.",
+    "homepage": "https://www.kidi.or.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 구성은 공식 자료로 확인되지 않음"
+    },
+    "stats": []
+  },
+  {
+    "id": "koscom",
+    "name": "코스콤",
+    "shortName": "코스콤",
+    "category": "fininfra",
+    "hq": "서울",
+    "description": "증권시장 IT 시스템을 구축·운영하는 한국거래소 자회사로 자본시장 IT 전문기관이다.",
+    "homepage": "https://www.koscom.co.kr",
+    "recruitUrl": "https://koscom.applyin.co.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 구성은 공식 자료로 확인되지 않음"
+    },
+    "stats": []
+  },
+  {
+    "id": "ccrs",
+    "name": "신용회복위원회",
+    "shortName": "신복위",
+    "category": "fininfra",
+    "hq": "서울",
+    "description": "개인채무조정과 서민금융통합지원센터 운영 등 신용회복 지원 업무를 수행하는 기관이다.",
+    "homepage": "https://www.ccrs.or.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 구성은 공식 자료로 확인되지 않음"
+    },
+    "stats": []
+  },
+  {
+    "id": "koreg",
+    "name": "신용보증재단중앙회",
+    "shortName": "신보중앙회",
+    "category": "fininfra",
+    "hq": "세종",
+    "description": "중소벤처기업부 산하 기관으로 전국 지역신용보증재단의 재보증과 업무 지원을 담당한다.",
+    "homepage": "https://www.koreg.or.kr",
+    "recruitUrl": "https://koreg.recruiter.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "문제해결능력",
+          "자원관리능력",
+          "정보능력",
+          "수리능력",
+          "직업윤리"
+        ],
+        "questions": 90
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "경영일반: 경영학(일반경영·조직행동·인사관리·마케팅·재무관리·회계)+경제학(미시·거시) 40문항, 4년제 학사수준 / 전산일반: 소프트웨어공학·데이터베이스·프로그래밍·운영체제·정보보호"
+      },
+      "extra": [
+        "직무수행능력평가 내 재단법(지역신용보증재단법·시행령) 10문항",
+        "서류전형 약술(논술) 평가",
+        "인성검사(적부)"
+      ],
+      "note": "NCS 영역별 15문항(40점), 직무수행능력평가 60점(재단법 10문항+전공 40문항). 과목별 40%·총점 60% 미만 과락. 경영일반(보훈)은 직업기초능력 100%."
+    },
+    "stats": []
+  },
+  {
+    "id": "seoulshinbo",
+    "name": "서울신용보증재단",
+    "shortName": "서울신보",
+    "category": "fininfra",
+    "hq": "서울",
+    "description": "서울시 출연기관으로 소상공인·중소기업 신용보증과 금융 지원 업무를 수행한다.",
+    "homepage": "https://www.seoulshinbo.co.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 구성은 공식 자료로 확인되지 않음"
+    },
+    "stats": []
+  },
+  {
+    "id": "kofia",
+    "name": "한국금융투자협회",
+    "shortName": "금투협",
+    "category": "fininfra",
+    "hq": "서울",
+    "description": "금융투자업계 자율규제와 회원사 지원, 투자자 보호 업무를 수행하는 업권 협회이다.",
+    "homepage": "https://www.kofia.or.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": []
+      },
+      "major": {
+        "type": "single",
+        "subjects": "경영학·경제학 중 택1(일반전형)"
+      },
+      "extra": [
+        "인성·조직적합도 검사",
+        "논술시험(일반전형)"
+      ],
+      "note": "언론보도 기준. 변호사·회계사 전형은 인성·조직적합도 검사와 NCS만 응시."
+    },
+    "stats": []
+  },
+  {
+    "id": "sgi",
+    "name": "SGI서울보증",
+    "shortName": "서울보증",
+    "category": "insurance",
+    "hq": "서울",
+    "description": "이행·신용·할부보증 등 보증보험 상품을 전문으로 취급하는 국내 대표 보증보험사이다.",
+    "homepage": "https://www.sgic.co.kr",
+    "recruitUrl": "https://sgic.recruiter.co.kr",
+    "alioListed": false,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": null,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown"
+      },
+      "note": "필기 구성은 공식 자료로 확인되지 않음"
+    },
+    "stats": []
+  },
+  {
+    "id": "kepco",
+    "name": "한국전력공사",
+    "shortName": "한전",
+    "category": "public",
+    "hq": "나주",
+    "description": "전력의 송전·변전·배전과 판매를 담당하며 국가 전력망을 운영하는 시장형 공기업",
+    "homepage": "https://home.kepco.co.kr",
+    "recruitUrl": "http://recruit.kepco.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "자원관리능력",
+          "정보능력"
+        ],
+        "questions": 50,
+        "minutes": 70
+      },
+      "major": {
+        "type": "none",
+        "subjects": "사무는 전공 미출제(NCS 50문항). 기술(배전·송변전·ICT·토목)은 NCS 40문항+기술능력(전공) 15문항, 관련 기사 필기·실기 수준"
+      },
+      "extra": [
+        "인성·인재상·조직적합도 검사(적/부)",
+        "SW특화전형 온라인 코딩테스트(10.31)"
+      ],
+      "note": "직무능력검사 70분(영역별 시간 구분 없음). 2026 하반기부터 과락제: 사무 총점 40점 미만, 기술 NCS 28점 미만 또는 전공 12점 미만 탈락. 배전·송변전은 자원관리+기술능력, ICT·토목은 정보+기술능력 출제."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기 (진행 중·서류 지원자)",
+        "applicants": 19371,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 15747,
+        "hires": 416,
+        "ratio": 37.9,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 14087,
+        "hires": 422,
+        "ratio": 33.4,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "khnp",
+    "name": "한국수력원자력",
+    "shortName": "한수원",
+    "category": "public",
+    "hq": "경주",
+    "description": "원자력·수력·양수 발전소를 건설·운영하고 원전 수출 사업을 수행하는 한전 자회사 발전 공기업",
+    "homepage": "https://www.khnp.co.kr",
+    "recruitUrl": "https://www.khnp.co.kr/recruit",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "자원관리능력",
+          "조직이해능력(사무)"
+        ],
+        "questions": 50
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "직무수행능력 30문항: 사무 통합전공(법학·행정학·경제학·경영학(회계학 포함)) + 회사상식·한국사 등 일반상식. 기술은 선발분야별 전공지식 일체"
+      },
+      "extra": [
+        "인재상 및 조직적합도 검사(적/부)",
+        "심리건강진단"
+      ],
+      "note": "1차 NCS 직무역량검사 100점(직업기초 60%·직무수행 40%), 총점 40점 미만 과락. 기술은 직업기초 중 조직이해 대신 기술능력(ICT는 정보능력). 일반전형은 어학·자격 사전평가 통과자만 필기 응시."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기(제3차) (진행 중·서류 지원자)",
+        "applicants": 13063,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 상반기(제1차)",
+        "applicants": 6987,
+        "hires": 199,
+        "ratio": 35.1,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기(제3차)",
+        "applicants": 6212,
+        "hires": 128,
+        "ratio": 48.5,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kogas",
+    "name": "한국가스공사",
+    "shortName": "가스공사",
+    "category": "public",
+    "hq": "대구",
+    "description": "천연가스를 도입해 전국 주배관망으로 공급하고 국내외 자원개발 사업을 수행하는 시장형 공기업",
+    "homepage": "https://www.kogas.or.kr",
+    "recruitUrl": "https://kogas.incruit.com",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "자원관리능력",
+          "조직이해능력(사무)"
+        ]
+      },
+      "major": {
+        "type": "single",
+        "subjects": "지원 분야별 전공 1과목군. 경영: 경영학원론·재무관리·마케팅·조직론·인사론·재무회계·관리회계 등 / 경제: 경제학원론·미시·거시·국제·계량경제·화폐금융·재정학·경제정책 등 / 회계: 회계원리·중급·고급회계·원가관리회계·세무회계 등"
+      },
+      "extra": [
+        "인성검사(적/부)"
+      ],
+      "note": "NCS 직업기초 50% + 직무수행(전공) 50%. 각 4할 미만 또는 합산 평균 6할 미만 과락. 단문/장문형·연산/자료분석형·추론/분석형 등 혼합 출제. 기술직군은 조직이해 대신 기술능력."
+    },
+    "stats": [
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 7736,
+        "hires": 73,
+        "ratio": 106,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 상반기",
+        "applicants": 6548,
+        "hires": 67,
+        "ratio": 97.7,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kdhc",
+    "name": "한국지역난방공사",
+    "shortName": "난방공사",
+    "category": "public",
+    "hq": "성남",
+    "description": "열병합발전 등으로 생산한 열과 전기를 아파트·건물 등에 공급하는 집단에너지 공기업",
+    "homepage": "https://www.kdhc.co.kr",
+    "recruitUrl": "https://kdhc.scout.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "직업윤리",
+          "수리",
+          "문제해결",
+          "정보",
+          "조직이해"
+        ],
+        "questions": 40
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "직무수행능력 60문항(공사직무 연계 10문항 포함). 사무: 경영학원론·재무관리·마케팅·경제학원론·재정학·회계학·원가관리회계·법학(헌법·민법·행정법·상법) 등"
+      },
+      "extra": [
+        "인성검사(적/부)"
+      ],
+      "note": "직업기초 40% + 직무수행 60%, 각 100점 만점 40점 미만 과락. 기술직군은 직업기초에 기술능력 추가(7개 분야)."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026",
+        "applicants": 6092,
+        "hires": 64,
+        "ratio": 95.2,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025",
+        "applicants": 4625,
+        "hires": 60,
+        "ratio": 77.1,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kepcokdn",
+    "name": "한전KDN",
+    "shortName": "한전KDN",
+    "category": "public",
+    "hq": "나주",
+    "description": "전력계통 정보시스템과 전력통신망을 구축·운영하는 전력 ICT 전문 한전 자회사 공기업",
+    "homepage": "https://www.kdn.com",
+    "recruitUrl": "https://recruit.kdn.com",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "수리능력",
+          "의사소통능력",
+          "문제해결능력",
+          "정보능력",
+          "직업윤리",
+          "기술능력",
+          "자원관리능력",
+          "자기개발능력",
+          "조직이해능력",
+          "대인관계능력"
+        ],
+        "questions": 50,
+        "minutes": 50
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "직무수행능력 50문항/50분(기사 자격증 수준). 사무일반: 경영·경제·법학·행정학 등",
+        "minutes": 50
+      },
+      "extra": [
+        "인성검사",
+        "실기평가(코딩테스트, 전산일반·연구 분야)"
+      ],
+      "note": "직업기초 35% + 직무수행 65%, 각 40점 미만 과락."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026",
+        "applicants": 5009,
+        "hires": 138,
+        "ratio": 36.3,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025",
+        "applicants": 3844,
+        "hires": 95,
+        "ratio": 40.5,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "koen",
+    "name": "한국남동발전",
+    "shortName": "남동발전",
+    "category": "public",
+    "hq": "진주",
+    "description": "삼천포·영흥 등 화력발전소와 신재생에너지 설비를 운영하는 한전 자회사 발전 공기업",
+    "homepage": "https://www.koenergy.kr",
+    "recruitUrl": "https://koenergy.saramin.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "자원관리능력",
+          "문제해결능력"
+        ],
+        "questions": 30
+      },
+      "major": {
+        "type": "single",
+        "subjects": "2026 하반기(대졸 화학): 기술능력 25문항(일반화학·화학공학·대기·수질·폐기물환경 등, 관련 기사 수준)"
+      },
+      "extra": [
+        "인성검사(적/부)"
+      ],
+      "note": "직무능력검사 총 55문항/60분(NCS 각 10문항+기술능력 25문항). 필기 40점 미만 과락. 2026 하반기 대졸은 화학만 모집해 사무 직군 필기 구성은 본 공고에 없음."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기 (진행 중·서류 지원자)",
+        "applicants": 1085,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 11318,
+        "hires": 137,
+        "ratio": 82.6,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 1006,
+        "hires": 13,
+        "ratio": 77.4,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kospo",
+    "name": "한국남부발전",
+    "shortName": "남부발전",
+    "category": "public",
+    "hq": "부산",
+    "description": "하동·신인천·삼척 등 화력·복합발전소와 신재생 설비를 운영하는 한전 자회사 발전 공기업",
+    "homepage": "https://www.kospo.co.kr",
+    "recruitUrl": "https://kospo.machuda.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "자원관리능력",
+          "직업윤리"
+        ],
+        "questions": 70
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "전공기초 50문항(대학교 졸업 이상 수준). 사무(상경): 경영일반·경영전략·조직행위론·인적자원관리·마케팅·생산운영관리·재무관리·중급회계·미시경제학·거시경제학"
+      },
+      "extra": [
+        "직무적합평가(인성, E·F등급 부적합)"
+      ],
+      "note": "직무능력평가(K-JAT) 70문항 중 5문항은 AI 리터러시 문항(2026 하반기 신설). 가점 제외 필기 합계 40% 미만 과락."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 12057,
+        "hires": 90,
+        "ratio": 134,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 7620,
+        "hires": 80,
+        "ratio": 95.3,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "ewp",
+    "name": "한국동서발전",
+    "shortName": "동서발전",
+    "category": "public",
+    "hq": "울산",
+    "description": "당진·울산·동해 등 화력발전소와 신재생에너지 사업을 운영하는 한전 자회사 발전 공기업",
+    "homepage": "https://www.ewp.co.kr",
+    "recruitUrl": "https://ewp.saramin.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "자원관리능력"
+        ],
+        "questions": 50,
+        "minutes": 60
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "직무수행능력평가 50문항/50분: 전공(90점)+한국사(10점, 한능검 3급 수준). 사무-상경: 경영학·경제학·회계학 등 / 사무-법정: 법학(헌법·민법·행정법·상법)·행정학 등",
+        "minutes": 50
+      },
+      "extra": [
+        "인성검사(40분, 최종면접 참고)"
+      ],
+      "note": "직무수행 50점 + NCS 50점 환산 합계에 가점 반영. 2차 면접 총점 60점 미만 탈락."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기(2026.3 공고)",
+        "applicants": 8243,
+        "hires": 100,
+        "ratio": 82.4,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 상반기(2025.10 공고)",
+        "applicants": 6510,
+        "hires": 45,
+        "ratio": 144.7,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kowepo",
+    "name": "한국서부발전",
+    "shortName": "서부발전",
+    "category": "public",
+    "hq": "태안",
+    "description": "태안·평택·서인천·군산 등 발전소를 운영하는 한전 자회사 발전 공기업으로 본사는 충남 태안",
+    "homepage": "https://www.iwest.co.kr",
+    "recruitUrl": "https://iwest.machuda.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "기술능력",
+          "자원관리능력"
+        ],
+        "questions": 45,
+        "minutes": 60
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "직무지식평가 60분: 전공 50문항+한국사 10문항. 사무(상경): 경영학원론·경제학원론·회계원리 / 사무(법정): 법학개론·행정학원론",
+        "minutes": 60
+      },
+      "extra": [
+        "AI 이해·활용능력 5문항(직업기초능력평가 내)",
+        "인성검사(20분, 적/부)"
+      ],
+      "note": "사무직군은 법정·상경 분야별 조정점수 적용. 2차 필기 만점 40% 미만 과락, 면접 60% 미만 과락."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 5470,
+        "hires": 85,
+        "ratio": 64.4,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "komipo",
+    "name": "한국중부발전",
+    "shortName": "중부발전",
+    "category": "public",
+    "hq": "보령",
+    "description": "충남 보령에 본사를 둔 한국전력 자회사 발전공기업으로, 화력·신재생 발전소를 운영한다.",
+    "homepage": "https://www.komipo.co.kr",
+    "recruitUrl": "http://komipo.saramin.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "조직이해능력",
+          "자원관리능력",
+          "수리능력"
+        ],
+        "questions": 70
+      },
+      "major": {
+        "type": "integrated"
+      },
+      "extra": [
+        "직무수행능력평가(직군별 직무상황 연계형 15문항)",
+        "조직적합도평가(D등급 부적격)"
+      ],
+      "note": "직무능력평가(필기) = 직업기초능력 70문항(50%) + 직무지식평가 60문항(50%: 전공 45 + 직무상황 연계형 15). NCS 영역은 사무 기준이며 직군별로 다름(IT: 의사소통·문제해결·정보·기술, 화학: 의사소통·문제해결·자원관리·기술 등). 전공 난이도는 관련 기사 원론 수준 50% 이상. 시험시간은 공고문에 없음."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 제2차 (7월 공고·기계/전기)",
+        "applicants": 5127,
+        "hires": 101,
+        "ratio": 50.8,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기 (2026년도 제1차)",
+        "applicants": 5718,
+        "hires": 75,
+        "ratio": 76.2,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 상반기 (제2차)",
+        "applicants": 3693,
+        "hires": 41,
+        "ratio": 90.1,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "knoc",
+    "name": "한국석유공사",
+    "shortName": "석유공사",
+    "category": "public",
+    "hq": "울산",
+    "description": "국가 석유 비축과 국내외 석유·가스 탐사·개발·생산 사업을 수행하는 에너지 공기업",
+    "homepage": "https://www.knoc.co.kr",
+    "recruitUrl": "https://knoc.recruitlab.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "자원관리능력(사무)",
+          "한국석유공사법 등"
+        ],
+        "questions": 40
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "직무수행능력(전공) 40문항(대졸·기사 수준). 상경: 경영학(재무관리 포함)·회계학·경제학 등 / 법학: 민법·상법·헌법·행정법 등"
+      },
+      "note": "직무수행(전공) 60점 + 직업공통능력(NCS 등) 40점, 각 40% 미만 과락. 기술은 자원관리 대신 기술능력."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기 (진행 중·서류 지원자)",
+        "applicants": 5770,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025",
+        "applicants": 4066,
+        "hires": 47,
+        "ratio": 86.5,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kpx",
+    "name": "한국전력거래소",
+    "shortName": "전력거래소",
+    "category": "public",
+    "hq": "나주",
+    "description": "전력시장과 실시간 전력계통을 운영하고 전력수급 계획 수립을 지원하는 전력 공공기관",
+    "homepage": "https://www.kpx.or.kr",
+    "recruitUrl": "https://kpx.saramin.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "문제해결능력",
+          "수리능력",
+          "조직이해능력",
+          "자원관리능력"
+        ]
+      },
+      "major": {
+        "type": "single",
+        "subjects": "직무수행능력: 사무(상경) 경영학·경제학 중 택1 (기술: 전기공학 / 컴퓨터공학)"
+      },
+      "extra": [
+        "직업기초능력(태도)·직업윤리 검사(적/부)"
+      ],
+      "note": "필기 = 직업기초(인지) 60% + 직무수행 40%, 6배수 선발."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기 (진행 중·서류 지원자)",
+        "applicants": 1987,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 2262,
+        "hires": 18,
+        "ratio": 125.7,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 1211,
+        "hires": 6,
+        "ratio": 201.8,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "lh",
+    "name": "한국토지주택공사",
+    "shortName": "LH",
+    "category": "public",
+    "hq": "진주",
+    "description": "택지·신도시 개발과 공공주택 건설·공급, 주거복지 사업을 수행하는 국토교통 분야 공기업",
+    "homepage": "https://www.lh.or.kr",
+    "recruitUrl": "https://www.lh.or.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "문제해결능력",
+          "수리능력"
+        ],
+        "questions": 40,
+        "minutes": 60
+      },
+      "major": {
+        "type": "single",
+        "subjects": "직무역량 60문항/80분. 일반행정: 행정(행정학원론·행정조직론·인사행정·행정법)·경영(경영학원론·재무관리·마케팅·조직및인적자원관리)·경제(경제학원론·미시·거시) 중 택1(표준점수 조정) / 법률: 헌법·민법(가족법 제외)·민사소송법·행정법 / 회계: 재무회계·원가회계·세법개론",
+        "minutes": 80
+      },
+      "extra": [
+        "사전 온라인 인성검사(필기 합격자)"
+      ],
+      "note": "일반채용 배점 NCS 20% + 직무역량 80%(보훈은 NCS 100%), 각 40% 미만 과락. NCS는 '의사소통·문제해결·수리능력 등'으로 표기. 기술직은 NCS에 안전 분야 일부 출제."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 17745,
+        "hires": 267,
+        "ratio": 66.5,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 12778,
+        "hires": 115,
+        "ratio": 111.1,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "ex",
+    "name": "한국도로공사",
+    "shortName": "도공",
+    "category": "public",
+    "hq": "김천",
+    "description": "고속도로의 건설·유지관리와 통행료 징수 등 고속도로 운영을 전담하는 공기업",
+    "homepage": "https://www.ex.co.kr",
+    "recruitUrl": "https://www.ex.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "정보능력"
+        ]
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "행정(경영): 경영학원론·회계학(중급회계)·경제학원론 / 행정(법정): 행정학원론·정책학·헌법·행정법 / 행정(AI인재): 빅데이터분석·기초통계학·소프트웨어공학·경영학원론(재무관리 제외)"
+      },
+      "extra": [
+        "온라인 조직적합도검사(성격역량·적응위험요인)",
+        "AI면접(필기 합격자)"
+      ],
+      "note": "직업기초 30% + 직무수행 70% + 부가점수 합산, 각 40% 미만 과락."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 11456,
+        "hires": 184,
+        "ratio": 62.3,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "korail",
+    "name": "한국철도공사",
+    "shortName": "코레일",
+    "category": "public",
+    "hq": "대전",
+    "description": "고속철도(KTX)·일반철도·광역전철의 여객과 화물 운송을 담당하는 철도 운영 공기업",
+    "homepage": "https://info.korail.com",
+    "recruitUrl": "https://korail.findeet.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력"
+        ],
+        "questions": 30,
+        "minutes": 70
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "공개경쟁 70문항(NCS 30+전공 30+철도법령 10). 토목: 측량학·토질역학·응용역학·토목시공학·철근콘크리트 / 전기통신: 전기자기학·회로이론·통신이론·전기공학. 사무영업(보훈·고졸·거주지)은 전공 없이 NCS 50+철도법령 10"
+      },
+      "extra": [
+        "철도법령 10문항(철도산업발전기본법·한국철도공사법·철도사업법 및 시행령)",
+        "인성검사(적/부)"
+      ],
+      "note": "필기 70분(전형별 70문항 또는 60문항), 2배수 이내 선발."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기 (진행 중·서류 지원자)",
+        "applicants": 2953,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 1863,
+        "hires": 72,
+        "ratio": 25.9,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kwater",
+    "name": "한국수자원공사",
+    "shortName": "수공",
+    "category": "public",
+    "hq": "대전",
+    "description": "댐·광역상수도 등 수자원 시설을 건설·운영하며 물 공급과 통합 물관리를 담당하는 공기업",
+    "homepage": "https://www.kwater.or.kr",
+    "recruitUrl": "https://kwater.cairos.co.kr/kwater",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "자원관리"
+        ],
+        "questions": 40,
+        "minutes": 40
+      },
+      "major": {
+        "type": "single",
+        "subjects": "직무능력평가 40문항/40분: 전공 30문항(75%)+K-water 수행사업 10문항(25%). 행정은 경영(재무관리·회계·경영전략·인사조직)·경제(미시·거시)·행정(정책학·재무행정·조직행정·인사행정)·법학(민법·행정법) 중 택1(표준점수 조정)",
+        "minutes": 40
+      },
+      "extra": [
+        "직업성격검사(온라인)"
+      ],
+      "note": "NCS 50점 + 직무능력 50점, 각 40% 미만 과락. 2026 하반기 일반직 공채(보훈·장애 한정)는 필기 없이 서류·면접만."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기(2차)",
+        "applicants": 11796,
+        "hires": 207,
+        "ratio": 57,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kr",
+    "name": "국가철도공단",
+    "shortName": "철도공단",
+    "category": "public",
+    "hq": "대전",
+    "description": "고속철도·일반철도 등 국가 철도망 건설과 철도시설 유지관리·자산관리를 담당하는 공공기관",
+    "homepage": "https://www.kr.or.kr",
+    "recruitUrl": "https://2026kr2.kpcice.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "자원관리능력",
+          "조직이해능력"
+        ]
+      },
+      "major": {
+        "type": "single",
+        "subjects": "직무수행능력(통합시험): 사무(일반) 경영(경영학·경제학·회계학)·법정(헌법·행정법·행정학) 중 택1(조정점수 적용)"
+      },
+      "extra": [
+        "인성검사(적/부)"
+      ],
+      "note": "직업기초 50% + 직무수행 50%. 기술직은 조직이해 대신 기술능력."
+    },
+    "stats": [
+      {
+        "year": 2025,
+        "label": "2025 하반기(제2차)",
+        "applicants": 3907,
+        "hires": 90,
+        "ratio": 43.4,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "airport",
+    "name": "한국공항공사",
+    "shortName": "공항공사",
+    "category": "public",
+    "hq": "서울",
+    "description": "김포·김해·제주 등 인천공항을 제외한 전국 지방공항을 운영하는 공항 운영 공기업",
+    "homepage": "https://www.airport.co.kr",
+    "recruitUrl": "https://kac.careerlink.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "정보능력",
+          "자원관리능력(행정)"
+        ],
+        "questions": 50
+      },
+      "major": {
+        "type": "single",
+        "subjects": "직무수행능력 50문항: 행정(경영) 경영학 전반(재무관리 포함) / 행정(항공교통) 항공교통학 전반"
+      },
+      "extra": [
+        "온라인 인성검사(필기 합격자)"
+      ],
+      "note": "직무수행 50점 + 직업기초 50점, 각 40% 미만 과락. 전산·시설·기술은 자원관리 대신 기술능력. 장애인 전형은 직업기초만."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 5780,
+        "hires": 46,
+        "ratio": 125.7,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 4367,
+        "hires": 41,
+        "ratio": 106.5,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "iiac",
+    "name": "인천국제공항공사",
+    "shortName": "인천공항공사",
+    "category": "public",
+    "hq": "인천",
+    "description": "인천국제공항의 건설·운영·관리를 맡은 국토교통부 산하 공기업으로, 공항 시설과 서비스를 총괄한다.",
+    "homepage": "https://www.airport.kr",
+    "recruitUrl": "https://airport.incruit.com",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통능력",
+          "수리능력",
+          "문제해결능력",
+          "자원관리능력",
+          "정보능력",
+          "조직이해능력"
+        ]
+      },
+      "major": {
+        "type": "single"
+      },
+      "extra": [
+        "온라인 인성검사(필기 합격자 대상)"
+      ],
+      "note": "1교시 직업기초능력(NCS, 50점)과 2교시 직무수행능력(전공, 50점)으로 구성. 사무는 지원 분야(경영·경제·행정·법) 전공 전반을 보고, 기술은 지원 분야 전공을 봄. NCS 영역은 사무·전문 기준이며 기술은 조직이해 대신 기술능력. 관제(전문)는 전공 없이 NCS 100%. 2026년 개편된 '직업공통능력'이 아니라 기존 '직업기초능력' 기준으로 출제. 각 과목 만점의 40% 미만이면 과락. 문항 수와 시험시간은 공고문에 없음."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기 (진행 중·서류 지원자)",
+        "applicants": 6733,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 6674,
+        "hires": 46,
+        "ratio": 145.1,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "nhis",
+    "name": "국민건강보험공단",
+    "shortName": "건보",
+    "category": "public",
+    "hq": "원주",
+    "description": "건강보험과 노인장기요양보험의 자격·부과·징수와 급여 관리를 맡는 보험자 기관",
+    "homepage": "https://www.nhis.or.kr",
+    "recruitUrl": "https://www.nhis.or.kr/nhis/together/wbhaea02700m01.do",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결"
+        ],
+        "questions": 60,
+        "minutes": 60
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "직무시험(법률) 20문항: 국민건강보험법(시행령·시행규칙 제외) — 요양직은 노인장기요양보험법",
+        "minutes": 20
+      },
+      "note": "공고문상 '직업기초능력 응용모듈'(행정·건강·요양). 전산직은 NCS 15문항+전산개발 기초(C·JAVA·SQL) 35문항. 직무시험 전 준비시간 10분. 과목당 40%·전과목 60% 이상 득점자 중 2배수 선발."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 16454,
+        "hires": 594,
+        "ratio": 27.7,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 13314,
+        "hires": 580,
+        "ratio": 23,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 상반기",
+        "applicants": 13387,
+        "hires": 444,
+        "ratio": 30.2,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "hira",
+    "name": "건강보험심사평가원",
+    "shortName": "심평원",
+    "category": "public",
+    "hq": "원주",
+    "description": "요양급여비용 심사와 요양급여 적정성 평가를 수행하는 보건복지부 산하 기관",
+    "homepage": "https://www.hira.or.kr",
+    "recruitUrl": "https://www.hira.or.kr/re/recruit/recruitAdList.do?pgmid=HIRAA040078000000",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "디지털"
+        ],
+        "questions": 40
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "행정직: 보건의료지식 10문항(심평원 기능·역할, 국민건강보험법령) + 직무 관련 전공지식 30문항(법학·행정학·경영학·경제학 통합전공)"
+      },
+      "extra": [
+        "인성검사 334문항 40분(1교시)"
+      ],
+      "note": "2교시 80문항 100분(직업공통능력 40 + 직무수행능력 40) 통합 시간. 전산직은 전공 40문항(프로그래밍·DB·정보통신), 심사직(5급)은 보건의료지식 40문항."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기 (진행 중·서류 지원자)",
+        "applicants": 6555,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 5754,
+        "hires": 127,
+        "ratio": 45.3,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 3663,
+        "hires": 77,
+        "ratio": 47.6,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "comwel",
+    "name": "근로복지공단",
+    "shortName": "근복",
+    "category": "public",
+    "hq": "울산",
+    "description": "산재보험·고용보험 운영과 근로자 복지사업, 산재병원 운영을 맡는 고용노동부 산하 기관",
+    "homepage": "https://www.comwel.or.kr",
+    "recruitUrl": "https://www.comwel.or.kr/recruit/hp/main.do",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "문제해결",
+          "자원관리",
+          "수리"
+        ],
+        "questions": 70
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "NCS 직무기초지식 30문항: 법학·행정학·경영학·경제학·사회복지학 각 6문항 (보험·의료사업 행정직(일반) 6급 일반전형만)"
+      },
+      "note": "시험시간 미기재. 응시과목별 만점의 40% 미만 과락. 전산·재활·심사·보훈·장애·고졸전형은 NCS만."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기(2차) (진행 중·서류 지원자)",
+        "applicants": 8884,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 상반기(1차)",
+        "applicants": 5157,
+        "hires": 138,
+        "ratio": 37.4,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "hrdk",
+    "name": "한국산업인력공단",
+    "shortName": "산인공",
+    "category": "public",
+    "hq": "울산",
+    "description": "국가기술자격 시험 시행과 직업능력개발, 외국인 고용지원 사업을 수행하는 기관",
+    "homepage": "https://www.hrdkorea.or.kr",
+    "recruitUrl": "https://www.hrdkorea.or.kr/3/1/2/2",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "조직이해",
+          "의사소통",
+          "수리",
+          "문제해결",
+          "직업윤리",
+          "자원관리"
+        ],
+        "questions": 40
+      },
+      "major": {
+        "type": "none"
+      },
+      "extra": [
+        "한국사 20문항(전 범위)",
+        "영어 20문항(문법·어휘·독해·비즈니스 영어)"
+      ],
+      "note": "일반행정 기준 총 80문항 80분(직업능력 40·한국사 20·영어 20), 객관식 5지택일. 데이터분석·산업안전은 직업능력 20·한국사 20·전공 40. 2026년은 기존 직업기초능력 체계(직업공통능력 체계는 2027년 적용 예정)."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기 (진행 중·서류 지원자)",
+        "applicants": 7316,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 상반기(장애·보훈 제한)",
+        "applicants": 183,
+        "hires": 19,
+        "ratio": 9.6,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 8485,
+        "hires": 83,
+        "ratio": 102.2,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "geps",
+    "name": "공무원연금공단",
+    "shortName": "공연",
+    "category": "public",
+    "hq": "제주",
+    "description": "공무원연금 급여 지급과 연금기금 운용, 퇴직공무원 지원 사업을 수행하는 기관",
+    "homepage": "https://www.geps.or.kr",
+    "recruitUrl": "https://www.geps.or.kr/notiCommunication_info_incruit",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "자원관리",
+          "대인관계",
+          "정보"
+        ],
+        "questions": 60
+      },
+      "major": {
+        "type": "single",
+        "subjects": "5급 전문지식 40문항(직렬별): 행정/법학(행정학원론·정책학 또는 민법·행정법 택1), 경영(경영학원론·회계학), 경제(경제학원론·거시·미시), 통계(통계학개론·조사방법론), 사회복지(사회복지학·사회학), 보건(공중보건학·보건통계학)"
+      },
+      "note": "5급: NCS 60% + 전문지식 40%, 7급: NCS 100%. 과목별 40%·전과목 60% 이상, 시험시간 미기재."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 2530,
+        "hires": 38,
+        "ratio": 66.6,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 상반기",
+        "applicants": 2792,
+        "hires": 43,
+        "ratio": 64.9,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "tpps",
+    "name": "사립학교교직원연금공단",
+    "shortName": "사학연금",
+    "category": "public",
+    "hq": "나주",
+    "description": "사립학교 교직원의 연금·재해보상 급여 지급과 연금기금 운용을 맡는 교육부 산하 기관",
+    "homepage": "https://www.tp.or.kr",
+    "recruitUrl": "https://tp.careerlink.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": []
+      },
+      "major": {
+        "type": "none"
+      },
+      "extra": [
+        "직무수행능력 논술(시사상식 및 논제, 공통주제 1문항 + 채용분야별 주제 1문항)"
+      ],
+      "note": "직업기초능력 객관식(50점) + 직무 논술(50점, 외부위원 2인 이상 교차평가). NCS 영역·문항수·시간 미기재."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 2288,
+        "hires": 18,
+        "ratio": 127.1,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 상반기",
+        "applicants": 1434,
+        "hires": 12,
+        "ratio": 119.5,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "ssis",
+    "name": "한국사회보장정보원",
+    "shortName": "사보원",
+    "category": "public",
+    "hq": "서울",
+    "description": "행복e음 등 사회보장정보시스템을 구축·운영하고 복지 정보를 관리하는 보건복지부 산하 기관",
+    "homepage": "https://www.ssis.or.kr",
+    "recruitUrl": "https://www.ssis.or.kr/lay1/bbs/S1T916C1391/O/130/list.do",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "type": "피듈형",
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "자원관리",
+          "대인관계"
+        ],
+        "questions": 50
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "직무수행능력 50문항: 사회보장지식 10문항(정보원 업무·역할, 사회보장급여법령 등) + 통합전공지식 40문항(경영·경제·행정·법·사회복지 등) — 행정직 기준"
+      },
+      "extra": [
+        "온라인 인적성검사(필기 전일)"
+      ],
+      "note": "공고문에 'PSAT·모듈형 혼합' 명시. 전산직 전공은 전산학일반·정보보안 등 40문항. 과목별 40% 미만 과락, 시험시간 미기재."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 제3차(7월)",
+        "applicants": 1970,
+        "hires": 34,
+        "ratio": 57.9,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 제2차(5월)",
+        "applicants": 368,
+        "hires": 28,
+        "ratio": 13.1,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 제1차(2월)",
+        "applicants": 2913,
+        "hires": 76,
+        "ratio": 38.3,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kosaf",
+    "name": "한국장학재단",
+    "shortName": "장학재단",
+    "category": "public",
+    "hq": "대구",
+    "description": "국가장학금과 학자금 대출, 인재육성 장학사업을 운영하는 교육부 산하 준정부기관",
+    "homepage": "https://www.kosaf.go.kr",
+    "recruitUrl": "https://kosaf.scout.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "자원관리",
+          "조직이해"
+        ],
+        "questions": 50,
+        "minutes": 60
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "일반행정: 경영(재무·회계 포함)·경제(미시·거시)·민·상법 객관식 50문항 / IT 개발운영: 전산(프로그래밍·DB·자료구조·정보보안)",
+        "minutes": 60
+      },
+      "note": "직업기초 50점 + 직무수행 50점, 합산 40점 미만 불합격. 서류는 어학(TOEIC 환산 750 이상 필수)+자격증 정량평가."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기 (진행 중·서류 지원자)",
+        "applicants": 3528,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 1738,
+        "hires": 12,
+        "ratio": 144.8,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kspo",
+    "name": "국민체육진흥공단",
+    "shortName": "체육공단",
+    "category": "public",
+    "hq": "서울",
+    "description": "국민체육진흥기금 조성·지원과 경륜·경정 사업, 올림픽공원 등 체육시설 운영을 맡는 기관",
+    "homepage": "https://www.kspo.or.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "자원관리",
+          "조직이해"
+        ],
+        "questions": 80,
+        "minutes": 80
+      },
+      "major": {
+        "type": "single",
+        "subjects": "직무지식평가 40문항(분야별): 경영(경영학원론 전반, 재무·회계 포함) / 행정(행정학원론 전반) / 체육(2급 생활스포츠지도사 7과목)",
+        "minutes": 40
+      },
+      "note": "사무: NCS 40% + 직무지식 60%(보훈은 3과목 중 선택·조정점수). 기술·IT는 NCS 100%."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 (7급 전환형 채용형 인턴)",
+        "applicants": 2511,
+        "hires": 30,
+        "ratio": 83.7,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 (8급 전환형 채용형 인턴)",
+        "applicants": 660,
+        "hires": 15,
+        "ratio": 44,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "bohun",
+    "name": "한국보훈복지의료공단",
+    "shortName": "보훈공단",
+    "category": "public",
+    "hq": "원주",
+    "description": "국가유공자 진료·재활·복지를 위해 보훈병원과 보훈요양원 등을 운영하는 국가보훈부 산하 기관",
+    "homepage": "https://www.bohun.or.kr",
+    "recruitUrl": "https://bohun.scout.co.kr/main/",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "조직이해",
+          "자원관리",
+          "수리",
+          "문제해결",
+          "의사소통"
+        ],
+        "questions": 40
+      },
+      "major": {
+        "type": "single",
+        "subjects": "직무수행(전공) 50문항, 지원분야 택1: 경영·경제(경영학25·경제학25), 법·행정(법학25·행정학25), 재무·회계(회계학25·세법25), 보건행정(보건행정학20·공중보건학20·의료법10), AI·전산, 기록물관리, 사회복지"
+      },
+      "extra": [
+        "한국사 10문항(근현대사)"
+      ],
+      "note": "총 100문항 100분, 객관식 4지선다(NCS 40%·전공 50%·한국사 10%). 과목별 40% 미만 과락, 필기 3배수."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기(7월)",
+        "applicants": 2075,
+        "hires": 59,
+        "ratio": 35.2,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기(7월)",
+        "applicants": 1179,
+        "hires": 45,
+        "ratio": 26.2,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "keis",
+    "name": "한국고용정보원",
+    "shortName": "고용정보원",
+    "category": "public",
+    "hq": "음성",
+    "description": "고용24 등 고용정보시스템 운영과 고용·직업 관련 조사·연구를 수행하는 고용노동부 산하 기관",
+    "homepage": "https://www.keis.or.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "문제해결",
+          "자원관리",
+          "의사소통",
+          "조직이해"
+        ],
+        "questions": 50
+      },
+      "major": {
+        "type": "single",
+        "subjects": "직무수행능력 50문항(분야별): 경영사무 — 경영학 / 정보화 — 소프트웨어공학·전산일반 / 5급 연구원 — 통계학·경제학"
+      },
+      "note": "일반직 5급: 직업기초 50문항(40점) + 직무수행 50문항(40점). 시험시간 미기재. 무기계약직은 직업기초 100문항, 3급 부연구위원은 필기 미실시."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기(1차)",
+        "applicants": 1679,
+        "hires": 16,
+        "ratio": 104.9,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기(3차)",
+        "applicants": 680,
+        "hires": 14,
+        "ratio": 48.6,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kead",
+    "name": "한국장애인고용공단",
+    "shortName": "장애인공단",
+    "category": "public",
+    "hq": "성남",
+    "description": "장애인 고용촉진과 직업재활, 직업능력개발 훈련을 지원하는 고용노동부 산하 기관",
+    "homepage": "https://www.kead.or.kr",
+    "recruitUrl": "https://kead.careerlink.kr/",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "디지털"
+        ],
+        "questions": 50
+      },
+      "major": {
+        "type": "none"
+      },
+      "note": "직업공통능력평가 50문항(100점), 60점 이상 중 고득점순 3배수. 직무수행능력평가 30문항은 교사직만. 시험시간 별도 안내."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기(5월)",
+        "applicants": 2989,
+        "hires": 82,
+        "ratio": 36.5,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 132,
+        "hires": 9,
+        "ratio": 14.7,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kosha",
+    "name": "한국산업안전보건공단",
+    "shortName": "안전보건공단",
+    "category": "public",
+    "hq": "울산",
+    "description": "산업재해 예방을 위한 기술지원·교육·연구 등 안전보건 사업을 수행하는 고용노동부 산하 기관",
+    "homepage": "https://www.kosha.or.kr",
+    "recruitUrl": "https://www.kosha.or.kr/kosha/work/jabData_a.do",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "문제해결",
+          "자원관리",
+          "조직이해",
+          "대인관계",
+          "수리"
+        ],
+        "questions": 30
+      },
+      "major": {
+        "type": "single",
+        "subjects": "직무수행능력(전공) 70문항(분야별): 경영 — 경영학원론·행정학원론 수준 / 산업안전·산업보건·건설안전 — 해당 기사 수준"
+      },
+      "note": "2025년 5급(장애 제외) 기준 총 100문항 100분(전공 70%+NCS 30%). 5급 장애·6급은 NCS 80문항. 40점 미만 불합격."
+    },
+    "stats": [
+      {
+        "year": 2025,
+        "label": "2025 (5급 신입)",
+        "applicants": 4533,
+        "hires": 89,
+        "ratio": 50.9,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "reb",
+    "name": "한국부동산원",
+    "shortName": "부동산원",
+    "category": "public",
+    "hq": "대구",
+    "description": "부동산 가격공시·통계 조사와 청약 관리 등 부동산시장 관리 업무를 수행하는 국토교통부 산하 기관",
+    "homepage": "https://www.reb.or.kr",
+    "recruitUrl": "https://www.reb.or.kr/recruit",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "디지털",
+          "직업윤리"
+        ]
+      },
+      "major": {
+        "type": "single",
+        "subjects": "직무수행능력평가(분야별): 경영 — 경영학원론·재무관리·회계원리·재무회계 / 부동산 — 부동산학개론·부동산공법·부동산공시법 / 통계·건축·도시·전산·어업보상 별도"
+      },
+      "note": "신입(일반·보훈): 직업공통 30 : 직무수행 70 환산. 신입(전문·고졸)은 직업공통만. 문항수·시간 미기재, 필기 4배수."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기 (진행 중·서류 지원자)",
+        "applicants": 2692,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 상반기",
+        "applicants": 2026,
+        "hires": 18,
+        "ratio": 112.6,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 2871,
+        "hires": 11,
+        "ratio": 261,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kotra",
+    "name": "대한무역투자진흥공사",
+    "shortName": "KOTRA",
+    "category": "public",
+    "hq": "서울",
+    "description": "중소·중견기업의 해외시장 진출과 외국인 투자유치를 지원하는 무역투자 진흥 공공기관",
+    "homepage": "https://www.kotra.or.kr",
+    "recruitUrl": "https://kotra.careerlink.kr",
+    "alioListed": true,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "조직이해",
+          "자원관리",
+          "정보",
+          "수리",
+          "문제해결"
+        ]
+      },
+      "major": {
+        "type": "single",
+        "subjects": "경제논술(필수, 필기 가중치 30%)"
+      },
+      "extra": [
+        "인성검사(1차, NCS와 함께 시행)",
+        "영어(필수, 30%)",
+        "선택과목: 직무역량평가 또는 외국어쓰기능력평가(40%)",
+        "외국어회화테스트(원어민 면접)"
+      ],
+      "note": "1차 인성·NCS(채용예정인원 8배수) → 2차 필기(영어·경제논술·선택과목, 4배수) → 외국어회화·역량면접 → 최종면접. 공통 외국어요건 TOEIC 850 이상."
+    },
+    "stats": [
+      {
+        "year": 2025,
+        "label": "2025 하반기 · 전 계열 합산(이공·어문 포함)",
+        "applicants": 1135,
+        "hires": 30,
+        "ratio": 37.8,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 상반기 · 전 계열 합산(이공·어문 포함)",
+        "applicants": 1060,
+        "hires": 35,
+        "ratio": 30.3,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kosmes",
+    "name": "중소벤처기업진흥공단",
+    "shortName": "중진공",
+    "category": "public",
+    "hq": "경남 진주",
+    "description": "중소벤처기업에 정책자금 융자와 창업·수출·인력 지원 사업을 수행하는 준정부기관",
+    "homepage": "https://www.kosmes.or.kr",
+    "recruitUrl": "https://kosmes.applyin.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "문제해결",
+          "수리",
+          "자원관리",
+          "정보"
+        ],
+        "questions": 50
+      },
+      "major": {
+        "type": "single",
+        "subjects": "전공지식평가 객관식 40문항: 모집분야별 선택과목 1개(경영·경제·행정·법학·통계·기계·금속·전기전자·화공·IT·빅데이터·인공지능 중), 조정점수제 적용"
+      },
+      "note": "NCS 영역 비중: 의사소통 30·문제해결 30·수리 20·자원관리 10·정보 10(%). 필기 반영 NCS 60% + 전공 40%, 과락 NCS 50점·전공 40점 미만."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기 · 신입·경력 합산",
+        "applicants": 4061,
+        "hires": 58,
+        "ratio": 70,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기 · 신입·경력 합산",
+        "applicants": 3376,
+        "hires": 62,
+        "ratio": 54.5,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "semas",
+    "name": "소상공인시장진흥공단",
+    "shortName": "소진공",
+    "category": "public",
+    "hq": "대전",
+    "description": "소상공인 지원과 전통시장 활성화를 위한 정책자금·교육·컨설팅 사업을 수행하는 기관",
+    "homepage": "https://www.semas.or.kr",
+    "recruitUrl": "https://semas.plusrecruit.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "자원관리",
+          "정보"
+        ],
+        "questions": 60,
+        "minutes": 60
+      },
+      "major": {
+        "type": "single",
+        "subjects": "직무수행능력평가 객관식 40문항: 경영학·경제학·행정학·법학 중 택1(표준점수제)",
+        "minutes": 60
+      },
+      "extra": [
+        "조직이해도평가 10문항(소상공인기본법 등, 직무수행능력과 합산 60분)",
+        "인성검사(필기 당일)"
+      ],
+      "note": "2026 상반기 행정사무일반 기준. NCS 50% + 직무수행·조직이해도 50%."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기 · 신입·경력(금융심사역) 합산",
+        "applicants": 2101,
+        "hires": 70,
+        "ratio": 30,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기",
+        "applicants": 3388,
+        "hires": 60,
+        "ratio": 56.5,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 상반기",
+        "applicants": 3404,
+        "hires": 85,
+        "ratio": 40,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kto",
+    "name": "한국관광공사",
+    "shortName": "관광공사",
+    "category": "public",
+    "hq": "강원 원주",
+    "description": "국내외 관광 마케팅과 관광산업 육성, 관광자원 개발을 담당하는 관광 전문 공공기관",
+    "homepage": "https://knto.or.kr",
+    "recruitUrl": "https://kto.applyin.co.kr",
+    "alioListed": true,
+    "blind": "unknown",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown",
+        "subjects": "부문별 직무능력평가(기술 부문 제외) — 세부 과목은 공고문(이미지 PDF)에서 확인 못 함"
+      },
+      "extra": [
+        "인성검사(1차 면접 합격자 대상)",
+        "외국어면접(1차 면접, 일반·장애 부문)"
+      ],
+      "note": "서류 적부심사 → 필기(일반 4배수) → 1차 면접(직무능력·외국어) → 인성검사 → 2차 면접(역량)."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기 · 일반·전문·장애 합산",
+        "applicants": 2355,
+        "hires": 43,
+        "ratio": 54.8,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 · 일반(언어별)·장애·보훈 합산",
+        "applicants": 1977,
+        "hires": 33,
+        "ratio": 59.9,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "at",
+    "name": "한국농수산식품유통공사",
+    "shortName": "aT",
+    "category": "public",
+    "hq": "전남 나주",
+    "description": "농수산식품 유통구조 개선과 수급 안정, 수출 진흥 및 식품산업 육성을 맡는 공기업",
+    "homepage": "https://www.at.or.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "문제해결",
+          "자원관리",
+          "조직이해"
+        ],
+        "questions": 60
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "5급 행정(일반): 경영학·경제학·회계학 (직무수행능력평가 50문항, 대졸 수준)"
+      },
+      "extra": [
+        "직업성격검사"
+      ],
+      "note": "행정(일반) 직업기초 40% + 직무능력 60%, 3배수 선발. 과락 각 40점 미만. 이공 분야 NCS는 조직이해 대신 수리."
+    },
+    "stats": [
+      {
+        "year": 2025,
+        "label": "2025 하반기 · 신입·경력·6급(고졸) 합산",
+        "applicants": 1825,
+        "hires": 65,
+        "ratio": 28.1,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "ekr",
+    "name": "한국농어촌공사",
+    "shortName": "농어촌공사",
+    "category": "public",
+    "hq": "전남 나주",
+    "description": "농업기반시설 관리와 농지은행, 농어촌 지역개발 사업을 수행하는 농어촌 전문 공기업",
+    "homepage": "https://www.ekr.or.kr",
+    "recruitUrl": "https://krc.cairos.co.kr/krc/",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "문제해결",
+          "수리",
+          "정보",
+          "자원관리"
+        ],
+        "questions": 50
+      },
+      "major": {
+        "type": "single",
+        "subjects": "5급 행정 직무수행능력 40문항(200점): 경상(경영학·경제학 택1) / 법정(법학·행정학 택1) / 농학(농학·농업경제학 택1), 표준점수제"
+      },
+      "extra": [
+        "인성검사(적·부)"
+      ],
+      "note": "5지선다, 외부기관 위탁 출제. 최종 = 필기 40% + 면접 60%. 이공 분야 NCS는 자원관리 대신 기술능력."
+    },
+    "stats": [
+      {
+        "year": 2025,
+        "label": "2025 하반기 · 5급(행정·기술)·6급 합산",
+        "applicants": 7740,
+        "hires": 252,
+        "ratio": 30.7,
+        "source": "ALIO"
+      },
+      {
+        "year": 2024,
+        "label": "2024 하반기 · 5급(행정·기술)·6급 합산",
+        "applicants": 6220,
+        "hires": 167,
+        "ratio": 37.2,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "lx",
+    "name": "한국국토정보공사",
+    "shortName": "LX",
+    "category": "public",
+    "hq": "전북 전주",
+    "description": "지적측량과 공간정보 구축·활용, 디지털트윈 국토 사업을 수행하는 국토정보 전문기관",
+    "homepage": "https://www.lx.or.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "문제해결",
+          "대인관계",
+          "직업윤리",
+          "자기관리",
+          "디지털능력"
+        ],
+        "questions": 60,
+        "minutes": 60
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "기획행정: 행정학(20)·경제학(20)·기초통계학(20) 객관식 60문항",
+        "minutes": 70
+      },
+      "extra": [
+        "직업성격검사(150문항, 20분)"
+      ],
+      "note": "기획행정 기준. 직무지식 40점 미만 또는 총점 60점 미만 불합격. 지적측량 NCS는 의사소통 대신 수리."
+    },
+    "stats": [
+      {
+        "year": 2025,
+        "label": "2025 하반기 · 지적측량(고졸 포함)만 모집",
+        "applicants": 431,
+        "hires": 28,
+        "ratio": 15.4,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "ts",
+    "name": "한국교통안전공단",
+    "shortName": "교통안전공단",
+    "category": "public",
+    "hq": "경북 김천",
+    "description": "자동차 검사와 교통안전 관리, 운전 관련 자격시험 등을 담당하는 교통안전 전문기관",
+    "homepage": "https://www.kotsa.or.kr",
+    "recruitUrl": "http://kotsa.career.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "자원관리",
+          "대인관계",
+          "조직이해",
+          "직업윤리"
+        ],
+        "questions": 70
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "행정6급(일반): 경영·경제 통합 30문항"
+      },
+      "extra": [
+        "인성검사(온라인)"
+      ],
+      "note": "신규직만 필기 시행. 행정 직렬 NCS 7개 영역(AI 등 신사업 연계 문항 출제)."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기 · 신규직(행정·기술·연구교수, 고졸 포함)",
+        "applicants": 3631,
+        "hires": 126,
+        "ratio": 28.8,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기 · 신규직(행정·기술·연구교수, 고졸 포함)",
+        "applicants": 1551,
+        "hires": 61,
+        "ratio": 25.4,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kisa",
+    "name": "한국인터넷진흥원",
+    "shortName": "KISA",
+    "category": "public",
+    "hq": "전남 나주",
+    "description": "정보보호와 개인정보보호, 인터넷 진흥 및 침해사고 대응을 담당하는 정보보호 전문기관",
+    "homepage": "https://www.kisa.or.kr",
+    "recruitUrl": "https://kisa.applyin.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "type": "PSAT형",
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "자원관리"
+        ],
+        "questions": 40
+      },
+      "major": {
+        "type": "unknown",
+        "subjects": "경영·정책 직무수행능력 40문항: 경영학(경영·재무·회계), 법학(법학일반·헌법·행정법), 행정학(행정학개론·정책학) — 택1 여부 공고문 미기재"
+      },
+      "extra": [
+        "온라인 인성(조직적합도) 검사 250문항"
+      ],
+      "note": "공고문에 'NCS-PSAT형' 명시. 경영·정책 NCS 40% + 전공 60%, 과락 원점수 40점 미만."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기 · 일반·고졸·보훈 합산",
+        "applicants": 2646,
+        "hires": 62,
+        "ratio": 42.7,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "komsco",
+    "name": "한국조폐공사",
+    "shortName": "조폐공사",
+    "category": "public",
+    "hq": "대전",
+    "description": "화폐와 보안제품, 신분증 등을 제조하고 보안·인증 솔루션 사업을 수행하는 공기업",
+    "homepage": "https://www.komsco.com",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "대인관계",
+          "디지털능력"
+        ],
+        "questions": 50,
+        "minutes": 70
+      },
+      "major": {
+        "type": "single",
+        "subjects": "행정사무: 경영학원론(재무·회계 포함)·경제학원론·행정학원론 중 1과목 선택, 객관식 40문항(조정점수제)",
+        "minutes": 40
+      },
+      "note": "2차 전형 = 직무수행능력 40점 + 직업공통능력 60점. 1차 서류는 직무자격 60점 + 영어성적 40점(25배수)."
+    },
+    "stats": [
+      {
+        "year": 2025,
+        "label": "2025 하반기 공고(2026년도 신입) · 전 분야(연구·고졸 포함)",
+        "applicants": 5713,
+        "hires": 51,
+        "ratio": 112,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 상반기 공고(2025년도 신입) · 전 분야(고졸 포함)",
+        "applicants": 5115,
+        "hires": 57,
+        "ratio": 89.7,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kra",
+    "name": "한국마사회",
+    "shortName": "마사회",
+    "category": "public",
+    "hq": "경기 과천",
+    "description": "경마 시행과 말산업 육성, 승마 진흥 사업을 수행하는 농림축산식품부 산하 공기업",
+    "homepage": "https://www.kra.co.kr",
+    "recruitUrl": "https://kra.careerlink.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": []
+      },
+      "major": {
+        "type": "unknown",
+        "subjects": "직무지식평가(100점) — 직무별 과목은 공고문(이미지)에서 확인 못 함"
+      },
+      "extra": [
+        "온라인 인성검사(필기 합격자)",
+        "AI 역량검사(1차 면접 합격자)"
+      ],
+      "note": "필기 = 직무지식평가 100점 + 직업기초능력평가 100점, 서울 강남권 중·고교. 5배수 선발."
+    },
+    "stats": [
+      {
+        "year": 2025,
+        "label": "2025 하반기 공고(2026년도 신입) · 5·6급 전 직무",
+        "applicants": 13073,
+        "hires": 64,
+        "ratio": 204.3,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 상반기 공고(2025년도 신입) · 5·6급 전 직무",
+        "applicants": 11027,
+        "hires": 59,
+        "ratio": 186.9,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kicox",
+    "name": "한국산업단지공단",
+    "shortName": "산단공",
+    "category": "public",
+    "hq": "대구",
+    "description": "산업단지 조성·관리와 입주기업 지원, 산업집적 활성화를 담당하는 산업입지 전문기관",
+    "homepage": "https://www.kicox.or.kr",
+    "recruitUrl": "https://kicox.saramin.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "문제해결",
+          "수리",
+          "자기관리",
+          "디지털능력"
+        ]
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "4급 신입 정책·행정: 행정학·행정법·정책학 / 사회형평 경영·경제: 미시·거시경제학·경영학·재무회계"
+      },
+      "extra": [
+        "온라인 인·적성검사(필기 합격자)"
+      ],
+      "note": "4급 신입: NCS 40점 + 직무수행 60점, 5지선다 합계 100문항·100분. 서류는 자격요건·불성실 기재만 확인(적격자 전원 필기 응시)."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기 (진행 중·서류 지원자, 경력·고졸 포함)",
+        "applicants": 2375,
+        "source": "ALIO"
+      },
+      {
+        "year": 2026,
+        "label": "2026 상반기 · 4급 신입 전 분야",
+        "applicants": 4357,
+        "hires": 27,
+        "ratio": 161.4,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "energy",
+    "name": "한국에너지공단",
+    "shortName": "에너지공단",
+    "category": "public",
+    "hq": "울산",
+    "description": "에너지 효율 향상과 신재생에너지 보급, 온실가스 감축 사업을 수행하는 에너지 전문기관",
+    "homepage": "https://www.energy.or.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "자기관리",
+          "디지털능력"
+        ]
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "사무(경영·경제): 경영학·경제학·회계학 등 / 사무(법·행정): 민법·행정법·행정학·정책학 등"
+      },
+      "extra": [
+        "인성검사(적·부)"
+      ],
+      "note": "채용형 인턴(일반) 필기 = 직업공통능력(NCS) 50점 + 직무능력평가(전공) 50점, 과목별 4할 미만 과락. 보훈·사회형평·고졸은 NCS만."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기 · 사무·기술·고졸 합산",
+        "applicants": 5846,
+        "hires": 55,
+        "ratio": 106.3,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기(7월 공고) · 사무·기술·고졸 합산",
+        "applicants": 4739,
+        "hires": 64,
+        "ratio": 74,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kesco",
+    "name": "한국전기안전공사",
+    "shortName": "전기안전공사",
+    "category": "public",
+    "hq": "전북 완주",
+    "description": "전기설비 안전검사와 점검, 전기재해 예방 업무를 수행하는 전기안전 전문 공공기관",
+    "homepage": "https://www.kesco.or.kr",
+    "recruitUrl": "https://kesco.or.kr/recruit/main.do",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "자원관리",
+          "문제해결",
+          "정보",
+          "조직이해",
+          "수리"
+        ],
+        "questions": 50,
+        "minutes": 60
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "경영관리: 경영·회계·경제·행정(행정법 제외) 50문항",
+        "minutes": 60
+      },
+      "extra": [
+        "온라인 인성검사(230문항, 30분)"
+      ],
+      "note": "시험전형 = NCS 30% + 전공 70%, 각 40점 미만 결격. 1교시 전공, 2교시 NCS. 최종 = 시험 50% + 면접 50%."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기 · 경영관리·정보운영·연구·기술 합산",
+        "applicants": 5219,
+        "hires": 212,
+        "ratio": 24.6,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "kgs",
+    "name": "한국가스안전공사",
+    "shortName": "가스안전공사",
+    "category": "public",
+    "hq": "충북 음성",
+    "description": "가스시설 검사·점검과 가스사고 예방, 안전 교육·연구를 수행하는 가스안전 전문기관",
+    "homepage": "https://www.kgs.or.kr",
+    "recruitUrl": "https://kgs.saramin.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "자기관리",
+          "대인관계",
+          "디지털능력",
+          "직업윤리"
+        ],
+        "questions": 80,
+        "minutes": 80
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "5급 행정 상경: 경영일반·인적자원관리·마케팅·재무회계(고급회계 제외)·미시·거시경제학 / 법정: 행정법(쟁송법 포함)·민법(민법총칙)·정책학·인사행정·조직행정·재무행정 — 객관식 50문항",
+        "minutes": 50
+      },
+      "extra": [
+        "인성검사(310문항, 40분, 면접 참고자료)"
+      ],
+      "note": "NCS 문항 구성: 의사소통 10·수리 20·문제해결 20·자기관리 10·대인관계 5·디지털 10·직업윤리 5. 필기 NCS 60% + 전공 40%."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 상반기 · 신입·경력 합산",
+        "applicants": 3814,
+        "hires": 77,
+        "ratio": 49.5,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기 · 5급·7급(고졸) 합산",
+        "applicants": 3651,
+        "hires": 71,
+        "ratio": 51.4,
+        "source": "ALIO"
+      }
+    ]
+  },
+  {
+    "id": "keco",
+    "name": "한국환경공단",
+    "shortName": "환경공단",
+    "category": "public",
+    "hq": "인천",
+    "description": "대기·수질·폐기물 등 환경오염 방지와 자원순환 사업을 수행하는 환경 전문 공공기관",
+    "homepage": "https://www.keco.or.kr",
+    "recruitUrl": "https://keco.applyin.co.kr",
+    "alioListed": true,
+    "blind": "full",
+    "written": {
+      "ncs": {
+        "has": true,
+        "subjects": [
+          "의사소통",
+          "수리",
+          "문제해결",
+          "조직이해"
+        ],
+        "questions": 50,
+        "minutes": 60
+      },
+      "major": {
+        "type": "integrated",
+        "subjects": "사무직 6급 법정: 행정법·행정학 통합 / 상경: 경영학·회계학·경제학 통합 — 40문항",
+        "minutes": 50
+      },
+      "extra": [
+        "인성검사(211문항, 25분)"
+      ],
+      "note": "공개경쟁 6급 기준 NCS 50% + 전공 50%, 각 4할 미만 과락. 전자계산기 사용 불가. 최종 = 필기 30% + 면접(PT·인성) 70%."
+    },
+    "stats": [
+      {
+        "year": 2026,
+        "label": "2026 하반기 (진행 중·서류 지원자, 공무직·고졸·제한경쟁 포함)",
+        "applicants": 7766,
+        "source": "ALIO"
+      },
+      {
+        "year": 2025,
+        "label": "2025 하반기 · 기술직 6급 중심(사무 8급·제한경쟁 포함)",
+        "applicants": 4255,
+        "hires": 56,
+        "ratio": 76,
+        "source": "ALIO"
+      }
+    ]
+  }
+]
