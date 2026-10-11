@@ -73,6 +73,15 @@ turso db tokens create kumkong     # → DATABASE_AUTH_TOKEN
 
 테이블은 첫 요청 때 자동으로 만들어집니다(`src/lib/server/db.ts`의 SCHEMA).
 
+#### Vercel 배포 순서
+
+1. [Turso](https://turso.tech)에서 DB를 만들고 주소(`libsql://…`)와 토큰을 발급받습니다 (대시보드에서도 가능).
+2. 프로젝트 폴더의 `.env.vercel`(gitignore 대상, 운영용 무작위 값이 들어 있음)에 Turso 주소·토큰과 운영자 비밀번호를 채웁니다.
+3. Vercel → Project → Settings → Environment Variables에서 `.env.vercel` 내용을 붙여 넣습니다 (Import .env 가능).
+4. **환경변수를 바꾼 뒤에는 반드시 Redeploy** 합니다 — 빌드 때 값을 읽는 부분이 있어 재배포해야 반영됩니다.
+
+DB가 없거나 연결에 실패해도 사이트 전체가 멈추지 않습니다. 달력·기관 정보는 그대로 보이고, 콩밭·필기 후기 영역만 '준비하고 있어요' 또는 '다시 시도' 안내로 바뀝니다 (`src/components/db/DbSection.tsx`).
+
 ## 데이터 업데이트
 
 일정은 `src/data/recruitments.ts`, 기관 정보는 `src/data/companies.ts`에서 수정합니다.

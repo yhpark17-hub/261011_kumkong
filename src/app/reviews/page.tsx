@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { BarChart3, Lock, MousePointerClick } from "lucide-react";
 import { ExamBrowser, type ExamCardData } from "@/components/reviews/ExamBrowser";
+import { DbSection } from "@/components/db/DbSection";
 import { Eyebrow } from "@/components/ui";
 import { diffDays, todayKST } from "@/lib/date";
 import { PRIORITY_DAYS, type ExamInfo } from "@/lib/review-meta";
@@ -45,16 +46,20 @@ export default function ReviewsPage() {
         ))}
       </ul>
 
-      <Suspense fallback={<GridSkeleton />}>
-        <ExamLists />
-      </Suspense>
+      <div className="mt-12">
+        <DbSection noticeTitle="필기 후기 투표를 준비하고 있어요">
+          <Suspense fallback={<GridSkeleton />}>
+            <ExamLists />
+          </Suspense>
+        </DbSection>
+      </div>
     </div>
   );
 }
 
 function GridSkeleton() {
   return (
-    <div className="mt-12 animate-pulse">
+    <div className="animate-pulse">
       <div className="flex gap-2">
         {Array.from({ length: 6 }, (_, i) => (
           <div key={i} className="h-9 w-20 rounded-full bg-canvas-soft" />

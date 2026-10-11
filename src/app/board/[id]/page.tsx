@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { ArrowLeft, BadgeCheck, BarChart3, EyeOff, PenLine } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { ModerationBar } from "@/components/board/ModerationBar";
+import { DbSection } from "@/components/db/DbSection";
 import { AuthorLabel, CategoryTag, PostBody } from "@/components/board/parts";
 import {
   CommentForm,
@@ -53,7 +54,9 @@ export default function PostPage({ params }: PageProps<"/board/[id]">) {
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_304px]">
         <div className="min-w-0">
-          <Suspense fallback={<PostSkeleton />}>{params.then(({ id }) => <PostView rawId={id} />)}</Suspense>
+          <DbSection noticeTitle="콩밭(게시판)을 준비하고 있어요">
+            <Suspense fallback={<PostSkeleton />}>{params.then(({ id }) => <PostView rawId={id} />)}</Suspense>
+          </DbSection>
         </div>
         <aside className="space-y-4">
           <AdSlot slot={AD_SLOTS.sidebar} variant="rectangle" />

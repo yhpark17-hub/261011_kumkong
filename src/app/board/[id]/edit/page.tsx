@@ -5,6 +5,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { ArrowLeft } from "lucide-react";
 import { PostForm } from "@/components/board/PostForm";
+import { DbSection } from "@/components/db/DbSection";
 import { Card } from "@/components/ui";
 import { BOARD_NAME } from "@/lib/board-meta";
 import { companyOptions } from "@/lib/data";
@@ -19,11 +20,13 @@ export const metadata: Metadata = {
 export default function EditPage({ params }: PageProps<"/board/[id]/edit">) {
   return (
     <div className="mx-auto max-w-[840px] px-4 pt-8 pb-12 md:px-6 md:pt-12">
-      <Suspense fallback={<div className="h-[600px] animate-pulse rounded-lg bg-canvas-soft" />}>
-        {params.then(({ id }) => (
-          <EditForm rawId={id} />
-        ))}
-      </Suspense>
+      <DbSection noticeTitle="콩밭(게시판)을 준비하고 있어요">
+        <Suspense fallback={<div className="h-[600px] animate-pulse rounded-lg bg-canvas-soft" />}>
+          {params.then(({ id }) => (
+            <EditForm rawId={id} />
+          ))}
+        </Suspense>
+      </DbSection>
     </div>
   );
 }

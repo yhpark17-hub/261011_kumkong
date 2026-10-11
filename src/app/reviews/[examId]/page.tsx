@@ -8,6 +8,7 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { ModerationBar } from "@/components/board/ModerationBar";
 import { ReportButton } from "@/components/board/interactive";
 import { AttendGate } from "@/components/reviews/AttendGate";
+import { DbSection } from "@/components/db/DbSection";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { LockedResults, ReviewResults } from "@/components/reviews/Results";
 import { Card, Chip, CompanyAvatar, Eyebrow, cn } from "@/components/ui";
@@ -88,9 +89,13 @@ function ExamContent({ examId }: { examId: string }) {
         </div>
       </header>
 
-      <Suspense fallback={<div className="mt-10 h-[480px] animate-pulse rounded-lg bg-canvas-soft" />}>
-        <ExamLive exam={exam} />
-      </Suspense>
+      <div className="mt-10">
+        <DbSection noticeTitle="필기 후기 투표를 준비하고 있어요">
+          <Suspense fallback={<div className="h-[480px] animate-pulse rounded-lg bg-canvas-soft" />}>
+            <ExamLive exam={exam} />
+          </Suspense>
+        </DbSection>
+      </div>
 
       {sameDay.length > 0 && (
         <section className="mt-10">
@@ -121,7 +126,7 @@ async function ExamLive({ exam }: { exam: ExamInfo }) {
   if (exam.date > today || exam.expected) {
     const d = diffDays(today, exam.date);
     return (
-      <Card className="mt-10 flex flex-col items-center p-10 text-center">
+      <Card className="flex flex-col items-center p-10 text-center">
         {d >= 0 && <span className="tag bg-ev-written-soft type-caption !px-3 text-ev-written">{ddayLabel(d)}</span>}
         <p className="mt-4 type-heading-sm text-ink">시험이 끝나면 후기 투표가 열려요</p>
         <p className="mt-2 max-w-md type-body-md text-ink-mute">
@@ -149,7 +154,7 @@ async function ExamLive({ exam }: { exam: ExamInfo }) {
   const visibleComments = comments.filter((c) => c.status === 0).length;
 
   return (
-    <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px]">
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px]">
       <section id="review-form" className="scroll-mt-24 lg:order-2" aria-label="후기 남기기">
         <Card className="p-6 lg:sticky lg:top-24">
           <h2 className="type-heading-md text-ink">{mine ? "내 후기" : "30초 후기 남기기"}</h2>

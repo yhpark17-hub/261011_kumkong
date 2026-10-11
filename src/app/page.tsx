@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { HomeDashboard } from "@/components/calendar/HomeDashboard";
+import { DbSection } from "@/components/db/DbSection";
 import { CommunityStrip, CommunityStripSkeleton } from "@/components/home/CommunityStrip";
 import { CompanyAvatar, Eyebrow } from "@/components/ui";
 import { COMPANIES, buildCatalog, getRecruitment, sortedEvents } from "@/lib/data";
@@ -26,9 +27,11 @@ export default function Home() {
       </div>
 
       <section aria-label="필기 후기와 콩밭" className="mx-auto max-w-[1200px] px-4 pb-16 md:px-6">
-        <Suspense fallback={<CommunityStripSkeleton />}>
-          <CommunityStrip />
-        </Suspense>
+        <DbSection>
+          <Suspense fallback={<CommunityStripSkeleton />}>
+            <CommunityStrip />
+          </Suspense>
+        </DbSection>
       </section>
 
       <ScheduleIndex />

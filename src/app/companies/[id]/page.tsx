@@ -20,6 +20,7 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { FavoriteButton } from "@/components/client-ui";
 import { AddToCalendarButton } from "@/components/company/AddToCalendarButton";
 import { CompanyCommunity, CompanyCommunitySkeleton } from "@/components/company/CompanyCommunity";
+import { DbSection } from "@/components/db/DbSection";
 import { RecruitTimeline } from "@/components/company/RecruitTimeline";
 import {
   EssayList,
@@ -199,9 +200,11 @@ function CompanyContent({ id }: { id: string }) {
           </Card>
 
           <div id="community" className="scroll-mt-24">
-            <Suspense fallback={<CompanyCommunitySkeleton />}>
-              <CompanyCommunity companyId={company.id} companyName={company.name} />
-            </Suspense>
+            <DbSection silent>
+              <Suspense fallback={<CompanyCommunitySkeleton />}>
+                <CompanyCommunity companyId={company.id} companyName={company.name} />
+              </Suspense>
+            </DbSection>
           </div>
 
           <Card className="p-6 md:p-8">

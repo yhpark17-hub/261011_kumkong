@@ -8,6 +8,7 @@ import { adminLogout } from "./actions";
 import { ModerationBar } from "@/components/board/ModerationBar";
 import { AuthorLabel, CategoryTag } from "@/components/board/parts";
 import { FeedbackInbox } from "@/components/feedback/FeedbackInbox";
+import { DbSection } from "@/components/db/DbSection";
 import { Card } from "@/components/ui";
 import { BOARD_NAME, formatPostDateTime } from "@/lib/board-meta";
 import { reportedItems } from "@/lib/server/board";
@@ -25,7 +26,9 @@ export default function AdminPage() {
   return (
     <div className="mx-auto max-w-[1000px] px-4 pt-8 pb-12 md:px-6 md:pt-12">
       <Suspense fallback={<div className="h-96 animate-pulse rounded-lg bg-canvas-soft" />}>
-        <Dashboard />
+        <DbSection noticeTitle="DB가 연결되지 않았어요 (DATABASE_URL 확인)">
+          <Dashboard />
+        </DbSection>
       </Suspense>
     </div>
   );

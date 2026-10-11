@@ -7,6 +7,7 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { CompanyFilter } from "@/components/board/CompanyFilter";
 import { Pagination, PostTable } from "@/components/board/parts";
 import { AdminBar } from "@/components/board/AdminBar";
+import { DbSection } from "@/components/db/DbSection";
 import { Card, CompanyAvatar, Eyebrow, cn } from "@/components/ui";
 import { BOARD_CATEGORIES, BOARD_NAME, BOARD_TAGLINE, boardHref, isBoardCategory } from "@/lib/board-meta";
 import { companyOptions, getCompany } from "@/lib/data";
@@ -52,13 +53,17 @@ export default function BoardPage({ searchParams }: PageProps<"/board">) {
         </div>
       </header>
 
-      <Suspense fallback={null}>
-        <AdminBar className="mt-6" />
-      </Suspense>
+      <DbSection silent>
+        <Suspense fallback={null}>
+          <AdminBar className="mt-6" />
+        </Suspense>
+      </DbSection>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_304px]">
         <div className="min-w-0">
-          <Suspense fallback={<ListSkeleton />}>{searchParams.then((sp) => <BoardList sp={sp} />)}</Suspense>
+          <DbSection noticeTitle="콩밭(게시판)을 준비하고 있어요">
+            <Suspense fallback={<ListSkeleton />}>{searchParams.then((sp) => <BoardList sp={sp} />)}</Suspense>
+          </DbSection>
         </div>
 
         <aside className="space-y-4">

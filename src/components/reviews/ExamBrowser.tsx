@@ -73,7 +73,7 @@ export function ExamBrowser({
 
   return (
     <>
-      <div className="mt-12 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <CategoryChips value={category} onChange={setCategory} counts={categoryCounts} total={past.length + upcoming.length} />
         <label className="relative shrink-0 md:w-64">
           <Search

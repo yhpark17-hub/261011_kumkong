@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ArrowLeft } from "lucide-react";
 import { PostForm } from "@/components/board/PostForm";
+import { DbSection } from "@/components/db/DbSection";
 import { Card } from "@/components/ui";
 import { BOARD_NAME } from "@/lib/board-meta";
 import { COMPANIES, companyOptions } from "@/lib/data";
@@ -27,21 +28,26 @@ export default function WritePage({ searchParams }: PageProps<"/board/write">) {
           이용 수칙
         </Link>
       </p>
-      <Card className="mt-8 p-6 md:p-8">
-        <Suspense fallback={<div className="h-96 animate-pulse rounded-md bg-canvas-soft" />}>
-          {searchParams.then(async (sp) => {
-            const preset = typeof sp.company === "string" && COMPANIES.some((c) => c.id === sp.company) ? sp.company : null;
-            return (
-              <PostForm
-                mode="create"
-                admin={await isAdmin()}
-                companies={companyOptions()}
-                initial={preset ? { id: 0, category: "free", title: "", body: "", companyId: preset } : undefined}
-              />
-            );
-          })}
-        </Suspense>
-      </Card>
+      <div className="mt-8">
+        <DbSection noticeTitle="콩밭(게시판)을 준비하고 있어요">
+          <Card className="p-6 md:p-8">
+            <Suspense fallback={<div className="h-96 animate-pulse rounded-md bg-canvas-soft" />}>
+              {searchParams.then(async (sp) => {
+                const preset =
+                  typeof sp.company === "string" && COMPANIES.some((c) => c.id === sp.company) ? sp.company : null;
+                return (
+                  <PostForm
+                    mode="create"
+                    admin={await isAdmin()}
+                    companies={companyOptions()}
+                    initial={preset ? { id: 0, category: "free", title: "", body: "", companyId: preset } : undefined}
+                  />
+                );
+              })}
+            </Suspense>
+          </Card>
+        </DbSection>
+      </div>
     </div>
   );
 }

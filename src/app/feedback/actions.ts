@@ -2,8 +2,9 @@
 
 import { getCompany } from "@/lib/data";
 import { FEEDBACK_KINDS, FEEDBACK_LIMITS, isFeedbackKind } from "@/lib/feedback-meta";
-import { db } from "@/lib/server/db";
+import { db, dbConfigured } from "@/lib/server/db";
 import { rateLimit, requester } from "@/lib/server/security";
+import { SITE } from "@/lib/site";
 
 export type FeedbackState = { ok: boolean; error?: string };
 
@@ -42,16 +43,22 @@ export async function submitFeedback(_prev: FeedbackState, fd: FormData): Promis
   // 사이트 안 경로만 (운영자 화면에서 링크로 보여 주므로 //다른주소 형태는 버림)
   const page = /^\/(?!\/)/.test(pageRaw) ? pageRaw.slice(0, 200) : null;
 
-  const who = await requester();
-  if (!(await rateLimit("feedback", who.hash, 30))) {
-    return { ok: false, error: "조금 전에 보내셨어요. 30초 뒤에 다시 보내 주세요." };
-  }
+  if (!dbConfigured()) return { ok: false, error: `지금은 제보를 받을 수 없어요. ${SITE.contactEmail} 로 보내 주세요.` };
 
-  const client = await db();
-  await client.execute({
-    sql: `INSERT INTO feedback (kind, topic, company_id, company_name, page, body, source_url, contact, ip_hash, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    args: [kind, topic, company?.id ?? null, companyName, page, body, sourceUrl, contact, who.hash, Date.now()],
-  });
+  const who = await requester();
+  try {
+    if (!(await rateLimit("feedback", who.hash, 30))) {
+      return { ok: false, error: "조금 전에 보내셨어요. 30초 뒤에 다시 보내 주세요." };
+    }
+    const client = await db();
+    await client.execute({
+      sql: `INSERT INTO feedback (kind, topic, company_id, company_name, page, body, source_url, contact, ip_hash, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [kind, topic, company?.id ?? null, companyName, page, body, sourceUrl, contact, who.hash, Date.now()],
+    });
+  } catch (err) {
+    console.error("[feedback] 저장 실패", err);
+    return { ok: false, error: `잠시 저장하지 못했어요. 잠시 뒤 다시 보내거나 ${SITE.contactEmail} 로 보내 주세요.` };
+  }
   return { ok: true };
 }

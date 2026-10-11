@@ -1,11 +1,12 @@
 import "server-only";
 import { mkdirSync } from "node:fs";
-import { createClient, type Client } from "@libsql/client";
+import type { Client } from "@libsql/client";
 
 /**
  * 게시판(콩밭)·필기 후기 DB
  * - 로컬: DATABASE_URL=file:data/kumkong.db (SQLite 파일)
- * - 배포: Turso(libSQL) 주소 + DATABASE_AUTH_TOKEN — 코드 변경 없이 같은 SQL 사용
+ * - 배포(Vercel 등): Turso(libSQL) 주소 + DATABASE_AUTH_TOKEN — 같은 SQL 사용.
+ *   서버리스는 디스크가 읽기 전용이라 원격 DB 가 꼭 필요합니다.
  */
 
 const SCHEMA = `
@@ -127,24 +128,62 @@ async function migrate(c: Client) {
 /** status: 0 = 공개, 1 = 숨김(신고 누적·운영자), 2 = 삭제 */
 export const STATUS = { visible: 0, hidden: 1, deleted: 2 } as const;
 
-let client: Client | null = null;
-let ready: Promise<void> | null = null;
+const LOCAL_URL = "file:data/kumkong.db";
 
-function databaseUrl() {
-  const url = process.env.DATABASE_URL ?? "file:data/kumkong.db";
+/** Vercel 같은 서버리스 환경은 디스크가 읽기 전용이라 로컬 SQLite 파일을 쓸 수 없습니다 */
+function serverless(): boolean {
+  return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+}
+
+function databaseUrl(): string {
+  return process.env.DATABASE_URL?.trim() || LOCAL_URL;
+}
+
+/**
+ * 게시판·후기 DB 를 쓸 수 있는지.
+ * 서버리스 배포에서 DATABASE_URL(Turso 등 원격 DB)이 없으면 false — 화면은 '준비 중'으로 대신합니다.
+ */
+export function dbConfigured(): boolean {
+  return !(serverless() && databaseUrl().startsWith("file:"));
+}
+
+export class DbUnavailableError extends Error {
+  constructor() {
+    super(
+      "게시판·후기 DB가 설정되지 않았습니다. 배포 환경에 DATABASE_URL(Turso libsql:// 주소)과 DATABASE_AUTH_TOKEN 을 넣어 주세요.",
+    );
+    this.name = "DbUnavailableError";
+  }
+}
+
+async function connect(): Promise<Client> {
+  const url = databaseUrl();
   if (url.startsWith("file:")) {
+    // 로컬 개발: SQLite 파일 (폴더가 없으면 만듦)
     const path = url.slice("file:".length);
     const dir = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "";
     if (dir) mkdirSync(dir, { recursive: true });
+    const { createClient } = await import("@libsql/client");
+    return createClient({ url });
   }
-  return url;
+  // 원격(Turso): 네이티브 모듈이 필요 없는 HTTP 클라이언트
+  const { createClient } = await import("@libsql/client/web");
+  return createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN });
 }
 
+let pending: Promise<Client> | null = null;
+
 export async function db(): Promise<Client> {
-  if (!client) {
-    client = createClient({ url: databaseUrl(), authToken: process.env.DATABASE_AUTH_TOKEN });
-    ready = migrate(client);
-  }
-  await ready;
-  return client;
+  if (!dbConfigured()) throw new DbUnavailableError();
+  pending ??= connect()
+    .then(async (c) => {
+      await migrate(c);
+      return c;
+    })
+    .catch((err) => {
+      // 연결·초기화에 실패하면 다음 요청에서 다시 시도
+      pending = null;
+      throw err;
+    });
+  return pending;
 }
