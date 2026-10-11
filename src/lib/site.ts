@@ -1,10 +1,22 @@
+/**
+ * 사이트 기본 주소 (sitemap·OG 이미지·canonical 에 사용)
+ * 1) NEXT_PUBLIC_SITE_URL (개인 도메인 연결 시)  2) Vercel 이 자동으로 넣어 주는 운영 주소  3) 로컬
+ */
+function siteUrl(): string {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (explicit) return explicit.replace(/\/$/, "");
+  const vercel = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (vercel) return `https://${vercel}`;
+  return "http://localhost:3000";
+}
+
 export const SITE = {
   name: "금콩",
   title: "금콩 · 금융공기업 채용 캘린더",
   tagline: "금융공기업·공공기관 채용 일정을 한 달력에",
   description:
     "한국은행·금감원·산업은행·신용보증기금 등 금융공기업과 공공기관, 공제회, 중앙회, 시중은행 채용 일정(서류 마감·필기·면접)을 달력으로 한눈에. 필기 과목, 전공 유무, 블라인드 여부, 알리오 경쟁률, 자소서 항목까지 정리했습니다.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  url: siteUrl(),
   contactEmail: "contact@example.com",
 } as const;
 
