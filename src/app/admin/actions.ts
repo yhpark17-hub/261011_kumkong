@@ -2,8 +2,10 @@
 
 import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { parseAttachments } from "@/lib/attachments";
 import { STATUS, db } from "@/lib/server/db";
 import { FEEDBACK_STATUS } from "@/lib/server/feedback";
+import { deleteFiles } from "@/lib/server/storage";
 import {
   adminEnabled,
   checkAdminPassword,
@@ -87,6 +89,13 @@ async function applyModeration(client: Client, type: Target, op: Op, id: number)
     );
   } else if (op === "purge") {
     // 완전 삭제는 이미 '삭제' 상태인 것만 — 실수로 공개 글을 바로 없애지 않게
+    const files =
+      type === "post"
+        ? parseAttachments(
+            (await client.execute({ sql: "SELECT attachments FROM posts WHERE id = ? AND status = ?", args: [id, STATUS.deleted] })).rows[0]
+              ?.attachments,
+          )
+        : [];
     const statements = [
       { sql: `DELETE FROM ${table} WHERE id = ? AND status = ?`, args: [id, STATUS.deleted] },
       {
@@ -101,6 +110,7 @@ async function applyModeration(client: Client, type: Target, op: Op, id: number)
       );
     }
     await client.batch(statements, "write");
+    if (files.length) await deleteFiles(files.map((f) => f.url)); // 첨부 사진·파일도 저장소에서 지움
   } else if (op === "ban") {
     // 작성자(IP 해시)를 차단 목록에 추가 — 이후 글·댓글·후기·신고를 막음
     const res = await client.execute({

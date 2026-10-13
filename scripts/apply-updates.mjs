@@ -1,7 +1,10 @@
 /**
  * 기관별 최신 채용 일정 업데이트 → src/data/generated/recruitment-updates.json
  *
- *   node scripts/apply-updates.mjs <update1.json> <update2.json> ... [--report out.txt] [--date 2026-10-13]
+ *   node scripts/apply-updates.mjs <update1.json> <update2.json> ... [--report out.txt] [--date 2026-10-13] [--preview records.json]
+ *
+ * --preview: 파일은 그대로 두고, 반영될 기관별 최종 레코드만 records.json 에 씁니다
+ *            (자동 점검 에이전트가 운영자 승인용 제안을 만들 때 사용 — scripts/automation/ROUTINE.md)
  *
  * 입력 형식: [{ id, found, isNewCycle, recruitment, verification, changes, notFoundReason }]
  * - recruitment.events 가 있는 기관만 반영합니다 (found=false 라도 최근 회차를 출처로 보완했다면 반영).
@@ -28,8 +31,9 @@ const opt = (name) => {
   return i >= 0 ? args[i + 1] : null;
 };
 const reportPath = opt("--report");
+const previewPath = opt("--preview");
 const date = opt("--date") ?? new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
-const optionValues = new Set([reportPath, opt("--date")]);
+const optionValues = new Set([reportPath, opt("--date"), previewPath]);
 const inputs = args.filter((a) => !a.startsWith("--") && !optionValues.has(a));
 
 const issues = [];
@@ -59,6 +63,7 @@ async function main() {
 
   let applied = 0;
   let skipped = 0;
+  const touched = new Set();
   for (const path of inputs) {
     if (!existsSync(path)) {
       console.warn(`파일 없음: ${path}`);
@@ -109,6 +114,7 @@ async function main() {
         note: next.note ?? keep("note", undefined),
       };
       updates.set(id, merged);
+      touched.add(id);
       applied++;
 
       // 사람이 확인할 수 있게 바뀐 일정을 남김
@@ -130,8 +136,13 @@ async function main() {
     }
   }
 
+  if (previewPath) {
+    const records = clean([...touched].map((id) => updates.get(id)));
+    await writeFile(previewPath, `${JSON.stringify(records, null, 2)}\n`);
+    console.log(`미리보기: ${records.length}곳 레코드를 ${previewPath} 에 썼어요 (업데이트 파일은 그대로)`);
+  }
   const out = clean([...updates.values()].sort((a, b) => (a.companyId < b.companyId ? -1 : 1)));
-  await writeFile(OUT, `${JSON.stringify(out, null, 2)}\n`);
+  if (!previewPath) await writeFile(OUT, `${JSON.stringify(out, null, 2)}\n`);
   const summary = `반영 ${applied}곳, 변경 없음 ${skipped}곳, 업데이트 파일 총 ${out.length}곳 (기준일 ${date})`;
   console.log(summary);
   console.log(`확인 필요 항목 ${issues.length}건`);

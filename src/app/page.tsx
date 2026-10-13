@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { HomeDashboard } from "@/components/calendar/HomeDashboard";
 import { DbSection } from "@/components/db/DbSection";
 import { CommunityStrip, CommunityStripSkeleton } from "@/components/home/CommunityStrip";
+import { MagazineStrip, MagazineStripSkeleton } from "@/components/home/MagazineStrip";
 import { CompanyAvatar, Eyebrow } from "@/components/ui";
 import { COMPANIES, buildCatalog, getRecruitment, sortedEvents } from "@/lib/data";
 import { formatRange } from "@/lib/date";
@@ -25,6 +26,14 @@ export default function Home() {
       <div className="mx-auto max-w-[1200px] px-4 pb-12 md:px-6">
         <HomeDashboard catalog={buildCatalog()} />
       </div>
+
+      <section aria-label="오늘의 브리핑과 매거진" className="mx-auto max-w-[1200px] px-4 pb-12 md:px-6">
+        <DbSection silent>
+          <Suspense fallback={<MagazineStripSkeleton />}>
+            <MagazineStrip />
+          </Suspense>
+        </DbSection>
+      </section>
 
       <section aria-label="필기 후기와 콩밭" className="mx-auto max-w-[1200px] px-4 pb-16 md:px-6">
         <DbSection>

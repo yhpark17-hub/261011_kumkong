@@ -19,9 +19,9 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
           <span className="type-heading-sm text-ink">금콩 관리</span>
         </p>
         <div className="flex flex-wrap gap-2">
-          <Link href="/board/write" className="btn btn-sm btn-primary">
+          <Link href="/admin/magazine/new" className="btn btn-sm btn-primary">
             <PenLine className="h-4 w-4" strokeWidth={1.75} />
-            운영자 글쓰기
+            매거진 글쓰기
           </Link>
           <Link href="/" className="btn btn-sm btn-toggle">
             <ExternalLink className="h-4 w-4" strokeWidth={1.75} />

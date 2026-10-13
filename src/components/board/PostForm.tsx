@@ -2,7 +2,9 @@
 
 import { useActionState, useState } from "react";
 import { createPost, updatePost, type ActionState } from "@/app/board/actions";
+import type { Attachment } from "@/lib/attachments";
 import { BOARD_CATEGORIES, type BoardCategory } from "@/lib/board-meta";
+import { AttachmentPicker } from "./AttachmentPicker";
 import { cn } from "../ui";
 
 interface CompanyOption {
@@ -20,7 +22,14 @@ export function PostForm({
   mode: "create" | "edit";
   admin: boolean;
   companies: CompanyOption[];
-  initial?: { id: number; category: BoardCategory; title: string; body: string; companyId: string | null };
+  initial?: {
+    id: number;
+    category: BoardCategory;
+    title: string;
+    body: string;
+    companyId: string | null;
+    attachments?: Attachment[];
+  };
 }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(
     mode === "create" ? createPost : updatePost,
@@ -28,6 +37,7 @@ export function PostForm({
   );
   const [title, setTitle] = useState(initial?.title ?? "");
   const [body, setBody] = useState(initial?.body ?? "");
+  const [uploading, setUploading] = useState(false);
   const groups = [...new Set(companies.map((c) => c.group))];
   const maxBody = admin ? 20000 : 5000;
 
@@ -120,6 +130,8 @@ export function PostForm({
         )}
       </label>
 
+      <AttachmentPicker initial={initial?.attachments} onBusyChange={setUploading} />
+
       {!admin && (
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block">
@@ -151,8 +163,8 @@ export function PostForm({
       {state.error && <p className="rounded-md bg-ev-doc-soft p-3 type-caption text-ev-doc">{state.error}</p>}
 
       <div className="flex justify-end gap-2">
-        <button type="submit" disabled={pending} className={cn("btn btn-primary", pending && "opacity-60")}>
-          {pending ? "등록 중…" : mode === "create" ? "등록" : "수정"}
+        <button type="submit" disabled={pending || uploading} className={cn("btn btn-primary", (pending || uploading) && "opacity-60")}>
+          {uploading ? "첨부 올리는 중…" : pending ? "등록 중…" : mode === "create" ? "등록" : "수정"}
         </button>
       </div>
     </form>

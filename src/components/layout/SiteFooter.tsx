@@ -9,15 +9,9 @@ const GROUPS = [
     links: [
       { href: "/", label: "채용 캘린더" },
       { href: "/companies", label: "기관 정보·경쟁률" },
-      { href: "/guide", label: "필기 가이드" },
-    ],
-  },
-  {
-    title: "기관 분류",
-    links: [
-      { href: "/companies", label: "금융공기업·공공기관" },
-      { href: "/companies", label: "공제회·중앙회" },
-      { href: "/companies", label: "시중은행·캐피탈" },
+      { href: "/magazine", label: "매거진" },
+      { href: "/reviews", label: "필기 후기" },
+      { href: "/board", label: "콩밭" },
     ],
   },
   {
@@ -33,7 +27,7 @@ const GROUPS = [
 export function SiteFooter() {
   return (
     <footer className="mt-24 border-t border-hairline bg-canvas type-caption text-ink-mute">
-      <div className="mx-auto grid max-w-[1200px] gap-8 px-6 py-16 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-[1200px] gap-8 px-6 py-16 md:grid-cols-[2fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-2">
             <Logo className="h-7 w-7" />

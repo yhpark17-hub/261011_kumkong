@@ -53,7 +53,7 @@ async function EditForm({ rawId }: { rawId: string }) {
             mode="edit"
             admin={admin}
             companies={companyOptions()}
-            initial={{ id: post.id, category: post.category, title: post.title, body: post.body, companyId: post.companyId }}
+            initial={{ id: post.id, category: post.category, title: post.title, body: post.body, companyId: post.companyId, attachments: post.attachments }}
           />
         </Card>
       )}

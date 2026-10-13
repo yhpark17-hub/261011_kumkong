@@ -59,3 +59,28 @@ export function ModerationForm({
 export function RowCheck({ id }: { id: number }) {
   return <input type="checkbox" name="ids" value={id} className="mt-1 h-4 w-4 shrink-0 accent-[#533afd]" aria-label={`${id}번 선택`} />;
 }
+
+/** data-confirm 버튼을 확인 창으로 거르는 일반 폼 (매거진·제안 목록 등) */
+export function ConfirmForm({
+  action,
+  children,
+  className,
+}: {
+  action: (fd: FormData) => Promise<void>;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <form
+      action={action}
+      className={className}
+      onSubmit={(e) => {
+        const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+        const message = submitter?.dataset.confirm;
+        if (message && !window.confirm(message)) e.preventDefault();
+      }}
+    >
+      {children}
+    </form>
+  );
+}

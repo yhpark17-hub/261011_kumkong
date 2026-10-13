@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
-import { BadgeCheck, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Download, FileText, Image as ImageIcon, MessageSquare, Paperclip } from "lucide-react";
+import { formatBytes, type Attachment } from "@/lib/attachments";
 import { CATEGORY_LABEL, PAGE_SIZE, boardHref, formatPostTime, type BoardCategory, type PostSummary } from "@/lib/board-meta";
 import { getCompany } from "@/lib/data";
 import { cn } from "../ui";
@@ -108,6 +109,15 @@ export function PostTable({
   );
 }
 
+/** 목록에서 사진·파일 첨부 표시 */
+function AttachmentMark({ post, className }: { post: PostSummary; className?: string }) {
+  if (post.hasImage)
+    return <ImageIcon className={cn("h-3.5 w-3.5 shrink-0 text-ink-mute", className)} strokeWidth={1.75} aria-label="사진 첨부" />;
+  if (post.hasFile)
+    return <Paperclip className={cn("h-3.5 w-3.5 shrink-0 text-ink-mute", className)} strokeWidth={1.75} aria-label="파일 첨부" />;
+  return null;
+}
+
 function PostRow({ post: p, todayKey, pinned = false }: { post: PostSummary; todayKey: string; pinned?: boolean }) {
   const href = `/board/${p.id}`;
   const time = formatPostTime(p.createdAt, todayKey);
@@ -139,6 +149,7 @@ function PostRow({ post: p, todayKey, pinned = false }: { post: PostSummary; tod
           <span className={cn("truncate group-hover:underline", pinned || p.isAdmin ? "!font-normal text-ink" : "text-ink")}>
             {p.title}
           </span>
+          <AttachmentMark post={p} />
           {p.commentCount > 0 && (
             <span className="shrink-0 tabular type-caption text-primary-text">[{p.commentCount}]</span>
           )}
@@ -157,6 +168,7 @@ function PostRow({ post: p, todayKey, pinned = false }: { post: PostSummary; tod
           {pinned ? <span className="tag mt-0.5 bg-brand-dark text-on-primary">공지</span> : <CategoryTag category={p.category} />}
           <span className={cn("min-w-0 flex-1 type-body-md text-ink", (pinned || p.isAdmin) && "!font-normal")}>
             {p.title}
+            <AttachmentMark post={p} className="ml-1 inline-block align-[-2px]" />
             {p.commentCount > 0 && (
               <span className="ml-1 inline-flex items-center gap-0.5 tabular type-caption text-primary-text">
                 <MessageSquare className="h-3 w-3" strokeWidth={1.75} />
@@ -185,12 +197,14 @@ export function Pagination({
   total,
   page,
   hrefFor,
+  pageSize = PAGE_SIZE,
 }: {
   total: number;
   page: number;
   hrefFor: (page: number) => string;
+  pageSize?: number;
 }) {
-  const last = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const last = Math.max(1, Math.ceil(total / pageSize));
   if (last <= 1) return null;
   const start = Math.floor((page - 1) / 10) * 10 + 1;
   const end = Math.min(last, start + 9);
@@ -342,4 +356,59 @@ export function PostBody({ body, rich }: { body: string; rich: boolean }) {
   }
   flush();
   return <div className="space-y-4 [overflow-wrap:anywhere]">{blocks}</div>;
+}
+
+/* ------------------------------------------------------------------ */
+/* 첨부 — 사진은 본문 아래 크게, 파일은 내려받기 목록                         */
+/* ------------------------------------------------------------------ */
+
+export function PostAttachments({ items }: { items: Attachment[] }) {
+  if (!items.length) return null;
+  const images = items.filter((a) => a.kind === "image");
+  const files = items.filter((a) => a.kind === "file");
+  return (
+    <div className="space-y-4">
+      {images.length > 0 && (
+        <div className="space-y-3">
+          {images.map((a) => (
+            <a key={a.url} href={a.url} target="_blank" rel="noopener noreferrer" className="block" title="원본 보기">
+              {/* eslint-disable-next-line @next/next/no-img-element -- 사용자가 올린 사진 (크기를 미리 알 수 없음) */}
+              <img
+                src={a.url}
+                alt={a.name}
+                loading="lazy"
+                decoding="async"
+                className="mx-auto max-h-[720px] w-auto max-w-full rounded-md border border-hairline"
+              />
+            </a>
+          ))}
+        </div>
+      )}
+      {files.length > 0 && (
+        <div className="rounded-md border border-hairline">
+          <p className="flex items-center gap-1.5 border-b border-hairline px-4 py-2 type-caption text-ink-secondary">
+            <Paperclip className="h-3.5 w-3.5" strokeWidth={1.75} />
+            첨부파일 {files.length}개
+          </p>
+          <ul className="divide-y divide-hairline">
+            {files.map((a) => (
+              <li key={a.url}>
+                <a
+                  href={a.url}
+                  download={a.name}
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-canvas-soft"
+                >
+                  <FileText className="h-4 w-4 shrink-0 text-ink-mute" strokeWidth={1.75} />
+                  <span className="min-w-0 flex-1 truncate type-body-md text-ink">{a.name}</span>
+                  <span className="shrink-0 tabular type-caption text-ink-mute">{formatBytes(a.size)}</span>
+                  <Download className="h-4 w-4 shrink-0 text-primary-text" strokeWidth={1.75} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
 }

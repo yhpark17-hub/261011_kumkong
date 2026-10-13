@@ -2,6 +2,7 @@
 
 import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { parseAttachments } from "@/lib/attachments";
 import { isBoardCategory } from "@/lib/board-meta";
 import { getCompany } from "@/lib/data";
 import { getPostSecret, incrementViews } from "@/lib/server/board";
@@ -54,6 +55,7 @@ export async function createPost(_prev: ActionState, fd: FormData): Promise<Acti
   const nickname = admin ? ADMIN_NICKNAME : str(fd, "nickname") || "ㅇㅇ";
   const password = str(fd, "password");
   const notice = admin && fd.get("notice") === "on";
+  const attachments = parseAttachments(fd.get("attachments"));
 
   if (!isBoardCategory(category) || (category === "notice" && !admin)) return { ok: false, error: "말머리를 골라 주세요." };
   if (title.length < 2 || title.length > LIMITS.title) return { ok: false, error: `제목은 2~${LIMITS.title}자로 적어 주세요.` };
@@ -74,13 +76,14 @@ export async function createPost(_prev: ActionState, fd: FormData): Promise<Acti
   const client = await db();
   const now = Date.now();
   const res = await client.execute({
-    sql: `INSERT INTO posts (category, company_id, title, body, nickname, pw_hash, ip_hash, ip_prefix, is_admin, is_notice, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO posts (category, company_id, title, body, attachments, nickname, pw_hash, ip_hash, ip_prefix, is_admin, is_notice, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       category,
       companyId,
       title,
       body,
+      JSON.stringify(attachments),
       nickname,
       admin ? null : hashPassword(password),
       who.hash,
@@ -107,6 +110,7 @@ export async function updatePost(_prev: ActionState, fd: FormData): Promise<Acti
   const title = str(fd, "title");
   const body = str(fd, "body");
   const category = str(fd, "category");
+  const attachments = parseAttachments(fd.get("attachments"));
   if (!Number.isInteger(id)) return { ok: false, error: "잘못된 요청입니다." };
   const admin = await isAdmin();
   if (!isBoardCategory(category) || (category === "notice" && !admin)) return { ok: false, error: "말머리를 골라 주세요." };
@@ -121,8 +125,8 @@ export async function updatePost(_prev: ActionState, fd: FormData): Promise<Acti
 
   const client = await db();
   await client.execute({
-    sql: "UPDATE posts SET title = ?, body = ?, category = ?, updated_at = ? WHERE id = ?",
-    args: [title, body, category, Date.now(), id],
+    sql: "UPDATE posts SET title = ?, body = ?, attachments = ?, category = ?, updated_at = ? WHERE id = ?",
+    args: [title, body, JSON.stringify(attachments), category, Date.now(), id],
   });
   revalidatePath("/board");
   redirect(`/board/${id}`);

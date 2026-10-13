@@ -1,5 +1,7 @@
 /** 콩밭(익명 게시판) 공통 정보 — 서버·클라이언트 모두에서 사용 */
 
+import type { Attachment } from "./attachments";
+
 export type BoardCategory = "free" | "question" | "info" | "review" | "notice";
 
 export const BOARD_NAME = "콩밭";
@@ -53,6 +55,10 @@ export interface PostSummary {
   views: number;
   likes: number;
   commentCount: number;
+  /** 사진 첨부 여부 (목록 아이콘용) */
+  hasImage: boolean;
+  /** 사진 외 파일 첨부 여부 */
+  hasFile: boolean;
   status: number;
   createdAt: number;
 }
@@ -60,6 +66,7 @@ export interface PostSummary {
 export interface PostDetail extends PostSummary {
   body: string;
   reports: number;
+  attachments: Attachment[];
 }
 
 export interface CommentItem {

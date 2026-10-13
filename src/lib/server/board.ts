@@ -1,10 +1,11 @@
 import "server-only";
 import type { Row } from "@libsql/client";
 import { PAGE_SIZE, isBoardCategory, type BoardCategory, type CommentItem, type PostDetail, type PostSummary } from "../board-meta";
+import { parseAttachments } from "../attachments";
 import { STATUS, db } from "./db";
 
-const SUMMARY_COLS =
-  "id, category, company_id, title, nickname, ip_prefix, is_admin, is_notice, views, likes, comment_count, status, created_at";
+const SUMMARY_COLS = `id, category, company_id, title, nickname, ip_prefix, is_admin, is_notice, views, likes, comment_count, status, created_at,
+  instr(attachments, '"kind":"image"') > 0 AS has_image, instr(attachments, '"kind":"file"') > 0 AS has_file`;
 
 function toSummary(r: Row): PostSummary {
   return {
@@ -19,6 +20,8 @@ function toSummary(r: Row): PostSummary {
     views: Number(r.views),
     likes: Number(r.likes),
     commentCount: Number(r.comment_count),
+    hasImage: Boolean(r.has_image),
+    hasFile: Boolean(r.has_file),
     status: Number(r.status),
     createdAt: Number(r.created_at),
   };
@@ -76,12 +79,12 @@ export async function listPosts(opts: {
 export async function getPost(id: number): Promise<PostDetail | null> {
   const client = await db();
   const res = await client.execute({
-    sql: `SELECT ${SUMMARY_COLS}, body, reports FROM posts WHERE id = ? AND status != ?`,
+    sql: `SELECT ${SUMMARY_COLS}, body, reports, attachments FROM posts WHERE id = ? AND status != ?`,
     args: [id, STATUS.deleted],
   });
   const r = res.rows[0];
   if (!r) return null;
-  return { ...toSummary(r), body: String(r.body), reports: Number(r.reports) };
+  return { ...toSummary(r), body: String(r.body), reports: Number(r.reports), attachments: parseAttachments(r.attachments) };
 }
 
 export async function getPostSecret(id: number): Promise<{ pwHash: string | null; isAdmin: boolean } | null> {

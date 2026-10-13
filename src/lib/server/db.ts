@@ -1,6 +1,7 @@
 import "server-only";
 import { mkdirSync } from "node:fs";
 import type { Client } from "@libsql/client";
+import { seedMagazine } from "./magazine-seed";
 
 /**
  * 게시판(콩밭)·필기 후기 DB
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS posts (
   comment_count INTEGER NOT NULL DEFAULT 0,
   reports INTEGER NOT NULL DEFAULT 0,
   status INTEGER NOT NULL DEFAULT 0,
+  attachments TEXT NOT NULL DEFAULT '[]',
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
@@ -126,12 +128,85 @@ CREATE INDEX IF NOT EXISTS idx_views_day ON page_views (day);
 CREATE INDEX IF NOT EXISTS idx_views_at ON page_views (at);
 CREATE INDEX IF NOT EXISTS idx_views_path ON page_views (path, day);
 
+-- 업로드 기록 (도배 방지용 사용량 집계)
+CREATE TABLE IF NOT EXISTS uploads (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ip_hash TEXT NOT NULL,
+  url TEXT NOT NULL,
+  size INTEGER NOT NULL,
+  purpose TEXT NOT NULL,
+  at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_uploads_ip ON uploads (ip_hash, at);
+
 -- 운영자가 차단한 작성자 (IP 해시 기준)
 CREATE TABLE IF NOT EXISTS bans (
   ip_hash TEXT PRIMARY KEY,
   reason TEXT,
   sample TEXT,
   created_at INTEGER NOT NULL
+);
+
+-- 매거진 (운영진 글·데일리 브리핑·웹툰)
+-- status: 0 = 임시저장, 1 = 발행 (published_at 이 미래면 예약 발행)
+CREATE TABLE IF NOT EXISTS articles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  category TEXT NOT NULL,
+  title TEXT NOT NULL,
+  summary TEXT NOT NULL DEFAULT '',
+  cover_url TEXT,
+  body TEXT NOT NULL,
+  tags TEXT NOT NULL DEFAULT '',
+  author TEXT NOT NULL DEFAULT '금콩 에디터',
+  read_minutes INTEGER NOT NULL DEFAULT 1,
+  status INTEGER NOT NULL DEFAULT 0,
+  featured INTEGER NOT NULL DEFAULT 0,
+  source TEXT NOT NULL DEFAULT 'admin',
+  published_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  views INTEGER NOT NULL DEFAULT 0,
+  likes INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_articles_pub ON articles (status, published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_articles_cat ON articles (category, status, published_at DESC);
+
+CREATE TABLE IF NOT EXISTS article_likes (
+  article_id INTEGER NOT NULL,
+  voter TEXT NOT NULL,
+  PRIMARY KEY (article_id, voter)
+);
+
+-- 자동 점검(클라우드 에이전트)이 올린 제안 — 운영자가 승인·거절해야 사이트에 반영
+-- status: 0 = 검토 대기, 1 = 승인(반영 대기), 2 = 반영 완료, 3 = 거절, 4 = 반영 실패
+CREATE TABLE IF NOT EXISTS proposals (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  kind TEXT NOT NULL,
+  title TEXT NOT NULL,
+  analysis TEXT NOT NULL,
+  company_id TEXT,
+  feedback_id INTEGER,
+  options TEXT NOT NULL DEFAULT '[]',
+  recommended TEXT,
+  sources TEXT NOT NULL DEFAULT '[]',
+  confidence TEXT,
+  dedupe_key TEXT UNIQUE,
+  run_id TEXT,
+  status INTEGER NOT NULL DEFAULT 0,
+  choice TEXT,
+  admin_note TEXT,
+  result TEXT,
+  created_at INTEGER NOT NULL,
+  decided_at INTEGER,
+  applied_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_proposals_status ON proposals (status, id DESC);
+
+-- 작은 설정값 (시드 여부, 마지막 자동 점검 시각 등)
+CREATE TABLE IF NOT EXISTS kv (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
 );
 `;
 
@@ -140,6 +215,8 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   // 섹션별 못 푼(찍은) 문항 수 구간, 응시자가 알려 준 총 문항 수 — 2026-10 추가
   { table: "exam_reviews", column: "unsolved", ddl: "ALTER TABLE exam_reviews ADD COLUMN unsolved TEXT NOT NULL DEFAULT '{}'" },
   { table: "exam_reviews", column: "totals", ddl: "ALTER TABLE exam_reviews ADD COLUMN totals TEXT NOT NULL DEFAULT '{}'" },
+  // 콩밭 글 첨부(사진·파일) — 2026-10 추가
+  { table: "posts", column: "attachments", ddl: "ALTER TABLE posts ADD COLUMN attachments TEXT NOT NULL DEFAULT '[]'" },
 ];
 
 async function migrate(c: Client) {
@@ -148,6 +225,7 @@ async function migrate(c: Client) {
     const info = await c.execute(`PRAGMA table_info(${m.table})`);
     if (!info.rows.some((r) => r.name === m.column)) await c.execute(m.ddl);
   }
+  await seedMagazine(c);
 }
 
 /** status: 0 = 공개, 1 = 숨김(신고 누적·운영자), 2 = 삭제 */
@@ -156,7 +234,7 @@ export const STATUS = { visible: 0, hidden: 1, deleted: 2 } as const;
 const LOCAL_URL = "file:data/kumkong.db";
 
 /** Vercel 같은 서버리스 환경은 디스크가 읽기 전용이라 로컬 SQLite 파일을 쓸 수 없습니다 */
-function serverless(): boolean {
+export function serverless(): boolean {
   return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 }
 

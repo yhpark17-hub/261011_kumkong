@@ -12,7 +12,7 @@ const NAV = [
   { href: "/companies", label: "기관 정보·경쟁률" },
   { href: "/reviews", label: "필기 후기" },
   { href: "/board", label: "콩밭" },
-  { href: "/guide", label: "필기 가이드" },
+  { href: "/magazine", label: "매거진" },
 ] as const;
 
 /* 스크롤 위치: 메시 위에서는 투명, 내려가면 canvas 배경 (nav-bar-on-mesh) */

@@ -18,7 +18,6 @@ import {
 import { FeedbackButton } from "@/components/feedback/Feedback";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { FavoriteButton } from "@/components/client-ui";
-import { AddToCalendarButton } from "@/components/company/AddToCalendarButton";
 import { CompanyCommunity, CompanyCommunitySkeleton } from "@/components/company/CompanyCommunity";
 import { DbSection } from "@/components/db/DbSection";
 import { RecruitTimeline } from "@/components/company/RecruitTimeline";
@@ -184,7 +183,6 @@ function CompanyContent({ id }: { id: string }) {
             <RecruitTimeline recruitment={recruitment} />
             {recruitment.note && <p className="mt-4 type-caption text-ink-mute">※ {recruitment.note}</p>}
             <SourceNote recruitment={recruitment} />
-            <AddToCalendarButton company={company} recruitment={recruitment} className="mt-6 w-full sm:w-auto" />
           </Card>
 
           <Card className="p-6 md:p-8">

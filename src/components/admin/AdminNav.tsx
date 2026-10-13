@@ -13,6 +13,8 @@ import {
   LayoutDashboard,
   MessageSquare,
   MessageSquareWarning,
+  Newspaper,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "../ui";
@@ -20,8 +22,10 @@ import { cn } from "../ui";
 export const ADMIN_NAV: { href: string; label: string; icon: LucideIcon; group: string }[] = [
   { href: "/admin", label: "대시보드", icon: LayoutDashboard, group: "개요" },
   { href: "/admin/analytics", label: "방문 통계", icon: BarChart3, group: "개요" },
+  { href: "/admin/proposals", label: "AI 검토 제안", icon: Sparkles, group: "받은 것" },
   { href: "/admin/feedback", label: "제보·의견", icon: MessageSquareWarning, group: "받은 것" },
   { href: "/admin/reports", label: "신고", icon: Flag, group: "받은 것" },
+  { href: "/admin/magazine", label: "매거진", icon: Newspaper, group: "콘텐츠" },
   { href: "/admin/posts", label: "콩밭 글", icon: FileText, group: "콘텐츠" },
   { href: "/admin/comments", label: "댓글", icon: MessageSquare, group: "콘텐츠" },
   { href: "/admin/reviews", label: "필기 후기", icon: ClipboardList, group: "콘텐츠" },

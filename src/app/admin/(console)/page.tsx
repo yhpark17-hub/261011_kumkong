@@ -11,6 +11,8 @@ import { getCompany } from "@/lib/data";
 import { FEEDBACK_KINDS } from "@/lib/feedback-meta";
 import { OVERALL_OPTIONS } from "@/lib/review-meta";
 import { adminPosts, adminReviews, dashboardCounts, requireAdmin } from "@/lib/server/admin";
+import { magazineAdminCounts } from "@/lib/server/magazine";
+import { proposalCounts } from "@/lib/server/proposals";
 import { activeNow, daily, lastDays, previousRange, summary } from "@/lib/server/analytics";
 import { ISSUE_META, scheduleIssues, type IssueKey } from "@/lib/server/data-check";
 import { listFeedback } from "@/lib/server/feedback";
@@ -32,7 +34,7 @@ async function Dashboard() {
   await requireAdmin();
   const today = lastDays(1);
   const week = lastDays(7);
-  const [counts, now, sToday, sYesterday, sWeek, sPrevWeek, days, feedback, posts, reviews] = await Promise.all([
+  const [counts, now, sToday, sYesterday, sWeek, sPrevWeek, days, feedback, posts, reviews, proposals, mag] = await Promise.all([
     dashboardCounts(),
     activeNow(),
     summary(today),
@@ -43,6 +45,8 @@ async function Dashboard() {
     listFeedback(),
     adminPosts({ status: "all", page: 1 }),
     adminReviews({ status: "all", textOnly: true, page: 1 }),
+    proposalCounts(),
+    magazineAdminCounts(),
   ]);
   const issues = scheduleIssues();
   const issueKeys = (Object.keys(ISSUE_META) as IssueKey[]).filter((k) => issues.counts[k] > 0);
@@ -87,6 +91,25 @@ async function Dashboard() {
         />
         <StatTile label="24시간 새 글·댓글" value={`${nf.format(counts.posts24)} · ${nf.format(counts.comments24)}`} sub="콩밭" href="/admin/posts" />
         <StatTile label="24시간 새 필기 후기" value={nf.format(counts.reviews24)} sub={`누적 ${nf.format(counts.reviews)}건`} href="/admin/reviews" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <StatTile
+          label="AI 검토 제안"
+          value={nf.format(proposals.pending)}
+          tone={proposals.pending ? "alert" : "default"}
+          sub={proposals.failed ? `반영 실패 ${proposals.failed}건` : proposals.approved ? `반영 대기 ${proposals.approved}건` : "승인 대기"}
+          href="/admin/proposals"
+        />
+        <StatTile
+          label="오늘 브리핑"
+          value={mag.briefingToday ? "발행됨" : "아직"}
+          tone={mag.briefingToday ? "default" : "alert"}
+          sub={mag.auto ? `자동 초안 ${mag.auto}개 검토 대기` : "매거진"}
+          href={mag.auto ? "/admin/magazine?filter=auto" : mag.briefingToday ? "/admin/magazine" : "/admin/magazine/new?template=briefing"}
+        />
+        <StatTile label="매거진 공개 글" value={nf.format(mag.published)} sub={mag.scheduled ? `예약 ${mag.scheduled}개` : "전체"} href="/admin/magazine" />
+        <StatTile label="매거진 임시저장" value={nf.format(mag.draft)} sub="작성 중" href="/admin/magazine?filter=draft" />
       </div>
 
       <AdminCard title="최근 7일 방문자" aside={<Link href="/admin/analytics" className="link type-caption">자세히 보기</Link>}>

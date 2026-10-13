@@ -7,7 +7,7 @@ import { ArrowLeft, BadgeCheck, BarChart3, EyeOff, PenLine } from "lucide-react"
 import { AdSlot } from "@/components/ads/AdSlot";
 import { ModerationBar } from "@/components/board/ModerationBar";
 import { DbSection } from "@/components/db/DbSection";
-import { AuthorLabel, CategoryTag, PostBody } from "@/components/board/parts";
+import { AuthorLabel, CategoryTag, PostAttachments, PostBody } from "@/components/board/parts";
 import {
   CommentForm,
   DeleteCommentButton,
@@ -165,6 +165,11 @@ async function PostView({ rawId }: { rawId: string }) {
 
         <div className="px-6 py-8 md:px-8 md:py-10">
           <PostBody body={post.body} rich={post.isAdmin} />
+          {post.attachments.length > 0 && (
+            <div className="mt-8">
+              <PostAttachments items={post.attachments} />
+            </div>
+          )}
         </div>
 
         <div className="flex justify-center pb-8">

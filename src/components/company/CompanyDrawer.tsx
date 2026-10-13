@@ -17,7 +17,6 @@ import { formatLong } from "@/lib/date";
 import { useTodayKey } from "@/lib/hooks";
 import { FeedbackButton } from "../feedback/Feedback";
 import { FavoriteButton } from "../client-ui";
-import { AddToCalendarButton } from "./AddToCalendarButton";
 import { BlindBadge, CategoryBadge, CompanyAvatar, cn } from "../ui";
 import { RecruitTimeline } from "./RecruitTimeline";
 import { EssayList, ExamDetail, QuickFacts, SectionTitle, SourceNote, TracksDetail } from "./sections";
@@ -109,7 +108,7 @@ export function CompanyDrawer({ companyId, onClose }: { companyId: string; onClo
           )}
 
           <section>
-            <SectionTitle icon={CalendarClock} aside={<AddToCalendarButton company={company} recruitment={recruitment} small />}>
+            <SectionTitle icon={CalendarClock}>
               전형 일정
             </SectionTitle>
             <RecruitTimeline recruitment={recruitment} />
