@@ -20,7 +20,7 @@ export async function AdminBar({ className }: { className?: string }) {
       <span>운영자로 로그인 중이에요. 지금 쓰는 글·댓글은 운영자로 표시됩니다.</span>
       <span className="ml-auto flex items-center gap-3">
         {newFeedback > 0 && (
-          <Link href="/admin#feedback" className="tag bg-ruby tabular text-on-primary">
+          <Link href="/admin/feedback" className="tag bg-ruby tabular text-on-primary">
             새 제보 {newFeedback}
           </Link>
         )}

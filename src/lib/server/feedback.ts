@@ -24,13 +24,13 @@ function toItem(r: Row): FeedbackItem {
 }
 
 /** 운영자 화면: 새 제보 전부 + 최근 처리한 것 일부 */
-export async function listFeedback(): Promise<{ open: FeedbackItem[]; done: FeedbackItem[] }> {
+export async function listFeedback(doneLimit = 20): Promise<{ open: FeedbackItem[]; done: FeedbackItem[] }> {
   const client = await db();
   const [open, done] = await Promise.all([
     client.execute({ sql: "SELECT * FROM feedback WHERE status = ? ORDER BY id DESC LIMIT 200", args: [FEEDBACK_STATUS.open] }),
     client.execute({
-      sql: "SELECT * FROM feedback WHERE status = ? ORDER BY handled_at DESC LIMIT 20",
-      args: [FEEDBACK_STATUS.done],
+      sql: "SELECT * FROM feedback WHERE status = ? ORDER BY handled_at DESC LIMIT ?",
+      args: [FEEDBACK_STATUS.done, doneLimit],
     }),
   ]);
   return { open: open.rows.map(toItem), done: done.rows.map(toItem) };

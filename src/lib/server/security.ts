@@ -145,6 +145,15 @@ export async function rateLimit(action: string, ipHashValue: string, cooldownSec
   return true;
 }
 
+/** 운영자가 차단한 작성자인지 (bans 테이블, IP 해시 기준) */
+export async function isBanned(ipHashValue: string): Promise<boolean> {
+  const client = await db();
+  const res = await client.execute({ sql: "SELECT 1 FROM bans WHERE ip_hash = ?", args: [ipHashValue] });
+  return res.rows.length > 0;
+}
+
+export const BANNED_MESSAGE = "운영정책 위반으로 글쓰기가 제한되었어요. 문의는 '의견 보내기'로 해 주세요.";
+
 const BANNED = ["시발", "씨발", "ㅅㅂ", "병신", "ㅂㅅ", "좆", "개새끼", "느금", "니애미", "니미", "섹스", "토토", "카지노", "바카라"];
 const RESERVED_NICK = /운영자|관리자|금콩|admin|운영진/i;
 

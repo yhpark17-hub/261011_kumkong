@@ -108,6 +108,31 @@ CREATE TABLE IF NOT EXISTS feedback (
   handled_at INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_feedback_status ON feedback (status, id DESC);
+
+-- 방문 통계 (자체 수집) — IP 는 저장하지 않고, 브라우저별 무작위 ID 만 씁니다
+CREATE TABLE IF NOT EXISTS page_views (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  view_id TEXT NOT NULL UNIQUE,
+  at INTEGER NOT NULL,
+  day TEXT NOT NULL,
+  path TEXT NOT NULL,
+  visitor TEXT NOT NULL,
+  session TEXT NOT NULL,
+  referrer TEXT,
+  device TEXT NOT NULL,
+  duration_ms INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_views_day ON page_views (day);
+CREATE INDEX IF NOT EXISTS idx_views_at ON page_views (at);
+CREATE INDEX IF NOT EXISTS idx_views_path ON page_views (path, day);
+
+-- 운영자가 차단한 작성자 (IP 해시 기준)
+CREATE TABLE IF NOT EXISTS bans (
+  ip_hash TEXT PRIMARY KEY,
+  reason TEXT,
+  sample TEXT,
+  created_at INTEGER NOT NULL
+);
 `;
 
 /** 이미 만들어진 DB 에 나중에 추가한 열 (없으면 ALTER TABLE 로 붙입니다) */

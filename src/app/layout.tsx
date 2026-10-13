@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { GradientMesh } from "@/components/layout/GradientMesh";
 import { FeedbackFab, FeedbackHost } from "@/components/feedback/Feedback";
+import { Tracker } from "@/components/analytics/Tracker";
 import { ADSENSE_CLIENT, SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -72,6 +73,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteFooter />
         <FeedbackFab />
         <FeedbackHost />
+        <Tracker />
         {ADSENSE_CLIENT && (
           <Script
             id="adsbygoogle-init"

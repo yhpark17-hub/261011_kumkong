@@ -6,7 +6,16 @@ import { todayKST } from "@/lib/date";
 import { OVERALL_OPTIONS, STYLE_OPTIONS, TIME_OPTIONS, UNSOLVED_OPTIONS } from "@/lib/review-meta";
 import { db } from "@/lib/server/db";
 import { getExam } from "@/lib/server/reviews";
-import { LIMITS, containsBanned, rateLimit, requester, tooManyLinks, voterToken } from "@/lib/server/security";
+import {
+  BANNED_MESSAGE,
+  LIMITS,
+  containsBanned,
+  isBanned,
+  rateLimit,
+  requester,
+  tooManyLinks,
+  voterToken,
+} from "@/lib/server/security";
 
 export type ReviewActionState = { ok: boolean; error?: string; updated?: boolean };
 
@@ -61,6 +70,7 @@ export async function submitReview(_prev: ReviewActionState, fd: FormData): Prom
   if (tooManyLinks(text)) return { ok: false, error: "링크는 2개까지만 넣을 수 있어요." };
 
   const who = await requester();
+  if (await isBanned(who.hash)) return { ok: false, error: BANNED_MESSAGE };
   if (!(await rateLimit("review", who.hash, 8))) return { ok: false, error: "잠시 후 다시 시도해 주세요." };
 
   const voter = await voterToken(true);

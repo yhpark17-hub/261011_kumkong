@@ -8,10 +8,12 @@ import { getPostSecret, incrementViews } from "@/lib/server/board";
 import { STATUS, db } from "@/lib/server/db";
 import {
   AUTO_HIDE_REPORTS,
+  BANNED_MESSAGE,
   LIMITS,
   containsBanned,
   hashPassword,
   isAdmin,
+  isBanned,
   isReservedNickname,
   rateLimit,
   requester,
@@ -64,6 +66,7 @@ export async function createPost(_prev: ActionState, fd: FormData): Promise<Acti
   }
 
   const who = await requester();
+  if (!admin && (await isBanned(who.hash))) return { ok: false, error: BANNED_MESSAGE };
   if (!admin && !(await rateLimit("post", who.hash, 30))) {
     return { ok: false, error: "글은 30초에 한 번 쓸 수 있어요. 잠시 후 다시 시도해 주세요." };
   }
@@ -165,6 +168,7 @@ export async function addComment(_prev: ActionState, fd: FormData): Promise<Acti
   if (!post.rows.length) return { ok: false, error: "댓글을 달 수 없는 글이에요." };
 
   const who = await requester();
+  if (!admin && (await isBanned(who.hash))) return { ok: false, error: BANNED_MESSAGE };
   if (!admin && !(await rateLimit("comment", who.hash, 10))) {
     return { ok: false, error: "댓글은 10초에 한 번 쓸 수 있어요." };
   }
@@ -227,6 +231,8 @@ export async function reportItem(type: ReportTarget, id: number, reason: string)
   if (!table || !Number.isInteger(id)) return { ok: false, already: false };
   const client = await db();
   const who = await requester();
+  // 차단된 사용자의 신고는 받지 않음 (신고 누적으로 남의 글을 숨기는 것 방지)
+  if (await isBanned(who.hash)) return { ok: false, already: false };
   const ins = await client.execute({
     sql: "INSERT OR IGNORE INTO reports (target_type, target_id, reporter, reason, created_at) VALUES (?, ?, ?, ?, ?)",
     args: [type, id, who.hash, reason.slice(0, 100) || null, Date.now()],
