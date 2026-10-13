@@ -126,9 +126,14 @@ export function SiteHeader() {
           <Suspense fallback={<NavItems pathname={null} variant="mobile" onNavigate={close} />}>
             <ActiveNavItems variant="mobile" onNavigate={close} />
           </Suspense>
-          <FeedbackButton kind="posting" onOpen={close} className="btn btn-primary mt-6 w-full">
-            공고 제보하기
-          </FeedbackButton>
+          <div className="mt-6 grid grid-cols-2 gap-2">
+            <FeedbackButton kind="posting" onOpen={close} className="btn btn-primary">
+              공고 제보하기
+            </FeedbackButton>
+            <FeedbackButton kind="site" onOpen={close} className="btn btn-toggle">
+              의견 보내기
+            </FeedbackButton>
+          </div>
         </nav>
       )}
     </header>

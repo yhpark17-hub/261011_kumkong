@@ -104,7 +104,7 @@ function CompanyContent({ id }: { id: string }) {
       </Link>
 
       {/* 히어로 */}
-      <header className="mt-6 flex flex-col gap-6 md:flex-row md:items-end">
+      <header className="mt-6 flex flex-col gap-6 md:flex-row md:items-start">
         {company.wideLogo && !company.logo ? (
           <span className="inline-flex h-16 items-center self-start rounded-lg border border-hairline bg-[#ffffff] px-4">
             <Image
@@ -150,7 +150,7 @@ function CompanyContent({ id }: { id: string }) {
             )}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 md:self-end">
           <FavoriteButton companyId={company.id} companyName={company.name} withLabel />
           {postingHref && (
             <a href={postingHref} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-sm">

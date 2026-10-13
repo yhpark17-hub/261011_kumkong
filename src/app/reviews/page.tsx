@@ -34,9 +34,9 @@ export default function ReviewsPage() {
       <p className="mt-4 max-w-2xl type-body-lg text-ink-secondary">
         다들 쉬웠다는데 나만 어려웠을까? 시험 본 사람들의 체감 난이도와 과목별 후기를 숫자로 확인하세요.
       </p>
-      <ul className="mt-8 grid gap-3 md:grid-cols-3">
+      <ul className="mt-6 grid gap-2 md:mt-8 md:grid-cols-3 md:gap-3">
         {STEPS.map(({ icon: Icon, title, desc }) => (
-          <li key={title} className="flex gap-3 rounded-lg bg-canvas-soft p-4">
+          <li key={title} className="flex gap-3 rounded-lg bg-canvas-soft px-4 py-3 md:p-4">
             <Icon className="mt-0.5 h-5 w-5 shrink-0 text-primary-text" strokeWidth={1.75} />
             <span>
               <span className="block type-body-md !font-normal text-ink">{title}</span>

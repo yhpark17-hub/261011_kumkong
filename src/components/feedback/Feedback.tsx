@@ -73,11 +73,10 @@ export function FeedbackFab() {
   return (
     <FeedbackButton
       kind="site"
-      className="fixed right-4 bottom-4 z-40 inline-flex h-11 items-center gap-2 rounded-full border border-hairline bg-canvas px-4 type-button-sm text-ink-secondary shadow-level-2 transition-colors hover:text-primary-text md:right-6 md:bottom-6"
+      className="fixed right-6 bottom-6 z-40 hidden h-11 items-center gap-2 rounded-full border border-hairline bg-canvas px-4 type-button-sm text-ink-secondary shadow-level-2 transition-colors hover:text-primary-text md:inline-flex"
     >
       <MessageSquarePlus className="h-4 w-4" strokeWidth={1.75} />
-      <span className="hidden sm:inline">의견 보내기</span>
-      <span className="sr-only sm:hidden">금콩에 의견 보내기</span>
+      의견 보내기
     </FeedbackButton>
   );
 }

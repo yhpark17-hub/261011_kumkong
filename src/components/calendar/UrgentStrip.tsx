@@ -93,7 +93,7 @@ export function UrgentStrip({
 
       <div
         ref={scroller}
-        className="no-scrollbar -mx-4 mt-6 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 md:-mx-6 md:scroll-px-6 md:px-6"
+        className="no-scrollbar fade-x -mx-4 mt-6 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 md:-mx-6 md:scroll-px-6 md:px-6"
       >
         {!today &&
           Array.from({ length: 5 }, (_, i) => (

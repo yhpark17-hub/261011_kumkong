@@ -55,9 +55,10 @@ export function HomeDashboard({ catalog }: { catalog: Catalog }) {
     <>
       <UrgentStrip today={today} events={filtered} onOpen={setOpenCompany} />
 
-      <AdSlot slot={AD_SLOTS.homeTop} variant="leaderboard" className="my-8" />
+      {/* 간격은 광고가 아닌 본문이 가집니다 — 광고가 없을 때도 붙지 않게 */}
+      <AdSlot slot={AD_SLOTS.homeTop} variant="leaderboard" className="mt-8" />
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_304px]">
+      <div className="mt-8 grid gap-8 md:mt-10 lg:grid-cols-[minmax(0,1fr)_304px]">
         <section aria-label="채용 달력" className="min-w-0 space-y-4">
           <CalendarHeader
             ym={ym}

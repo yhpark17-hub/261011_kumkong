@@ -427,6 +427,15 @@
   }
 }
 
+/* 가로로 넘기는 영역: 양 끝을 부드럽게 흐려 '잘린' 느낌 대신 '더 있음'을 알려 줌 (안쪽 여백 16px 은 그대로 보임) */
+@utility fade-x {
+  mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 48px), transparent 100%);
+}
+/* md 이상에서 줄바꿈되는 칩 줄은 흐림을 끔 */
+@utility fade-x-none {
+  mask-image: none;
+}
+
 /* 가로 스크롤 영역의 스크롤바 숨김 (스와이프는 유지) */
 .no-scrollbar {
   scrollbar-width: none;

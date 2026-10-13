@@ -1,9 +1,11 @@
 "use client";
 
-import { CalendarDays, ChevronLeft, ChevronRight, List, RotateCcw, Search, Star } from "lucide-react";
+import { useState } from "react";
+import { CalendarDays, ChevronLeft, ChevronRight, List, Plus, RotateCcw, Search, Star } from "lucide-react";
 import type { YearMonth } from "@/lib/date";
 import { CATEGORY_META, CATEGORY_ORDER, EVENT_FILTER_ORDER, EVENT_META, MAJOR_META } from "@/lib/meta";
 import type { Category, EventType, MajorType } from "@/lib/types";
+import { PRIMARY_CATEGORIES } from "../CategoryChips";
 import { cn } from "../ui";
 import { ALL_TYPES, DEFAULT_FILTERS, isDefaultFilters, type Filters } from "./filters";
 
@@ -90,6 +92,11 @@ export function FilterBar({
   favoriteCount: number;
 }) {
   const set = (patch: Partial<Filters>) => onChange({ ...filters, ...patch });
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const visibleCategories = CATEGORY_ORDER.filter(
+    (c) => showAllCategories || PRIMARY_CATEGORIES.includes(c) || filters.categories.includes(c),
+  );
+  const hiddenCategories = CATEGORY_ORDER.length - visibleCategories.length;
 
   const toggleCategory = (c: Category) =>
     set({
@@ -109,7 +116,7 @@ export function FilterBar({
   return (
     <div className="space-y-3">
       {/* 검색 + 조건 */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
         <label className="relative min-w-[200px] flex-1 md:max-w-xs">
           <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-ink-mute" strokeWidth={1.75} />
           <span className="sr-only">기관명 검색</span>
@@ -121,11 +128,12 @@ export function FilterBar({
             className="input w-full !pl-9"
           />
         </label>
+        <div className="no-scrollbar fade-x -mx-4 flex items-center gap-2 overflow-x-auto px-4 md:mx-0 md:overflow-visible md:px-0 md:fade-x-none">
         <button
           type="button"
           onClick={() => set({ favoritesOnly: !filters.favoritesOnly })}
           aria-pressed={filters.favoritesOnly}
-          className={cn("btn btn-sm", filters.favoritesOnly ? "btn-on-dark" : "btn-toggle")}
+          className={cn("btn btn-sm shrink-0", filters.favoritesOnly ? "btn-on-dark" : "btn-toggle")}
         >
           <Star className={cn("h-4 w-4", filters.favoritesOnly && "fill-lemon text-lemon")} strokeWidth={1.75} />
           관심기관만
@@ -134,7 +142,7 @@ export function FilterBar({
         <select
           value={filters.major}
           onChange={(e) => set({ major: e.target.value as MajorType | "all" })}
-          className="input"
+          className="input shrink-0"
           aria-label="전공 시험 유형"
         >
           <option value="all">전공 전체</option>
@@ -148,7 +156,7 @@ export function FilterBar({
           type="button"
           onClick={() => set({ blindOnly: !filters.blindOnly })}
           aria-pressed={filters.blindOnly}
-          className={cn("btn btn-sm", filters.blindOnly ? "btn-on-dark" : "btn-toggle")}
+          className={cn("btn btn-sm shrink-0", filters.blindOnly ? "btn-on-dark" : "btn-toggle")}
         >
           블라인드만
         </button>
@@ -156,16 +164,17 @@ export function FilterBar({
           <button
             type="button"
             onClick={() => onChange(DEFAULT_FILTERS)}
-            className="btn btn-sm text-primary-text hover:bg-canvas-soft"
+            className="btn btn-sm shrink-0 text-primary-text hover:bg-canvas-soft"
           >
             <RotateCcw className="h-4 w-4" strokeWidth={1.75} />
             초기화
           </button>
         )}
+        </div>
       </div>
 
-      {/* 기관 분류 */}
-      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
+      {/* 기관 분류 — 대표 4개 + 더보기 */}
+      <div className="no-scrollbar fade-x -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:fade-x-none">
         <button
           type="button"
           onClick={() => set({ categories: [] })}
@@ -174,7 +183,7 @@ export function FilterBar({
         >
           전체
         </button>
-        {CATEGORY_ORDER.map((c) => (
+        {visibleCategories.map((c) => (
           <button
             key={c}
             type="button"
@@ -185,10 +194,29 @@ export function FilterBar({
             {CATEGORY_META[c].label}
           </button>
         ))}
+        {hiddenCategories > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowAllCategories(true)}
+            className="btn btn-sm btn-toggle shrink-0 !border-dashed text-primary-text"
+          >
+            <Plus className="h-4 w-4" strokeWidth={1.75} />
+            더보기 <span className="tabular opacity-60">{hiddenCategories}</span>
+          </button>
+        )}
+        {showAllCategories && (
+          <button
+            type="button"
+            onClick={() => setShowAllCategories(false)}
+            className="btn btn-sm btn-toggle shrink-0 text-ink-mute"
+          >
+            접기
+          </button>
+        )}
       </div>
 
       {/* 일정 유형 (범례 겸 필터) — pill tag */}
-      <div className="no-scrollbar -mx-4 flex items-center gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
+      <div className="no-scrollbar fade-x -mx-4 flex items-center gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:fade-x-none">
         {EVENT_FILTER_ORDER.map((t) => {
           const m = EVENT_META[t];
           const on = filters.types.includes(t);

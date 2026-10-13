@@ -60,7 +60,8 @@ export function CategoryChips({
   const hiddenCount = rest.length - shownRest.length;
 
   return (
-    <div className="flex flex-wrap gap-2">
+    // 휴대폰: 한 줄로 밀어서 보기 / 넓은 화면: 줄바꿈
+    <div className="no-scrollbar fade-x -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:fade-x-none">
       <FilterChip active={value === "all"} onClick={() => onChange("all")}>
         전체 <span className="tabular opacity-60">{total}</span>
       </FilterChip>
