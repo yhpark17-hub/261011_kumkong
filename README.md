@@ -103,6 +103,16 @@ node scripts/merge-research.mjs research1.json research2.json --report report.tx
 
 날짜 형식, 전형 순서 역전, 라벨 없는 중복 단계, 경쟁률(지원자÷채용) 불일치를 자동 검사하고 확인할 항목을 리포트로 남깁니다.
 
+### 최신 일정 업데이트 (기관 일부만)
+
+필기 날짜 추가, 새 하반기 공고 반영처럼 일부 기관만 고칠 때는 업데이트 파일을 씁니다.
+
+```bash
+node scripts/apply-updates.mjs updates1.json updates2.json --report report.txt
+```
+
+입력은 `[{ id, found, isNewCycle, recruitment: { title, period, events, tracks, ... }, verification: { primarySource, confidence }, changes }]` 형식이고, 결과는 `src/data/generated/recruitment-updates.json`에 쌓입니다. 화면에는 이 파일이 직접 정리한 데이터·리서치 데이터보다 우선합니다. 일정은 새로 확인한 목록으로 바뀌고, 직렬·인원·자소서 문항은 새 값이 없으면 기존 값을 유지합니다. 기존 일정이 빠지거나 출처가 충돌하면 리포트에 남습니다.
+
 ### 로고
 
 ```bash

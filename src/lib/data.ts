@@ -6,6 +6,7 @@ import { COMPANIES as CURATED_COMPANIES } from "@/data/companies";
 import { DATA_UPDATED_AT, RECRUITMENTS as CURATED_RECRUITMENTS } from "@/data/recruitments";
 import generatedCompanies from "@/data/generated/companies.json";
 import generatedRecruitments from "@/data/generated/recruitments.json";
+import recruitmentUpdates from "@/data/generated/recruitment-updates.json";
 import logoManifest from "@/data/logos.json";
 import wideLogoManifest from "@/data/logos-wide.json";
 import { CATEGORY_META, CATEGORY_ORDER } from "./meta";
@@ -25,9 +26,18 @@ export const COMPANIES: Company[] = [
   ...(generatedCompanies as unknown as Company[]).filter((c) => !curatedIds.has(c.id)),
 ].map((c) => ({ ...c, logo: LOGOS[c.id], wideLogo: WIDE_LOGOS[c.id] }));
 
-export const RECRUITMENTS: Recruitment[] = [
+/** 최신 일정 업데이트 (scripts/apply-updates.mjs) — 직접 정리·리서치 데이터보다 우선 */
+const UPDATES = new Map((recruitmentUpdates as unknown as Recruitment[]).map((r) => [r.companyId, r]));
+
+const BASE_RECRUITMENTS: Recruitment[] = [
   ...CURATED_RECRUITMENTS,
   ...(generatedRecruitments as unknown as Recruitment[]).filter((r) => !curatedIds.has(r.companyId)),
+];
+
+export const RECRUITMENTS: Recruitment[] = [
+  ...BASE_RECRUITMENTS.map((r) => UPDATES.get(r.companyId) ?? r),
+  // 기존 채용 정보가 없던 기관의 새 공고
+  ...[...UPDATES.values()].filter((u) => !BASE_RECRUITMENTS.some((r) => r.companyId === u.companyId)),
 ];
 
 const companyMap = new Map(COMPANIES.map((c) => [c.id, c]));

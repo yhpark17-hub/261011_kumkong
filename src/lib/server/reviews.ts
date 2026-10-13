@@ -90,6 +90,8 @@ export function listExams(): ExamInfo[] {
     if (!c) continue;
     for (const e of r.events) {
       if (e.type !== "written") continue;
+      // AI역량검사처럼 문제를 푸는 시험이 아닌 온라인 검사는 달력에만 표시하고 후기 투표는 열지 않습니다
+      if (e.label && /AI\s*역량|역량검사/.test(e.label) && !/필기|NCS|직무|인적성|코딩/.test(e.label)) continue;
       const { stage, rest } = e.label ? { stage: e.label, rest: e.note } : splitStage(e.note);
       const scope = (stage && labelScope(stage)) || companyScope(c);
       exams.push({
