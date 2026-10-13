@@ -5,8 +5,8 @@ import { computeReadMinutes, isMagazineCategory, kstDateKey, parseTags } from "@
 
 /**
  * 매거진 초안 올리기 (데일리 브리핑 등) — 항상 '임시저장 · 자동 초안'으로만 들어가고,
- * 운영자가 확인·수정한 뒤 발행해야 공개됩니다. 같은 날 같은 카테고리 자동 초안은 하나만.
- * body: { category, title, summary, body, tags? }
+ * 운영자가 확인·수정한 뒤 발행해야 공개됩니다. 같은 날·같은 판(edition)의 자동 초안은 하나만.
+ * body: { category, title, summary, body, tags?, edition?: "morning" | "noon" }
  */
 export async function POST(req: Request) {
   if (!automationAuthorized(req)) return unauthorized();
@@ -23,9 +23,10 @@ export async function POST(req: Request) {
 
   const client = await db();
   const now = Date.now();
-  const key = `auto-draft:${category}:${kstDateKey(now)}`;
+  const edition = b?.edition === "morning" || b?.edition === "noon" ? b.edition : "daily";
+  const key = `auto-draft:${category}:${kstDateKey(now)}:${edition}`;
   const claim = await client.execute({ sql: "INSERT OR IGNORE INTO kv (key, value, updated_at) VALUES (?, '', ?)", args: [key, now] });
-  if (!claim.rowsAffected) return json({ skipped: true, reason: "오늘 같은 카테고리 자동 초안이 이미 있어요" });
+  if (!claim.rowsAffected) return json({ skipped: true, reason: "오늘 같은 판의 자동 초안이 이미 있어요" });
 
   const res = await client.execute({
     sql: `INSERT INTO articles (category, title, summary, body, tags, author, read_minutes, status, featured, source, created_at, updated_at)

@@ -69,6 +69,31 @@ export async function lastRun(): Promise<RunInfo | null> {
   }
 }
 
+/** 이번 실행에서 점검한 기관 기록 — 하루 여러 번 돌아도 같은 기관을 반복 조사하지 않게 */
+export async function recordChecked(companyIds: string[]): Promise<void> {
+  const ids = [...new Set(companyIds.filter((id) => typeof id === "string" && getCompany(id)))].slice(0, 50);
+  if (!ids.length) return;
+  const client = await db();
+  const now = Date.now();
+  await client.batch(
+    ids.map((id) => ({
+      sql: "INSERT INTO kv (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
+      args: [`checked:${id}`, new Date(now).toISOString(), now],
+    })),
+    "write",
+  );
+}
+
+/** 최근 7일 안에 점검한 기관 → 마지막 점검 시각(ISO) */
+export async function recentlyChecked(): Promise<Record<string, string>> {
+  const client = await db();
+  const res = await client.execute({
+    sql: "SELECT key, value FROM kv WHERE key LIKE 'checked:%' AND updated_at > ?",
+    args: [Date.now() - 7 * 86_400_000],
+  });
+  return Object.fromEntries(res.rows.map((r) => [String(r.key).slice("checked:".length), String(r.value)]));
+}
+
 export function setupStatus() {
   const gh = githubConfig();
   return {

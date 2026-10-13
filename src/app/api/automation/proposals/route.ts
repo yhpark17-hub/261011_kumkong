@@ -1,11 +1,11 @@
 import { revalidatePath } from "next/cache";
-import { automationAuthorized, json, recordRun, unauthorized } from "@/lib/server/automation";
+import { automationAuthorized, json, recordChecked, recordRun, unauthorized } from "@/lib/server/automation";
 import { dbConfigured } from "@/lib/server/db";
 import { saveIncomingProposals } from "@/lib/server/proposals";
 
 /**
  * 제안 올리기 — 사이트는 바뀌지 않고, 운영자 화면(AI 검토 제안)에 쌓입니다.
- * body: { runId?, run?: { summary, checked?, drafts? }, proposals: Proposal[] }
+ * body: { runId?, run?: { summary, checked?, drafts?, checkedCompanies?: string[] }, proposals: Proposal[] }
  */
 export async function POST(req: Request) {
   if (!automationAuthorized(req)) return unauthorized();
@@ -27,6 +27,8 @@ export async function POST(req: Request) {
       drafts: n(run.drafts),
     });
   }
+  // 변경이 없었던 기관도 '점검함'으로 기록 (다음 실행에서 건너뛰도록)
+  if (run && Array.isArray(run.checkedCompanies)) await recordChecked(run.checkedCompanies.filter((x): x is string => typeof x === "string"));
   revalidatePath("/admin/proposals");
   revalidatePath("/admin");
   return json({ results });

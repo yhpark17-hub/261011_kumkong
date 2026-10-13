@@ -192,11 +192,16 @@ export function msToKstInput(ms: number): string {
 export const TEMPLATES: { key: string; label: string; category: MagazineCategory; title: string; summary: string; body: string }[] = [
   {
     key: "briefing",
-    label: "데일리 브리핑",
+    label: "아침 브리핑",
     category: "briefing",
-    title: "M월 D일 데일리 브리핑",
+    title: "M월 D일 아침 브리핑",
     summary: "오늘 꼭 알아야 할 금융 뉴스 한 줄\n오늘의 시사 이슈 한 줄\n금공 채용·기관 소식 한 줄",
-    body: `## 금융
+    body: `## 오늘의 채용 일정
+
+- [기관 이름](/companies/기관id) 서류 마감 18:00
+- [기관 이름](/companies/기관id) 필기시험
+
+## 금융
 
 ### 뉴스 제목
 무슨 일이 있었는지 2~3문장으로 정리해 주세요.
@@ -224,6 +229,38 @@ export const TEMPLATES: { key: string; label: string; category: MagazineCategory
 
 > [!용어] 용어 이름
 > 한두 문장 정의와 관련 예시
+`,
+  },
+  {
+    key: "briefing-noon",
+    label: "점심 브리핑",
+    category: "briefing",
+    title: "M월 D일 점심 브리핑",
+    summary: "오전에 나온 핵심 뉴스 한 줄\n금공 준비생이 챙길 소식 한 줄\n오늘의 면접 질문 한 줄",
+    body: `## 오전 주요 뉴스
+
+### 뉴스 제목
+요약 2~3문장
+
+> [!포인트] 필기·면접 포인트
+> 왜 중요한지 한두 문장
+
+출처: [언론사 이름](https://)
+
+## 금공 소식
+
+### 기관 이름 · 소식 제목
+요약
+
+출처: [기관 보도자료](https://)
+
+## 오늘의 면접 질문
+
+> [!요약] 질문
+> 오늘 뉴스와 연결해 나올 법한 면접 질문
+
+- 답변 뼈대 1
+- 답변 뼈대 2
 `,
   },
   {
