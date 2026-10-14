@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { GradientMesh } from "@/components/layout/GradientMesh";
 import { FeedbackFab, FeedbackHost } from "@/components/feedback/Feedback";
 import { Tracker } from "@/components/analytics/Tracker";
-import { ADSENSE_CLIENT, SITE } from "@/lib/site";
+import { ADSENSE_CLIENT, OG_IMAGE, SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -36,8 +36,9 @@ export const metadata: Metadata = {
     siteName: SITE.name,
     title: SITE.title,
     description: SITE.description,
+    images: [OG_IMAGE],
   },
-  twitter: { card: "summary_large_image", title: SITE.title, description: SITE.description },
+  twitter: { card: "summary_large_image", title: SITE.title, description: SITE.description, images: [OG_IMAGE.url] },
   alternates: { canonical: "/" },
   ...(ADSENSE_CLIENT ? { other: { "google-adsense-account": ADSENSE_CLIENT } } : {}),
 };

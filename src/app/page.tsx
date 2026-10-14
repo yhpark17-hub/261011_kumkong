@@ -4,6 +4,7 @@ import { HomeDashboard } from "@/components/calendar/HomeDashboard";
 import { DbSection } from "@/components/db/DbSection";
 import { CommunityStrip, CommunityStripSkeleton } from "@/components/home/CommunityStrip";
 import { MagazineStrip, MagazineStripSkeleton } from "@/components/home/MagazineStrip";
+import { NewPostingsTicker, NewPostingsTickerSkeleton } from "@/components/home/NewPostingsTicker";
 import { CompanyAvatar, Eyebrow } from "@/components/ui";
 import { COMPANIES, buildCatalog, getRecruitment, sortedEvents } from "@/lib/data";
 import { formatRange } from "@/lib/date";
@@ -12,6 +13,10 @@ import { CATEGORY_META, CATEGORY_ORDER, EVENT_META } from "@/lib/meta";
 export default function Home() {
   return (
     <>
+      <Suspense fallback={<NewPostingsTickerSkeleton />}>
+        <NewPostingsTicker />
+      </Suspense>
+
       {/* 히어로 — 그라디언트 메시 위 */}
       <div className="mx-auto max-w-[1200px] px-4 pt-8 pb-8 md:px-6 md:pt-12">
         <Eyebrow>2026 하반기 금융권 채용</Eyebrow>

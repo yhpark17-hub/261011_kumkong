@@ -352,7 +352,7 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
                 onChange={(e) => isMagazineCategory(e.target.value) && set("category", e.target.value)}
                 className="input w-full"
               >
-                {MAGAZINE_CATEGORIES.map((c) => (
+                {MAGAZINE_CATEGORIES.filter((c) => !c.hidden || c.key === initial.category).map((c) => (
                   <option key={c.key} value={c.key}>
                     {c.label}
                   </option>
@@ -363,7 +363,7 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
               <span className="mb-1 block type-caption text-ink-secondary">틀 불러오기</span>
               <select value="" onChange={(e) => applyTemplate(e.target.value)} className="input w-full">
                 <option value="">틀을 고르면 본문 구조가 채워져요</option>
-                {TEMPLATES.map((t) => (
+                {TEMPLATES.filter((t) => !CATEGORY_INFO[t.category].hidden).map((t) => (
                   <option key={t.key} value={t.key}>
                     {t.label}
                   </option>

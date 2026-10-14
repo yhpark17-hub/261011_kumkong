@@ -406,6 +406,13 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    /* 휴대폰에서 무엇이 조금 넘쳐도 옆으로 밀리며 오른쪽 여백이 생기지 않게 (sticky 는 그대로 동작) */
+    overflow-x: clip;
+  }
+
+  /* 그리드 칸이 긴 기관명·한 줄 말줄임 글자 때문에 화면보다 넓어지지 않게 (min-w-* 유틸리티가 있으면 그쪽이 우선) */
+  :where(.grid) > * {
+    min-width: 0;
   }
 
   /* body: body-md(15px/300/1.4) + ss01 전역 */
@@ -442,6 +449,31 @@
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* 홈 '신규 공고' 띠: 같은 목록을 두 번 이어 붙여 끊김 없이 왼쪽으로 흐름 */
+@keyframes kk-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.kk-marquee {
+  animation: kk-marquee 40s linear infinite;
+}
+.kk-ticker:hover .kk-marquee,
+.kk-ticker:focus-within .kk-marquee {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kk-marquee {
+    animation: none;
+  }
+  .kk-ticker-viewport {
+    overflow-x: auto;
+  }
 }
 
 @keyframes kk-fade-in {

@@ -14,14 +14,16 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import {
+  BLOG_CATEGORIES,
   CATEGORY_INFO,
-  MAGAZINE_CATEGORIES,
+  SECTION_INFO,
   articleHref,
   formatArticleDate,
   magazineHref,
   summaryLines,
   type ArticleSummary,
   type MagazineCategory,
+  type MagazineSection,
 } from "@/lib/magazine-meta";
 import { cn } from "../ui";
 import { ReadBadge } from "./interactive";
@@ -116,7 +118,7 @@ export function ArticleRow({ a, rank }: { a: ArticleSummary; rank?: number }) {
   );
 }
 
-/** 카테고리 칩 줄 */
+/** 금융 블로그 카테고리 칩 줄 */
 export function MagazineCategoryNav({
   active,
   counts,
@@ -126,7 +128,7 @@ export function MagazineCategoryNav({
 }) {
   const chip = "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-2 type-caption transition-colors";
   return (
-    <nav aria-label="매거진 카테고리" className="no-scrollbar fade-x -mx-4 overflow-x-auto px-4 md:fade-x-none md:mx-0 md:px-0">
+    <nav aria-label="금융 블로그 주제" className="no-scrollbar fade-x -mx-4 overflow-x-auto px-4 md:fade-x-none md:mx-0 md:px-0">
       <ul className="flex gap-2 pb-1 md:flex-wrap [&>li]:shrink-0">
         <li>
           <Link
@@ -138,7 +140,7 @@ export function MagazineCategoryNav({
             전체
           </Link>
         </li>
-        {MAGAZINE_CATEGORIES.map((c) => {
+        {BLOG_CATEGORIES.map((c) => {
           const Icon = CATEGORY_ICON[c.key];
           const n = counts.get(c.key) ?? 0;
           const on = active === c.key;
@@ -175,5 +177,34 @@ export function SectionHead({ title, desc, href, linkLabel = "더 보기" }: { t
         </Link>
       )}
     </div>
+  );
+}
+
+/** 매거진 두 섹션 탭: 데일리 브리핑 / 금융 블로그 */
+export function MagazineSectionTabs({ active }: { active: MagazineSection }) {
+  const tabs: { key: MagazineSection; Icon: LucideIcon }[] = [
+    { key: "briefing", Icon: Newspaper },
+    { key: "blog", Icon: BookOpen },
+  ];
+  return (
+    <nav aria-label="매거진 섹션" className="grid grid-cols-2 gap-2 rounded-xl bg-canvas-soft p-1.5 sm:inline-grid sm:w-auto">
+      {tabs.map(({ key, Icon }) => {
+        const on = key === active;
+        return (
+          <Link
+            key={key}
+            href={SECTION_INFO[key].href}
+            aria-current={on ? "page" : undefined}
+            className={cn(
+              "flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 type-button-md transition-colors sm:px-6",
+              on ? "bg-canvas text-ink shadow-level-1" : "text-ink-mute hover:text-ink",
+            )}
+          >
+            <Icon className="h-4 w-4" strokeWidth={1.75} />
+            {SECTION_INFO[key].label}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

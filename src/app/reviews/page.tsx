@@ -7,7 +7,7 @@ import { DbSection } from "@/components/db/DbSection";
 import { Eyebrow } from "@/components/ui";
 import { diffDays, todayKST } from "@/lib/date";
 import { PRIORITY_DAYS, type ExamInfo } from "@/lib/review-meta";
-import { examCounts, listExams } from "@/lib/server/reviews";
+import { examActivity, examCounts, listExams } from "@/lib/server/reviews";
 
 export const metadata: Metadata = {
   title: "필기 후기 — 금융공기업·공공기관 필기 체감 난이도 투표",
@@ -34,13 +34,14 @@ export default function ReviewsPage() {
       <p className="mt-4 max-w-2xl type-body-lg text-ink-secondary">
         다들 쉬웠다는데 나만 어려웠을까? 시험 본 사람들의 체감 난이도와 과목별 후기를 숫자로 확인하세요.
       </p>
-      <ul className="mt-6 grid gap-2 md:mt-8 md:grid-cols-3 md:gap-3">
+      {/* 휴대폰에서는 한 줄로 짧게 — 오늘 시험(LIVE)이 화면 위쪽에 보이도록 */}
+      <ul className="mt-6 grid grid-cols-3 gap-2 md:mt-8 md:gap-3">
         {STEPS.map(({ icon: Icon, title, desc }) => (
-          <li key={title} className="flex gap-3 rounded-lg bg-canvas-soft px-4 py-3 md:p-4">
-            <Icon className="mt-0.5 h-5 w-5 shrink-0 text-primary-text" strokeWidth={1.75} />
+          <li key={title} className="flex flex-col items-center gap-1.5 rounded-lg bg-canvas-soft px-2 py-3 text-center md:flex-row md:items-start md:gap-3 md:p-4 md:text-left">
+            <Icon className="h-5 w-5 shrink-0 text-primary-text md:mt-0.5" strokeWidth={1.75} />
             <span>
-              <span className="block type-body-md !font-normal text-ink">{title}</span>
-              <span className="mt-1 block type-caption text-ink-secondary">{desc}</span>
+              <span className="block type-caption !font-normal text-ink md:type-body-md">{title}</span>
+              <span className="mt-1 hidden type-caption text-ink-secondary md:block">{desc}</span>
             </span>
           </li>
         ))}
@@ -93,7 +94,7 @@ function toCard(e: ExamInfo): ExamCardData {
 async function ExamLists() {
   await connection();
   const today = todayKST();
-  const counts = await examCounts();
+  const [counts, activity] = await Promise.all([examCounts(), examActivity()]);
   const all = listExams();
   // 지난 시험: 최근 순, 참여가 있는 시험은 1년이 지나도 남김
   const past = all.filter((e) => !e.expected && e.date <= today && (diffDays(e.date, today) <= 365 || counts.has(e.id)));
@@ -104,6 +105,7 @@ async function ExamLists() {
       past={past.map(toCard)}
       upcoming={upcoming.map(toCard)}
       counts={Object.fromEntries(counts)}
+      activity={activity}
       today={today}
     />
   );

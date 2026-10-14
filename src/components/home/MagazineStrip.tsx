@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { ArrowRight, Newspaper } from "lucide-react";
-import { BriefingStreak, UnreadDot } from "@/components/magazine/interactive";
+import { UnreadDot } from "@/components/magazine/interactive";
+import { BriefingEmpty } from "@/components/magazine/sections";
 import { ArticleRow } from "@/components/magazine/parts";
 import { formatDayHeading } from "@/lib/date";
-import { MAGAZINE_NAME, articleHref, kstDateKey, summaryLines } from "@/lib/magazine-meta";
+import { BLOG_CATEGORIES, SECTION_INFO, articleHref, kstDateKey, summaryLines } from "@/lib/magazine-meta";
 import { listArticles } from "@/lib/server/magazine";
 
 /** 홈: 오늘의 브리핑 + 매거진 새 글 */
@@ -12,7 +13,7 @@ export async function MagazineStrip() {
   await connection();
   const [briefing, latest] = await Promise.all([
     listArticles({ category: "briefing", pageSize: 1 }),
-    listArticles({ excludeCategory: "briefing", pageSize: 3 }),
+    listArticles({ categories: BLOG_CATEGORIES.map((c) => c.key), pageSize: 3 }),
   ]);
   const today = briefing.items[0];
   if (!today && latest.items.length === 0) return null;
@@ -51,13 +52,13 @@ export async function MagazineStrip() {
           </span>
         </Link>
       ) : (
-        <BriefingStreak />
+        <BriefingEmpty />
       )}
 
       <div className="rounded-xl border border-hairline p-6">
         <div className="flex items-center justify-between">
-          <h2 className="type-heading-md text-ink">{MAGAZINE_NAME}</h2>
-          <Link href="/magazine" className="link inline-flex items-center gap-1 type-caption">
+          <h2 className="type-heading-md text-ink">{SECTION_INFO.blog.label}</h2>
+          <Link href={SECTION_INFO.blog.href} className="link inline-flex items-center gap-1 type-caption">
             전체
             <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.75} />
           </Link>

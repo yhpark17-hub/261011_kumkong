@@ -20,6 +20,12 @@ export const SITE = {
   contactEmail: "contact@example.com",
 } as const;
 
+/**
+ * 카카오톡·SNS 공유 썸네일 (public/og/kumkong.png, 1200×630)
+ * 페이지별로 openGraph 를 덮어쓰면 상위 이미지가 사라지므로 각 페이지에서도 함께 넣습니다.
+ */
+export const OG_IMAGE = { url: "/og/kumkong.png", width: 1200, height: 630, alt: "금콩 · 금융공기업·공공기관 채용 캘린더" } as const;
+
 /** Google AdSense 퍼블리셔 ID (예: ca-pub-1234567890123456). 비어 있으면 광고 대신 자리표시만 보입니다. */
 export const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT ?? "";
 

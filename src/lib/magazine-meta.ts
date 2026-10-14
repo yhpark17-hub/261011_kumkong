@@ -25,6 +25,8 @@ export interface CategoryInfo {
   tone: string;
   /** 카드 표지가 없을 때 쓰는 그라디언트 시작 색 */
   cover: string;
+  /** 지금은 사이트에 보이지 않는 카테고리 (목록·메뉴·글쓰기에서 숨김) */
+  hidden?: boolean;
 }
 
 export const MAGAZINE_CATEGORIES: CategoryInfo[] = [
@@ -76,6 +78,7 @@ export const MAGAZINE_CATEGORIES: CategoryInfo[] = [
     desc: "먼저 합격한 사람들이 들려주는 준비 과정",
     tone: "bg-ev-doc-soft text-ev-doc",
     cover: "from-ev-doc-soft",
+    hidden: true,
   },
   {
     key: "insider",
@@ -90,6 +93,7 @@ export const MAGAZINE_CATEGORIES: CategoryInfo[] = [
     desc: "가볍게 읽는 금공 준비생 이야기",
     tone: "bg-canvas-soft text-ink-secondary",
     cover: "from-canvas-soft",
+    hidden: true,
   },
 ];
 
@@ -101,6 +105,28 @@ export const CATEGORY_INFO = Object.fromEntries(MAGAZINE_CATEGORIES.map((c) => [
 export function isMagazineCategory(v: unknown): v is MagazineCategory {
   return typeof v === "string" && v in CATEGORY_INFO;
 }
+
+/** 사이트에 보이는 카테고리 */
+export const VISIBLE_CATEGORIES = MAGAZINE_CATEGORIES.filter((c) => !c.hidden);
+/** '금융 블로그' 섹션 = 브리핑을 뺀 보이는 카테고리 */
+export const BLOG_CATEGORIES = VISIBLE_CATEGORIES.filter((c) => c.key !== "briefing");
+
+export function isVisibleCategory(v: unknown): v is MagazineCategory {
+  return isMagazineCategory(v) && !CATEGORY_INFO[v].hidden;
+}
+
+export function isBlogCategory(v: unknown): v is MagazineCategory {
+  return isVisibleCategory(v) && v !== "briefing";
+}
+
+/** 매거진 안의 두 섹션 */
+export type MagazineSection = "briefing" | "blog";
+export const SECTION_INFO: Record<MagazineSection, { label: string; desc: string; href: string }> = {
+  briefing: { label: "데일리 브리핑", desc: "매일 아침·점심, 금융·시사·금공 뉴스의 핵심만 5분 안에", href: "/magazine" },
+  blog: { label: "금융 블로그", desc: "필기·면접·금공 지식, 준비에 바로 쓰는 깊이 있는 글", href: "/magazine/blog" },
+};
+
+export const sectionOf = (category: MagazineCategory): MagazineSection => (category === "briefing" ? "briefing" : "blog");
 
 export interface ArticleSummary {
   id: number;
@@ -130,12 +156,28 @@ export const ARTICLE_STATUS = { draft: 0, published: 1 } as const;
 
 export const articleHref = (id: number) => `/magazine/${id}`;
 
-export function magazineHref({ category, page }: { category?: MagazineCategory | null; page?: number }): string {
+/**
+ * 매거진 목록 주소
+ * - 데일리 브리핑: /magazine (?page=)
+ * - 금융 블로그: /magazine/blog (?c=카테고리&q=검색&page=)
+ */
+export function magazineHref({
+  category,
+  page,
+  q,
+}: {
+  category?: MagazineCategory | null;
+  page?: number;
+  q?: string | null;
+}): string {
   const sp = new URLSearchParams();
-  if (category) sp.set("c", category);
+  const briefing = category === "briefing" && !q;
+  if (category && !briefing) sp.set("c", category);
+  if (q) sp.set("q", q);
   if (page && page > 1) sp.set("page", String(page));
+  const base = briefing ? "/magazine" : "/magazine/blog";
   const qs = sp.toString();
-  return qs ? `/magazine?${qs}` : "/magazine";
+  return qs ? `${base}?${qs}` : base;
 }
 
 /** 한국어 기준 1분에 약 500자 + 사진 한 장 6초 */

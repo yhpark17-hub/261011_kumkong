@@ -2,6 +2,7 @@ import "server-only";
 import type { InValue, Row } from "@libsql/client";
 import {
   MAGAZINE_PAGE_SIZE,
+  VISIBLE_CATEGORIES,
   isMagazineCategory,
   type ArticleDetail,
   type ArticleSummary,
@@ -17,7 +18,9 @@ import { db } from "./db";
 const SUMMARY_COLS =
   "id, category, title, summary, cover_url, tags, author, read_minutes, featured, status, source, published_at, updated_at, views, likes";
 
-const PUBLIC = "status = 1 AND published_at <= ?";
+// 숨긴 카테고리(합격 수기·웹툰 등)는 공개 목록에서 뺌 — 키는 코드 상수라 SQL 에 바로 넣어도 안전
+const VISIBLE_IN = VISIBLE_CATEGORIES.map((c) => `'${c.key}'`).join(", ");
+const PUBLIC = `status = 1 AND published_at <= ? AND category IN (${VISIBLE_IN})`;
 
 function toSummary(r: Row): ArticleSummary {
   const publishedAt = r.published_at == null ? null : Number(r.published_at);
@@ -46,6 +49,8 @@ function toSummary(r: Row): ArticleSummary {
 
 export async function listArticles(opts: {
   category?: MagazineCategory | null;
+  /** 여러 카테고리 중 하나 (예: 금융 블로그 전체) */
+  categories?: MagazineCategory[];
   page?: number;
   pageSize?: number;
   featured?: boolean;
@@ -62,6 +67,9 @@ export async function listArticles(opts: {
   if (opts.category) {
     where.push("category = ?");
     args.push(opts.category);
+  } else if (opts.categories?.length) {
+    where.push(`category IN (${opts.categories.map(() => "?").join(",")})`);
+    args.push(...opts.categories);
   }
   if (opts.excludeCategory) {
     where.push("category != ?");

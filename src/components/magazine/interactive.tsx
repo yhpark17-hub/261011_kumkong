@@ -2,29 +2,23 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
-import { Bookmark, BookmarkCheck, Check, Flame, Heart, Link2, Share2 } from "lucide-react";
+import { Bookmark, BookmarkCheck, Check, Heart, Link2, Share2 } from "lucide-react";
 import { likeArticle, recordArticleView } from "@/app/magazine/actions";
 import {
-  briefingStreak,
-  getBriefDays,
   getRead,
   getSaved,
-  lastWeek,
-  markBriefingDay,
   markRead,
-  serverBriefDays,
   serverRead,
   serverSaved,
   subscribe,
   toggleSaved,
 } from "@/lib/magazine-local";
-import { CATEGORY_INFO, articleHref, isMagazineCategory, kstDateKey } from "@/lib/magazine-meta";
+import { CATEGORY_INFO, articleHref, isMagazineCategory } from "@/lib/magazine-meta";
 import type { Heading } from "./Markdown";
 import { cn } from "../ui";
 
 const useRead = () => useSyncExternalStore(subscribe, getRead, serverRead);
 const useSaved = () => useSyncExternalStore(subscribe, getSaved, serverSaved);
-const useBriefDays = () => useSyncExternalStore(subscribe, getBriefDays, serverBriefDays);
 
 /** 목록 카드의 '읽음' 표시 */
 export function ReadBadge({ id, className }: { id: number; className?: string }) {
@@ -38,17 +32,15 @@ export function ReadBadge({ id, className }: { id: number; className?: string })
   );
 }
 
-/** 글을 열면: 조회수 1회 + 읽은 기록 (브리핑이면 연속 읽기 날짜) */
-export function ViewRecorder({ id, briefingDay }: { id: number; briefingDay: string | null }) {
+/** 글을 열면: 조회수 1회 + 이 브라우저에 '읽음' 기록 */
+export function ViewRecorder({ id }: { id: number }) {
   const done = useRef(false);
   useEffect(() => {
     if (done.current) return;
     done.current = true;
     recordArticleView(id).catch(() => {});
     markRead(id);
-    // 브리핑은 '오늘 읽음'으로 기록 (지난 브리핑을 읽어도 오늘 날짜로 연속 읽기가 이어짐)
-    if (briefingDay) markBriefingDay(kstDateKey(Date.now()));
-  }, [id, briefingDay]);
+  }, [id]);
   return null;
 }
 
@@ -168,61 +160,6 @@ export function ArticleActions({
         {copied ? <Link2 className="h-4 w-4" strokeWidth={1.75} /> : <Share2 className="h-4 w-4" strokeWidth={1.75} />}
         {copied ? "링크 복사됨" : "공유"}
       </button>
-    </div>
-  );
-}
-
-/** 브리핑 연속 읽기 카드 — 매일 돌아올 이유 */
-export function BriefingStreak({ compact = false }: { compact?: boolean }) {
-  const days = useBriefDays();
-  const hydrated = useSyncExternalStore(
-    subscribe,
-    () => true,
-    () => false,
-  );
-  const { streak, readToday } = briefingStreak(days);
-  const week = lastWeek(days);
-  const label = ["일", "월", "화", "수", "목", "금", "토"];
-
-  return (
-    <div className={cn("rounded-xl border border-hairline bg-canvas", compact ? "p-4" : "p-5")}>
-      <div className="flex items-center gap-3">
-        <span
-          className={cn(
-            "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
-            streak > 0 ? "bg-ev-final-soft text-ev-final" : "bg-canvas-soft text-ink-mute-2",
-          )}
-        >
-          <Flame className="h-5 w-5" strokeWidth={1.75} />
-        </span>
-        <div className="min-w-0">
-          <p className={cn("text-ink", compact ? "type-body-md font-semibold" : "type-heading-sm")}>
-            {!hydrated ? "브리핑 연속 읽기" : streak > 0 ? `${streak}일 연속 읽는 중` : "오늘부터 연속 읽기 시작"}
-          </p>
-          <p className="type-caption text-ink-mute">
-            {!hydrated || readToday ? "매일 아침 5분, 금융·시사 감각 유지" : streak > 0 ? "오늘 브리핑을 읽으면 기록이 이어져요" : "브리핑을 읽으면 기록돼요"}
-          </p>
-        </div>
-      </div>
-      <ol className="mt-4 grid grid-cols-7 gap-1.5" aria-label="최근 7일 브리핑 읽기">
-        {week.map((d, i) => {
-          const wd = new Date(`${d.key}T00:00:00Z`).getUTCDay();
-          return (
-            <li key={d.key} className="flex flex-col items-center gap-1">
-              <span
-                className={cn(
-                  "flex h-7 w-full items-center justify-center rounded-md",
-                  hydrated && d.read ? "bg-ev-final text-on-primary" : "bg-canvas-soft text-transparent",
-                  i === 6 && !(hydrated && d.read) && "ring-1 ring-ev-final/40",
-                )}
-              >
-                <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
-              </span>
-              <span className={cn("type-micro", i === 6 ? "text-ink" : "text-ink-mute")}>{i === 6 ? "오늘" : label[wd]}</span>
-            </li>
-          );
-        })}
-      </ol>
     </div>
   );
 }

@@ -9,7 +9,6 @@ import { DbSection } from "@/components/db/DbSection";
 import { Markdown, extractHeadings } from "@/components/magazine/Markdown";
 import {
   ArticleActions,
-  BriefingStreak,
   ReadingProgress,
   SavedArticles,
   TableOfContents,
@@ -21,17 +20,19 @@ import { formatDayHeading } from "@/lib/date";
 import {
   CATEGORY_INFO,
   MAGAZINE_NAME,
+  SECTION_INFO,
   articleHref,
   formatArticleDate,
   kstDateKey,
   magazineHref,
+  sectionOf,
   summaryLines,
   type ArticleSummary,
 } from "@/lib/magazine-meta";
 import { dbConfigured } from "@/lib/server/db";
 import { adjacentArticles, getArticle, relatedArticles } from "@/lib/server/magazine";
 import { isAdmin } from "@/lib/server/security";
-import { AD_SLOTS, SITE } from "@/lib/site";
+import { AD_SLOTS, OG_IMAGE, SITE } from "@/lib/site";
 
 function parseId(raw: string): number | null {
   const n = Number(raw);
@@ -56,7 +57,7 @@ export async function generateMetadata({ params }: PageProps<"/magazine/[id]">):
       modifiedTime: new Date(a.updatedAt).toISOString(),
       section: CATEGORY_INFO[a.category].label,
       tags: a.tags,
-      images: a.coverUrl ? [{ url: a.coverUrl }] : undefined,
+      images: a.coverUrl ? [{ url: a.coverUrl }] : [OG_IMAGE],
     },
   };
 }
@@ -126,7 +127,7 @@ async function ArticleView({ rawId }: { rawId: string }) {
 
   return (
     <>
-      {isPublic && <ViewRecorder id={a.id} briefingDay={isBriefing ? day : null} />}
+      {isPublic && <ViewRecorder id={a.id} />}
       <ReadingProgress targetId="article-body" />
       {isPublic && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
@@ -149,13 +150,19 @@ async function ArticleView({ rawId }: { rawId: string }) {
       )}
 
       <nav aria-label="위치" className="flex items-center gap-1 type-caption text-ink-mute">
-        <Link href="/magazine" className="hover:text-ink hover:underline">
-          {MAGAZINE_NAME}
-        </Link>
+        <span>{MAGAZINE_NAME}</span>
         <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.75} />
-        <Link href={magazineHref({ category: a.category })} className="hover:text-ink hover:underline">
-          {CATEGORY_INFO[a.category].label}
+        <Link href={SECTION_INFO[sectionOf(a.category)].href} className="hover:text-ink hover:underline">
+          {SECTION_INFO[sectionOf(a.category)].label}
         </Link>
+        {!isBriefing && (
+          <>
+            <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.75} />
+            <Link href={magazineHref({ category: a.category })} className="hover:text-ink hover:underline">
+              {CATEGORY_INFO[a.category].label}
+            </Link>
+          </>
+        )}
       </nav>
 
       <div className={cn("mt-6 grid gap-12", toc.length || isBriefing ? "lg:grid-cols-[minmax(0,1fr)_240px] xl:grid-cols-[minmax(0,720px)_280px] xl:justify-between" : "")}>
@@ -286,7 +293,6 @@ async function ArticleView({ rawId }: { rawId: string }) {
         {(toc.length > 0 || isBriefing) && (
           <aside className="hidden lg:block">
             <div className="sticky top-24 space-y-6">
-              {isBriefing && <BriefingStreak compact />}
               {(toc.length > 0 || isBriefing) && headings.length > 0 && <TableOfContents headings={isBriefing ? headings.filter((h) => h.level === 2) : toc} />}
               <div className="rounded-xl border border-hairline p-4">
                 <p className="flex items-center gap-1.5 type-caption font-semibold text-ink">

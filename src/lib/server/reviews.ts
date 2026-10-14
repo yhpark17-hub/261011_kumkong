@@ -138,6 +138,40 @@ export async function examCounts(): Promise<Map<string, { n: number; avg: number
   return new Map(res.rows.map((r) => [String(r.exam_id), { n: Number(r.n), avg: Number(r.avg) }]));
 }
 
+export interface ExamActivity {
+  /** 오늘(한국 시각 0시 이후) 들어온 후기 수 */
+  today: number;
+  /** 최근 1시간 */
+  lastHour: number;
+  /** 마지막 후기가 몇 분 전인지 */
+  lastMinutesAgo: number | null;
+}
+
+/** 지금 참여 중인 느낌을 주는 실제 수치 (최근 3일 안에 들어온 후기만 집계) — connection() 이후 호출 */
+export async function examActivity(): Promise<Record<string, ExamActivity>> {
+  const client = await db();
+  const now = Date.now();
+  const kstMidnight = Math.floor((now + 9 * 3600_000) / 86_400_000) * 86_400_000 - 9 * 3600_000;
+  const res = await client.execute({
+    sql: `SELECT exam_id,
+                 SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) AS today,
+                 SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) AS last_hour,
+                 MAX(created_at) AS last_at
+          FROM exam_reviews WHERE status = ? AND created_at >= ? GROUP BY exam_id`,
+    args: [kstMidnight, now - 3600_000, STATUS.visible, now - 3 * 86_400_000],
+  });
+  return Object.fromEntries(
+    res.rows.map((r) => [
+      String(r.exam_id),
+      {
+        today: Number(r.today ?? 0),
+        lastHour: Number(r.last_hour ?? 0),
+        lastMinutesAgo: r.last_at == null ? null : Math.max(0, Math.round((now - Number(r.last_at)) / 60_000)),
+      },
+    ]),
+  );
+}
+
 function parseJson(raw: unknown): Record<string, number> {
   try {
     const v: unknown = JSON.parse(String(raw ?? "{}"));

@@ -17,7 +17,7 @@ import { ddayLabel, diffDays, formatLong, parseKey, todayKST, weekdayLabel } fro
 import { OVERALL_OPTIONS, resultsPublicFrom, type ExamInfo } from "@/lib/review-meta";
 import { getExam, listExams, myReview, reviewComments, reviewStats } from "@/lib/server/reviews";
 import { isAdmin, voterToken } from "@/lib/server/security";
-import { AD_SLOTS } from "@/lib/site";
+import { AD_SLOTS, OG_IMAGE } from "@/lib/site";
 
 /** "10월 13일(화)" */
 function monthDay(key: string): string {
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PageProps<"/reviews/[examId]"
     title,
     description,
     alternates: { canonical: `/reviews/${exam.id}` },
-    openGraph: { title, description },
+    openGraph: { title, description, images: [OG_IMAGE] },
   };
 }
 
@@ -154,99 +154,116 @@ async function ExamLive({ exam }: { exam: ExamInfo }) {
   const visibleComments = comments.filter((c) => c.status === 0).length;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px]">
-      <section id="review-form" className="scroll-mt-24 lg:order-2" aria-label="후기 남기기">
-        <Card className="p-6 lg:sticky lg:top-24">
-          <h2 className="type-heading-md text-ink">{mine ? "내 후기" : "30초 후기 남기기"}</h2>
-          {!mine && (
-            <p className="mt-1 mb-5 type-caption text-ink-mute">
-              필수 질문은 2개뿐이에요. {inWindow ? "남기면 상세 결과가 바로 열려요." : "남기면 결과에 바로 반영돼요."}
-            </p>
-          )}
-          <div className={mine ? "mt-4" : undefined}>
-            <AttendGate
-              examId={exam.id}
-              question={`${monthDay(exam.date)} ${exam.companyName} ${exam.label}`}
-              hasVoted={Boolean(mine)}
-              inWindow={inWindow}
-              publicFromLabel={publicFromLabel}
-              askPopup={diffDays(exam.date, today) <= 14}
-            >
-              <ReviewForm exam={exam} initial={mine} />
-            </AttendGate>
-          </div>
-        </Card>
-      </section>
-
-      <div className="min-w-0 space-y-6 lg:order-1">
-        <Card className="p-6 md:p-8">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="type-heading-md text-ink">응시자 체감 결과</h2>
-            {inWindow && <span className="tag bg-brand-dark text-on-primary">응시자 우선 공개 · {publicFromLabel}까지</span>}
-          </div>
-          {unlocked ? (
-            <ReviewResults stats={stats} />
+    <>
+      {exam.date === today && (
+        <p className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-ruby/40 bg-ev-doc-soft px-4 py-3 type-body-md text-ink">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-ruby px-2.5 py-0.5 type-caption font-semibold text-on-primary">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-on-primary motion-reduce:animate-none" />
+            LIVE
+          </span>
+          {stats.count > 0 ? (
+            <span>
+              오늘 치른 시험이에요. 지금까지 <span className="tabular font-semibold text-ruby">{stats.count}명</span>이 후기를 남겼어요.
+            </span>
           ) : (
-            <LockedResults count={stats.count} overallAvg={stats.overallAvg} publicFromLabel={publicFromLabel} />
+            <span>오늘 치른 시험이에요. 첫 후기를 남기면 결과를 가장 먼저 볼 수 있어요.</span>
           )}
-        </Card>
+        </p>
+      )}
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px]">
+        <section id="review-form" className="scroll-mt-24 lg:order-2" aria-label="후기 남기기">
+          <Card className="p-6 lg:sticky lg:top-24">
+            <h2 className="type-heading-md text-ink">{mine ? "내 후기" : "30초 후기 남기기"}</h2>
+            {!mine && (
+              <p className="mt-1 mb-5 type-caption text-ink-mute">
+                필수 질문은 2개뿐이에요. {inWindow ? "남기면 상세 결과가 바로 열려요." : "남기면 결과에 바로 반영돼요."}
+              </p>
+            )}
+            <div className={mine ? "mt-4" : undefined}>
+              <AttendGate
+                examId={exam.id}
+                question={`${monthDay(exam.date)} ${exam.companyName} ${exam.label}`}
+                hasVoted={Boolean(mine)}
+                inWindow={inWindow}
+                publicFromLabel={publicFromLabel}
+                askPopup={diffDays(exam.date, today) <= 14}
+              >
+                <ReviewForm exam={exam} initial={mine} />
+              </AttendGate>
+            </div>
+          </Card>
+        </section>
 
-        <AdSlot slot={AD_SLOTS.inArticle} variant="inarticle" />
+        <div className="min-w-0 space-y-6 lg:order-1">
+          <Card className="p-6 md:p-8">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="type-heading-md text-ink">응시자 체감 결과</h2>
+              {inWindow && <span className="tag bg-brand-dark text-on-primary">응시자 우선 공개 · {publicFromLabel}까지</span>}
+            </div>
+            {unlocked ? (
+              <ReviewResults stats={stats} />
+            ) : (
+              <LockedResults count={stats.count} overallAvg={stats.overallAvg} publicFromLabel={publicFromLabel} />
+            )}
+          </Card>
 
-        <Card className="p-6 md:p-8">
-          <h2 className="flex items-center gap-2 type-heading-md text-ink">
-            <MessageSquareText className="h-5 w-5 text-ink-mute" strokeWidth={1.75} />
-            한 줄 후기 <span className="tabular text-primary-text">{visibleComments}</span>
-          </h2>
-          {!unlocked ? (
-            <p className="mt-4 flex items-start gap-2 rounded-lg bg-canvas-soft p-4 type-body-md text-ink-secondary">
-              <Lock className="mt-1 h-4 w-4 shrink-0 text-ink-mute" strokeWidth={2} />
-              <span>
-                {visibleComments ? `한 줄 후기 ${visibleComments}개는` : "한 줄 후기는"}{" "}
-                <span className="text-ink">{publicFromLabel}</span>부터 공개돼요. 응시자는 후기를 남기면 바로 볼 수 있어요.
-              </span>
+          <AdSlot slot={AD_SLOTS.inArticle} variant="inarticle" />
+
+          <Card className="p-6 md:p-8">
+            <h2 className="flex items-center gap-2 type-heading-md text-ink">
+              <MessageSquareText className="h-5 w-5 text-ink-mute" strokeWidth={1.75} />
+              한 줄 후기 <span className="tabular text-primary-text">{visibleComments}</span>
+            </h2>
+            {!unlocked ? (
+              <p className="mt-4 flex items-start gap-2 rounded-lg bg-canvas-soft p-4 type-body-md text-ink-secondary">
+                <Lock className="mt-1 h-4 w-4 shrink-0 text-ink-mute" strokeWidth={2} />
+                <span>
+                  {visibleComments ? `한 줄 후기 ${visibleComments}개는` : "한 줄 후기는"}{" "}
+                  <span className="text-ink">{publicFromLabel}</span>부터 공개돼요. 응시자는 후기를 남기면 바로 볼 수 있어요.
+                </span>
+              </p>
+            ) : comments.length === 0 ? (
+              <p className="mt-4 type-body-md text-ink-mute">아직 남겨진 한 줄 후기가 없어요.</p>
+            ) : (
+              <ul className="mt-4 border-t border-hairline">
+                {comments.map((c) => (
+                  <li key={c.id} className={cn("border-b border-hairline py-4", c.status !== 0 && "opacity-60")}>
+                    <div className="flex flex-wrap items-center gap-2 type-caption">
+                      <span className={cn("tag", c.overall >= 4 ? "bg-ev-doc-soft text-ev-doc" : c.overall <= 2 ? "bg-ev-final-soft text-ev-final" : "bg-canvas-soft text-ink-secondary")}>
+                        {OVERALL_OPTIONS.find((o) => o.value === c.overall)?.label}
+                      </span>
+                      {c.track && <span className="text-ink-mute">{c.track}</span>}
+                      <span className="tabular text-ink-mute">{formatPostDateTime(c.createdAt)}</span>
+                      {c.status !== 0 && <span className="tag bg-ev-doc-soft text-ev-doc">숨김</span>}
+                      <span className="ml-auto">
+                        <ReportButton type="review" id={c.id} small />
+                      </span>
+                    </div>
+                    {c.oneLiner && <p className="mt-2 type-body-md !font-normal text-ink">{c.oneLiner}</p>}
+                    {c.detail && (
+                      <p className="mt-1.5 type-body-md whitespace-pre-wrap text-ink-secondary [overflow-wrap:anywhere]">{c.detail}</p>
+                    )}
+                    {admin && <ModerationBar type="review" id={c.id} status={c.status} compact className="mt-2" />}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="mt-4 type-micro text-ink-mute">
+              문제 원문·복원 문항은 신고 대상이에요.{" "}
+              <Link href="/board/policy" className="link">
+                이용 수칙
+              </Link>
             </p>
-          ) : comments.length === 0 ? (
-            <p className="mt-4 type-body-md text-ink-mute">아직 남겨진 한 줄 후기가 없어요.</p>
-          ) : (
-            <ul className="mt-4 border-t border-hairline">
-              {comments.map((c) => (
-                <li key={c.id} className={cn("border-b border-hairline py-4", c.status !== 0 && "opacity-60")}>
-                  <div className="flex flex-wrap items-center gap-2 type-caption">
-                    <span className={cn("tag", c.overall >= 4 ? "bg-ev-doc-soft text-ev-doc" : c.overall <= 2 ? "bg-ev-final-soft text-ev-final" : "bg-canvas-soft text-ink-secondary")}>
-                      {OVERALL_OPTIONS.find((o) => o.value === c.overall)?.label}
-                    </span>
-                    {c.track && <span className="text-ink-mute">{c.track}</span>}
-                    <span className="tabular text-ink-mute">{formatPostDateTime(c.createdAt)}</span>
-                    {c.status !== 0 && <span className="tag bg-ev-doc-soft text-ev-doc">숨김</span>}
-                    <span className="ml-auto">
-                      <ReportButton type="review" id={c.id} small />
-                    </span>
-                  </div>
-                  {c.oneLiner && <p className="mt-2 type-body-md !font-normal text-ink">{c.oneLiner}</p>}
-                  {c.detail && (
-                    <p className="mt-1.5 type-body-md whitespace-pre-wrap text-ink-secondary [overflow-wrap:anywhere]">{c.detail}</p>
-                  )}
-                  {admin && <ModerationBar type="review" id={c.id} status={c.status} compact className="mt-2" />}
-                </li>
-              ))}
-            </ul>
-          )}
-          <p className="mt-4 type-micro text-ink-mute">
-            문제 원문·복원 문항은 신고 대상이에요.{" "}
-            <Link href="/board/policy" className="link">
-              이용 수칙
+          </Card>
+
+          <Card className="flex flex-col items-start gap-3 p-6 md:flex-row md:items-center md:justify-between">
+            <p className="type-body-md text-ink-secondary">더 길게 이야기하고 싶다면 콩밭에 후기 글을 남겨 보세요.</p>
+            <Link href={`/board/write?company=${exam.companyId}`} className="btn btn-secondary btn-sm">
+              콩밭에 후기 쓰기
             </Link>
-          </p>
-        </Card>
-
-        <Card className="flex flex-col items-start gap-3 p-6 md:flex-row md:items-center md:justify-between">
-          <p className="type-body-md text-ink-secondary">더 길게 이야기하고 싶다면 콩밭에 후기 글을 남겨 보세요.</p>
-          <Link href={`/board/write?company=${exam.companyId}`} className="btn btn-secondary btn-sm">
-            콩밭에 후기 쓰기
-          </Link>
-        </Card>
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

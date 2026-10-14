@@ -44,8 +44,16 @@ export async function CommunityStrip() {
                   <Link href={`/reviews/${e.id}`} className="group flex items-center gap-3 py-3">
                     <CompanyAvatar company={{ id: e.companyId, shortName: e.shortName, avatar: e.avatar, logo: e.logo }} size="sm" />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate type-body-md text-ink group-hover:underline">
-                        {e.companyName} <span className="text-ink-mute">{e.label}</span>
+                      <span className="flex items-center gap-1.5">
+                        {e.date === today && (
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ruby px-1.5 py-px text-[10px] leading-4 font-semibold text-on-primary">
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-on-primary motion-reduce:animate-none" />
+                            LIVE
+                          </span>
+                        )}
+                        <span className="block truncate type-body-md text-ink group-hover:underline">
+                          {e.companyName} <span className="text-ink-mute">{e.label}</span>
+                        </span>
                       </span>
                       <span className="block type-caption text-ink-mute">
                         {formatShort(e.date)} · {c ? `${c.n}명 · ${difficultyWord(c.avg)}` : "첫 후기를 남겨 주세요"}
