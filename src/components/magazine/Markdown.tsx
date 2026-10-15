@@ -367,11 +367,12 @@ function renderBlock(b: Block, k: string, variant: MarkdownVariant): ReactNode {
     case "table":
       return (
         <div key={k} className="mt-6 overflow-x-auto rounded-lg border border-hairline first:mt-0">
-          <table className="w-full min-w-[520px] border-collapse">
+          {/* 열이 3개 이하면 휴대폰 폭에 맞춰 줄바꿈, 더 많으면 가로로 넘겨 보기 */}
+          <table className={cn("w-full border-collapse", b.head.length > 3 && "min-w-[520px]")}>
             <thead className="bg-canvas-soft">
               <tr>
                 {b.head.map((h, i) => (
-                  <th key={i} className="px-4 py-2.5 text-left type-caption font-semibold text-ink-secondary">
+                  <th key={i} className="px-3 py-2.5 text-left type-caption font-semibold text-ink-secondary md:px-4">
                     {inline(h, `${k}-h${i}`)}
                   </th>
                 ))}
@@ -381,7 +382,7 @@ function renderBlock(b: Block, k: string, variant: MarkdownVariant): ReactNode {
               {b.rows.map((r, ri) => (
                 <tr key={ri} className="border-t border-hairline align-top">
                   {b.head.map((_, ci) => (
-                    <td key={ci} className={cn("px-4 py-3 type-body-md text-ink", ci === 0 && "whitespace-nowrap font-semibold")}>
+                    <td key={ci} className={cn("px-3 py-3 type-body-md text-ink md:px-4", ci === 0 && "font-semibold", ci === 0 && b.head.length > 3 && "whitespace-nowrap")}>
                       {inline(r[ci] ?? "", `${k}-${ri}-${ci}`)}
                     </td>
                   ))}

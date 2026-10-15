@@ -87,7 +87,14 @@ export function FeedbackFab() {
 
 function FeedbackDialog({ target, onClose }: { target: FeedbackTarget; onClose: () => void }) {
   const meta = FEEDBACK_KINDS[target.kind];
-  const [state, action, pending] = useActionState<FeedbackState, FormData>(submitFeedback, { ok: false });
+  // 배포 직후 오래된 화면이거나 네트워크가 끊겨도 조용히 실패하지 않게 감쌉니다
+  const [state, action, pending] = useActionState<FeedbackState, FormData>(async (prev, fd) => {
+    try {
+      return await submitFeedback(prev, fd);
+    } catch {
+      return { ok: false, error: "보내지 못했어요. 페이지를 새로고침한 뒤 다시 보내 주세요." };
+    }
+  }, { ok: false });
   const [topic, setTopic] = useState<string | null>(null);
   const [body, setBody] = useState("");
   // 어느 화면에서 보냈는지 함께 기록 (팝업은 클릭 뒤에만 그려지므로 window 사용 가능)
@@ -154,7 +161,7 @@ function FeedbackDialog({ target, onClose }: { target: FeedbackTarget; onClose: 
             </button>
           </div>
         ) : (
-          <form action={action} className="flex min-h-0 flex-1 flex-col">
+          <form action={action} noValidate className="flex min-h-0 flex-1 flex-col">
             <div className="space-y-5 overflow-y-auto overscroll-contain px-6 py-5">
               <input type="hidden" name="kind" value={target.kind} />
               <input type="hidden" name="page" value={page} />
@@ -214,8 +221,6 @@ function FeedbackDialog({ target, onClose }: { target: FeedbackTarget; onClose: 
                   name="body"
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
-                  required
-                  minLength={FEEDBACK_LIMITS.minBody}
                   maxLength={FEEDBACK_LIMITS.body}
                   rows={7}
                   placeholder={meta.placeholder}
@@ -223,13 +228,20 @@ function FeedbackDialog({ target, onClose }: { target: FeedbackTarget; onClose: 
                 />
               </label>
 
+              {body.trim().length > 0 && body.trim().length < FEEDBACK_LIMITS.minBody && (
+                <p className="-mt-3 type-micro text-ink-mute">
+                  {FEEDBACK_LIMITS.minBody}자 이상 적으면 보낼 수 있어요 (지금 {body.trim().length}자)
+                </p>
+              )}
+
               {meta.askSource && (
                 <label className="block">
                   <span className="mb-1 block type-caption text-ink-secondary">근거 링크 (선택)</span>
                   <input
                     name="sourceUrl"
-                    type="url"
+                    type="text"
                     inputMode="url"
+                    autoCapitalize="off"
                     maxLength={FEEDBACK_LIMITS.source}
                     placeholder="공고문·기사 주소가 있으면 확인이 빨라요"
                     className="input w-full"
@@ -241,8 +253,9 @@ function FeedbackDialog({ target, onClose }: { target: FeedbackTarget; onClose: 
                 <span className="mb-1 block type-caption text-ink-secondary">답변 받을 이메일 (선택)</span>
                 <input
                   name="contact"
-                  type="email"
+                  type="text"
                   inputMode="email"
+                  autoCapitalize="off"
                   maxLength={FEEDBACK_LIMITS.contact}
                   placeholder="답변이 필요할 때만 적어 주세요"
                   className="input w-full"
@@ -264,7 +277,11 @@ function FeedbackDialog({ target, onClose }: { target: FeedbackTarget; onClose: 
                 disabled={pending || body.trim().length < FEEDBACK_LIMITS.minBody}
                 className="btn btn-primary flex-1 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {pending ? "보내는 중…" : "운영자에게 보내기"}
+                {pending
+                  ? "보내는 중…"
+                  : body.trim().length < FEEDBACK_LIMITS.minBody
+                    ? `${FEEDBACK_LIMITS.minBody}자 이상 적어 주세요`
+                    : "운영자에게 보내기"}
               </button>
             </div>
           </form>

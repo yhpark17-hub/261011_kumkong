@@ -33,9 +33,11 @@ export async function submitFeedback(_prev: FeedbackState, fd: FormData): Promis
   if (body.length > FEEDBACK_LIMITS.body) return { ok: false, error: `내용은 ${FEEDBACK_LIMITS.body}자 이내로 적어 주세요.` };
   if ((body.match(/https?:\/\//gi) ?? []).length > 5) return { ok: false, error: "링크가 너무 많아요." };
 
-  const sourceUrl = str(fd, "sourceUrl") || null;
-  if (sourceUrl && (!/^https?:\/\/\S+$/i.test(sourceUrl) || sourceUrl.length > FEEDBACK_LIMITS.source)) {
-    return { ok: false, error: "근거 링크는 http(s):// 로 시작하는 주소로 적어 주세요." };
+  // 근거 링크: "www.kdb.co.kr/…" 처럼 주소만 적어도 받도록 https:// 를 붙여 줌
+  const sourceRaw = str(fd, "sourceUrl").replace(/\s+/g, "");
+  const sourceUrl = sourceRaw ? (/^https?:\/\//i.test(sourceRaw) ? sourceRaw : `https://${sourceRaw}`) : null;
+  if (sourceUrl && (!/^https?:\/\/[^\s/]+\.\S+$/i.test(sourceUrl) || sourceUrl.length > FEEDBACK_LIMITS.source)) {
+    return { ok: false, error: "근거 링크를 다시 확인해 주세요. (예: https://www.kdb.co.kr/…)" };
   }
 
   const contact = str(fd, "contact").slice(0, FEEDBACK_LIMITS.contact) || null;
