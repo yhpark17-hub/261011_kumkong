@@ -216,6 +216,8 @@ CREATE TABLE IF NOT EXISTS news (
   point TEXT NOT NULL DEFAULT '',
   source_name TEXT NOT NULL DEFAULT '',
   source_url TEXT,
+  image_url TEXT,
+  image_credit TEXT NOT NULL DEFAULT '',
   headline INTEGER NOT NULL DEFAULT 0,
   status INTEGER NOT NULL DEFAULT 0,
   origin TEXT NOT NULL DEFAULT 'admin',
@@ -244,6 +246,9 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: "posts", column: "attachments", ddl: "ALTER TABLE posts ADD COLUMN attachments TEXT NOT NULL DEFAULT '[]'" },
   // 브리핑 아침판·점심판 — 2026-10 추가
   { table: "news", column: "edition", ddl: "ALTER TABLE news ADD COLUMN edition TEXT NOT NULL DEFAULT ''" },
+  // 브리핑 헤드라인 사진 (운영자가 올린 것만) — 2026-10 추가
+  { table: "news", column: "image_url", ddl: "ALTER TABLE news ADD COLUMN image_url TEXT" },
+  { table: "news", column: "image_credit", ddl: "ALTER TABLE news ADD COLUMN image_credit TEXT NOT NULL DEFAULT ''" },
 ];
 
 async function migrate(c: Client) {

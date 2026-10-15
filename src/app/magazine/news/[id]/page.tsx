@@ -12,7 +12,7 @@ import { NewsViewRecorder, ShareButton } from "@/components/magazine/interactive
 import { NewsRow, NewsSectionTag, newsTitle } from "@/components/magazine/news";
 import { formatDayHeading } from "@/lib/date";
 import { MAGAZINE_NAME } from "@/lib/magazine-meta";
-import { EDITION_LABEL, KIND_LABELS, NEWS_SECTION_INFO, briefingDateHref, briefingHref, formatNewsTime, newsHref } from "@/lib/news-meta";
+import { EDITION_LABEL, KIND_LABELS, NEWS_SECTION_INFO, briefingArchiveHref, briefingDateHref, formatNewsTime, newsHref } from "@/lib/news-meta";
 import { dbConfigured } from "@/lib/server/db";
 import { getNews, newsByDate, sameSectionNews } from "@/lib/server/news";
 import { isAdmin } from "@/lib/server/security";
@@ -138,7 +138,7 @@ async function NewsView({ rawId }: { rawId: string }) {
           데일리 브리핑
         </Link>
         <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.75} />
-        <Link href={briefingHref({ section: n.section })} className="hover:text-ink hover:underline">
+        <Link href={briefingArchiveHref({ section: n.section })} className="hover:text-ink hover:underline">
           {info.label}
         </Link>
       </nav>
@@ -157,6 +157,14 @@ async function NewsView({ rawId }: { rawId: string }) {
             {n.publishedAt && <span className="tabular">· {formatNewsTime(n.publishedAt)}</span>}
             {n.views > 0 && <span className="tabular">· 조회 {n.views.toLocaleString()}</span>}
           </p>
+
+          {n.imageUrl && (
+            <figure className="mt-8">
+              {/* eslint-disable-next-line @next/next/no-img-element -- 운영자가 올린 사진 (Blob 주소) */}
+              <img src={n.imageUrl} alt="" className="aspect-[16/9] w-full rounded-xl bg-canvas-soft object-cover" />
+              {n.imageCredit && <figcaption className="mt-2 type-micro text-ink-mute">사진 · {n.imageCredit}</figcaption>}
+            </figure>
+          )}
 
           <div className="mt-8 space-y-5">
             {info.kind === "question" && <p className="type-caption font-semibold text-ink-mute">{L.summary}</p>}

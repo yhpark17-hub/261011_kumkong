@@ -116,6 +116,7 @@ async function labelPaths(paths: string[]): Promise<Map<string, string>> {
     "/board/policy": "콩밭 이용 수칙",
     "/magazine": "매거진 · 데일리 브리핑",
     "/magazine/blog": "매거진 · 금융 블로그",
+    "/magazine/archive": "매거진 · 전체 브리핑",
     "/about": "서비스 소개",
     "/privacy": "개인정보처리방침",
   };

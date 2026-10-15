@@ -45,6 +45,8 @@ async function EditNews({ rawId }: { rawId: string }) {
           body: n.body,
           sourceName: n.sourceName,
           sourceUrl: n.sourceUrl ?? "",
+          imageUrl: n.imageUrl ?? "",
+          imageCredit: n.imageCredit,
           headline: n.headline,
           published: n.status === 1,
         }}

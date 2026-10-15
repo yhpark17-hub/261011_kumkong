@@ -1,13 +1,13 @@
 import "server-only";
 import type { InValue, Row } from "@libsql/client";
-import { NEWS_PAGE_SIZE, isEdition, isNewsSection, type NewsItem, type NewsSection, type NewsSort } from "../news-meta";
+import { NEWS_PAGE_SIZE, isEdition, isNewsSection, type NewsItem, type NewsSection } from "../news-meta";
 import { db } from "./db";
 
 /** 데일리 브리핑(뉴스·용어·면접 질문) 조회 — 공개 = status 1 + 발행 시각이 지난 것 */
 
 const PUBLIC = "status = 1 AND published_at <= ?";
 const COLS =
-  "id, edition_date, edition, section, title, summary, body, point, source_name, source_url, headline, status, origin, published_at, updated_at, views";
+  "id, edition_date, edition, section, title, summary, body, point, source_name, source_url, image_url, image_credit, headline, status, origin, published_at, updated_at, views";
 
 function toItem(r: Row): NewsItem {
   const publishedAt = r.published_at == null ? null : Number(r.published_at);
@@ -22,6 +22,8 @@ function toItem(r: Row): NewsItem {
     point: String(r.point ?? ""),
     sourceName: String(r.source_name ?? ""),
     sourceUrl: (r.source_url as string | null) || null,
+    imageUrl: (r.image_url as string | null) || null,
+    imageCredit: String(r.image_credit ?? ""),
     headline: Boolean(r.headline),
     status: Number(r.status),
     origin: String(r.origin ?? "admin"),
@@ -49,11 +51,11 @@ export async function newsByDate(date: string): Promise<NewsItem[]> {
   return res.rows.map(toItem);
 }
 
-/** 브리핑 목록 — 카테고리·날짜로 거르고 최신순(날짜별)·인기순(조회수) */
+/** 브리핑 목록 — 카테고리·기간(from~to, 브리핑 날짜 기준)으로 거르고 날짜 최신순 */
 export async function listNews(opts: {
   section?: NewsSection | null;
-  date?: string | null;
-  sort?: NewsSort;
+  from?: string | null;
+  to?: string | null;
   page?: number;
   pageSize?: number;
   excludeIds?: number[];
@@ -65,9 +67,13 @@ export async function listNews(opts: {
     where.push("section = ?");
     args.push(opts.section);
   }
-  if (opts.date) {
-    where.push("edition_date = ?");
-    args.push(opts.date);
+  if (opts.from) {
+    where.push("edition_date >= ?");
+    args.push(opts.from);
+  }
+  if (opts.to) {
+    where.push("edition_date <= ?");
+    args.push(opts.to);
   }
   const ex = (opts.excludeIds ?? []).filter((n) => Number.isInteger(n));
   if (ex.length) {
@@ -76,10 +82,7 @@ export async function listNews(opts: {
   }
   const pageSize = opts.pageSize ?? NEWS_PAGE_SIZE;
   const page = Math.max(1, opts.page ?? 1);
-  const order =
-    opts.sort === "popular"
-      ? "views DESC, published_at DESC, id DESC"
-      : "edition_date DESC, headline DESC, published_at DESC, id DESC";
+  const order = "edition_date DESC, headline DESC, published_at DESC, id DESC";
   const [rows, count] = await Promise.all([
     client.execute({
       sql: `SELECT ${COLS} FROM news WHERE ${where.join(" AND ")} ORDER BY ${order} LIMIT ? OFFSET ?`,
@@ -107,6 +110,24 @@ export async function latestInSection(section: NewsSection): Promise<NewsItem | 
     args: [Date.now(), section],
   });
   return res.rows[0] ? toItem(res.rows[0]) : null;
+}
+
+/** 공개 브리핑이 있는 가장 오래된 날짜 (기간 선택 최솟값) */
+export async function firstNewsDate(): Promise<string | null> {
+  const client = await db();
+  const r = (await client.execute({ sql: `SELECT MIN(edition_date) AS d FROM news WHERE ${PUBLIC}`, args: [Date.now()] })).rows[0];
+  return r?.d ? String(r.d) : null;
+}
+
+/** 그 날짜 앞뒤로 공개 브리핑이 있는 날 */
+export async function adjacentNewsDates(date: string): Promise<{ prev: string | null; next: string | null }> {
+  const client = await db();
+  const now = Date.now();
+  const [p, n] = await Promise.all([
+    client.execute({ sql: `SELECT MAX(edition_date) AS d FROM news WHERE ${PUBLIC} AND edition_date < ?`, args: [now, date] }),
+    client.execute({ sql: `SELECT MIN(edition_date) AS d FROM news WHERE ${PUBLIC} AND edition_date > ?`, args: [now, date] }),
+  ]);
+  return { prev: p.rows[0]?.d ? String(p.rows[0].d) : null, next: n.rows[0]?.d ? String(n.rows[0].d) : null };
 }
 
 /** 날짜별 공개 뉴스 수 (최근 순) */

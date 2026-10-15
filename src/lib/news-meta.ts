@@ -69,6 +69,9 @@ export interface NewsItem {
   point: string;
   sourceName: string;
   sourceUrl: string | null;
+  /** 운영자가 올린 사진 (저작권 문제 없는 것만) */
+  imageUrl: string | null;
+  imageCredit: string;
   headline: boolean;
   status: number;
   origin: string;
@@ -79,25 +82,28 @@ export interface NewsItem {
   live: boolean;
 }
 
-export type NewsSort = "latest" | "popular";
 export type NewsView = "card" | "list";
 
-export const NEWS_PAGE_SIZE = 16;
+export const NEWS_PAGE_SIZE = 20;
 
 export const newsHref = (id: number) => `/magazine/news/${id}`;
-export const briefingDateHref = (date: string) => `/magazine?date=${date}`;
 
-/** 브리핑 목록 주소 (카테고리·날짜·정렬·보기·쪽) */
-export function briefingHref(p: { section?: NewsSection | null; date?: string | null; sort?: NewsSort; view?: NewsView; page?: number } = {}): string {
+/** 전체 브리핑(모아보기) — 카테고리·기간으로 지난 브리핑까지 */
+export const BRIEFING_ARCHIVE = "/magazine/archive";
+
+export function briefingArchiveHref(p: { section?: NewsSection | null; from?: string | null; to?: string | null; view?: NewsView; page?: number } = {}): string {
   const sp = new URLSearchParams();
   if (p.section) sp.set("c", p.section);
-  if (p.date) sp.set("date", p.date);
-  if (p.sort === "popular") sp.set("sort", "popular");
+  if (p.from) sp.set("from", p.from);
+  if (p.to) sp.set("to", p.to);
   if (p.view) sp.set("view", p.view);
   if (p.page && p.page > 1) sp.set("page", String(p.page));
   const qs = sp.toString();
-  return qs ? `/magazine?${qs}` : "/magazine";
+  return qs ? `${BRIEFING_ARCHIVE}?${qs}` : BRIEFING_ARCHIVE;
 }
+
+/** 하루치 브리핑 */
+export const briefingDateHref = (date: string) => briefingArchiveHref({ from: date, to: date });
 
 /** 'YYYY-MM-DD' 형식 확인 */
 export const isDateKey = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);

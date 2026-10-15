@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { isOwnFileUrl } from "@/lib/attachments";
 import { isDateKey, isEdition, isNewsSection, kindOf } from "@/lib/news-meta";
 import { db } from "@/lib/server/db";
 import { isAdmin } from "@/lib/server/security";
@@ -12,6 +13,7 @@ const str = (fd: FormData, key: string, max: number) => String(fd.get(key) ?? ""
 
 function revalidateNews(id?: number) {
   revalidatePath("/magazine");
+  revalidatePath("/magazine/archive");
   if (id) revalidatePath(`/magazine/news/${id}`);
   revalidatePath("/");
   revalidatePath("/admin/news");
@@ -30,6 +32,8 @@ export async function saveNews(_prev: NewsFormState, fd: FormData): Promise<News
   const body = str(fd, "body", 8000);
   const sourceName = str(fd, "sourceName", 60);
   const sourceUrlRaw = str(fd, "sourceUrl", 500);
+  const imageRaw = str(fd, "imageUrl", 500);
+  const imageCredit = str(fd, "imageCredit", 80);
   const headlineAsked = fd.get("headline") === "on";
   const publish = fd.get("status") === "1";
 
@@ -42,6 +46,9 @@ export async function saveNews(_prev: NewsFormState, fd: FormData): Promise<News
   if (title.length < (kind === "term" ? 2 : 4)) return { ok: false, error: kind === "term" ? "용어를 적어 주세요." : kind === "question" ? "질문을 적어 주세요." : "제목을 적어 주세요." };
   if (summary.length < 20) return { ok: false, error: kind === "term" ? "뜻 풀이를 20자 이상 적어 주세요." : "요약을 20자 이상 적어 주세요." };
   const sourceUrl = sourceUrlRaw ? (/^https?:\/\//i.test(sourceUrlRaw) ? sourceUrlRaw : `https://${sourceUrlRaw}`) : null;
+  // 사진은 여기서 올린 파일만 (다른 사이트 사진 주소를 붙여 쓰지 못하게 — 저작권)
+  if (imageRaw && !isOwnFileUrl(imageRaw)) return { ok: false, error: "사진은 이 화면에서 직접 올린 파일만 쓸 수 있어요." };
+  const imageUrl = imageRaw || null;
   if (sourceUrl && !/^https?:\/\/[^\s/]+\.\S+$/i.test(sourceUrl)) return { ok: false, error: "출처 링크를 확인해 주세요." };
 
   const client = await db();
@@ -55,17 +62,17 @@ export async function saveNews(_prev: NewsFormState, fd: FormData): Promise<News
     const publishedAt = publish ? (Number(prev.status) === 1 && prev.published_at != null ? Number(prev.published_at) : now) : null;
     await client.execute({
       sql: `UPDATE news SET edition_date = ?, edition = ?, section = ?, title = ?, summary = ?, point = ?, body = ?, source_name = ?, source_url = ?,
-              headline = ?, status = ?, published_at = ?, updated_at = ? WHERE id = ?`,
-      args: [editionDate, edition, section, title, summary, point, body, sourceName, sourceUrl, headline, publish ? 1 : 0, publishedAt, now, id],
+              image_url = ?, image_credit = ?, headline = ?, status = ?, published_at = ?, updated_at = ? WHERE id = ?`,
+      args: [editionDate, edition, section, title, summary, point, body, sourceName, sourceUrl, imageUrl, imageCredit, headline, publish ? 1 : 0, publishedAt, now, id],
     });
     revalidateNews(id);
     return { ok: true, savedAt: now };
   }
 
   await client.execute({
-    sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, headline, status, origin, published_at, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', ?, ?, ?)`,
-    args: [editionDate, edition, section, title, summary, point, body, sourceName, sourceUrl, headline, publish ? 1 : 0, publish ? now : null, now, now],
+    sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, image_url, image_credit, headline, status, origin, published_at, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', ?, ?, ?)`,
+    args: [editionDate, edition, section, title, summary, point, body, sourceName, sourceUrl, imageUrl, imageCredit, headline, publish ? 1 : 0, publish ? now : null, now, now],
   });
   revalidateNews();
   redirect(`/admin/news?date=${editionDate}`);
