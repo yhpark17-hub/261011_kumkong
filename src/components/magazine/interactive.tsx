@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { Bookmark, BookmarkCheck, Check, Heart, Link2, Share2 } from "lucide-react";
-import { likeArticle, recordArticleView } from "@/app/magazine/actions";
+import { likeArticle, recordArticleView, recordNewsView } from "@/app/magazine/actions";
 import {
   getRead,
   getSaved,
@@ -251,3 +251,43 @@ export function UnreadDot({ id }: { id: number }) {
   return <span aria-label="안 읽음" className="inline-block h-2 w-2 rounded-full bg-ruby" />;
 }
 
+
+/** 뉴스를 열면 조회수 1회 (많이 본 뉴스 순위) */
+export function NewsViewRecorder({ id }: { id: number }) {
+  const done = useRef(false);
+  useEffect(() => {
+    if (done.current) return;
+    done.current = true;
+    recordNewsView(id).catch(() => {});
+  }, [id]);
+  return null;
+}
+
+/** 공유 (모바일은 공유 시트, PC 는 링크 복사) */
+export function ShareButton({ title, path, className }: { title: string; path: string; className?: string }) {
+  const [copied, setCopied] = useState(false);
+  async function share() {
+    const url = `${location.origin}${path}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+        return;
+      } catch {
+        /* 닫음 → 복사로 */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* 무시 */
+    }
+  }
+  return (
+    <button type="button" onClick={share} className={cn("btn btn-toggle btn-sm", className)}>
+      {copied ? <Link2 className="h-4 w-4" strokeWidth={1.75} /> : <Share2 className="h-4 w-4" strokeWidth={1.75} />}
+      {copied ? "링크 복사됨" : "공유"}
+    </button>
+  );
+}

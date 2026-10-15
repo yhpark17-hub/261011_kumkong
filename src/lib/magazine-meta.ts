@@ -36,6 +36,8 @@ export const MAGAZINE_CATEGORIES: CategoryInfo[] = [
     desc: "매일 아침, 금융·시사·금공 뉴스의 핵심만 5분 안에",
     tone: "bg-ev-written-soft text-primary-text",
     cover: "from-ev-written-soft",
+    // 데일리 브리핑은 이제 뉴스 한 건씩(news 테이블)으로 운영 — 글 형식 브리핑은 숨김
+    hidden: true,
   },
   {
     key: "exam",
@@ -122,8 +124,8 @@ export function isBlogCategory(v: unknown): v is MagazineCategory {
 /** 매거진 안의 두 섹션 */
 export type MagazineSection = "briefing" | "blog";
 export const SECTION_INFO: Record<MagazineSection, { label: string; desc: string; href: string }> = {
-  briefing: { label: "데일리 브리핑", desc: "매일 아침·점심, 금융·시사·금공 뉴스의 핵심만 5분 안에", href: "/magazine" },
-  blog: { label: "금융 블로그", desc: "필기·면접·금공 지식, 준비에 바로 쓰는 깊이 있는 글", href: "/magazine/blog" },
+  briefing: { label: "데일리 브리핑", desc: "오늘 꼭 알아야 할 금융·경제·시사 뉴스를 분야별로 한 페이지에", href: "/magazine" },
+  blog: { label: "금융 블로그", desc: "필기·면접·금공 지식까지, 준비에 바로 쓰는 깊이 있는 글", href: "/magazine/blog" },
 };
 
 export const sectionOf = (category: MagazineCategory): MagazineSection => (category === "briefing" ? "briefing" : "blog");

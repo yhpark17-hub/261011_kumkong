@@ -79,21 +79,51 @@ export function ArticleCover({ a, className, iconSize = "h-8 w-8" }: { a: Articl
   );
 }
 
-/** 기본 카드: 표지 + 카테고리 + 제목 + 요약 */
-export function ArticleCard({ a, priority = false }: { a: ArticleSummary; priority?: boolean }) {
-  const first = summaryLines(a.summary)[0];
+/** 카드: 표지 + 카테고리 + 제목 + 요약 (large = 블로그 '카드 보기'용 큰 카드) */
+export function ArticleCard({ a, priority = false, large = false }: { a: ArticleSummary; priority?: boolean; large?: boolean }) {
+  const lines = summaryLines(a.summary);
   return (
     <Link href={articleHref(a.id)} className="group flex flex-col overflow-hidden rounded-xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
       <div className="relative">
-        <ArticleCover a={a} className="aspect-[16/9] w-full" />
+        <ArticleCover a={a} className="aspect-[16/9] w-full" iconSize={large ? "h-10 w-10" : undefined} />
         <ReadBadge id={a.id} className="absolute top-3 right-3" />
       </div>
-      <div className="flex flex-1 flex-col p-5">
+      <div className={cn("flex flex-1 flex-col", large ? "p-6" : "p-5")}>
         <MagazineCategoryTag category={a.category} className="self-start" />
-        <h3 className={cn("mt-3 line-clamp-2 type-heading-sm text-ink group-hover:underline", priority && "md:type-heading-md")}>{a.title}</h3>
-        {first && <p className="mt-2 line-clamp-2 type-body-md text-ink-secondary">{first}</p>}
+        <h3
+          className={cn(
+            "mt-3 line-clamp-2 text-ink [word-break:keep-all] group-hover:underline",
+            large ? "type-heading-md" : "type-heading-sm",
+            priority && "md:type-heading-md",
+          )}
+        >
+          {a.title}
+        </h3>
+        {lines[0] && <p className={cn("mt-2 type-body-md leading-relaxed text-ink-secondary", large ? "line-clamp-3" : "line-clamp-2")}>{large ? lines.join(" ") : lines[0]}</p>}
         <ArticleMeta a={a} className="mt-auto pt-4" />
       </div>
+    </Link>
+  );
+}
+
+/** 글만 나열하는 목록 줄 (블로그 '목록 보기') */
+export function ArticleListRow({ a }: { a: ArticleSummary }) {
+  const first = summaryLines(a.summary)[0];
+  return (
+    <Link href={articleHref(a.id)} className="group flex items-start gap-4 py-5">
+      <span className="min-w-0 flex-1">
+        <span className="flex flex-wrap items-center gap-2">
+          <MagazineCategoryTag category={a.category} />
+          <ReadBadge id={a.id} />
+        </span>
+        <span className="mt-2 block type-heading-sm text-ink [word-break:keep-all] group-hover:underline">{a.title}</span>
+        {first && <span className="mt-1 line-clamp-1 type-body-md text-ink-secondary">{first}</span>}
+        <ArticleMeta a={a} className="mt-2 sm:hidden" />
+      </span>
+      <span className="hidden w-24 shrink-0 flex-col items-end gap-1 pt-1 text-right type-caption text-ink-mute sm:flex">
+        {a.publishedAt != null && <span className="tabular">{formatArticleDate(a.publishedAt)}</span>}
+        <span>{a.readMinutes}분 분량</span>
+      </span>
     </Link>
   );
 }
@@ -110,7 +140,7 @@ export function ArticleRow({ a, rank }: { a: ArticleSummary; rank?: number }) {
           <MagazineCategoryTag category={a.category} />
           <ReadBadge id={a.id} />
         </span>
-        <span className="mt-1.5 line-clamp-2 block type-body-md font-semibold text-ink group-hover:underline">{a.title}</span>
+        <span className="mt-1.5 line-clamp-2 type-body-md font-semibold text-ink group-hover:underline">{a.title}</span>
         <ArticleMeta a={a} className="mt-1" />
       </span>
       <ArticleCover a={a} className="aspect-square w-20 shrink-0 rounded-lg" iconSize="h-6 w-6" />

@@ -131,7 +131,7 @@ export function BriefingRow({ a }: { a: ArticleSummary }) {
           {points.length > 0 && (
             <span className="mt-1.5 block space-y-0.5">
               {points.slice(0, 3).map((p, i) => (
-                <span key={i} className="line-clamp-1 block type-body-md text-ink-secondary">
+                <span key={i} className="line-clamp-1 type-body-md text-ink-secondary">
                   <span className="mr-1.5 tabular text-primary-text">{i + 1}</span>
                   {p}
                 </span>

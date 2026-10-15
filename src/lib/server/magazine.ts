@@ -57,6 +57,8 @@ export async function listArticles(opts: {
   excludeCategory?: MagazineCategory;
   excludeIds?: number[];
   q?: string | null;
+  /** latest = 최신순(기본), popular = 도움돼요·조회 많은 순 */
+  sort?: "latest" | "popular";
 }): Promise<{ items: ArticleSummary[]; total: number }> {
   const client = await db();
   const now = Date.now();
@@ -88,7 +90,7 @@ export async function listArticles(opts: {
   const whereSql = where.join(" AND ");
   const [rows, count] = await Promise.all([
     client.execute({
-      sql: `SELECT ${SUMMARY_COLS} FROM articles WHERE ${whereSql} ORDER BY published_at DESC, id DESC LIMIT ? OFFSET ?`,
+      sql: `SELECT ${SUMMARY_COLS} FROM articles WHERE ${whereSql} ORDER BY ${opts.sort === "popular" ? "likes * 3 + views DESC, " : ""}published_at DESC, id DESC LIMIT ? OFFSET ?`,
       args: [...args, pageSize, (page - 1) * pageSize],
     }),
     client.execute({ sql: `SELECT COUNT(*) AS n FROM articles WHERE ${whereSql}`, args }),

@@ -22,7 +22,8 @@ import {
 import type { Recruitment, ScheduleEvent } from "@/lib/types";
 import { requireAdmin } from "@/lib/server/admin";
 import { lastRun, setupStatus } from "@/lib/server/automation";
-import { magazineAdminCounts } from "@/lib/server/magazine";
+import { todayKST } from "@/lib/date";
+import { newsAdminCounts } from "@/lib/server/news";
 import { feedbackBodies, listProposals, proposalCounts, type ProposalTab } from "@/lib/server/proposals";
 
 export const metadata = { title: "AI 검토 제안" };
@@ -49,7 +50,7 @@ async function Proposals({ sp }: { sp: SP }) {
   await requireAdmin();
   const tab = (TABS.find(([k]) => k === one(sp.tab))?.[0] ?? "pending") as ProposalTab;
   const page = Math.max(1, Number.parseInt(one(sp.page), 10) || 1);
-  const [{ items, total }, counts, run, mag] = await Promise.all([listProposals(tab, page), proposalCounts(), lastRun(), magazineAdminCounts()]);
+  const [{ items, total }, counts, run, mag] = await Promise.all([listProposals(tab, page), proposalCounts(), lastRun(), newsAdminCounts(todayKST())]);
   const setup = setupStatus();
   const fb = await feedbackBodies(items.map((p) => p.feedbackId).filter((x): x is number => x != null));
 
@@ -86,10 +87,10 @@ async function Proposals({ sp }: { sp: SP }) {
               desc={setup.github ? `승인 즉시 ${setup.repo} 에 커밋 → 1~2분 뒤 반영` : "없으면 승인한 일정은 다음 자동 점검 때 반영돼요"}
             />
           </ul>
-          {mag.auto > 0 && (
-            <Link href="/admin/magazine?filter=auto" className="mt-4 flex items-center gap-2 rounded-md bg-canvas-cream px-3 py-2 type-caption text-ink-secondary hover:underline">
+          {mag.drafts > 0 && (
+            <Link href="/admin/news?filter=draft" className="mt-4 flex items-center gap-2 rounded-md bg-canvas-cream px-3 py-2 type-caption text-ink-secondary hover:underline">
               <Newspaper className="h-4 w-4" strokeWidth={1.75} />
-              검토할 브리핑 자동 초안 {mag.auto}개 →
+              검토할 데일리 브리핑 뉴스 초안 {mag.drafts}건 →
             </Link>
           )}
         </AdminCard>

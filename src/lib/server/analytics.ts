@@ -121,6 +121,7 @@ async function labelPaths(paths: string[]): Promise<Map<string, string>> {
   };
   const postIds: number[] = [];
   const articleIds: number[] = [];
+  const newsIds: number[] = [];
   for (const p of paths) {
     if (STATIC[p]) labels.set(p, STATIC[p]);
     const company = p.match(/^\/companies\/([^/]+)$/);
@@ -134,6 +135,8 @@ async function labelPaths(paths: string[]): Promise<Map<string, string>> {
     if (post) postIds.push(Number(post[1]));
     const article = p.match(/^\/magazine\/(\d+)$/);
     if (article) articleIds.push(Number(article[1]));
+    const news = p.match(/^\/magazine\/news\/(\d+)$/);
+    if (news) newsIds.push(Number(news[1]));
   }
   if (postIds.length) {
     const client = await db();
@@ -150,6 +153,14 @@ async function labelPaths(paths: string[]): Promise<Map<string, string>> {
       args: articleIds,
     });
     for (const row of res.rows) labels.set(`/magazine/${row.id}`, `매거진 · ${row.title}`);
+  }
+  if (newsIds.length) {
+    const client = await db();
+    const res = await client.execute({
+      sql: `SELECT id, title FROM news WHERE id IN (${newsIds.map(() => "?").join(",")})`,
+      args: newsIds,
+    });
+    for (const row of res.rows) labels.set(`/magazine/news/${row.id}`, `브리핑 · ${row.title}`);
   }
   for (const p of paths) if (!labels.has(p)) labels.set(p, p);
   return labels;

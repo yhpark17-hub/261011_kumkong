@@ -1,0 +1,208 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { connection } from "next/server";
+import { Suspense } from "react";
+import { ChevronRight, ExternalLink, Lightbulb, PenLine } from "lucide-react";
+import { AdSlot } from "@/components/ads/AdSlot";
+import { DbSection } from "@/components/db/DbSection";
+import { Markdown } from "@/components/magazine/Markdown";
+import { NewsViewRecorder, ShareButton } from "@/components/magazine/interactive";
+import { NewsRow, NewsSectionTag } from "@/components/magazine/news";
+import { formatDayHeading } from "@/lib/date";
+import { MAGAZINE_NAME } from "@/lib/magazine-meta";
+import { NEWS_SECTION_INFO, briefingDateHref, formatNewsTime, newsHref } from "@/lib/news-meta";
+import { dbConfigured } from "@/lib/server/db";
+import { getNews, newsByDate, sameSectionNews } from "@/lib/server/news";
+import { isAdmin } from "@/lib/server/security";
+import { AD_SLOTS, OG_IMAGE, SITE } from "@/lib/site";
+
+/** 긴 요약은 두 문장씩 끊어서 읽기 쉽게 */
+function toParagraphs(text: string): string[] {
+  return text
+    .split(/\n+/)
+    .flatMap((block) => {
+      // 문장 끝(. ! ?) 뒤에 공백이 올 때만 끊음 — 5.46% 같은 숫자는 그대로
+      const sentences = block.split(/(?<=[.!?]["'”’)]?)\s+/);
+      const out: string[] = [];
+      for (let i = 0; i < sentences.length; i += 2) out.push(sentences.slice(i, i + 2).join(" ").trim());
+      return out;
+    })
+    .filter(Boolean);
+}
+
+function parseId(raw: string): number | null {
+  const n = Number(raw);
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+
+export async function generateMetadata({ params }: PageProps<"/magazine/news/[id]">): Promise<Metadata> {
+  const id = parseId((await params).id);
+  const n = id && dbConfigured() ? await getNews(id).catch(() => null) : null;
+  if (!n) return { title: "데일리 브리핑", robots: { index: false, follow: false } };
+  const description = n.summary.replace(/\s+/g, " ").slice(0, 150);
+  return {
+    title: `${n.title} - 데일리 브리핑`,
+    description,
+    alternates: { canonical: newsHref(n.id) },
+    openGraph: {
+      title: n.title,
+      description,
+      type: "article",
+      publishedTime: n.publishedAt ? new Date(n.publishedAt).toISOString() : undefined,
+      section: NEWS_SECTION_INFO[n.section].label,
+      images: [OG_IMAGE],
+    },
+  };
+}
+
+export default function NewsPage({ params }: PageProps<"/magazine/news/[id]">) {
+  return (
+    <div className="mx-auto max-w-[1200px] px-4 pt-6 pb-16 md:px-6 md:pt-10">
+      <DbSection noticeTitle="데일리 브리핑을 준비하고 있어요">
+        <Suspense fallback={<div className="mx-auto h-96 max-w-[720px] animate-pulse rounded-2xl bg-canvas-soft" />}>
+          {params.then(({ id }) => (
+            <NewsView rawId={id} />
+          ))}
+        </Suspense>
+      </DbSection>
+    </div>
+  );
+}
+
+async function NewsView({ rawId }: { rawId: string }) {
+  await connection();
+  const id = parseId(rawId);
+  if (!id) notFound();
+  const admin = await isAdmin();
+  const n = await getNews(id, { admin });
+  if (!n) notFound();
+  const [sameDay, sameSection] = n.live ? await Promise.all([newsByDate(n.editionDate), sameSectionNews(n, 4)]) : [[], []];
+  const others = sameDay.filter((x) => x.id !== n.id).slice(0, 8);
+  const info = NEWS_SECTION_INFO[n.section];
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: n.title,
+    description: n.summary,
+    datePublished: n.publishedAt ? new Date(n.publishedAt).toISOString() : undefined,
+    dateModified: new Date(n.updatedAt).toISOString(),
+    publisher: { "@type": "Organization", name: SITE.name, url: SITE.url },
+    mainEntityOfPage: `${SITE.url}${newsHref(n.id)}`,
+    articleSection: info.label,
+  };
+
+  return (
+    <>
+      {n.live && <NewsViewRecorder id={n.id} />}
+      {n.live && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      )}
+      {admin && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-canvas-cream px-4 py-3">
+          <p className="type-caption text-ink-secondary">{n.live ? "운영자 화면 — 공개 중인 뉴스예요." : "미리보기 — 아직 초안이라 다른 사람에게는 보이지 않아요."}</p>
+          <Link href={`/admin/news/${n.id}`} className="btn btn-sm btn-secondary">
+            <PenLine className="h-3.5 w-3.5" strokeWidth={1.75} />
+            수정하기
+          </Link>
+        </div>
+      )}
+
+      <nav aria-label="위치" className="flex flex-wrap items-center gap-1 type-caption text-ink-mute">
+        <span>{MAGAZINE_NAME}</span>
+        <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.75} />
+        <Link href="/magazine" className="hover:text-ink hover:underline">
+          데일리 브리핑
+        </Link>
+        <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.75} />
+        <Link href={`${briefingDateHref(n.editionDate)}#sec-${n.section}`} className="hover:text-ink hover:underline">
+          {info.label}
+        </Link>
+      </nav>
+
+      <div className="mt-6 grid gap-12 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <article className="min-w-0 max-w-[720px]">
+          <div className="flex flex-wrap items-center gap-2">
+            <NewsSectionTag section={n.section} />
+            <Link href={briefingDateHref(n.editionDate)} className="type-caption text-ink-mute hover:underline">
+              {formatDayHeading(n.editionDate)} 브리핑
+            </Link>
+          </div>
+          <h1 className="mt-4 type-heading-lg text-ink [word-break:keep-all] md:type-display-md">{n.title}</h1>
+          <p className="mt-4 flex flex-wrap items-center gap-x-2 border-b border-hairline pb-5 type-caption text-ink-mute">
+            {n.sourceName && <span>출처 {n.sourceName}</span>}
+            {n.publishedAt && <span className="tabular">· {formatNewsTime(n.publishedAt)}</span>}
+            {n.views > 0 && <span className="tabular">· 조회 {n.views.toLocaleString()}</span>}
+          </p>
+
+          <div className="mt-8 space-y-5">
+            {toParagraphs(n.summary).map((p, i) => (
+              <p key={i} className="type-body-lg leading-[1.85] text-ink">
+                {p}
+              </p>
+            ))}
+            {n.body.trim() && <Markdown source={n.body} />}
+          </div>
+
+          {n.point && (
+            <aside className="mt-8 rounded-xl border border-lemon/30 bg-canvas-cream px-5 py-4">
+              <p className="flex items-center gap-1.5 type-caption font-semibold text-lemon">
+                <Lightbulb className="h-4 w-4" strokeWidth={2} />왜 중요할까 · 필기·면접 포인트
+              </p>
+              <p className="mt-2 type-body-md leading-relaxed text-ink">{n.point}</p>
+            </aside>
+          )}
+
+          <div className="mt-8 flex flex-wrap gap-2">
+            {n.sourceUrl && (
+              <a href={n.sourceUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-primary">
+                원문 보기{n.sourceName ? ` · ${n.sourceName}` : ""}
+                <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} />
+              </a>
+            )}
+            <ShareButton title={n.title} path={newsHref(n.id)} />
+          </div>
+          <p className="mt-4 type-micro text-ink-mute">기사 원문을 확인해 요약했어요. 자세한 내용과 수치는 원문을 함께 봐 주세요.</p>
+
+          <AdSlot slot={AD_SLOTS.inArticle} variant="inarticle" className="mt-10" />
+
+          {sameSection.length > 0 && (
+            <section className="mt-12">
+              <h2 className="flex items-center gap-2 border-b-2 border-ink pb-3 type-heading-md text-ink">
+                <span className={`h-2.5 w-2.5 rounded-full ${info.dot}`} aria-hidden />
+                {info.label} 최근 뉴스
+              </h2>
+              <div className="divide-y divide-hairline">
+                {sameSection.map((x) => (
+                  <NewsRow key={x.id} n={x} />
+                ))}
+              </div>
+            </section>
+          )}
+        </article>
+
+        {others.length > 0 && (
+          <aside className="lg:sticky lg:top-24 lg:self-start">
+            <div className="rounded-2xl border border-hairline p-5">
+              <p className="type-heading-sm text-ink">같은 날 다른 뉴스</p>
+              <ul className="mt-2 divide-y divide-hairline">
+                {others.map((x) => (
+                  <li key={x.id}>
+                    <Link href={newsHref(x.id)} className="group block py-3">
+                      <NewsSectionTag section={x.section} />
+                      <span className="mt-1 line-clamp-2 type-body-md text-ink [word-break:keep-all] group-hover:underline">{x.title}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <Link href={briefingDateHref(n.editionDate)} className="link mt-3 inline-block type-caption">
+                이날 브리핑 전체 보기 →
+              </Link>
+            </div>
+          </aside>
+        )}
+      </div>
+    </>
+  );
+}

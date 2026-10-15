@@ -202,6 +202,28 @@ CREATE TABLE IF NOT EXISTS proposals (
 );
 CREATE INDEX IF NOT EXISTS idx_proposals_status ON proposals (status, id DESC);
 
+-- 데일리 브리핑: 시사 뉴스 한 건 = 한 줄 (분류·많이 본 뉴스·날짜별 모아 보기)
+-- status: 0 = 초안, 1 = 공개
+CREATE TABLE IF NOT EXISTS news (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  edition_date TEXT NOT NULL,
+  section TEXT NOT NULL,
+  title TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  body TEXT NOT NULL DEFAULT '',
+  point TEXT NOT NULL DEFAULT '',
+  source_name TEXT NOT NULL DEFAULT '',
+  source_url TEXT,
+  headline INTEGER NOT NULL DEFAULT 0,
+  status INTEGER NOT NULL DEFAULT 0,
+  origin TEXT NOT NULL DEFAULT 'admin',
+  published_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  views INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_news_date ON news (status, edition_date DESC, id);
+
 -- 작은 설정값 (시드 여부, 마지막 자동 점검 시각 등)
 CREATE TABLE IF NOT EXISTS kv (
   key TEXT PRIMARY KEY,

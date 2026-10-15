@@ -47,13 +47,13 @@ async function Magazine({ sp }: { sp: SP }) {
   return (
     <>
       <AdminPageTitle
-        title="매거진"
-        desc="운영진 글·데일리 브리핑·웹툰을 쓰고 발행해요. 예약 발행 글은 정한 시각에 자동으로 공개돼요."
+        title="금융 블로그"
+        desc="블로그 글을 쓰고 발행해요. 예약 발행 글은 정한 시각에 자동으로 공개돼요. 시사 뉴스는 '데일리 브리핑' 메뉴에서 관리해요."
         aside={
           <div className="flex flex-wrap gap-2">
-            <Link href="/admin/magazine/new?template=briefing" className="btn btn-sm btn-secondary">
+            <Link href="/admin/news" className="btn btn-sm btn-secondary">
               <Newspaper className="h-4 w-4" strokeWidth={1.75} />
-              오늘 브리핑 쓰기
+              데일리 브리핑 관리
             </Link>
             <Link href="/admin/magazine/new" className="btn btn-sm btn-primary">
               <PenLine className="h-4 w-4" strokeWidth={1.75} />새 글 쓰기
@@ -74,13 +74,7 @@ async function Magazine({ sp }: { sp: SP }) {
           tone={counts.auto ? "alert" : "default"}
           href={listHref("/admin/magazine", { filter: counts.auto ? "auto" : "draft" })}
         />
-        <StatTile
-          label="오늘 브리핑"
-          value={counts.briefingToday ? "발행됨" : "아직"}
-          tone={counts.briefingToday ? "default" : "alert"}
-          sub={counts.briefingToday ? "오늘 몫 완료" : "매일 아침 발행하면 재방문이 늘어요"}
-          href={counts.briefingToday ? listHref("/admin/magazine", { c: "briefing" }) : "/admin/magazine/new?template=briefing"}
-        />
+        <StatTile label="전체 글" value={nf.format(counts.published + counts.scheduled + counts.draft)} sub="공개·예약·임시저장" href="/admin/magazine" />
       </div>
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

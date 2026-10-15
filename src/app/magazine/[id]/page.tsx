@@ -10,11 +10,10 @@ import { Markdown, extractHeadings } from "@/components/magazine/Markdown";
 import {
   ArticleActions,
   ReadingProgress,
-  SavedArticles,
   TableOfContents,
   ViewRecorder,
 } from "@/components/magazine/interactive";
-import { ArticleCard, ArticleCover, CATEGORY_ICON, MagazineCategoryTag } from "@/components/magazine/parts";
+import { ArticleCard, ArticleCover, MagazineCategoryTag } from "@/components/magazine/parts";
 import { Logo, cn } from "@/components/ui";
 import { formatDayHeading } from "@/lib/date";
 import {
@@ -108,7 +107,6 @@ async function ArticleView({ rawId }: { rawId: string }) {
   const isWebtoon = a.category === "webtoon";
   const points = summaryLines(a.summary);
   const day = a.publishedAt ? kstDateKey(a.publishedAt) : null;
-  const CatIcon = CATEGORY_ICON[a.category];
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -294,15 +292,6 @@ async function ArticleView({ rawId }: { rawId: string }) {
           <aside className="hidden lg:block">
             <div className="sticky top-24 space-y-6">
               {(toc.length > 0 || isBriefing) && headings.length > 0 && <TableOfContents headings={isBriefing ? headings.filter((h) => h.level === 2) : toc} />}
-              <div className="rounded-xl border border-hairline p-4">
-                <p className="flex items-center gap-1.5 type-caption font-semibold text-ink">
-                  <CatIcon className="h-3.5 w-3.5" strokeWidth={1.75} />
-                  저장한 글
-                </p>
-                <div className="mt-1">
-                  <SavedArticles limit={4} />
-                </div>
-              </div>
             </div>
           </aside>
         )}

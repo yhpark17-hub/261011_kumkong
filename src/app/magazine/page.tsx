@@ -3,130 +3,173 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { BookOpen, CalendarDays, Clock } from "lucide-react";
+import { Newspaper } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
-import { Pagination } from "@/components/board/parts";
 import { DbSection } from "@/components/db/DbSection";
-import { ArticleCard, SectionHead } from "@/components/magazine/parts";
-import { BriefingEmpty, BriefingHero, BriefingRow, EmptyLine, MagazineShell, MagazineSkeleton } from "@/components/magazine/sections";
-import {
-  BLOG_CATEGORIES,
-  MAGAZINE_NAME,
-  MAGAZINE_PAGE_SIZE,
-  isBlogCategory,
-  magazineHref,
-} from "@/lib/magazine-meta";
-import { listArticles } from "@/lib/server/magazine";
+import { DateBar, HeadlineCard, NewsRow, PopularNews } from "@/components/magazine/news";
+import { MagazineShell } from "@/components/magazine/sections";
+import { cn } from "@/components/ui";
+import { todayKST } from "@/lib/date";
+import { MAGAZINE_NAME, isBlogCategory, magazineHref } from "@/lib/magazine-meta";
+import { NEWS_SECTIONS, briefingDateHref, isDateKey, type NewsItem } from "@/lib/news-meta";
+import { latestNewsDate, newsByDate, newsDates, popularNews } from "@/lib/server/news";
 import { AD_SLOTS } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: `데일리 브리핑 — 금융·시사·금공 뉴스 5분 정리 | ${MAGAZINE_NAME}`,
+  title: `데일리 브리핑 — 오늘의 금융·경제·시사 뉴스 | ${MAGAZINE_NAME}`,
   description:
-    "매일 아침과 점심, 금융공기업 준비생이 꼭 알아야 할 금융·시사·공공기관 뉴스와 오늘의 채용 일정을 5분 브리핑으로 정리합니다.",
-  alternates: { canonical: "/magazine", types: { "application/rss+xml": "/magazine/rss.xml" } },
+    "금융공기업 준비생이 알아야 할 금융·경제·정책·국제·공공기관 뉴스를 분야별로 한 페이지에. 많이 본 뉴스와 필기·면접 포인트까지.",
+  alternates: { canonical: "/magazine" },
 };
 
 type SP = Record<string, string | string[] | undefined>;
 const one = (v: string | string[] | undefined) => ((Array.isArray(v) ? v[0] : v) ?? "").trim();
-const BLOG_KEYS = BLOG_CATEGORIES.map((c) => c.key);
 
-/** 매거진 · 데일리 브리핑 */
+/** 매거진 · 데일리 브리핑 = 시사 뉴스 메인 */
 export default function BriefingPage({ searchParams }: PageProps<"/magazine">) {
   return (
     <MagazineShell section="briefing">
-      <DbSection noticeTitle="매거진을 준비하고 있어요">
-        <Suspense fallback={<MagazineSkeleton />}>{searchParams.then((sp) => <BriefingBody sp={sp as SP} />)}</Suspense>
+      <DbSection noticeTitle="데일리 브리핑을 준비하고 있어요">
+        <Suspense fallback={<NewsSkeleton />}>{searchParams.then((sp) => <NewsFront sp={sp as SP} />)}</Suspense>
       </DbSection>
     </MagazineShell>
   );
 }
 
-async function BriefingBody({ sp }: { sp: SP }) {
+function NewsSkeleton() {
+  return (
+    <div className="mt-8 animate-pulse space-y-6">
+      <div className="h-12 w-72 rounded-md bg-canvas-soft" />
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="h-72 rounded-2xl bg-canvas-soft" />
+        <div className="h-72 rounded-2xl bg-canvas-soft" />
+      </div>
+      <div className="h-96 rounded-2xl bg-canvas-soft" />
+    </div>
+  );
+}
+
+async function NewsFront({ sp }: { sp: SP }) {
   // 예전 주소(/magazine?c=exam, ?q=) 는 금융 블로그로
   const c = one(sp.c);
   const q = one(sp.q);
   if (isBlogCategory(c) || q) redirect(magazineHref({ category: isBlogCategory(c) ? c : null, q: q || null }));
 
   await connection();
-  const page = Math.max(1, Number(one(sp.page)) || 1);
-  const latest = await listArticles({ category: "briefing", pageSize: 1 });
-  const hero = page === 1 ? latest.items[0] : undefined;
-  const [past, blog] = await Promise.all([
-    listArticles({ category: "briefing", page, excludeIds: latest.items[0] ? [latest.items[0].id] : [] }),
-    page === 1 ? listArticles({ categories: BLOG_KEYS, pageSize: 3 }) : Promise.resolve({ items: [], total: 0 }),
-  ]);
+  const asked = one(sp.date);
+  const [latest, dates, popular] = await Promise.all([latestNewsDate(), newsDates(30), popularNews(3, 5)]);
+  const date = isDateKey(asked) ? asked : (latest ?? todayKST());
+  const items = await newsByDate(date);
+
+  const idx = dates.findIndex((d) => d.date === date);
+  const prev = idx >= 0 ? (dates[idx + 1]?.date ?? null) : (dates.find((d) => d.date < date)?.date ?? null);
+  const next = idx > 0 ? dates[idx - 1].date : idx === -1 ? ([...dates].reverse().find((d) => d.date > date)?.date ?? null) : null;
+
+  const [headline, ...rest] = items;
+  const bySection = NEWS_SECTIONS.map((s) => ({ s, list: rest.filter((n) => n.section === s.key) })).filter((g) => g.list.length);
 
   return (
-    <div className="mt-8 space-y-14">
-      {page === 1 && (
-        <section aria-label="오늘의 브리핑" className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          {hero ? <BriefingHero a={hero} /> : <BriefingEmpty />}
-          <div className="flex flex-col gap-4">
-            <div className="rounded-xl border border-hairline p-5">
-              <p className="flex items-center gap-2 type-heading-sm text-ink">
-                <Clock className="h-4 w-4 text-ink-mute" strokeWidth={1.75} />
-                매일 두 번
-              </p>
-              <ul className="mt-3 space-y-2 type-body-md text-ink-secondary">
-                <li>
-                  <span className="font-semibold text-ink">아침판</span> — 전날 저녁~아침 뉴스, 오늘의 채용 일정, 오늘의 용어
-                </li>
-                <li>
-                  <span className="font-semibold text-ink">점심판</span> — 오전 주요 뉴스, 오늘의 면접 질문
-                </li>
-              </ul>
-              <p className="mt-3 type-caption text-ink-mute">모든 뉴스는 원문 출처 링크를 함께 달아요.</p>
-            </div>
-            <Link href="/" className="group flex flex-1 items-center gap-3 rounded-xl bg-canvas-soft p-5 hover:bg-hairline/60">
-              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-canvas text-primary-text">
-                <CalendarDays className="h-5 w-5" strokeWidth={1.75} />
-              </span>
-              <span className="min-w-0">
-                <span className="block type-body-md font-semibold text-ink group-hover:underline">이번 주 채용 일정</span>
-                <span className="block type-caption text-ink-mute">서류 마감·필기·면접을 달력에서 확인</span>
-              </span>
-            </Link>
-          </div>
-        </section>
-      )}
+    <div className="mt-8 space-y-10">
+      <DateBar date={date} count={items.length} prev={prev} next={next} />
 
-      <section>
-        <SectionHead title={page === 1 ? "지난 브리핑" : `지난 브리핑 · ${page}쪽`} desc="날짜별로 다시 읽어 보세요" />
-        {past.items.length === 0 ? (
-          <EmptyLine text="브리핑이 쌓이면 날짜별로 다시 볼 수 있어요." />
-        ) : (
-          <ol className="divide-y divide-hairline border-y border-hairline">
-            {past.items.map((a) => (
-              <BriefingRow key={a.id} a={a} />
-            ))}
-          </ol>
-        )}
-        <div className="mt-8">
-          <Pagination
-            total={past.total}
-            page={page}
-            hrefFor={(p) => magazineHref({ category: "briefing", page: p })}
-            pageSize={MAGAZINE_PAGE_SIZE}
-          />
+      {items.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-hairline-input px-6 py-14 text-center">
+          <Newspaper className="mx-auto h-8 w-8 text-ink-mute-2" strokeWidth={1.5} />
+          <p className="mt-3 type-heading-sm text-ink">이 날짜의 브리핑이 아직 없어요</p>
+          {latest && latest !== date && (
+            <Link href={briefingDateHref(latest)} className="btn btn-toggle btn-sm mt-5">
+              가장 최근 브리핑 보기
+            </Link>
+          )}
         </div>
-      </section>
+      ) : (
+        <>
+          {/* 분야 바로가기 — 한 페이지에 모두 있고, 누르면 그 분야로 이동 */}
+          <nav aria-label="분야" className="no-scrollbar fade-x -mx-4 overflow-x-auto px-4 md:fade-x-none md:mx-0 md:px-0">
+            <ul className="flex gap-2 [&>li]:shrink-0">
+              {NEWS_SECTIONS.map((s) => {
+                const n = items.filter((i) => i.section === s.key).length;
+                return (
+                  <li key={s.key}>
+                    <a
+                      href={n ? `#sec-${s.key}` : undefined}
+                      aria-disabled={!n}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-hairline px-3.5 py-2 type-caption",
+                        n ? "text-ink-secondary hover:border-hairline-input" : "pointer-events-none text-ink-mute-2",
+                      )}
+                    >
+                      <span className={cn("h-2 w-2 rounded-full", s.dot, !n && "opacity-30")} />
+                      {s.label}
+                      <span className="tabular text-ink-mute">{n}</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+            {headline && <HeadlineCard n={headline} />}
+            <PopularNews items={popular} />
+          </div>
+
+          {bySection.length > 0 && (
+            <div className="space-y-10">
+              {bySection.map(({ s, list }) => (
+                <SectionBlock key={s.key} id={`sec-${s.key}`} label={s.label} desc={s.desc} dot={s.dot} list={list} />
+              ))}
+            </div>
+          )}
+        </>
+      )}
 
       <AdSlot slot={AD_SLOTS.inFeed} variant="infeed" />
 
-      {blog.items.length > 0 && (
+      {dates.length > 1 && (
         <section>
-          <SectionHead title="금융 블로그 새 글" desc="필기·면접·금공 지식" href={magazineHref({})} linkLabel="블로그 전체" />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {blog.items.map((a) => (
-              <ArticleCard key={a.id} a={a} />
+          <h2 className="type-heading-md text-ink">지난 브리핑</h2>
+          <ul className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7">
+            {dates.slice(0, 14).map((d) => (
+              <li key={d.date}>
+                <Link
+                  href={briefingDateHref(d.date)}
+                  aria-current={d.date === date ? "page" : undefined}
+                  className={cn(
+                    "flex flex-col items-center rounded-xl border px-2 py-3 transition-colors",
+                    d.date === date ? "border-brand-dark bg-brand-dark text-on-primary" : "border-hairline hover:border-hairline-input",
+                  )}
+                >
+                  <span className="tabular type-heading-sm">{d.date.slice(5).replace("-", ".")}</span>
+                  <span className={cn("type-micro", d.date === date ? "text-on-primary/70" : "text-ink-mute")}>뉴스 {d.count}건</span>
+                </Link>
+              </li>
             ))}
-          </div>
-          <Link href={magazineHref({})} className="btn btn-toggle btn-sm mt-6">
-            <BookOpen className="h-4 w-4" strokeWidth={1.75} />
-            금융 블로그 둘러보기
-          </Link>
+          </ul>
         </section>
       )}
     </div>
+  );
+}
+
+function SectionBlock({ id, label, desc, dot, list }: { id: string; label: string; desc: string; dot: string; list: NewsItem[] }) {
+  return (
+    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-24">
+      <div className="flex items-baseline gap-3 border-b-2 border-ink pb-3">
+        <span className={cn("h-3 w-3 shrink-0 self-center rounded-full", dot)} aria-hidden />
+        <h2 id={`${id}-title`} className="type-heading-lg text-ink">
+          {label}
+        </h2>
+        <span className="hidden type-caption text-ink-mute sm:inline">{desc}</span>
+        <span className="ml-auto tabular type-caption text-ink-mute">{list.length}건</span>
+      </div>
+      <div className="grid md:grid-cols-2 md:gap-x-10">
+        {list.map((n) => (
+          <div key={n.id} className="border-b border-hairline">
+            <NewsRow n={n} />
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

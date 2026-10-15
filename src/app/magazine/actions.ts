@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/server/db";
 import { incrementArticleViews } from "@/lib/server/magazine";
+import { incrementNewsViews } from "@/lib/server/news";
 import { isAdmin, rateLimit, requester } from "@/lib/server/security";
 
 /** '도움돼요' — 같은 사람(IP)은 글마다 한 번 */
@@ -25,4 +26,11 @@ export async function recordArticleView(id: number): Promise<void> {
   if (!Number.isInteger(id) || (await isAdmin())) return;
   const who = await requester();
   if (await rateLimit(`aview:${id}`, who.hash, 1800)) await incrementArticleViews(id);
+}
+
+/** 뉴스 조회수 (많이 본 뉴스 순위용) — 같은 IP 는 뉴스마다 30분에 한 번, 운영자는 세지 않음 */
+export async function recordNewsView(id: number): Promise<void> {
+  if (!Number.isInteger(id) || (await isAdmin())) return;
+  const who = await requester();
+  if (await rateLimit(`nview:${id}`, who.hash, 1800)) await incrementNewsViews(id);
 }

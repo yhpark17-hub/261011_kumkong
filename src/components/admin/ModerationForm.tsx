@@ -84,3 +84,48 @@ export function ConfirmForm({
     </form>
   );
 }
+
+/** 체크박스로 여러 개 골라 한 번에 처리하는 일반 폼 (name="ids" 체크박스 + name="bulk" 버튼) */
+export function BulkForm({
+  action,
+  toolbar,
+  children,
+}: {
+  action: (fd: FormData) => Promise<void>;
+  toolbar: ReactNode;
+  children: ReactNode;
+}) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const boxes = () => [...(formRef.current?.querySelectorAll<HTMLInputElement>('input[name="ids"]') ?? [])];
+  return (
+    <form
+      ref={formRef}
+      action={action}
+      onSubmit={(e) => {
+        const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+        if (submitter?.name === "bulk" && !boxes().some((b) => b.checked)) {
+          e.preventDefault();
+          window.alert("먼저 항목을 선택해 주세요.");
+          return;
+        }
+        const message = submitter?.dataset.confirm;
+        if (message && !window.confirm(message)) e.preventDefault();
+      }}
+    >
+      <div className="no-scrollbar fade-x -mx-4 flex items-center gap-2 overflow-x-auto border-b border-hairline px-4 pb-3 md:mx-0 md:px-0 md:fade-x-none">
+        <label className="inline-flex shrink-0 items-center gap-2 type-caption text-ink-secondary">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-[#533afd]"
+            onChange={(e) => boxes().forEach((b) => (b.checked = e.target.checked))}
+            aria-label="모두 선택"
+          />
+          모두 선택
+        </label>
+        <span className="mx-1 h-4 w-px shrink-0 bg-hairline" />
+        {toolbar}
+      </div>
+      {children}
+    </form>
+  );
+}

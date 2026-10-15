@@ -21,7 +21,7 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
         <div className="flex flex-wrap gap-2">
           <Link href="/admin/magazine/new" className="btn btn-sm btn-primary">
             <PenLine className="h-4 w-4" strokeWidth={1.75} />
-            매거진 글쓰기
+            블로그 글쓰기
           </Link>
           <Link href="/" className="btn btn-sm btn-toggle">
             <ExternalLink className="h-4 w-4" strokeWidth={1.75} />
