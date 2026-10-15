@@ -1,6 +1,6 @@
 import { connection } from "next/server";
 import { CATEGORY_INFO, MAGAZINE_NAME, MAGAZINE_TAGLINE, articleHref, summaryLines } from "@/lib/magazine-meta";
-import { NEWS_SECTION_INFO, newsHref } from "@/lib/news-meta";
+import { NEWS_SECTION_INFO, kindOf, newsHref } from "@/lib/news-meta";
 import { dbConfigured } from "@/lib/server/db";
 import { listArticles } from "@/lib/server/magazine";
 import { latestNewsDate, newsByDate } from "@/lib/server/news";
@@ -29,7 +29,7 @@ export async function GET() {
     const news = date ? await newsByDate(date).catch(() => []) : [];
     items = [
       ...news.map((n) => ({
-        title: n.title,
+        title: kindOf(n.section) === "question" ? `Q. ${n.title}` : kindOf(n.section) === "term" ? `오늘의 용어 · ${n.title}` : n.title,
         link: `${SITE.url}${newsHref(n.id)}`,
         category: `데일리 브리핑 · ${NEWS_SECTION_INFO[n.section].label}`,
         description: n.summary,

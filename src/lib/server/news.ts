@@ -1,19 +1,20 @@
 import "server-only";
 import type { InValue, Row } from "@libsql/client";
-import { isNewsSection, type NewsItem, type NewsSection } from "../news-meta";
+import { NEWS_PAGE_SIZE, isEdition, isNewsSection, type NewsItem, type NewsSection, type NewsSort } from "../news-meta";
 import { db } from "./db";
 
-/** 데일리 브리핑(시사 뉴스) 조회 — 공개 = status 1 + 발행 시각이 지난 것 */
+/** 데일리 브리핑(뉴스·용어·면접 질문) 조회 — 공개 = status 1 + 발행 시각이 지난 것 */
 
 const PUBLIC = "status = 1 AND published_at <= ?";
 const COLS =
-  "id, edition_date, section, title, summary, body, point, source_name, source_url, headline, status, origin, published_at, updated_at, views";
+  "id, edition_date, edition, section, title, summary, body, point, source_name, source_url, headline, status, origin, published_at, updated_at, views";
 
 function toItem(r: Row): NewsItem {
   const publishedAt = r.published_at == null ? null : Number(r.published_at);
   return {
     id: Number(r.id),
     editionDate: String(r.edition_date),
+    edition: isEdition(r.edition) ? r.edition : "",
     section: (isNewsSection(r.section) ? r.section : "policy") as NewsSection,
     title: String(r.title),
     summary: String(r.summary ?? ""),
@@ -48,6 +49,66 @@ export async function newsByDate(date: string): Promise<NewsItem[]> {
   return res.rows.map(toItem);
 }
 
+/** 브리핑 목록 — 카테고리·날짜로 거르고 최신순(날짜별)·인기순(조회수) */
+export async function listNews(opts: {
+  section?: NewsSection | null;
+  date?: string | null;
+  sort?: NewsSort;
+  page?: number;
+  pageSize?: number;
+  excludeIds?: number[];
+}): Promise<{ items: NewsItem[]; total: number }> {
+  const client = await db();
+  const where = [PUBLIC];
+  const args: InValue[] = [Date.now()];
+  if (opts.section) {
+    where.push("section = ?");
+    args.push(opts.section);
+  }
+  if (opts.date) {
+    where.push("edition_date = ?");
+    args.push(opts.date);
+  }
+  const ex = (opts.excludeIds ?? []).filter((n) => Number.isInteger(n));
+  if (ex.length) {
+    where.push(`id NOT IN (${ex.map(() => "?").join(",")})`);
+    args.push(...ex);
+  }
+  const pageSize = opts.pageSize ?? NEWS_PAGE_SIZE;
+  const page = Math.max(1, opts.page ?? 1);
+  const order =
+    opts.sort === "popular"
+      ? "views DESC, published_at DESC, id DESC"
+      : "edition_date DESC, headline DESC, published_at DESC, id DESC";
+  const [rows, count] = await Promise.all([
+    client.execute({
+      sql: `SELECT ${COLS} FROM news WHERE ${where.join(" AND ")} ORDER BY ${order} LIMIT ? OFFSET ?`,
+      args: [...args, pageSize, (page - 1) * pageSize],
+    }),
+    client.execute({ sql: `SELECT COUNT(*) AS n FROM news WHERE ${where.join(" AND ")}`, args }),
+  ]);
+  return { items: rows.rows.map(toItem), total: Number(count.rows[0]?.n ?? 0) };
+}
+
+/** 카테고리별 공개 수 (전체 기간) */
+export async function newsSectionCounts(): Promise<Map<NewsSection, number>> {
+  const client = await db();
+  const res = await client.execute({ sql: `SELECT section, COUNT(*) AS n FROM news WHERE ${PUBLIC} GROUP BY section`, args: [Date.now()] });
+  const m = new Map<NewsSection, number>();
+  for (const r of res.rows) if (isNewsSection(r.section)) m.set(r.section, Number(r.n));
+  return m;
+}
+
+/** 가장 최근 공개된 그 카테고리 한 건 (오늘의 용어·면접 질문 칸) */
+export async function latestInSection(section: NewsSection): Promise<NewsItem | null> {
+  const client = await db();
+  const res = await client.execute({
+    sql: `SELECT ${COLS} FROM news WHERE ${PUBLIC} AND section = ? ORDER BY edition_date DESC, published_at DESC, id DESC LIMIT 1`,
+    args: [Date.now(), section],
+  });
+  return res.rows[0] ? toItem(res.rows[0]) : null;
+}
+
 /** 날짜별 공개 뉴스 수 (최근 순) */
 export async function newsDates(limit = 14): Promise<{ date: string; count: number }[]> {
   const client = await db();
@@ -58,7 +119,7 @@ export async function newsDates(limit = 14): Promise<{ date: string; count: numb
   return res.rows.map((r) => ({ date: String(r.edition_date), count: Number(r.n) }));
 }
 
-/** 많이 본 뉴스 — 최근 days일 발행분 중 조회수 순 */
+/** 많이 본 기사 — 최근 days일 발행분 중 조회수 순 */
 export async function popularNews(days = 3, limit = 5): Promise<NewsItem[]> {
   const client = await db();
   const now = Date.now();
@@ -78,7 +139,7 @@ export async function getNews(id: number, opts: { admin?: boolean } = {}): Promi
   return res.rows[0] ? toItem(res.rows[0]) : null;
 }
 
-/** 같은 분야의 최근 뉴스 (자기 자신 제외) */
+/** 같은 카테고리의 최근 항목 (자기 자신 제외) */
 export async function sameSectionNews(item: NewsItem, limit = 5): Promise<NewsItem[]> {
   const client = await db();
   const res = await client.execute({
@@ -106,7 +167,7 @@ export async function publishedNewsIndex(): Promise<{ id: number; updatedAt: num
 
 export type AdminNewsFilter = "all" | "draft" | "published";
 
-export async function adminListNews(opts: { filter?: AdminNewsFilter; date?: string | null; q?: string | null }): Promise<NewsItem[]> {
+export async function adminListNews(opts: { filter?: AdminNewsFilter; date?: string | null; q?: string | null; section?: NewsSection | null }): Promise<NewsItem[]> {
   const client = await db();
   const where: string[] = ["1 = 1"];
   const args: InValue[] = [];
@@ -115,6 +176,10 @@ export async function adminListNews(opts: { filter?: AdminNewsFilter; date?: str
   if (opts.date) {
     where.push("edition_date = ?");
     args.push(opts.date);
+  }
+  if (opts.section) {
+    where.push("section = ?");
+    args.push(opts.section);
   }
   if (opts.q) {
     where.push("(title LIKE ? OR summary LIKE ?)");

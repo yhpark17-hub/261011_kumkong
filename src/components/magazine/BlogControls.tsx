@@ -6,12 +6,13 @@ import { cn } from "../ui";
 
 export type BlogView = "card" | "list";
 export const BLOG_VIEW_COOKIE = "kk_blog_view";
+export const NEWS_VIEW_COOKIE = "kk_news_view";
 
-/** 카드(사진과 크게) / 목록(글만) 보기 — 고른 방식은 이 브라우저에 기억 */
-export function ViewToggle({ view, hrefs }: { view: BlogView; hrefs: Record<BlogView, string> }) {
+/** 카드(크게) / 목록(글만) 보기 — 고른 방식은 이 브라우저에 기억 (블로그·브리핑 따로) */
+export function ViewToggle({ view, hrefs, cookie = BLOG_VIEW_COOKIE }: { view: BlogView; hrefs: Record<BlogView, string>; cookie?: string }) {
   const router = useRouter();
   const choose = (v: BlogView) => {
-    document.cookie = `${BLOG_VIEW_COOKIE}=${v}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+    document.cookie = `${cookie}=${v}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
     router.push(hrefs[v], { scroll: false });
   };
   const item = "inline-flex h-8 items-center gap-1.5 rounded-md px-3 type-caption transition-colors";

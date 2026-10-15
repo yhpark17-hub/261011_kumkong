@@ -9,7 +9,7 @@ import { DbSection } from "@/components/db/DbSection";
 import { requireAdmin } from "@/lib/server/admin";
 import { getNews } from "@/lib/server/news";
 
-export const metadata = { title: "뉴스 편집" };
+export const metadata = { title: "브리핑 편집" };
 
 export default function EditNewsPage({ params }: PageProps<"/admin/news/[id]">) {
   return (
@@ -31,12 +31,13 @@ async function EditNews({ rawId }: { rawId: string }) {
         <ArrowLeft className="h-4 w-4" strokeWidth={1.75} />
         데일리 브리핑 목록
       </Link>
-      <AdminPageTitle title="뉴스 편집" desc={n.origin === "auto" ? "자동 점검이 만든 초안이에요. 원문을 확인하고 다듬어서 공개해 주세요." : undefined} />
+      <AdminPageTitle title="브리핑 편집" desc={n.origin === "auto" ? "자동 점검이 만든 초안이에요. 원문을 확인하고 다듬어서 공개해 주세요." : undefined} />
       <NewsForm
         key={n.updatedAt}
         initial={{
           id: n.id,
           editionDate: n.editionDate,
+          edition: n.edition,
           section: n.section,
           title: n.title,
           summary: n.summary,

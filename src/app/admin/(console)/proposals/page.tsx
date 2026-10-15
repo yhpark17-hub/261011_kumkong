@@ -90,7 +90,7 @@ async function Proposals({ sp }: { sp: SP }) {
           {mag.drafts > 0 && (
             <Link href="/admin/news?filter=draft" className="mt-4 flex items-center gap-2 rounded-md bg-canvas-cream px-3 py-2 type-caption text-ink-secondary hover:underline">
               <Newspaper className="h-4 w-4" strokeWidth={1.75} />
-              검토할 데일리 브리핑 뉴스 초안 {mag.drafts}건 →
+              검토할 데일리 브리핑 초안 {mag.drafts}건 →
             </Link>
           )}
         </AdminCard>

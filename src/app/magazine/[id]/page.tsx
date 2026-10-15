@@ -40,6 +40,7 @@ function parseId(raw: string): number | null {
 
 export async function generateMetadata({ params }: PageProps<"/magazine/[id]">): Promise<Metadata> {
   const id = parseId((await params).id);
+  await connection(); // 발행 시각 비교(Date.now) 전에 — 본문과 같이 요청 시점에 그려요
   const a = id && dbConfigured() ? await getArticle(id).catch(() => null) : null;
   if (!a) return { title: MAGAZINE_NAME, robots: { index: false, follow: false } };
   const description = summaryLines(a.summary).join(" · ").slice(0, 160) || a.body.replace(/[#>*=|`[\]()!-]/g, "").slice(0, 150);

@@ -9,7 +9,7 @@ import { Pagination } from "@/components/board/parts";
 import { DbSection } from "@/components/db/DbSection";
 import { BLOG_VIEW_COOKIE, ViewToggle, type BlogView } from "@/components/magazine/BlogControls";
 import { SavedArticles } from "@/components/magazine/interactive";
-import { ArticleCard, ArticleListRow, CATEGORY_ICON, MagazineCategoryNav } from "@/components/magazine/parts";
+import { ArticleCard, ArticleListRow, CATEGORY_ICON, MagazineCategoryNav, SortSegment } from "@/components/magazine/parts";
 import { EmptyLine, FeatureCard, MagazineShell, MagazineSkeleton } from "@/components/magazine/sections";
 import { cn } from "@/components/ui";
 import {
@@ -100,7 +100,6 @@ async function BlogBody({ sp }: { sp: SP }) {
 
   const info = category ? CATEGORY_INFO[category] : null;
   const Icon = category ? CATEGORY_ICON[category] : null;
-  const seg = "inline-flex h-8 items-center rounded-md px-3 type-caption transition-colors";
 
   return (
     <div className="mt-8">
@@ -138,23 +137,7 @@ async function BlogBody({ sp }: { sp: SP }) {
               )}
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <div role="group" aria-label="정렬" className="inline-flex rounded-lg bg-canvas-soft p-1">
-                {(
-                  [
-                    ["latest", "최신순"],
-                    ["popular", "인기순"],
-                  ] as const
-                ).map(([key, label]) => (
-                  <Link
-                    key={key}
-                    href={blogHref({ category, q, sort: key, view })}
-                    aria-current={sort === key ? "true" : undefined}
-                    className={cn(seg, sort === key ? "bg-canvas text-ink shadow-level-1" : "text-ink-mute hover:text-ink")}
-                  >
-                    {label}
-                  </Link>
-                ))}
-              </div>
+              <SortSegment sort={sort} hrefs={{ latest: blogHref({ category, q, view }), popular: blogHref({ category, q, sort: "popular", view }) }} />
               <ViewToggle
                 view={view}
                 hrefs={{ card: blogHref({ category, q, sort, page, view: "card" }), list: blogHref({ category, q, sort, page, view: "list" }) }}

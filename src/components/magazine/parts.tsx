@@ -193,6 +193,30 @@ export function MagazineCategoryNav({
   );
 }
 
+/** 최신순 / 인기순 */
+export function SortSegment({ sort, hrefs }: { sort: "latest" | "popular"; hrefs: Record<"latest" | "popular", string> }) {
+  const seg = "inline-flex h-8 items-center rounded-md px-3 type-caption transition-colors";
+  return (
+    <div role="group" aria-label="정렬" className="inline-flex rounded-lg bg-canvas-soft p-1">
+      {(
+        [
+          ["latest", "최신순"],
+          ["popular", "인기순"],
+        ] as const
+      ).map(([key, label]) => (
+        <Link
+          key={key}
+          href={hrefs[key]}
+          aria-current={sort === key ? "true" : undefined}
+          className={cn(seg, sort === key ? "bg-canvas text-ink shadow-level-1" : "text-ink-mute hover:text-ink")}
+        >
+          {label}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 /** 섹션 머리 */
 export function SectionHead({ title, desc, href, linkLabel = "더 보기" }: { title: string; desc?: string; href?: string; linkLabel?: string }) {
   return (

@@ -105,7 +105,7 @@ async function Dashboard() {
           href="/admin/proposals"
         />
         <StatTile
-          label="오늘 브리핑 뉴스"
+          label="오늘 브리핑"
           value={nf.format(news.todayPublished)}
           tone={news.drafts ? "alert" : "default"}
           sub={news.drafts ? `검토 대기 초안 ${news.drafts}건` : "오늘 공개"}

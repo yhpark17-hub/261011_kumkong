@@ -5,13 +5,14 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { ChevronRight, ExternalLink, Lightbulb, PenLine } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { cn } from "@/components/ui";
 import { DbSection } from "@/components/db/DbSection";
 import { Markdown } from "@/components/magazine/Markdown";
 import { NewsViewRecorder, ShareButton } from "@/components/magazine/interactive";
-import { NewsRow, NewsSectionTag } from "@/components/magazine/news";
+import { NewsRow, NewsSectionTag, newsTitle } from "@/components/magazine/news";
 import { formatDayHeading } from "@/lib/date";
 import { MAGAZINE_NAME } from "@/lib/magazine-meta";
-import { NEWS_SECTION_INFO, briefingDateHref, formatNewsTime, newsHref } from "@/lib/news-meta";
+import { EDITION_LABEL, KIND_LABELS, NEWS_SECTION_INFO, briefingDateHref, briefingHref, formatNewsTime, newsHref } from "@/lib/news-meta";
 import { dbConfigured } from "@/lib/server/db";
 import { getNews, newsByDate, sameSectionNews } from "@/lib/server/news";
 import { isAdmin } from "@/lib/server/security";
@@ -31,6 +32,24 @@ function toParagraphs(text: string): string[] {
     .filter(Boolean);
 }
 
+const FOOTNOTE = {
+  news: "기사 원문을 확인해 요약했어요. 자세한 내용과 수치는 원문을 함께 봐 주세요.",
+  term: "핵심만 쉽게 풀었어요. 시험 직전에는 교재나 한국은행 경제용어사전 같은 공식 자료로 한 번 더 확인해 주세요.",
+  question: "답변 뼈대는 예시예요. 내 경험과 지원하는 기관에 맞게 바꿔서 써 주세요.",
+} as const;
+
+function PointBox({ label, text }: { label: string; text: string }) {
+  return (
+    <aside className="mt-8 rounded-xl border border-lemon/30 bg-canvas-cream px-5 py-4">
+      <p className="flex items-center gap-1.5 type-caption font-semibold text-lemon">
+        <Lightbulb className="h-4 w-4" strokeWidth={2} />
+        {label}
+      </p>
+      <p className="mt-2 type-body-md leading-relaxed whitespace-pre-line text-ink">{text}</p>
+    </aside>
+  );
+}
+
 function parseId(raw: string): number | null {
   const n = Number(raw);
   return Number.isInteger(n) && n > 0 ? n : null;
@@ -38,15 +57,17 @@ function parseId(raw: string): number | null {
 
 export async function generateMetadata({ params }: PageProps<"/magazine/news/[id]">): Promise<Metadata> {
   const id = parseId((await params).id);
+  await connection(); // 발행 시각 비교(Date.now) 전에 — 본문과 같이 요청 시점에 그려요
   const n = id && dbConfigured() ? await getNews(id).catch(() => null) : null;
   if (!n) return { title: "데일리 브리핑", robots: { index: false, follow: false } };
   const description = n.summary.replace(/\s+/g, " ").slice(0, 150);
+  const label = NEWS_SECTION_INFO[n.section].kind === "news" ? "데일리 브리핑" : NEWS_SECTION_INFO[n.section].label;
   return {
-    title: `${n.title} - 데일리 브리핑`,
+    title: `${newsTitle(n)} - ${label}`,
     description,
     alternates: { canonical: newsHref(n.id) },
     openGraph: {
-      title: n.title,
+      title: newsTitle(n),
       description,
       type: "article",
       publishedTime: n.publishedAt ? new Date(n.publishedAt).toISOString() : undefined,
@@ -80,11 +101,12 @@ async function NewsView({ rawId }: { rawId: string }) {
   const [sameDay, sameSection] = n.live ? await Promise.all([newsByDate(n.editionDate), sameSectionNews(n, 4)]) : [[], []];
   const others = sameDay.filter((x) => x.id !== n.id).slice(0, 8);
   const info = NEWS_SECTION_INFO[n.section];
+  const L = KIND_LABELS[info.kind];
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "NewsArticle",
-    headline: n.title,
+    "@type": info.kind === "news" ? "NewsArticle" : "Article",
+    headline: newsTitle(n),
     description: n.summary,
     datePublished: n.publishedAt ? new Date(n.publishedAt).toISOString() : undefined,
     dateModified: new Date(n.updatedAt).toISOString(),
@@ -101,7 +123,7 @@ async function NewsView({ rawId }: { rawId: string }) {
       )}
       {admin && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-canvas-cream px-4 py-3">
-          <p className="type-caption text-ink-secondary">{n.live ? "운영자 화면 — 공개 중인 뉴스예요." : "미리보기 — 아직 초안이라 다른 사람에게는 보이지 않아요."}</p>
+          <p className="type-caption text-ink-secondary">{n.live ? "운영자 화면 — 공개 중이에요." : "미리보기 — 아직 초안이라 다른 사람에게는 보이지 않아요."}</p>
           <Link href={`/admin/news/${n.id}`} className="btn btn-sm btn-secondary">
             <PenLine className="h-3.5 w-3.5" strokeWidth={1.75} />
             수정하기
@@ -116,7 +138,7 @@ async function NewsView({ rawId }: { rawId: string }) {
           데일리 브리핑
         </Link>
         <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.75} />
-        <Link href={`${briefingDateHref(n.editionDate)}#sec-${n.section}`} className="hover:text-ink hover:underline">
+        <Link href={briefingHref({ section: n.section })} className="hover:text-ink hover:underline">
           {info.label}
         </Link>
       </nav>
@@ -126,44 +148,48 @@ async function NewsView({ rawId }: { rawId: string }) {
           <div className="flex flex-wrap items-center gap-2">
             <NewsSectionTag section={n.section} />
             <Link href={briefingDateHref(n.editionDate)} className="type-caption text-ink-mute hover:underline">
-              {formatDayHeading(n.editionDate)} 브리핑
+              {formatDayHeading(n.editionDate)} {n.edition ? EDITION_LABEL[n.edition] : "브리핑"}
             </Link>
           </div>
-          <h1 className="mt-4 type-heading-lg text-ink [word-break:keep-all] md:type-display-md">{n.title}</h1>
+          <h1 className={cn("mt-4 type-heading-lg [word-break:keep-all] md:type-display-md", info.kind === "term" ? "text-ev-posting" : "text-ink")}>{newsTitle(n)}</h1>
           <p className="mt-4 flex flex-wrap items-center gap-x-2 border-b border-hairline pb-5 type-caption text-ink-mute">
-            {n.sourceName && <span>출처 {n.sourceName}</span>}
+            {n.sourceName && <span>{info.kind === "news" ? "출처" : info.kind === "term" ? "참고" : "관련 뉴스"} {n.sourceName}</span>}
             {n.publishedAt && <span className="tabular">· {formatNewsTime(n.publishedAt)}</span>}
             {n.views > 0 && <span className="tabular">· 조회 {n.views.toLocaleString()}</span>}
           </p>
 
           <div className="mt-8 space-y-5">
+            {info.kind === "question" && <p className="type-caption font-semibold text-ink-mute">{L.summary}</p>}
             {toParagraphs(n.summary).map((p, i) => (
               <p key={i} className="type-body-lg leading-[1.85] text-ink">
                 {p}
               </p>
             ))}
-            {n.body.trim() && <Markdown source={n.body} />}
           </div>
 
-          {n.point && (
-            <aside className="mt-8 rounded-xl border border-lemon/30 bg-canvas-cream px-5 py-4">
-              <p className="flex items-center gap-1.5 type-caption font-semibold text-lemon">
-                <Lightbulb className="h-4 w-4" strokeWidth={2} />왜 중요할까 · 필기·면접 포인트
-              </p>
-              <p className="mt-2 type-body-md leading-relaxed text-ink">{n.point}</p>
-            </aside>
+          {/* 용어·질문은 포인트(출제 포인트·답변 팁)를 본문보다 먼저 */}
+          {n.point && info.kind !== "news" && <PointBox label={L.point} text={n.point} />}
+
+          {n.body.trim() && (
+            <div className="mt-8">
+              {info.kind !== "news" && <h2 className="mb-3 type-heading-md text-ink">{L.body}</h2>}
+              <Markdown source={n.body} />
+            </div>
           )}
+
+          {n.point && info.kind === "news" && <PointBox label={L.point} text={n.point} />}
 
           <div className="mt-8 flex flex-wrap gap-2">
             {n.sourceUrl && (
-              <a href={n.sourceUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-primary">
-                원문 보기{n.sourceName ? ` · ${n.sourceName}` : ""}
+              <a href={n.sourceUrl} target="_blank" rel="noopener noreferrer" className={cn("btn btn-sm", info.kind === "news" ? "btn-primary" : "btn-secondary")}>
+                {L.source}
+                {n.sourceName ? ` · ${n.sourceName}` : ""}
                 <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} />
               </a>
             )}
             <ShareButton title={n.title} path={newsHref(n.id)} />
           </div>
-          <p className="mt-4 type-micro text-ink-mute">기사 원문을 확인해 요약했어요. 자세한 내용과 수치는 원문을 함께 봐 주세요.</p>
+          <p className="mt-4 type-micro text-ink-mute">{FOOTNOTE[info.kind]}</p>
 
           <AdSlot slot={AD_SLOTS.inArticle} variant="inarticle" className="mt-10" />
 
@@ -171,7 +197,7 @@ async function NewsView({ rawId }: { rawId: string }) {
             <section className="mt-12">
               <h2 className="flex items-center gap-2 border-b-2 border-ink pb-3 type-heading-md text-ink">
                 <span className={`h-2.5 w-2.5 rounded-full ${info.dot}`} aria-hidden />
-                {info.label} 최근 뉴스
+                {info.kind === "news" ? `${info.label} 최근 뉴스` : `지난 ${info.label.replace("오늘의 ", "")}`}
               </h2>
               <div className="divide-y divide-hairline">
                 {sameSection.map((x) => (
@@ -185,13 +211,13 @@ async function NewsView({ rawId }: { rawId: string }) {
         {others.length > 0 && (
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <div className="rounded-2xl border border-hairline p-5">
-              <p className="type-heading-sm text-ink">같은 날 다른 뉴스</p>
+              <p className="type-heading-sm text-ink">같은 날 브리핑</p>
               <ul className="mt-2 divide-y divide-hairline">
                 {others.map((x) => (
                   <li key={x.id}>
                     <Link href={newsHref(x.id)} className="group block py-3">
                       <NewsSectionTag section={x.section} />
-                      <span className="mt-1 line-clamp-2 type-body-md text-ink [word-break:keep-all] group-hover:underline">{x.title}</span>
+                      <span className="mt-1 line-clamp-2 type-body-md text-ink [word-break:keep-all] group-hover:underline">{newsTitle(x)}</span>
                     </Link>
                   </li>
                 ))}

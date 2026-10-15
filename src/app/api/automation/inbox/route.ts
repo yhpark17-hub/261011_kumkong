@@ -1,7 +1,5 @@
 import { connection } from "next/server";
-import { RECRUITMENTS, getCompany } from "@/lib/data";
-import { addDays } from "@/lib/date";
-import { EVENT_META } from "@/lib/meta";
+import { upcomingEvents } from "@/lib/postings";
 import { automationAuthorized, json, lastRun, recentlyChecked, unauthorized } from "@/lib/server/automation";
 import { scheduleIssues } from "@/lib/server/data-check";
 import { dbConfigured } from "@/lib/server/db";
@@ -14,7 +12,7 @@ import { automationInbox } from "@/lib/server/proposals";
  * - knownKeys: 이미 올렸거나 최근 처리한 제안 키 (중복 제안 방지)
  * - recentlyChecked: 최근 7일 안에 점검한 기관 (기관 id → 마지막 점검 시각)
  * - dataIssues: 지금 사이트에 배포된 일정 데이터의 빈 곳
- * - upcoming: 오늘부터 사흘 안의 채용 일정 (브리핑의 '오늘의 채용 일정' 용 — 사이트 데이터 그대로)
+ * - upcoming: 오늘부터 사흘 안의 채용 일정 (사이트 데이터 그대로 — 브리핑 화면은 이걸 직접 보여 줍니다)
  */
 export async function GET(req: Request) {
   await connection();
@@ -22,21 +20,7 @@ export async function GET(req: Request) {
   if (!dbConfigured()) return json({ error: "DB 없음" }, 503);
   const [inbox, run, checked] = await Promise.all([automationInbox(), lastRun(), recentlyChecked()]);
   const { rows, today } = scheduleIssues();
-  const until = addDays(today, 3);
-
-  const upcoming = RECRUITMENTS.flatMap((r) =>
-    r.events
-      .filter((e) => (e.endDate ?? e.date) >= today && e.date <= until)
-      .map((e) => ({
-        companyId: r.companyId,
-        name: getCompany(r.companyId)?.name ?? r.companyId,
-        stage: e.label ?? EVENT_META[e.type]?.label ?? e.type,
-        date: e.date,
-        ...(e.endDate ? { endDate: e.endDate } : {}),
-        ...(e.time ? { time: e.time } : {}),
-        expected: r.status === "expected",
-      })),
-  ).sort((a, b) => (a.date === b.date ? (a.time ?? "") < (b.time ?? "") ? -1 : 1 : a.date < b.date ? -1 : 1));
+  const upcoming = upcomingEvents(today, 3);
 
   return json({
     today,

@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { ArrowRight, Newspaper } from "lucide-react";
-import { NewsSectionTag } from "@/components/magazine/news";
+import { NewsSectionTag, newsTitle } from "@/components/magazine/news";
 import { ArticleRow } from "@/components/magazine/parts";
 import { formatDayHeading } from "@/lib/date";
 import { BLOG_CATEGORIES, SECTION_INFO } from "@/lib/magazine-meta";
-import { newsHref } from "@/lib/news-meta";
+import { kindOf, newsHref } from "@/lib/news-meta";
 import { listArticles } from "@/lib/server/magazine";
 import { latestNewsDate, newsByDate } from "@/lib/server/news";
 
@@ -13,9 +13,11 @@ import { latestNewsDate, newsByDate } from "@/lib/server/news";
 export async function MagazineStrip() {
   await connection();
   const [date, latest] = await Promise.all([latestNewsDate(), listArticles({ categories: BLOG_CATEGORIES.map((c) => c.key), pageSize: 3 })]);
-  const news = date ? (await newsByDate(date)).slice(0, 5) : [];
-  if (news.length === 0 && latest.items.length === 0) return null;
-  const [top, ...more] = news;
+  const day = date ? await newsByDate(date) : [];
+  if (day.length === 0 && latest.items.length === 0) return null;
+  // 맨 위는 뉴스(헤드라인 우선), 아래 줄에 나머지 뉴스·용어·면접 질문
+  const top = day.find((n) => kindOf(n.section) === "news") ?? day[0];
+  const more = day.filter((n) => n !== top).slice(0, 4);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
@@ -35,7 +37,7 @@ export async function MagazineStrip() {
           <>
             <Link href={newsHref(top.id)} className="group mt-4 block rounded-lg bg-canvas-soft p-4">
               <NewsSectionTag section={top.section} />
-              <span className="mt-2 block type-heading-sm text-ink [word-break:keep-all] group-hover:underline">{top.title}</span>
+              <span className="mt-2 block type-heading-sm text-ink [word-break:keep-all] group-hover:underline">{newsTitle(top)}</span>
               <span className="mt-1.5 line-clamp-2 type-body-md text-ink-secondary">{top.summary}</span>
             </Link>
             <ul className="mt-2 divide-y divide-hairline">
@@ -43,7 +45,7 @@ export async function MagazineStrip() {
                 <li key={n.id}>
                   <Link href={newsHref(n.id)} className="group flex items-center gap-2 py-2.5">
                     <NewsSectionTag section={n.section} className="shrink-0" />
-                    <span className="min-w-0 truncate type-body-md text-ink group-hover:underline">{n.title}</span>
+                    <span className="min-w-0 truncate type-body-md text-ink group-hover:underline">{newsTitle(n)}</span>
                   </Link>
                 </li>
               ))}

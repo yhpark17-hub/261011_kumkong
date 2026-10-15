@@ -7,10 +7,10 @@ import { BulkForm, RowCheck } from "@/components/admin/ModerationForm";
 import { AdminCard, AdminPageTitle, BulkButton, EmptyRow, RowButton, StatTile, listHref, nf } from "@/components/admin/parts";
 import { AdminSkeleton } from "@/components/admin/Skeleton";
 import { DbSection } from "@/components/db/DbSection";
-import { NewsSectionTag } from "@/components/magazine/news";
+import { NewsSectionTag, newsTitle } from "@/components/magazine/news";
 import { cn } from "@/components/ui";
 import { formatDayHeading, todayKST } from "@/lib/date";
-import { isDateKey, newsHref, type NewsItem } from "@/lib/news-meta";
+import { EDITION_LABEL, NEWS_SECTIONS, isDateKey, isNewsSection, kindOf, newsHref, type NewsItem } from "@/lib/news-meta";
 import { requireAdmin } from "@/lib/server/admin";
 import { adminListNews, newsAdminCounts, newsDates, type AdminNewsFilter } from "@/lib/server/news";
 
@@ -39,19 +39,20 @@ async function NewsAdmin({ sp }: { sp: SP }) {
   const filter = (FILTERS.find(([k]) => k === one(sp.filter))?.[0] ?? "draft") as AdminNewsFilter;
   const date = isDateKey(one(sp.date)) ? one(sp.date) : null;
   const q = one(sp.q).trim().slice(0, 40) || null;
+  const section = isNewsSection(one(sp.c)) ? (one(sp.c) as NewsItem["section"]) : null;
   const today = todayKST();
-  const [items, counts, dates] = await Promise.all([adminListNews({ filter, date, q }), newsAdminCounts(today), newsDates(10)]);
+  const [items, counts, dates] = await Promise.all([adminListNews({ filter, date, q, section }), newsAdminCounts(today), newsDates(10)]);
   const groups = [...new Set(items.map((n) => n.editionDate))].map((d) => ({ date: d, list: items.filter((n) => n.editionDate === d) }));
 
   return (
     <>
       <AdminPageTitle
         title="데일리 브리핑"
-        desc="시사 뉴스를 한 건씩 관리해요. 자동 점검이 아침·점심에 초안을 올리면, 확인하고 골라서 공개하세요."
+        desc="뉴스·오늘의 용어·면접 질문을 한 건씩 관리해요. 자동 점검이 아침·점심에 초안을 올리면, 확인하고 골라서 공개하세요."
         aside={
           <Link href="/admin/news/new" className="btn btn-sm btn-primary">
             <PenLine className="h-4 w-4" strokeWidth={1.75} />
-            뉴스 쓰기
+            브리핑 쓰기
           </Link>
         }
       />
@@ -65,13 +66,21 @@ async function NewsAdmin({ sp }: { sp: SP }) {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="no-scrollbar fade-x -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0 md:fade-x-none">
           {FILTERS.map(([key, label]) => (
-            <Link key={key} href={listHref("/admin/news", { filter: key, date, q })} className={cn("btn btn-sm shrink-0", filter === key ? "btn-on-dark" : "btn-toggle")}>
+            <Link key={key} href={listHref("/admin/news", { filter: key, date, q, c: section })} className={cn("btn btn-sm shrink-0", filter === key ? "btn-on-dark" : "btn-toggle")}>
               {label}
             </Link>
           ))}
         </div>
-        <form action="/admin/news" className="flex gap-2">
+        <form action="/admin/news" className="flex flex-wrap gap-2">
           <input type="hidden" name="filter" value={filter} />
+          <select name="c" defaultValue={section ?? ""} className="input" aria-label="카테고리">
+            <option value="">모든 카테고리</option>
+            {NEWS_SECTIONS.map((s) => (
+              <option key={s.key} value={s.key}>
+                {s.label}
+              </option>
+            ))}
+          </select>
           <input type="date" name="date" defaultValue={date ?? ""} className="input" aria-label="브리핑 날짜" />
           <input name="q" defaultValue={q ?? ""} placeholder="제목·요약 검색" className="input min-w-0 flex-1 md:w-44" aria-label="검색" />
           <button type="submit" className="btn btn-sm btn-toggle shrink-0">
@@ -82,7 +91,7 @@ async function NewsAdmin({ sp }: { sp: SP }) {
 
       <AdminCard>
         {items.length === 0 ? (
-          <EmptyRow>{filter === "draft" ? "검토할 초안이 없어요." : "조건에 맞는 뉴스가 없어요."}</EmptyRow>
+          <EmptyRow>{filter === "draft" ? "검토할 초안이 없어요." : "조건에 맞는 항목이 없어요."}</EmptyRow>
         ) : (
           <BulkForm
             action={newsAction}
@@ -90,7 +99,7 @@ async function NewsAdmin({ sp }: { sp: SP }) {
               <>
                 <BulkButton value="publish">선택 공개</BulkButton>
                 <BulkButton value="unpublish">선택 내리기</BulkButton>
-                <BulkButton value="delete" danger confirm="선택한 뉴스를 지울까요? 되돌릴 수 없어요.">
+                <BulkButton value="delete" danger confirm="선택한 항목을 지울까요? 되돌릴 수 없어요.">
                   선택 삭제
                 </BulkButton>
               </>
@@ -122,6 +131,7 @@ function Row({ n }: { n: NewsItem }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <NewsSectionTag section={n.section} />
+          {n.edition && <span className="tag bg-canvas-soft text-ink-secondary">{EDITION_LABEL[n.edition]}</span>}
           {n.status === 1 ? <span className="tag bg-ev-final-soft text-ev-final">공개</span> : <span className="tag bg-canvas-soft text-ink-secondary">초안</span>}
           {n.origin === "auto" && <span className="tag bg-canvas-cream text-lemon">자동</span>}
           {n.headline && (
@@ -132,7 +142,7 @@ function Row({ n }: { n: NewsItem }) {
           )}
         </div>
         <Link href={`/admin/news/${n.id}`} className="mt-1 block type-body-md font-semibold text-ink hover:underline">
-          {n.title}
+          {newsTitle(n)}
         </Link>
         <p className="mt-0.5 line-clamp-2 type-caption text-ink-secondary">{n.summary}</p>
         <p className="mt-1 flex flex-wrap items-center gap-x-3 type-micro text-ink-mute">
@@ -151,7 +161,7 @@ function Row({ n }: { n: NewsItem }) {
           보기
         </Link>
         {n.status === 0 ? <RowButton value={`publish:${n.id}`}>공개</RowButton> : <RowButton value={`unpublish:${n.id}`}>내리기</RowButton>}
-        {!n.headline && <RowButton value={`headline:${n.id}`}>헤드라인</RowButton>}
+        {!n.headline && kindOf(n.section) === "news" && <RowButton value={`headline:${n.id}`}>헤드라인</RowButton>}
       </div>
     </li>
   );

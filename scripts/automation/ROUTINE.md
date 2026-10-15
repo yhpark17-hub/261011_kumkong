@@ -5,10 +5,10 @@
 | 모드 | 언제 (한국 시간) | 하는 일 |
 | --- | --- | --- |
 | **점검** | 매일 06:30 · 12:00 · 20:00 | 승인된 일정 반영 → 제보 판단 → 일정 데이터 점검 → 제안 올리기 |
-| **브리핑 아침판** | 매일 06:00 | 시사 뉴스 초안 5~8건 (전날 저녁~아침) |
-| **브리핑 점심판** | 매일 12:30 | 시사 뉴스 초안 3~6건 (오전 보도) |
+| **브리핑 아침판** | 매일 06:00 | 뉴스 초안 5~8건 (전날 저녁~아침) + 오늘의 용어 1개 |
+| **브리핑 점심판** | 매일 12:30 | 뉴스 초안 3~6건 (오전 보도) + 오늘의 면접 질문 1개 |
 
-**사이트를 직접 바꾸지 않습니다.** 판단과 근거를 운영자 화면(`/admin/proposals`, `/admin/magazine`)에 제안·초안으로 올리고,
+**사이트를 직접 바꾸지 않습니다.** 판단과 근거를 운영자 화면(`/admin/proposals`, `/admin/news`, `/admin/magazine`)에 제안·초안으로 올리고,
 운영자가 승인·발행한 것만 반영됩니다. (예외: 점검 2단계 — 운영자가 이미 승인한 것을 저장소에 반영)
 
 ## 0. 공통 준비
@@ -16,7 +16,7 @@
 - 환경 변수: `KUMKONG_SITE_URL`(사이트 주소), `AUTOMATION_TOKEN`(네트워크 시크릿으로 등록했다면 없어도 됨)
 - **토큰 값은 절대 출력·커밋·로그에 남기지 마세요.** `echo $AUTOMATION_TOKEN`, `env`, `printenv` 같은 명령 금지.
 - 작업 파일은 저장소 밖 `/tmp/kk` 에 만듭니다. 저장소에는 점검 2단계 외에 아무것도 커밋하지 않습니다.
-- 사이트 호출: `node scripts/automation/api.mjs <inbox|proposals|articles|applied> [file.json]`
+- 사이트 호출: `node scripts/automation/api.mjs <inbox|proposals|news|articles|applied> [file.json]`
 
 ```bash
 mkdir -p /tmp/kk && node scripts/automation/api.mjs inbox > /tmp/kk/inbox.json
@@ -178,14 +178,21 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 
 ## 브리핑 모드 (아침판 / 점심판)
 
-데일리 브리핑은 **시사 뉴스만** 다루는 뉴스 메인 페이지입니다 (`/magazine`).
-뉴스 한 건이 한 줄로 저장되고, 분야별로 묶여 보이며, 조회수로 '많이 본 뉴스'가 정해집니다.
-채용 일정·용어 풀이·면접 질문 같은 뉴스가 아닌 내용은 넣지 않습니다. **초안으로만 저장되고 운영자가 골라서 공개합니다.**
+데일리 브리핑(`/magazine`)은 **뉴스 · 오늘의 용어 · 면접 질문**을 한 건씩 저장해 카테고리별로 보여 주는 페이지입니다.
+조회수로 '많이 본 기사'가 정해지고, **오늘의 채용 일정은 사이트 달력 데이터로 화면이 직접 보여 주므로 따로 쓰지 않습니다.**
+모두 **초안으로만 저장되고 운영자가 골라서 공개합니다.**
 
-1. 뉴스는 WebSearch 로 찾고, **원문 페이지를 WebFetch 로 직접 열어 확인한 것만** 씁니다. 확인 못 한 뉴스는 넣지 않습니다.
+| 판 | 올리는 것 |
+| --- | --- |
+| **아침판** (`"edition": "morning"`) | 전날 저녁~오늘 아침 뉴스 5~8건 (그중 가장 중요한 1건 `headline`) + **오늘의 용어 1개** |
+| **점심판** (`"edition": "noon"`) | 오늘 오전 뉴스 3~6건 + **오늘의 면접 질문 1개** (headline 없음) |
+
+### 뉴스
+
+1. WebSearch 로 찾고, **원문 페이지를 WebFetch 로 직접 열어 확인한 것만** 씁니다. 확인 못 한 뉴스는 넣지 않습니다.
 2. 금공 준비생에게 의미 있는 시사 뉴스만: 금융·경제 정책, 거시 지표, 금융시장, 주요 정책·법안, 국제 경제, 금융공기업·공공기관 소식.
    연예·사건사고·정치 공방, 개별 기업 홍보성 기사, **채용 공고 자체**(달력에서 다룸)는 넣지 않습니다.
-3. 분야(`section`) — 하나만 고릅니다:
+3. 카테고리(`section`) — 하나만 고릅니다:
    - `finance` 금융: 금리·통화정책·은행·증권·보험·금융당국 정책
    - `economy` 경제: 성장률·물가·고용·부동산·산업·수출입
    - `policy` 정책·사회: 정부 정책·법안·인구·복지·사회 이슈
@@ -195,14 +202,31 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
    - `title`: 무슨 일인지 한눈에 (기사 제목을 그대로 복사하지 말고 다시 씀, 40자 안팎)
    - `summary`: 2~4문장. 누가·무엇을·왜·숫자. 원문에 있는 수치만, 기사 문장은 그대로 옮기지 않음
    - `point`: 금공 준비생에게 왜 중요한지 1~2문장 (필기 논술·면접에서 어떻게 쓸 수 있는지)
-   - `sourceName`, `sourceUrl`: 직접 연 원문 (보도자료면 기관 보도자료 주소 우선)
+   - `sourceName`, `sourceUrl`: 직접 연 원문 **(필수)** — 보도자료면 기관 보도자료 주소 우선
    - 그날 가장 중요한 1건만 `"headline": true` (아침판에서만)
-5. 아침판은 전날 저녁~오늘 아침 보도 5~8건, 점심판은 오전 보도 3~6건. 이미 올린 뉴스(같은 링크·제목)는 자동으로 건너뜁니다.
 
-`/tmp/kk/news.json`:
+### 오늘의 용어 (`"section": "term"`, 아침판)
+
+- 그날 뉴스에 나온 금융·경제 용어 중 필기(경제·금융 상식)나 면접에 나올 만한 것 1개. **최근 90일 안에 다룬 용어는 자동으로 건너뜁니다.**
+- `title`: 용어 이름 (예: `사이드카(Sidecar)`, `예대마진`)
+- `summary`: 처음 보는 사람도 알 수 있게 2~3문장. 정의는 한국은행 경제용어사전·금융위/금감원 자료 같은 **공식 자료로 확인한 것만**.
+- `point`: 시험·면접에서 어떻게 나오는지, 헷갈리는 비슷한 용어와의 차이 1~2문장
+- `sourceName`, `sourceUrl`: 정의를 확인한 공식 자료(권장). 없으면 그 용어가 나온 오늘 뉴스 원문.
+
+### 오늘의 면접 질문 (`"section": "question"`, 점심판)
+
+- 오늘 뉴스와 연결해 금융공기업 면접에서 나올 법한 질문 1개.
+- `title`: 질문 한 문장 (물음표로 끝냄, 60자 안팎. 화면에서 앞에 `Q.` 가 붙습니다)
+- `summary`: 어떤 뉴스·배경에서 나온 질문인지 2~3문장
+- `body`: **답변 뼈대 (필수)** — `- ` 로 시작하는 3줄 안팎 (결론 → 근거 → 지원 기관과 연결)
+- `point`: 답변할 때 꼭 챙길 점 1~2문장
+- `sourceName`, `sourceUrl`: 연결된 뉴스 원문
+
+`/tmp/kk/news.json` (아침판 예):
 
 ```json
 {
+  "edition": "morning",
   "items": [
     {
       "section": "finance",
@@ -212,8 +236,32 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
       "sourceName": "금융위원회",
       "sourceUrl": "https://www.fsc.go.kr/…",
       "headline": true
+    },
+    {
+      "section": "term",
+      "title": "(예시) 망분리",
+      "summary": "2~3문장 뜻 풀이…",
+      "point": "보안과 혁신의 균형을 묻는 면접 질문으로 자주 연결돼요.",
+      "sourceName": "한국은행 경제용어사전",
+      "sourceUrl": "https://…"
     }
   ]
+}
+```
+
+점심판은 `"edition": "noon"` 에 뉴스 몇 건과 아래 같은 질문 1개:
+
+```json
+{
+  "section": "question",
+  "title": "(예시) 금리 인하가 우리 기관 사업에 미칠 영향은 무엇이라고 보나요?",
+  "summary": "오늘 ○○ 뉴스와 연결된 질문이에요…",
+  "body": "- 결론 한 줄
+- 근거 1
+- 지원 기관 업무와 연결",
+  "point": "숫자 하나와 기관 사업 하나를 꼭 넣어 말하세요.",
+  "sourceName": "언론사",
+  "sourceUrl": "https://…"
 }
 ```
 
@@ -221,7 +269,7 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 node scripts/automation/api.mjs news /tmp/kk/news.json
 ```
 
-응답의 `results[].status` 가 `invalid` 면 `reason` 을 보고 그 항목만 고쳐서 다시 올립니다. `duplicate` 는 이미 있는 뉴스입니다.
+응답의 `results[].status` 가 `invalid` 면 `reason` 을 보고 그 항목만 고쳐서 다시 올립니다. `duplicate` 는 이미 있는 항목입니다.
 
 ---
 

@@ -202,11 +202,13 @@ CREATE TABLE IF NOT EXISTS proposals (
 );
 CREATE INDEX IF NOT EXISTS idx_proposals_status ON proposals (status, id DESC);
 
--- 데일리 브리핑: 시사 뉴스 한 건 = 한 줄 (분류·많이 본 뉴스·날짜별 모아 보기)
--- status: 0 = 초안, 1 = 공개
+-- 데일리 브리핑: 뉴스·오늘의 용어·면접 질문 한 건 = 한 줄 (분류·많이 본 기사·날짜별 모아 보기)
+-- section: finance·economy·policy·global·public(뉴스) · term(용어) · question(면접 질문)
+-- edition: morning(아침판) · noon(점심판) · '' / status: 0 = 초안, 1 = 공개
 CREATE TABLE IF NOT EXISTS news (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   edition_date TEXT NOT NULL,
+  edition TEXT NOT NULL DEFAULT '',
   section TEXT NOT NULL,
   title TEXT NOT NULL,
   summary TEXT NOT NULL,
@@ -223,6 +225,7 @@ CREATE TABLE IF NOT EXISTS news (
   views INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_news_date ON news (status, edition_date DESC, id);
+CREATE INDEX IF NOT EXISTS idx_news_section ON news (section, status, published_at DESC);
 
 -- 작은 설정값 (시드 여부, 마지막 자동 점검 시각 등)
 CREATE TABLE IF NOT EXISTS kv (
@@ -239,6 +242,8 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: "exam_reviews", column: "totals", ddl: "ALTER TABLE exam_reviews ADD COLUMN totals TEXT NOT NULL DEFAULT '{}'" },
   // 콩밭 글 첨부(사진·파일) — 2026-10 추가
   { table: "posts", column: "attachments", ddl: "ALTER TABLE posts ADD COLUMN attachments TEXT NOT NULL DEFAULT '[]'" },
+  // 브리핑 아침판·점심판 — 2026-10 추가
+  { table: "news", column: "edition", ddl: "ALTER TABLE news ADD COLUMN edition TEXT NOT NULL DEFAULT ''" },
 ];
 
 async function migrate(c: Client) {
