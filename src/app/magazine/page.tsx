@@ -145,7 +145,7 @@ async function BriefingFront({ sp }: { sp: SP }) {
                 <span className="ml-2 tabular type-body-md text-ink-mute">{recent.total}건</span>
               </h2>
               <p className="mt-0.5 type-caption text-ink-mute">
-                {formatDayHeading(to)} · {formatDayHeading(from)} 브리핑이에요. 그 전 브리핑은 아래 ‘지난 브리핑 전체 보기’에서.
+                최근 이틀 동안의 브리핑만 보여 드려요. 이전 브리핑은 아래 ‘지난 브리핑 전체 보기’를 눌러 확인해 주세요.
               </p>
             </div>
             <ViewToggle view={view} cookie={NEWS_VIEW_COOKIE} hrefs={{ card: "/magazine?view=card", list: "/magazine?view=list" }} />

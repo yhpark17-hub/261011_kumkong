@@ -106,8 +106,13 @@ async function BlogBody({ sp }: { sp: SP }) {
       <MagazineCategoryNav active={category} counts={counts} />
 
       {showPick && (
-        <section aria-label="에디터 추천" className="mt-8">
-          <p className="mb-3 type-micro-cap text-primary-text">에디터 추천 · 먼저 읽어 보세요</p>
+        <section aria-labelledby="editors-pick" className="mt-8">
+          <div className="mb-4">
+            <h2 id="editors-pick" className="type-heading-lg text-ink">
+              Editor&apos;s Pick
+            </h2>
+            <p className="mt-0.5 type-caption text-ink-mute">에디터 추천 · 먼저 읽어 보세요</p>
+          </div>
           <FeatureCard a={pick} wide />
         </section>
       )}
