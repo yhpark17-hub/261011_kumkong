@@ -45,12 +45,12 @@ function useSubmitConfirm() {
       role="dialog"
       aria-modal="true"
       aria-label="확인"
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/35 p-4 sm:items-center"
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-brand-dark/45 p-4 backdrop-blur-[2px] sm:items-center"
       onClick={(e) => {
         if (e.target === e.currentTarget) setAsk(null);
       }}
     >
-      <div className="w-full max-w-sm rounded-2xl bg-canvas p-5 shadow-level-3">
+      <div className="w-full max-w-sm rounded-2xl border border-hairline bg-canvas p-5 shadow-level-2">
         <p className="type-body-md leading-relaxed text-ink [word-break:keep-all]">{ask.message}</p>
         <div className="mt-5 flex justify-end gap-2">
           {ask.notice ? (
