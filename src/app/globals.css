@@ -483,16 +483,6 @@
   }
 }
 
-/* 브리핑 헤드라인 넘김 진행 막대 */
-@keyframes kk-fill {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
 @keyframes kk-fade-in {
   from {
     opacity: 0;

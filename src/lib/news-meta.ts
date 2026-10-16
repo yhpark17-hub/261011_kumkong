@@ -104,7 +104,6 @@ export const BRIEFING_TAGLINE: Record<IssueEdition, string> = {
   morning: "금공 준비생의 아침을 여는 5분 브리핑",
   noon: "점심시간 10분, 오늘의 용어·면접 공부",
 };
-export const LETTER_EDITOR = "금콩 에디터";
 
 /** 아침판 브리핑 퀴즈 한 문제 (보기 2~4개, answer 는 0부터) */
 export interface QuizItem {

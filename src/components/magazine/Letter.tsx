@@ -1,11 +1,9 @@
 import Link from "next/link";
-import { Jua } from "next/font/google";
-import { ArrowDown, ArrowRight, BookA, ExternalLink, Lightbulb, MessageCircleQuestion, Soup, Sparkles, Sunrise } from "lucide-react";
+import { ArrowDown, ArrowRight, BookA, ExternalLink, Lightbulb, MessageCircleQuestion, Sparkles } from "lucide-react";
 import { formatDayHeading } from "@/lib/date";
 import {
   BRIEFING_TAGLINE,
   EDITION_LABEL,
-  LETTER_EDITOR,
   NEWS_SECTION_INFO,
   letterHref,
   newsHref,
@@ -16,14 +14,12 @@ import {
 import type { LetterContent } from "@/lib/server/briefing";
 import { FeedbackButton } from "../feedback/Feedback";
 import { cn } from "../ui";
+import { Masthead } from "./BriefingBrand";
 import { BriefingQuiz } from "./BriefingQuiz";
 import { Markdown } from "./Markdown";
 import { KongMascot, MascotDivider } from "./KongMascot";
 import { ShareButton, SourceLink } from "./interactive";
 import { NEWS_ICON } from "./news-icons";
-
-/** 브리핑 로고 글씨 — 둥글고 귀여운 한글 글꼴 (로고에만) */
-const jua = Jua({ weight: "400", subsets: ["latin"], preload: false, display: "swap" });
 
 /** 콩이가 기사 사이에서 하는 말 */
 const QUIPS = ["알고 있었콩?", "이것도 챙기콩!", "숨 한번 돌리콩", "거의 다 왔콩!", "끝까지 가 보콩"];
@@ -32,47 +28,18 @@ const anchor = (n: NewsItem) => `item-${n.id}`;
 /** 긴 글은 양쪽 맞춤 */
 const JUSTIFY = "ko-justify";
 
+/** 문장마다 한 줄씩 (맺는 말) — 마침표·물음표·느낌표 뒤, 또는 '/' 로 나눔 */
+function splitSentences(text: string): string[] {
+  return text
+    .split(/\s*\/\s*|(?<=[.!?])\s+/)
+    .map((t) => t.trim())
+    .filter(Boolean);
+}
+
 /** 읽는 데 걸리는 시간 (한국어 약 500자/분) */
 export function letterMinutes(c: LetterContent): number {
   const chars = [...c.all, ...c.terms, ...c.questions].reduce((sum, n) => sum + n.summary.length + n.point.length + n.body.length, 0);
   return Math.max(3, Math.round(chars / 500));
-}
-
-function Sparkle({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden>
-      <path d="M12 1.5c.9 5.6 3.9 8.6 9.5 9.5v2c-5.6.9-8.6 3.9-9.5 9.5h-2c-.9-5.6-3.9-8.6-9.5-9.5v-2C6.1 10.1 9.1 7.1 10 1.5z" fill="currentColor" />
-    </svg>
-  );
-}
-
-/** 브리핑 로고 — 콩이 + 둥근 글씨 + 판 스티커 */
-function Masthead({ issue }: { issue: BriefingIssue }) {
-  const morning = issue.edition === "morning";
-  return (
-    <div className="relative mx-auto mt-6 w-fit">
-      <Sparkle className="absolute -top-4 -left-5 h-6 w-6 text-[#ffb36b]" />
-      <Sparkle className="absolute -top-2 right-6 h-3.5 w-3.5 text-primary" />
-      <Sparkle className="absolute -right-6 bottom-6 h-4 w-4 text-[#56c08a]" />
-      <div className="relative flex -rotate-1 items-center gap-1 rounded-[28px] border-[3px] border-brand-dark bg-[#fffaf0] py-2.5 pr-6 pl-3 shadow-[5px_5px_0_0_var(--color-brand-dark)] md:pr-8">
-        <KongMascot hold={morning ? "news" : "book"} className="-my-5 -ml-5 h-20 w-20 md:h-24 md:w-24" />
-        <span className="text-left">
-          <span className="block text-[10px] font-bold tracking-[0.32em] text-primary-text">DAILY BRIEFING</span>
-          <span className={cn(jua.className, "block text-[34px] leading-[1.1] text-brand-dark [text-shadow:2px_2px_0_#ffcf8a] md:text-[42px]")}>금콩 브리핑</span>
-        </span>
-      </div>
-      <span
-        className={cn(
-          jua.className,
-          "absolute -right-3 -bottom-4 inline-flex rotate-3 items-center gap-1 rounded-full border-2 border-brand-dark px-3 py-0.5 text-[15px] text-brand-dark shadow-[2px_2px_0_0_var(--color-brand-dark)]",
-          morning ? "bg-[#ffb36b]" : "bg-[#8fd6a8]",
-        )}
-      >
-        {morning ? <Sunrise className="h-4 w-4" strokeWidth={2.2} /> : <Soup className="h-4 w-4" strokeWidth={2.2} />}
-        {EDITION_LABEL[issue.edition]}
-      </span>
-    </div>
-  );
 }
 
 function SectionLabel({ n, className }: { n: NewsItem; className?: string }) {
@@ -374,7 +341,7 @@ export function Letter({ issue, content }: { issue: BriefingIssue; content: Lett
       {/* 머리 — 로고·호수·날짜 */}
       <header className="relative px-6 pt-8 pb-8 text-center md:px-10 md:pt-10">
         <p className="type-caption font-semibold text-lemon">{BRIEFING_TAGLINE[issue.edition]}</p>
-        <Masthead issue={issue} />
+        <Masthead edition={issue.edition} className="mx-auto mt-6" />
         <p className="mt-9 tabular type-body-md font-semibold text-ink">
           {volLabel(issue.vol)} · {formatDayHeading(issue.date)}
         </p>
@@ -399,7 +366,15 @@ export function Letter({ issue, content }: { issue: BriefingIssue; content: Lett
         {/* 맺음 */}
         <footer className="pt-6 text-center">
           <KongMascot className="mx-auto h-14 w-14" wave />
-          {issue.closing && <p className="mx-auto mt-3 max-w-md type-body-md text-ink [word-break:keep-all]">{issue.closing}</p>}
+          {issue.closing && (
+            <p className="mx-auto mt-3 max-w-md type-body-md text-ink [word-break:keep-all]">
+              {splitSentences(issue.closing).map((line, i) => (
+                <span key={i} className="block">
+                  {line}
+                </span>
+              ))}
+            </p>
+          )}
           {morning && (
             <Link href={letterHref(issue.date, "noon")} className="link mt-4 inline-flex items-center gap-1 type-caption">
               점심판에서는 오늘 기사로 용어·면접 공부를 해요
@@ -414,8 +389,8 @@ export function Letter({ issue, content }: { issue: BriefingIssue; content: Lett
             </FeedbackButton>
             <ShareButton title={`금콩 브리핑 ${EDITION_LABEL[issue.edition]} ${formatDayHeading(issue.date)}`} path={letterHref(issue.date, issue.edition)} />
           </div>
-          <p className="mt-8 type-micro text-ink-mute">
-            edit. {LETTER_EDITOR} · 모든 기사는 원문을 확인해 요약했고, 자세한 수치는 원문을 함께 봐 주세요.
+          <p className="mx-auto mt-8 max-w-md rounded-xl bg-canvas px-4 py-3 type-caption text-ink-secondary [word-break:keep-all]">
+            브리핑은 기사 원문을 짧게 요약한 글이에요. 수치·날짜 같은 <strong className="font-semibold text-ink">정확한 정보는 꼭 &lsquo;자세히 보기&rsquo;로 원문 기사를 확인해 주세요.</strong>
           </p>
           <a href="#top" className="mt-3 inline-flex items-center gap-1 type-micro text-ink-mute hover:underline">
             <ArrowDown className="h-3 w-3 rotate-180" strokeWidth={2} />맨 위로

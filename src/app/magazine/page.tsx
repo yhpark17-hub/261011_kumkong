@@ -8,13 +8,12 @@ import { Newspaper, Soup, Sunrise } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { DbSection } from "@/components/db/DbSection";
 import { NEWS_VIEW_COOKIE, ViewToggle } from "@/components/magazine/BlogControls";
-import { HeadlineCarousel } from "@/components/magazine/HeadlineCarousel";
-import { ArchiveCallout, BriefingDates, FeatureItemCard, IssueCard, NewsCategoryNav, PopularNews } from "@/components/magazine/news";
+import { ArchiveCallout, BriefingDates, BriefingHeroCard, FeatureItemCard, IssueCard, NewsCategoryNav, PopularNews } from "@/components/magazine/news";
 import { EmptyLine, MagazineShell } from "@/components/magazine/sections";
 import { cn } from "@/components/ui";
 import { addDays, formatDayHeading, todayKST } from "@/lib/date";
 import { MAGAZINE_NAME, isBlogCategory, magazineHref } from "@/lib/magazine-meta";
-import { EDITION_SCHEDULE, briefingArchiveHref, isDateKey, isNewsSection, itemHref, letterHref, type NewsView } from "@/lib/news-meta";
+import { EDITION_SCHEDULE, briefingArchiveHref, isDateKey, isNewsSection, letterHref, type NewsView } from "@/lib/news-meta";
 import { arrangeLetter, getIssue, issueItems, issuesBetween, latestIssue, listIssues, recentIssues, type IssueSummary } from "@/lib/server/briefing";
 import { latestInSection, newsSectionCounts, popularNews } from "@/lib/server/news";
 import { AD_SLOTS } from "@/lib/site";
@@ -99,7 +98,9 @@ async function BriefingFront({ sp }: { sp: SP }) {
   ]);
   const morning = arrangeLetter(morningItems);
   const noon = arrangeLetter(noonItems);
-  const slides = morning.all.slice(0, 10);
+  // 맨 위 대표 카드: 그날 아침판(없으면 점심판) 한 편
+  const heroIssue = morningIssue ?? noonIssue;
+  const heroCount = morningIssue ? morning.all.length : noon.terms.length + noon.questions.length;
   const [term, question] = await Promise.all([noon.terms[0] ?? latestInSection("term"), noon.questions[0] ?? latestInSection("question")]);
 
   // 아래 목록: 위 브리핑 날 기준 앞의 이틀 (16일이면 15·14일)
@@ -141,21 +142,12 @@ async function BriefingFront({ sp }: { sp: SP }) {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-          {slides.length > 0 ? (
-            <HeadlineCarousel
-              slides={slides.map((n) => ({
-                id: n.id,
-                href: itemHref(n),
-                title: n.title,
-                section: n.section,
-                headline: n.headline,
-                imageUrl: n.imageUrl,
-                imageCredit: n.imageCredit,
-              }))}
-            />
+        {/* 대표 브리핑이 더 중요해서 넓게, 많이 본 기사는 옆에 좁게 */}
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+          {heroIssue ? (
+            <BriefingHeroCard issue={heroIssue} count={heroCount} />
           ) : (
-            <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-hairline-input px-6 py-14 text-center lg:min-h-[440px]">
+            <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-hairline-input px-6 py-14 text-center md:min-h-[440px]">
               <Newspaper className="h-8 w-8 text-ink-mute-2" strokeWidth={1.5} />
               <p className="mt-3 type-heading-sm text-ink">첫 브리핑을 준비하고 있어요</p>
               <p className="mt-1 type-body-md text-ink-mute">아침에는 기사 브리핑, 점심에는 용어·면접 공부로 찾아올게요.</p>

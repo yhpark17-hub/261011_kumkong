@@ -19,6 +19,7 @@ import {
   type NewsView,
 } from "@/lib/news-meta";
 import { cn } from "../ui";
+import { BriefingCover } from "./BriefingBrand";
 import { NEWS_ICON } from "./news-icons";
 
 export { NEWS_ICON };
@@ -318,20 +319,12 @@ export function IssueCard({ issue, top, count, view }: { issue: BriefingIssue; t
   }
   return (
     <Link href={letterHref(issue.date, issue.edition)} className="group flex flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
-      <span className={cn("relative flex items-center gap-3 px-5 py-4", morning ? "bg-[#fff1e0]" : "bg-[#e6f6ec]")}>
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-brand-dark bg-canvas">
-          <Icon className="h-5 w-5 text-brand-dark" strokeWidth={1.75} />
-        </span>
-        <span>
-          <span className="block type-micro-cap text-ink-mute">Daily Briefing</span>
-          <span className="block type-heading-sm text-brand-dark">
-            {EDITION_LABEL[issue.edition]} <span className="tabular type-caption text-ink-mute">{volLabel(issue.vol)}</span>
-          </span>
-        </span>
-        <span className="ml-auto type-caption text-ink-mute">{what}</span>
-      </span>
+      <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={coverNote(issue, count)} size="sm" className="aspect-[16/9] w-full" />
       <span className="flex flex-1 flex-col p-5">
-        <span className="type-heading-md text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
+        <span className="type-caption text-ink-mute">
+          {EDITION_LABEL[issue.edition]} · {volLabel(issue.vol)}
+        </span>
+        <span className="mt-1 type-heading-md text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
         {top.length > 0 && (
           <ol className="mt-3 space-y-1.5">
             {top.map((n, i) => (
@@ -345,6 +338,34 @@ export function IssueCard({ issue, top, count, view }: { issue: BriefingIssue; t
           </ol>
         )}
         <span className="mt-auto inline-flex items-center gap-1 pt-4 type-caption text-primary-text">
+          브리핑 읽기
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+        </span>
+      </span>
+    </Link>
+  );
+}
+
+/** 표지 오른쪽 아래 한 줄 (기사 7건 · 퀴즈 4문제) */
+function coverNote(issue: BriefingIssue, count: number): string {
+  return issue.edition === "morning" ? `기사 ${count}건${issue.quiz.length ? ` · 퀴즈 ${issue.quiz.length}문제` : ""}` : `용어·면접 ${count}개`;
+}
+
+/** 첫 화면 맨 위 — 오늘의 브리핑 한 편 (위 썸네일 · 아래 헤드라인), 누르면 브리핑으로 */
+export function BriefingHeroCard({ issue, count }: { issue: BriefingIssue; count: number }) {
+  return (
+    <Link
+      href={letterHref(issue.date, issue.edition)}
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-level-1 transition-shadow hover:shadow-level-2"
+    >
+      <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={coverNote(issue, count)} className="aspect-[16/9] w-full" />
+      <span className="flex flex-1 flex-col p-5 md:p-6">
+        <span className="type-caption font-semibold text-primary-text">
+          {EDITION_LABEL[issue.edition]} 브리핑 · {volLabel(issue.vol)}
+        </span>
+        <span className="mt-1.5 type-heading-lg text-ink [word-break:keep-all] group-hover:underline md:type-display-md">{issue.title}</span>
+        {issue.lede && <span className="mt-2 line-clamp-2 type-body-md leading-relaxed text-ink-secondary ko-justify">{issue.lede}</span>}
+        <span className="mt-auto inline-flex items-center gap-1 pt-4 type-caption font-semibold text-primary-text">
           브리핑 읽기
           <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
         </span>
