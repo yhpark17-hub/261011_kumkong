@@ -509,12 +509,11 @@ function MajorShapes() {
 /* 6. A매치 — 같은 날, 하나만                                              */
 /* ------------------------------------------------------------------ */
 
-/** 실제로 같은 날 필기를 본 기관 — 금콩 채용 일정(src/data) 기준 2026년 하반기 10월 17일(토) 필기 */
-const AMATCH_DATE = "2026. 10. 17. (토)";
+/** 흔히 A매치로 불리는 대표 기관 — 같은 날 시험을 보는 장면을 보여 주는 예시 (날짜는 적지 않아요) */
 const TICKETS = [
-  { id: "ibk", name: "IBK기업은행", shortName: "기은", logo: "/logos/ibk.png" },
-  { id: "kdic", name: "예금보험공사", shortName: "예보", logo: "/logos/kdic.png" },
-  { id: "kodit", name: "신용보증기금", shortName: "신보", logo: "/logos/kodit.png" },
+  { id: "bok", name: "한국은행", shortName: "한은", logo: "/logos/bok.png" },
+  { id: "fss", name: "금융감독원", shortName: "금감원", logo: "/logos/fss.png" },
+  { id: "kdb", name: "산업은행", shortName: "산은", logo: "/logos/kdb.png" },
 ];
 
 /** 받침 있으면 '을', 없으면 '를' */
@@ -553,7 +552,7 @@ function AMatch() {
                     <CompanyAvatar company={t} size="sm" />
                     <span className="type-heading-sm [word-break:keep-all]">{t.name}</span>
                   </span>
-                  <span className="mt-2 type-caption tabular opacity-70">{AMATCH_DATE}</span>
+                  <span className="mt-2 type-caption opacity-70">토요일 오전 10:00</span>
                   {chosen && <span className="absolute top-3 right-3 rounded-full bg-on-primary px-2 py-0.5 type-caption font-bold text-brand-dark">응시</span>}
                   {blocked && (
                     <span className="absolute inset-0 flex items-center justify-center bg-canvas/70">
@@ -565,7 +564,7 @@ function AMatch() {
             );
           })}
         </ul>
-        <p className="mt-3 type-caption text-ink-mute [word-break:keep-all]">※ 2026년 하반기에 실제로 같은 날(10월 17일) 필기를 치른 기관이에요. 시험 시간은 기관마다 달라요.</p>
+        <p className="mt-3 type-caption text-ink-mute [word-break:keep-all]">※ 이해를 돕기 위한 예시 장면이에요. 실제 필기 날짜와 시간은 해마다 기관 공고를 확인하세요.</p>
       </div>
       <KongSays>시험 일정이 겹치는 만큼 지원자는 응시할 기관을 전략적으로 선택해야 해요.</KongSays>
       {pick != null && (
