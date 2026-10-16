@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { Newspaper, Soup, Sunrise } from "lucide-react";
+import { Newspaper } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { DbSection } from "@/components/db/DbSection";
 import { NEWS_VIEW_COOKIE, ViewToggle } from "@/components/magazine/BlogControls";
+import { HeroSwitcher } from "@/components/magazine/HeroSwitcher";
 import { ArchiveCallout, BriefingHeroCard, FeatureItemCard, IssueCard, NewsCategoryNav, PopularNews } from "@/components/magazine/news";
 import { EmptyLine, MagazineShell } from "@/components/magazine/sections";
-import { cn } from "@/components/ui";
 import { addDays, formatDayHeading, todayKST } from "@/lib/date";
 import { MAGAZINE_NAME, isBlogCategory, magazineHref } from "@/lib/magazine-meta";
-import { EDITION_SCHEDULE, briefingArchiveHref, isDateKey, isNewsSection, letterHref, type NewsView } from "@/lib/news-meta";
+import { EDITION_SCHEDULE, briefingArchiveHref, isDateKey, isNewsSection, type NewsView } from "@/lib/news-meta";
 import { arrangeLetter, getIssue, issueItems, issuesBetween, latestIssue, listIssues, type IssueSummary } from "@/lib/server/briefing";
 import { latestInSection, newsSectionCounts, popularNews } from "@/lib/server/news";
 import { AD_SLOTS } from "@/lib/site";
@@ -85,7 +84,7 @@ async function BriefingFront({ sp }: { sp: SP }) {
   const [counts, latest, popular, all] = await Promise.all([
     newsSectionCounts(),
     latestIssue(),
-    popularNews(7, 5),
+    popularNews(7, 6),
     listIssues({ pageSize: 1 }),
   ]);
   // 오늘 브리핑이 아직 없으면(이른 아침) 가장 최근 브리핑을 위에
@@ -97,54 +96,32 @@ async function BriefingFront({ sp }: { sp: SP }) {
   ]);
   const morning = arrangeLetter(morningItems);
   const noon = arrangeLetter(noonItems);
-  // 맨 위 대표 카드: 그날 아침판(없으면 점심판) 한 편
-  const heroIssue = morningIssue ?? noonIssue;
-  const heroCount = morningIssue ? morning.all.length : noon.terms.length + noon.questions.length;
   const [term, question] = await Promise.all([noon.terms[0] ?? latestInSection("term"), noon.questions[0] ?? latestInSection("question")]);
 
   // 아래 목록: 위 브리핑 날 기준 앞의 이틀 (16일이면 15·14일)
   const from = addDays(heroDate, -2);
   const to = addDays(heroDate, -1);
   const recent = await issuesBetween(from, to);
-  const pill = "inline-flex items-center gap-1.5 rounded-full border-2 border-brand-dark px-3.5 py-1.5 type-caption font-semibold text-brand-dark transition-transform hover:-translate-y-0.5";
 
   return (
     <div className="mt-8">
       <NewsCategoryNav active={null} counts={counts} />
 
       <section aria-label="오늘의 브리핑" className="mt-8 space-y-6">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="type-micro-cap text-primary-text">{heroDate === today ? "오늘의 브리핑" : "가장 최근 브리핑"}</p>
-            <p className="mt-0.5 type-heading-lg text-ink">{formatDayHeading(heroDate)}</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {morningIssue && (
-              <Link href={letterHref(heroDate, "morning")} className={cn(pill, "bg-[#ffe6cc]")}>
-                <Sunrise className="h-4 w-4" strokeWidth={2} />
-                아침판 읽기
-              </Link>
-            )}
-            {noonIssue ? (
-              <Link href={letterHref(heroDate, "noon")} className={cn(pill, "bg-[#d9f2e2]")}>
-                <Soup className="h-4 w-4" strokeWidth={2} />
-                점심판 읽기
-              </Link>
-            ) : (
-              morningIssue && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-hairline-input px-3.5 py-1.5 type-caption text-ink-mute">
-                  <Soup className="h-4 w-4" strokeWidth={1.75} />
-                  점심판은 {EDITION_SCHEDULE[1].time}에 올라와요
-                </span>
-              )
-            )}
-          </div>
+        <div>
+          <p className="type-micro-cap text-primary-text">{heroDate === today ? "오늘의 브리핑" : "가장 최근 브리핑"}</p>
+          <p className="mt-0.5 type-heading-lg text-ink">{formatDayHeading(heroDate)}</p>
         </div>
 
-        {/* 대표 브리핑이 더 중요해서 넓게, 많이 본 기사는 옆에 좁게 */}
+        {/* 대표 브리핑(아침판·점심판 번갈아)이 더 중요해서 넓게, 많이 본 기사는 옆에 좁게 */}
         <div className="grid gap-6 md:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
-          {heroIssue ? (
-            <BriefingHeroCard issue={heroIssue} count={heroCount} />
+          {morningIssue || noonIssue ? (
+            <HeroSwitcher
+              slides={[
+                { edition: "morning", card: morningIssue ? <BriefingHeroCard issue={morningIssue} count={morning.all.length} /> : null, hint: `${EDITION_SCHEDULE[0].time} 공개` },
+                { edition: "noon", card: noonIssue ? <BriefingHeroCard issue={noonIssue} count={0} /> : null, hint: `${EDITION_SCHEDULE[1].time} 공개` },
+              ]}
+            />
           ) : (
             <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-hairline-input px-6 py-14 text-center md:min-h-[440px]">
               <Newspaper className="h-8 w-8 text-ink-mute-2" strokeWidth={1.5} />
@@ -152,7 +129,7 @@ async function BriefingFront({ sp }: { sp: SP }) {
               <p className="mt-1 type-body-md text-ink-mute">아침에는 기사 브리핑, 점심에는 용어·면접 공부로 찾아올게요.</p>
             </div>
           )}
-          <PopularNews items={popular} />
+          <PopularNews items={popular} fill />
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">

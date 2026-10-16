@@ -140,7 +140,9 @@ export function NewsListRow({ n }: { n: NewsItem }) {
 }
 
 /** 많이 본 기사 */
-export function PopularNews({ items, className, days = 7 }: { items: NewsItem[]; className?: string; days?: number }) {
+export function PopularNews({ items, className, days = 7, fill = false }: { items: NewsItem[]; className?: string; days?: number; fill?: boolean }) {
+  // fill: 옆 카드 높이만큼 줄 간격을 고르게 벌려 빈 곳이 없게 (기사가 4건 이상일 때)
+  const stretch = fill && items.length >= 4;
   return (
     <section aria-labelledby="popular-news" className={cn("flex flex-col rounded-2xl border border-hairline bg-canvas p-5", className)}>
       <h2 id="popular-news" className="flex items-center gap-2 type-heading-sm text-ink">
@@ -151,9 +153,9 @@ export function PopularNews({ items, className, days = 7 }: { items: NewsItem[];
       {items.length === 0 ? (
         <p className="mt-4 type-caption text-ink-mute">기사가 쌓이면 많이 본 순서로 보여 드려요.</p>
       ) : (
-        <ol className="mt-2 divide-y divide-hairline">
+        <ol className={cn("mt-2 divide-y divide-hairline", stretch && "flex flex-1 flex-col")}>
           {items.map((n, i) => (
-            <li key={n.id}>
+            <li key={n.id} className={cn(stretch && "flex flex-1 flex-col justify-center")}>
               <Link href={itemHref(n)} className="group flex gap-3 py-3">
                 <span className={cn("w-5 shrink-0 tabular type-heading-sm", i < 3 ? "text-ruby" : "text-ink-mute")}>{i + 1}</span>
                 <span className="min-w-0">
@@ -164,6 +166,12 @@ export function PopularNews({ items, className, days = 7 }: { items: NewsItem[];
             </li>
           ))}
         </ol>
+      )}
+      {fill && !stretch && (
+        <Link href={BRIEFING_ARCHIVE} className="link mt-auto inline-flex items-center gap-1 pt-4 type-caption">
+          지난 브리핑 보기
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+        </Link>
       )}
     </section>
   );
@@ -358,10 +366,14 @@ export function BriefingHeroCard({ issue, count }: { issue: BriefingIssue; count
       href={letterHref(issue.date, issue.edition)}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-level-1 transition-shadow hover:shadow-level-2"
     >
-      <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={coverNote(issue, count)} className="aspect-[16/9] w-full" />
+      <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={coverNote(issue, count)} kicker className="aspect-[16/9] w-full" />
+      <span className={cn("h-1.5 w-full", issue.edition === "morning" ? "bg-[#ffb36b]" : "bg-[#8fd6a8]")} aria-hidden />
       <span className="flex flex-1 flex-col p-5 md:p-6">
-        <span className="type-caption font-semibold text-primary-text">
-          {EDITION_LABEL[issue.edition]} 브리핑 · {volLabel(issue.vol)}
+        <span className="flex flex-wrap items-center gap-2 type-caption">
+          <span className={cn("rounded-full px-2.5 py-0.5 font-semibold text-brand-dark", issue.edition === "morning" ? "bg-[#ffe6cc]" : "bg-[#d9f2e2]")}>
+            {issue.edition === "morning" ? "아침판 · 오늘의 기사 브리핑" : "점심판 · 점심 10분 공부"}
+          </span>
+          <span className="text-ink-mute">{volLabel(issue.vol)}</span>
         </span>
         <span className="mt-1.5 type-heading-lg text-ink [word-break:keep-all] group-hover:underline md:type-display-md">{issue.title}</span>
         {issue.lede && <span className="mt-2 line-clamp-2 type-body-md leading-relaxed text-ink-secondary ko-justify">{issue.lede}</span>}

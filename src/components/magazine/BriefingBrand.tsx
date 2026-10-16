@@ -61,6 +61,7 @@ export function BriefingCover({
   date,
   note,
   size = "md",
+  kicker = false,
   className,
 }: {
   edition: IssueEdition;
@@ -69,6 +70,8 @@ export function BriefingCover({
   /** 오른쪽 아래 작은 글씨 (예: 기사 7건 · 퀴즈 4문제) */
   note?: string;
   size?: "md" | "sm";
+  /** 왼쪽 위 판 이름표를 보일지 */
+  kicker?: boolean;
   className?: string;
 }) {
   const morning = edition === "morning";
@@ -89,6 +92,18 @@ export function BriefingCover({
       <Sparkle className={cn("absolute top-[18%] left-[10%] text-[#ffb36b]", size === "sm" ? "h-4 w-4" : "h-6 w-6")} />
       <Sparkle className={cn("absolute bottom-[22%] right-[14%] text-primary/60", size === "sm" ? "h-3 w-3" : "h-4 w-4")} />
 
+      {kicker && (
+        <span
+          className={cn(
+            jua.className,
+            "absolute top-3 left-4 inline-flex items-center gap-1.5 rounded-full border-2 border-brand-dark px-3 py-1 text-[14px] text-brand-dark shadow-[2px_2px_0_0_var(--color-brand-dark)] md:top-4 md:left-5 md:text-[15px]",
+            morning ? "bg-[#ffb36b]" : "bg-[#8fd6a8]",
+          )}
+        >
+          {morning ? <Sunrise className="h-4 w-4" strokeWidth={2.2} /> : <Soup className="h-4 w-4" strokeWidth={2.2} />}
+          {morning ? "아침판 · 기사 브리핑" : "점심판 · 10분 공부"}
+        </span>
+      )}
       <Masthead edition={edition} size={size === "sm" ? "sm" : "md"} className="relative" />
 
       <span className={cn(jua.className, "absolute bottom-3 left-4 rounded-full bg-brand-dark px-3 py-1 text-on-primary", size === "sm" ? "text-[13px]" : "text-[15px] md:bottom-4 md:left-5")}>

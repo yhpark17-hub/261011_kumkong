@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ArrowDown, ArrowRight, BookA, ExternalLink, Hash, Lightbulb, MessageCircleQuestion, PenLine, Sparkles } from "lucide-react";
+import { ArrowDown, ArrowRight, BookA, ExternalLink, Hash, Info, Lightbulb, MessageCircleQuestion, PenLine, Soup, Sparkles, Sunrise } from "lucide-react";
 import { formatDayHeading } from "@/lib/date";
 import {
   BRIEFING_TAGLINE,
   EDITION_LABEL,
+  EDITION_SCHEDULE,
   NEWS_SECTION_INFO,
   letterHref,
   newsHref,
@@ -480,38 +481,73 @@ export function Letter({ issue, content }: { issue: BriefingIssue; content: Lett
 
         {morning ? <MorningBody issue={issue} content={content} /> : <NoonBody issue={issue} content={content} />}
 
-        {/* 맺음 */}
-        <footer className="pt-6 text-center">
-          <KongMascot className="mx-auto h-14 w-14" wave />
-          {issue.closing && (
-            <p className="mx-auto mt-3 max-w-md type-body-md text-ink [word-break:keep-all]">
-              {splitSentences(issue.closing).map((line, i) => (
-                <span key={i} className="block">
-                  {line}
-                </span>
-              ))}
-            </p>
-          )}
-          {morning && (
-            <Link href={letterHref(issue.date, "noon")} className="link mt-4 inline-flex items-center gap-1 type-caption">
-              점심판에서는 오늘 기사로 용어·면접 공부를 해요
-              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
-            </Link>
-          )}
-          <p className="mt-6 type-heading-sm text-ink">오늘 브리핑은 어땠나요?</p>
-          <p className="mt-1 type-caption text-ink-mute">좋았던 점, 아쉬운 점을 알려 주시면 다음 브리핑에 반영할게요.</p>
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <FeedbackButton kind="site" className="btn btn-sm btn-primary">
-              의견 보내기
-            </FeedbackButton>
-            <ShareButton title={`금콩 브리핑 ${EDITION_LABEL[issue.edition]} ${formatDayHeading(issue.date)}`} path={letterHref(issue.date, issue.edition)} />
+        {/* 맺음 — ① 콩이의 맺는 말 ② 다음 판 안내 ③ 의견·공유와 원문 확인 안내를 한 장에 */}
+        <footer className="space-y-4 pt-4">
+          <div className="flex items-end justify-center gap-3">
+            <KongMascot className="h-14 w-14" wave />
+            {issue.closing && (
+              <p className="relative max-w-sm rounded-2xl rounded-bl-sm border-2 border-brand-dark bg-canvas px-4 py-3 text-left type-body-md text-ink [word-break:keep-all]">
+                {splitSentences(issue.closing).map((line, i) => (
+                  <span key={i} className="block">
+                    {line}
+                  </span>
+                ))}
+              </p>
+            )}
           </div>
-          <p className="mx-auto mt-8 max-w-md rounded-xl bg-canvas px-4 py-3 type-caption text-ink-secondary [word-break:keep-all]">
-            브리핑은 기사 원문을 짧게 요약한 글이에요. 수치·날짜 같은 <strong className="font-semibold text-ink">정확한 정보는 꼭 &lsquo;자세히 보기&rsquo;로 원문 기사를 확인해 주세요.</strong>
-          </p>
-          <a href="#top" className="mt-3 inline-flex items-center gap-1 type-micro text-ink-mute hover:underline">
-            <ArrowDown className="h-3 w-3 rotate-180" strokeWidth={2} />맨 위로
-          </a>
+
+          {morning ? (
+            <Link
+              href={letterHref(issue.date, "noon")}
+              className="group flex items-center gap-3 rounded-2xl border border-[#8fd6a8] bg-[#eefaf2] px-4 py-3.5 transition-colors hover:bg-[#e3f6ea] sm:px-5"
+            >
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#8fd6a8] text-brand-dark">
+                <Soup className="h-5 w-5" strokeWidth={2} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block type-body-md font-semibold text-ink group-hover:underline">다음은 점심판 · {EDITION_SCHEDULE[1].time}</span>
+                <span className="block type-caption text-ink-secondary">오늘 기사로 숫자·용어·논술·면접·퀴즈 10분 공부</span>
+              </span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-ink-mute transition-transform group-hover:translate-x-0.5" strokeWidth={2} />
+            </Link>
+          ) : (
+            <div className="flex items-center gap-3 rounded-2xl border border-[#ffcf8a] bg-[#fff6ea] px-4 py-3.5 sm:px-5">
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#ffb36b] text-brand-dark">
+                <Sunrise className="h-5 w-5" strokeWidth={2} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block type-body-md font-semibold text-ink">내일 아침판은 {EDITION_SCHEDULE[0].time}</span>
+                <span className="block type-caption text-ink-secondary">밤사이 금융·경제 기사를 브리핑과 퀴즈로 정리해 둘게요</span>
+              </span>
+            </div>
+          )}
+
+          <div className="rounded-2xl bg-canvas px-4 py-5 sm:px-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="type-heading-sm text-ink">오늘 브리핑은 어땠나요?</p>
+                <p className="mt-0.5 type-caption text-ink-mute">좋았던 점, 아쉬운 점을 알려 주시면 다음 브리핑에 반영할게요.</p>
+              </div>
+              <div className="flex shrink-0 gap-2">
+                <FeedbackButton kind="site" className="btn btn-sm btn-primary">
+                  의견 보내기
+                </FeedbackButton>
+                <ShareButton title={`금콩 브리핑 ${EDITION_LABEL[issue.edition]} ${formatDayHeading(issue.date)}`} path={letterHref(issue.date, issue.edition)} />
+              </div>
+            </div>
+            <p className="mt-4 flex gap-2 border-t border-hairline pt-4 type-caption leading-relaxed text-ink-secondary [word-break:keep-all]">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink-mute" strokeWidth={2} />
+              <span>
+                브리핑은 기사 원문을 짧게 요약한 글이에요. 수치·날짜 같은 <strong className="font-semibold text-ink">정확한 정보는 꼭 &lsquo;자세히 보기&rsquo;로 원문 기사를 확인해 주세요.</strong>
+              </span>
+            </p>
+          </div>
+
+          <div className="text-right">
+            <a href="#top" className="inline-flex items-center gap-1 type-caption text-ink-mute hover:underline">
+              <ArrowDown className="h-3.5 w-3.5 rotate-180" strokeWidth={2} />맨 위로
+            </a>
+          </div>
         </footer>
       </div>
     </article>

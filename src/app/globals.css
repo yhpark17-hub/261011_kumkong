@@ -490,6 +490,16 @@
   }
 }
 
+/* 브리핑 대표 카드 자동 넘김 진행 막대 */
+@keyframes kk-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @keyframes kk-fade-in {
   from {
     opacity: 0;
