@@ -1,6 +1,6 @@
 import "server-only";
 import type { InValue, Row } from "@libsql/client";
-import { isIssueEdition, kindOf, parseQuiz, type BriefingIssue, type IssueEdition, type NewsItem } from "../news-meta";
+import { isIssueEdition, kindOf, parseExtras, parseQuiz, type BriefingIssue, type IssueEdition, type NewsItem } from "../news-meta";
 import { db } from "./db";
 import { COLS, PUBLIC, toItem } from "./news";
 
@@ -10,7 +10,7 @@ import { COLS, PUBLIC, toItem } from "./news";
  */
 
 const ISSUE_PUBLIC = "status = 1 AND published_at <= ?";
-const ISSUE_COLS = "id, issue_date, edition, vol, title, lede, closing, quiz, status, origin, published_at, updated_at, views";
+const ISSUE_COLS = "id, issue_date, edition, vol, title, lede, closing, quiz, extras, status, origin, published_at, updated_at, views";
 
 function toIssue(r: Row): BriefingIssue {
   const publishedAt = r.published_at == null ? null : Number(r.published_at);
@@ -23,6 +23,7 @@ function toIssue(r: Row): BriefingIssue {
     lede: String(r.lede ?? ""),
     closing: String(r.closing ?? ""),
     quiz: parseQuiz(r.quiz),
+    extras: parseExtras(r.extras),
     status: Number(r.status),
     origin: String(r.origin ?? "admin"),
     publishedAt,

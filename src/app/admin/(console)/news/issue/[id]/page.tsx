@@ -82,7 +82,16 @@ async function EditIssue({ rawId }: { rawId: string }) {
       <AdminCard>
         <IssueForm
           key={issue.updatedAt}
-          initial={{ id: issue.id, date: issue.date, edition: issue.edition, title: issue.title, lede: issue.lede, closing: issue.closing, quiz: issue.quiz }}
+          initial={{
+            id: issue.id,
+            date: issue.date,
+            edition: issue.edition,
+            title: issue.title,
+            lede: issue.lede,
+            closing: issue.closing,
+            quiz: issue.quiz,
+            extras: issue.extras,
+          }}
         />
       </AdminCard>
 

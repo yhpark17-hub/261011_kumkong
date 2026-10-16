@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowDown, ArrowRight, BookA, ExternalLink, Lightbulb, MessageCircleQuestion, Sparkles } from "lucide-react";
+import { ArrowDown, ArrowRight, BookA, ExternalLink, Hash, Lightbulb, MessageCircleQuestion, PenLine, Sparkles } from "lucide-react";
 import { formatDayHeading } from "@/lib/date";
 import {
   BRIEFING_TAGLINE,
@@ -37,9 +37,18 @@ function splitSentences(text: string): string[] {
 }
 
 /** 읽는 데 걸리는 시간 (한국어 약 500자/분) */
-export function letterMinutes(c: LetterContent): number {
-  const chars = [...c.all, ...c.terms, ...c.questions].reduce((sum, n) => sum + n.summary.length + n.point.length + n.body.length, 0);
+export function letterMinutes(c: LetterContent, extra = 0): number {
+  const chars = [...c.all, ...c.terms, ...c.questions].reduce((sum, n) => sum + n.summary.length + n.point.length + n.body.length, extra);
   return Math.max(3, Math.round(chars / 500));
+}
+
+/** 점심판 코너 글자 수 (읽는 시간 계산용) */
+function extrasLength(issue: BriefingIssue): number {
+  const { numbers, essay } = issue.extras;
+  const nums = numbers.reduce((s, n) => s + n.value.length + n.label.length + n.note.length, 0);
+  const es = essay ? essay.topic.length + essay.intro.length + essay.body.length + essay.conclusion.length + essay.evidence.join("").length : 0;
+  const quiz = issue.quiz.reduce((s, q) => s + q.question.length + q.options.join("").length, 0);
+  return nums + es + quiz;
 }
 
 function SectionLabel({ n, className }: { n: NewsItem; className?: string }) {
@@ -258,27 +267,44 @@ function MorningBody({ issue, content }: { issue: BriefingIssue; content: Letter
   );
 }
 
-/** 점심판 — 오늘의 용어 · 면접 질문 */
+/** 점심판 코너 머리 — ① 숫자로 보는 오늘 · 1분 */
+function CornerHead({ no, icon: Icon, title, time, tone }: { no: number; icon: typeof Hash; title: string; time: string; tone: string }) {
+  return (
+    <p className={cn("flex items-center gap-2 type-caption font-semibold", tone)}>
+      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-dark tabular text-[12px] text-on-primary">{no}</span>
+      <Icon className="h-4 w-4" strokeWidth={2} />
+      {title}
+      <span className="ml-auto font-normal text-ink-mute">{time}</span>
+    </p>
+  );
+}
+
+/** 점심판 — 오늘 아침판 기사로 하는 10분 공부: 숫자 → 용어 → 논술 → 면접 → 퀴즈 */
 function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterContent }) {
   const { terms, questions } = content;
+  const { numbers, essay } = issue.extras;
+  const corners = [
+    numbers.length > 0 && { id: "noon-numbers", title: "숫자로 보는 오늘", time: "1분" },
+    terms.length > 0 && { id: "noon-terms", title: "오늘의 용어 + 헷갈리는 짝꿍", time: "2분" },
+    essay && { id: "noon-essay", title: "논술 한 문단", time: "3분" },
+    questions.length > 0 && { id: "noon-question", title: "오늘의 면접 질문", time: "2분" },
+    issue.quiz.length > 0 && { id: "noon-quiz", title: "점심 퀴즈", time: "1분" },
+  ].filter((c): c is { id: string; title: string; time: string } => Boolean(c));
+  const no = (id: string) => corners.findIndex((c) => c.id === id) + 1;
+
   return (
     <>
       <Box>
-        <h3 className="type-heading-sm text-ink">오늘 점심에 공부할 것</h3>
+        <h3 className="flex items-baseline gap-2 type-heading-sm text-ink">
+          오늘의 점심 코스 <span className="type-micro-cap text-ink-mute">Lunch course</span>
+        </h3>
         <ol className="mt-3 space-y-2">
-          {terms.map((n) => (
-            <li key={n.id}>
-              <a href={`#${anchor(n)}`} className="group flex items-baseline gap-2 type-body-md">
-                <span className="shrink-0 font-semibold text-ev-posting">[용어]</span>
-                <span className="font-semibold text-ink group-hover:underline">{n.title}</span>
-              </a>
-            </li>
-          ))}
-          {questions.map((n) => (
-            <li key={n.id}>
-              <a href={`#${anchor(n)}`} className="group flex items-baseline gap-2 type-body-md">
-                <span className="shrink-0 font-semibold text-ev-interview2">[면접]</span>
-                <span className="min-w-0 text-ink [word-break:keep-all] group-hover:underline">{n.title}</span>
+          {corners.map((c, i) => (
+            <li key={c.id}>
+              <a href={`#${c.id}`} className="group flex items-center gap-2 type-body-md">
+                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#d9f2e2] tabular text-[11px] font-bold text-[#2f7d4f]">{i + 1}</span>
+                <span className="min-w-0 font-semibold text-ink group-hover:underline">{c.title}</span>
+                <span className="ml-auto shrink-0 type-caption text-ink-mute">{c.time}</span>
               </a>
             </li>
           ))}
@@ -289,18 +315,40 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
         </Link>
       </Box>
 
+      {/* ① 숫자로 보는 오늘 */}
+      {numbers.length > 0 && (
+        <Box id="noon-numbers">
+          <CornerHead no={no("noon-numbers")} icon={Hash} title="숫자로 보는 오늘" time="1분" tone="text-primary-text" />
+          <ul className={cn("mt-4 grid gap-3", numbers.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
+            {numbers.map((n, i) => (
+              <li key={i} className="rounded-xl bg-canvas-soft px-4 py-4">
+                <span className="block tabular text-[28px] leading-tight font-bold text-brand-dark">{n.value}</span>
+                <span className="mt-1 block type-body-md font-semibold text-ink [word-break:keep-all]">{n.label}</span>
+                {n.note && <span className="mt-1 block type-caption leading-relaxed text-ink-secondary [word-break:keep-all]">{n.note}</span>}
+              </li>
+            ))}
+          </ul>
+        </Box>
+      )}
+
+      {/* ② 오늘의 용어 + 헷갈리는 짝꿍 */}
       {terms.map((n, i) => (
-        <div key={n.id}>
-          {i === 0 ? <MascotDivider text="용어부터 정리하콩!" /> : <div className="h-6" />}
+        <div key={n.id} id={i === 0 ? "noon-terms" : undefined} className="scroll-mt-24">
+          {i === 0 ? <MascotDivider text="용어부터 정리하콩!" /> : <div className="h-5" />}
           <Box id={anchor(n)} className="border-2 border-ev-posting/40">
-            <p className="flex items-center gap-1.5 type-caption font-semibold text-ev-posting">
-              <BookA className="h-4 w-4" strokeWidth={2} />
-              오늘의 용어 {terms.length > 1 ? i + 1 : ""}
-            </p>
-            <h3 className="mt-2 type-heading-lg text-ink">{n.title}</h3>
+            {i === 0 ? (
+              <CornerHead no={no("noon-terms")} icon={BookA} title={`오늘의 용어${terms.length > 1 ? ` ${i + 1}` : ""}`} time="2분" tone="text-ev-posting" />
+            ) : (
+              <p className="flex items-center gap-1.5 type-caption font-semibold text-ev-posting">
+                <BookA className="h-4 w-4" strokeWidth={2} />
+                오늘의 용어 {i + 1}
+              </p>
+            )}
+            <h3 className="mt-3 type-heading-lg text-ink">{n.title}</h3>
             <Paragraphs text={n.summary} />
             {n.body.trim() && (
-              <div className={cn("mt-4", JUSTIFY)}>
+              <div className="mt-4 rounded-xl bg-canvas-soft px-4 py-3">
+                <p className="mb-1 type-caption font-semibold text-ink">헷갈리는 짝꿍</p>
                 <Markdown source={n.body} />
               </div>
             )}
@@ -315,18 +363,64 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
         </div>
       ))}
 
+      {/* ③ 논술 한 문단 */}
+      {essay && (
+        <>
+          <MascotDivider text="한 문단 써 보콩!" flip />
+          <Box id="noon-essay" className="border-2 border-primary/30">
+            <CornerHead no={no("noon-essay")} icon={PenLine} title="논술 한 문단" time="3분" tone="text-primary-text" />
+            <p className="mt-3 type-caption text-ink-mute">오늘 기사로 나올 법한 논술 주제예요. 개요를 보고 한 문단으로 직접 써 보세요.</p>
+            <h3 className="mt-2 type-heading-md text-ink [word-break:keep-all] md:type-heading-lg">{essay.topic}</h3>
+            <ol className="mt-4 space-y-3">
+              {(
+                [
+                  ["서론", essay.intro],
+                  ["본론", essay.body],
+                  ["결론", essay.conclusion],
+                ] as const
+              )
+                .filter(([, text]) => text)
+                .map(([label, text]) => (
+                  <li key={label} className="flex gap-3">
+                    <span className="mt-0.5 inline-flex h-6 shrink-0 items-center rounded-full bg-ev-written-soft px-2.5 type-caption font-semibold text-primary-text">{label}</span>
+                    <span className={cn("min-w-0 type-body-md leading-relaxed text-ink", JUSTIFY)}>{text}</span>
+                  </li>
+                ))}
+            </ol>
+            {essay.evidence.length > 0 && (
+              <div className="mt-4 rounded-xl bg-canvas-soft px-4 py-3">
+                <p className="type-caption font-semibold text-ink">쓸 만한 근거</p>
+                <ul className="mt-1.5 space-y-1">
+                  {essay.evidence.map((e, i) => (
+                    <li key={i} className="flex gap-2 type-body-md text-ink-secondary">
+                      <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                      <span className="min-w-0 [word-break:keep-all]">{e}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </Box>
+        </>
+      )}
+
+      {/* ④ 오늘의 면접 질문 */}
       {questions.map((n, i) => (
-        <div key={n.id}>
-          {i === 0 ? <MascotDivider text="면접 연습 가 보콩!" flip /> : <div className="h-6" />}
+        <div key={n.id} id={i === 0 ? "noon-question" : undefined} className="scroll-mt-24">
+          {i === 0 ? <MascotDivider text="면접 연습 가 보콩!" /> : <div className="h-5" />}
           <Box id={anchor(n)} className="border-2 border-ev-interview2/40">
-            <p className="flex items-center gap-1.5 type-caption font-semibold text-ev-interview2">
-              <MessageCircleQuestion className="h-4 w-4" strokeWidth={2} />
-              오늘의 면접 질문 {questions.length > 1 ? i + 1 : ""}
-            </p>
-            <h3 className="mt-2 type-heading-md text-ink [word-break:keep-all] md:type-heading-lg">Q. {n.title}</h3>
+            {i === 0 ? (
+              <CornerHead no={no("noon-question")} icon={MessageCircleQuestion} title={`오늘의 면접 질문${questions.length > 1 ? ` ${i + 1}` : ""}`} time="2분" tone="text-ev-interview2" />
+            ) : (
+              <p className="flex items-center gap-1.5 type-caption font-semibold text-ev-interview2">
+                <MessageCircleQuestion className="h-4 w-4" strokeWidth={2} />
+                오늘의 면접 질문 {i + 1}
+              </p>
+            )}
+            <h3 className="mt-3 type-heading-md text-ink [word-break:keep-all] md:type-heading-lg">Q. {n.title}</h3>
             <p className={cn("mt-3 type-body-md leading-relaxed text-ink-secondary", JUSTIFY)}>{n.summary}</p>
             {n.body.trim() && (
-              <div className={cn("mt-4 rounded-xl bg-canvas-soft px-4 py-3", JUSTIFY)}>
+              <div className="mt-4 rounded-xl bg-canvas-soft px-4 py-3">
                 <p className="mb-1 type-caption font-semibold text-ink">답변 뼈대</p>
                 <Markdown source={n.body} />
               </div>
@@ -341,15 +435,23 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
           </Box>
         </div>
       ))}
+
+      {/* ⑤ 점심 퀴즈 */}
+      {issue.quiz.length > 0 && (
+        <div id="noon-quiz" className="scroll-mt-24">
+          <MascotDivider text="마지막 퀴즈콩!" flip />
+          <BriefingQuiz quiz={issue.quiz} title="점심 퀴즈" subtitle={`오늘 공부한 용어·숫자, O/X로 확인해요. ${issue.quiz.length}문제`} />
+        </div>
+      )}
     </>
   );
 }
 
 /** 데일리 브리핑 한 호 (아침판·점심판) */
 export function Letter({ issue, content }: { issue: BriefingIssue; content: LetterContent }) {
-  const minutes = letterMinutes(content);
+  const minutes = letterMinutes(content, extrasLength(issue));
   const morning = issue.edition === "morning";
-  const count = morning ? `기사 ${content.all.length}건` : `용어 ${content.terms.length}개 · 면접 질문 ${content.questions.length}개`;
+  const count = morning ? `기사 ${content.all.length}건` : "점심 공부 5코스";
 
   return (
     <article className="theme-light overflow-hidden rounded-3xl bg-canvas-cream">

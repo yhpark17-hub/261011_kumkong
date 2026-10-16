@@ -102,7 +102,7 @@ export const isIssueEdition = (v: unknown): v is IssueEdition => v === "morning"
 
 export const BRIEFING_TAGLINE: Record<IssueEdition, string> = {
   morning: "금공 준비생의 아침을 여는 5분 브리핑",
-  noon: "점심시간 10분, 오늘의 용어·면접 공부",
+  noon: "점심시간 10분, 오늘 기사로 하는 금공 공부",
 };
 
 /** 아침판 브리핑 퀴즈 한 문제 (보기 2~4개, answer 는 0부터) */
@@ -145,6 +145,62 @@ export function parseQuiz(raw: unknown): QuizItem[] {
     .slice(0, 5);
 }
 
+/** 점심판 ① 숫자로 보는 오늘 — 아침판 기사 속 숫자 하나 */
+export interface NumberItem {
+  /** 예: 7.57% */
+  value: string;
+  /** 예: 15일 코스피 하락률 */
+  label: string;
+  /** 한 줄 의미 (선택) */
+  note: string;
+}
+
+/** 점심판 ③ 논술 한 문단 — 주제 + 서론·본론·결론 개요 + 쓸 만한 근거 */
+export interface EssayItem {
+  topic: string;
+  intro: string;
+  body: string;
+  conclusion: string;
+  evidence: string[];
+}
+
+/** 호마다 붙는 코너 (지금은 점심판만 씀) */
+export interface IssueExtras {
+  numbers: NumberItem[];
+  essay: EssayItem | null;
+}
+
+const clip = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
+
+export function parseExtras(raw: unknown): IssueExtras {
+  let v: unknown = raw;
+  if (typeof raw === "string") {
+    try {
+      v = JSON.parse(raw);
+    } catch {
+      v = {};
+    }
+  }
+  const o = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
+  const numbers = (Array.isArray(o.numbers) ? o.numbers : [])
+    .map((n) => (n && typeof n === "object" ? (n as Record<string, unknown>) : {}))
+    .map((n) => ({ value: clip(n.value, 24), label: clip(n.label, 80), note: clip(n.note, 160) }))
+    .filter((n) => n.value && n.label)
+    .slice(0, 4);
+  const e = (o.essay && typeof o.essay === "object" ? o.essay : null) as Record<string, unknown> | null;
+  const essay =
+    e && clip(e.topic, 200)
+      ? {
+          topic: clip(e.topic, 200),
+          intro: clip(e.intro, 600),
+          body: clip(e.body, 900),
+          conclusion: clip(e.conclusion, 600),
+          evidence: (Array.isArray(e.evidence) ? e.evidence : []).map((x) => clip(x, 200)).filter(Boolean).slice(0, 5),
+        }
+      : null;
+  return { numbers, essay };
+}
+
 export interface BriefingIssue {
   id: number;
   /** 'YYYY-MM-DD' — 그날 그 판의 기사(news.edition_date·edition)를 묶음 */
@@ -158,8 +214,10 @@ export interface BriefingIssue {
   lede: string;
   /** 맺는 말 (선택) */
   closing: string;
-  /** 아침판 퀴즈 */
+  /** 퀴즈 (아침판 사지선다·점심판 O/X) */
   quiz: QuizItem[];
+  /** 점심판 코너 (숫자로 보는 오늘·논술 한 문단) */
+  extras: IssueExtras;
   status: number;
   origin: string;
   publishedAt: number | null;

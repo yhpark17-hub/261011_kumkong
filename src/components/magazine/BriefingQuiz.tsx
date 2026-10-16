@@ -9,7 +9,7 @@ import { KongMascot } from "./KongMascot";
 const LETTERS = ["①", "②", "③", "④"];
 
 /** 아침판 맨 아래 — 오늘 브리핑 내용으로 푸는 퀴즈 (고르면 바로 정답·해설) */
-export function BriefingQuiz({ quiz }: { quiz: QuizItem[] }) {
+export function BriefingQuiz({ quiz, title = "오늘의 브리핑 퀴즈", subtitle }: { quiz: QuizItem[]; title?: string; subtitle?: string }) {
   const [picked, setPicked] = useState<(number | null)[]>(() => quiz.map(() => null));
   const done = picked.every((p) => p !== null);
   const correct = picked.filter((p, i) => p === quiz[i].answer).length;
@@ -21,9 +21,9 @@ export function BriefingQuiz({ quiz }: { quiz: QuizItem[] }) {
         <KongMascot className="h-12 w-12" wave />
         <div>
           <h3 id="briefing-quiz" className="type-heading-md text-ink">
-            오늘의 브리핑 퀴즈
+            {title}
           </h3>
-          <p className="type-caption text-ink-mute">방금 읽은 내용, 얼마나 기억나요? {quiz.length}문제</p>
+          <p className="type-caption text-ink-mute">{subtitle ?? `방금 읽은 내용, 얼마나 기억나요? ${quiz.length}문제`}</p>
         </div>
       </div>
 

@@ -243,6 +243,7 @@ CREATE TABLE IF NOT EXISTS briefing_issues (
   lede TEXT NOT NULL DEFAULT '',
   closing TEXT NOT NULL DEFAULT '',
   quiz TEXT NOT NULL DEFAULT '[]',
+  extras TEXT NOT NULL DEFAULT '{}',
   status INTEGER NOT NULL DEFAULT 0,
   origin TEXT NOT NULL DEFAULT 'admin',
   published_at INTEGER,
@@ -277,6 +278,8 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: "news", column: "tier", ddl: "ALTER TABLE news ADD COLUMN tier TEXT NOT NULL DEFAULT 'key'" },
   { table: "news", column: "position", ddl: "ALTER TABLE news ADD COLUMN position INTEGER NOT NULL DEFAULT 0" },
   { table: "news", column: "takeaway", ddl: "ALTER TABLE news ADD COLUMN takeaway TEXT NOT NULL DEFAULT ''" },
+  // 점심판 코너(숫자로 보는 오늘·논술 한 문단) — 2026-10 추가
+  { table: "briefing_issues", column: "extras", ddl: "ALTER TABLE briefing_issues ADD COLUMN extras TEXT NOT NULL DEFAULT '{}'" },
 ];
 
 async function migrate(c: Client) {
@@ -302,7 +305,7 @@ async function upgradeIssues(c: Client) {
         "DROP TABLE IF EXISTS briefing_issues_v2",
         `CREATE TABLE briefing_issues_v2 (
           id INTEGER PRIMARY KEY AUTOINCREMENT, issue_date TEXT NOT NULL, edition TEXT NOT NULL DEFAULT 'morning', vol INTEGER NOT NULL DEFAULT 0,
-          title TEXT NOT NULL, lede TEXT NOT NULL DEFAULT '', closing TEXT NOT NULL DEFAULT '', quiz TEXT NOT NULL DEFAULT '[]',
+          title TEXT NOT NULL, lede TEXT NOT NULL DEFAULT '', closing TEXT NOT NULL DEFAULT '', quiz TEXT NOT NULL DEFAULT '[]', extras TEXT NOT NULL DEFAULT '{}',
           status INTEGER NOT NULL DEFAULT 0, origin TEXT NOT NULL DEFAULT 'admin', published_at INTEGER, created_at INTEGER NOT NULL,
           updated_at INTEGER NOT NULL, views INTEGER NOT NULL DEFAULT 0, UNIQUE (issue_date, edition))`,
         `INSERT INTO briefing_issues_v2 (id, issue_date, edition, vol, title, lede, closing, status, origin, published_at, created_at, updated_at, views)

@@ -271,7 +271,7 @@ function IssueRow({ row }: { row: IssueSummary }) {
         </span>
         <span className="tabular">{formatDayHeading(issue.date)}</span>
         <span aria-hidden>·</span>
-        <span>{morning ? `기사 ${count}건` : `용어·면접 ${count}개`}</span>
+        <span>{morning ? `기사 ${count}건` : "점심 공부 5코스"}</span>
       </span>
       <span className="mt-2 block type-heading-md text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
       {issue.lede && <span className="mt-1.5 line-clamp-2 block type-body-md text-ink-secondary">{issue.lede}</span>}

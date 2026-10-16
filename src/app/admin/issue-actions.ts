@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { isDateKey, isIssueEdition, parseQuiz, type QuizItem } from "@/lib/news-meta";
+import { isDateKey, isIssueEdition, parseExtras, parseQuiz, type IssueExtras, type QuizItem } from "@/lib/news-meta";
 import { db } from "@/lib/server/db";
 import { isAdmin } from "@/lib/server/security";
 
@@ -35,7 +35,20 @@ function readQuiz(fd: FormData): { quiz: QuizItem[]; error?: string } {
   return { quiz: parseQuiz(out) };
 }
 
-/** 브리핑(호) 저장 — 날짜·판·제목·오늘의 흐름·맺는 말·퀴즈. 새로 만들면 편집 화면으로 */
+/** 점심판 코너 칸(num0_v·num0_l·num0_n …, essay_topic …) → 숫자로 보는 오늘·논술 한 문단 */
+function readExtras(fd: FormData): IssueExtras {
+  const numbers = [0, 1, 2, 3].map((i) => ({ value: str(fd, `num${i}_v`, 24), label: str(fd, `num${i}_l`, 80), note: str(fd, `num${i}_n`, 160) }));
+  const essay = {
+    topic: str(fd, "essay_topic", 200),
+    intro: str(fd, "essay_intro", 600),
+    body: str(fd, "essay_body", 900),
+    conclusion: str(fd, "essay_conclusion", 600),
+    evidence: str(fd, "essay_evidence", 1000).split("\n").map((l) => l.replace(/^[-·•\s]+/, "").trim()).filter(Boolean),
+  };
+  return parseExtras({ numbers, essay });
+}
+
+/** 브리핑(호) 저장 — 날짜·판·제목·오늘의 흐름·맺는 말·퀴즈(·점심판 코너). 새로 만들면 편집 화면으로 */
 export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<IssueFormState> {
   if (!(await isAdmin())) return { ok: false, error: "운영자 로그인이 필요해요." };
   const id = Number(fd.get("id")) || null;
@@ -48,8 +61,9 @@ export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<Is
   if (!isIssueEdition(edition)) return { ok: false, error: "아침판·점심판을 골라 주세요." };
   if (title.length < 4) return { ok: false, error: "제목을 적어 주세요. (목록·카드에 쓰여요)" };
   if (lede.length < 20) return { ok: false, error: "오늘의 흐름을 20자 이상 적어 주세요." };
-  const { quiz, error } = edition === "morning" ? readQuiz(fd) : { quiz: [] as QuizItem[], error: undefined };
+  const { quiz, error } = readQuiz(fd);
   if (error) return { ok: false, error };
+  const extras = edition === "noon" ? readExtras(fd) : parseExtras({});
 
   const client = await db();
   const now = Date.now();
@@ -60,16 +74,16 @@ export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<Is
     const prev = (await client.execute({ sql: "SELECT id FROM briefing_issues WHERE id = ?", args: [id] })).rows[0];
     if (!prev) return { ok: false, error: "이미 지워진 브리핑이에요." };
     await client.execute({
-      sql: "UPDATE briefing_issues SET issue_date = ?, edition = ?, title = ?, lede = ?, closing = ?, quiz = ?, updated_at = ? WHERE id = ?",
-      args: [date, edition, title, lede, closing, JSON.stringify(quiz), now, id],
+      sql: "UPDATE briefing_issues SET issue_date = ?, edition = ?, title = ?, lede = ?, closing = ?, quiz = ?, extras = ?, updated_at = ? WHERE id = ?",
+      args: [date, edition, title, lede, closing, JSON.stringify(quiz), JSON.stringify(extras), now, id],
     });
     revalidateBriefings();
     return { ok: true, savedAt: now };
   }
 
   const res = await client.execute({
-    sql: "INSERT INTO briefing_issues (issue_date, edition, title, lede, closing, quiz, status, origin, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 0, 'admin', ?, ?)",
-    args: [date, edition, title, lede, closing, JSON.stringify(quiz), now, now],
+    sql: "INSERT INTO briefing_issues (issue_date, edition, title, lede, closing, quiz, extras, status, origin, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'admin', ?, ?)",
+    args: [date, edition, title, lede, closing, JSON.stringify(quiz), JSON.stringify(extras), now, now],
   });
   revalidateBriefings();
   redirect(`/admin/news/issue/${Number(res.lastInsertRowid)}`);

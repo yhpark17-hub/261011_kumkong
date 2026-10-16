@@ -300,7 +300,7 @@ export function FeatureItemCard({ section, n, today }: { section: "term" | "ques
 export function IssueCard({ issue, top, count, view }: { issue: BriefingIssue; top: NewsItem[]; count: number; view: NewsView }) {
   const morning = issue.edition === "morning";
   const Icon = morning ? Sunrise : Soup;
-  const what = morning ? `기사 ${count}건` : `용어·면접 ${count}개`;
+  const what = morning ? `기사 ${count}건` : "점심 공부 5코스";
   if (view === "list") {
     return (
       <Link href={letterHref(issue.date, issue.edition)} className="group flex items-start gap-4 py-5">
@@ -348,7 +348,7 @@ export function IssueCard({ issue, top, count, view }: { issue: BriefingIssue; t
 
 /** 표지 오른쪽 아래 한 줄 (기사 7건 · 퀴즈 4문제) */
 function coverNote(issue: BriefingIssue, count: number): string {
-  return issue.edition === "morning" ? `기사 ${count}건${issue.quiz.length ? ` · 퀴즈 ${issue.quiz.length}문제` : ""}` : `용어·면접 ${count}개`;
+  return issue.edition === "morning" ? `기사 ${count}건${issue.quiz.length ? ` · 퀴즈 ${issue.quiz.length}문제` : ""}` : "점심 공부 5코스";
 }
 
 /** 첫 화면 맨 위 — 오늘의 브리핑 한 편 (위 썸네일 · 아래 헤드라인), 누르면 브리핑으로 */
