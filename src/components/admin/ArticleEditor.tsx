@@ -109,6 +109,8 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
   const [tab, setTab] = useState<"write" | "preview">("write");
   const [busy, setBusy] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  /** 오류를 어디(표지·본문) 아래에 보여 줄지 */
+  const [errorAt, setErrorAt] = useState<"body" | "cover">("body");
   const [dismissedDraft, setDismissedDraft] = useState(false);
   const [statusLabel, setStatusLabel] = useState(initial.statusLabel);
   // 확인 창은 화면 안에 (앱 안 브라우저는 confirm() 을 막음)
@@ -239,6 +241,7 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
   async function uploadImages(files: FileList | null, target: "body" | "cover") {
     if (!files?.length) return;
     setUploadError(null);
+    setErrorAt(target);
     const list = [...files];
     const urls: string[] = [];
     for (let i = 0; i < list.length; i++) {
@@ -251,11 +254,12 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
       }
     }
     setBusy(null);
+    // 실패해도 같은 파일을 다시 고를 수 있게 선택 비우기
+    if (imageInput.current) imageInput.current.value = "";
+    if (coverInput.current) coverInput.current.value = "";
     if (!urls.length) return;
     if (target === "cover") set("coverUrl", urls[0]);
     else insertBlock(urls.map((u) => `![](${u})`).join("\n"));
-    if (imageInput.current) imageInput.current.value = "";
-    if (coverInput.current) coverInput.current.value = "";
   }
 
   function applyTemplate(key: string, confirmed = false) {
@@ -424,9 +428,10 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
             ) : (
               <button type="button" onClick={() => coverInput.current?.click()} disabled={Boolean(busy)} className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-hairline-input py-6 type-caption text-ink-secondary hover:bg-canvas-soft">
                 <ImagePlus className="h-4 w-4" strokeWidth={1.75} />
-                표지 올리기 (16:9 권장)
+                {busy && errorAt === "cover" ? busy : "표지 올리기 (16:9 권장)"}
               </button>
             )}
+            {uploadError && errorAt === "cover" && <p className="mt-2 type-caption text-ev-doc">{uploadError}</p>}
           </div>
 
           {/* 본문 */}
@@ -515,7 +520,7 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
                 placeholder={"## 소제목\n\n본문을 적어 주세요. 위 도구로 서식을 넣을 수 있어요."}
               />
             </div>
-            {uploadError && <p className="mt-2 type-caption text-ev-doc">{uploadError}</p>}
+            {uploadError && errorAt === "body" && <p className="mt-2 type-caption text-ev-doc">{uploadError}</p>}
             <details className="mt-2 type-caption text-ink-mute">
               <summary className="cursor-pointer select-none">서식 도움말</summary>
               <ul className="mt-2 grid gap-1 sm:grid-cols-2">
