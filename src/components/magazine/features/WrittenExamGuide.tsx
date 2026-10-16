@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardList, Eye, MessagesSquare, MousePointerClick, Plus, RotateCcw } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardList, MessagesSquare, MousePointerClick, Plus, RotateCcw } from "lucide-react";
 import { cn } from "../../ui";
 import { KongMascot } from "../KongMascot";
 
@@ -102,7 +102,6 @@ const PARTS = [
     label: "NCS",
     full: "NCS 직업기초능력",
     base: true,
-    tone: "border-primary bg-ev-written-soft",
     text: "직무 수행에 필요한 기본 역량을 평가하는 시험이에요. 독해력, 자료 해석, 문제 해결 능력 등을 객관식 문항으로 평가하며, 많은 공공기관에서 필기전형의 핵심 평가 요소로 활용하고 있어요.",
   },
   {
@@ -110,7 +109,6 @@ const PARTS = [
     label: "전공",
     full: "전공",
     base: true,
-    tone: "border-[#ff9a4d] bg-[#fff1e0]",
     text: "경영·경제·법·IT 등 직무와 관련된 전문 지식을 평가하는 시험이에요. 기관에 따라 전공 시험을 실시하지 않기도 하고, 여러 과목을 함께 평가하거나 특정 과목을 심층적으로 평가하기도 해요. 자세한 내용은 5장에서 살펴볼게요.",
   },
   {
@@ -118,7 +116,6 @@ const PARTS = [
     label: "논술",
     full: "논술",
     base: false,
-    tone: "border-[#56c08a] bg-[#e3f6ea]",
     text: "주제를 받고 내 생각을 글로 쓰는 시험이에요. 일부 기관에서 보며, 경제·금융 이슈를 묻는 경우가 많아 평소 시사 흐름을 정리해 두면 좋아요.",
   },
   {
@@ -126,7 +123,6 @@ const PARTS = [
     label: "인성검사",
     full: "인성검사",
     base: false,
-    tone: "border-hairline-input bg-canvas-soft",
     text: "정답이 있는 시험이 아니라 성향을 보는 검사예요. 기관에 따라 필기와 같은 날 보기도 하고, 온라인으로 따로 보기도 해요. 솔직하고 일관되게 답하는 게 중요해요.",
   },
 ];
@@ -153,8 +149,8 @@ function ExamParts() {
                 aria-pressed={sel === i}
                 className={cn(
                   "flex min-h-24 flex-col items-center justify-center gap-1.5 rounded-2xl border-2 px-2 py-3 text-center",
-                  x.tone,
-                  !x.base && "border-dashed",
+                  // 대부분 보는 기본 시험 / 기관마다 다른 시험 — 두 가지 색으로만
+                  x.base ? "border-primary/50 bg-ev-written-soft" : "border-[#ffb36b] bg-[#fff1e0]",
                   anim,
                   sel === i ? "scale-[1.03] ring-2 ring-brand-dark ring-offset-2" : "hover:-translate-y-0.5",
                 )}
@@ -165,16 +161,6 @@ function ExamParts() {
             </div>
           ))}
         </div>
-        <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 type-caption text-ink-mute">
-          <span className="inline-flex items-center gap-1.5">
-            <span aria-hidden className="h-3 w-5 rounded border-2 border-brand-dark/50" />
-            실선 — 대부분 보는 기본 시험
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span aria-hidden className="h-3 w-5 rounded border-2 border-dashed border-brand-dark/50" />
-            점선 — 기관에 따라 있는 시험
-          </span>
-        </p>
       </div>
       <Explain eyebrow={p.base ? "기본" : "기관마다 달라요"} title={p.full}>
         {p.text}
@@ -263,11 +249,8 @@ function NcsCards() {
 interface Example {
   passage?: string;
   table?: { head: string[]; rows: string[][] };
-  list?: string[];
   question: string;
   options: string[];
-  answer: number;
-  why: string;
 }
 
 const TYPES: { key: string; one: string; points: [string, string][]; example: Example }[] = [
@@ -290,8 +273,6 @@ const TYPES: { key: string; one: string; points: [string, string][]; example: Ex
       },
       question: "자료에 대한 설명으로 옳은 것은?",
       options: ["사무직 채용 인원은 매년 늘었다.", "기술직 채용 인원은 매년 늘었다.", "2025년 전체 채용 인원은 2023년의 두 배다.", "2024년 전체 채용 인원 중 기술직이 절반을 넘는다."],
-      answer: 0,
-      why: "사무직은 40→48→60명으로 매년 늘었어요. 기술직은 2024년에 줄었고, 전체는 70명→96명이라 두 배가 아니며, 2024년 기술직은 75명 중 27명이에요. 이론 지식 없이 표를 빠르고 정확하게 읽으면 풀리는 문제예요.",
     },
   },
   {
@@ -305,8 +286,6 @@ const TYPES: { key: string; one: string; points: [string, string][]; example: Ex
     example: {
       question: "다음 중 효과적인 경청 방법으로 적절하지 않은 것은?",
       options: ["상대의 말을 끝까지 듣는다.", "상대가 말하는 동안 내가 할 대답을 미리 준비한다.", "고개를 끄덕이는 등 듣고 있다는 반응을 보인다.", "들은 내용을 요약해서 다시 확인한다."],
-      answer: 1,
-      why: "대답할 말을 미리 준비하느라 상대의 말에 집중하지 못하는 것은 경청을 방해하는 대표적인 습관이에요. 의사소통 이론을 알면 지문을 길게 읽지 않아도 바로 풀 수 있어요.",
     },
   },
   {
@@ -321,14 +300,11 @@ const TYPES: { key: string; one: string; points: [string, string][]; example: Ex
       passage: "다음은 김 주임이 오늘 처리해야 할 업무 목록이다.",
       question: "시간관리 매트릭스(긴급성·중요성)에 따를 때, 가장 먼저 처리해야 할 일은?",
       options: ["다음 달 신입 직원 교육 계획 세우기", "오늘 오후 3시까지 제출할 분기 실적 보고서 작성", "옆 팀 동료가 부탁한 단순 자료 찾기 (오늘 중)", "업무와 관련 없는 광고성 메일 정리"],
-      answer: 1,
-      why: "분기 실적 보고서는 마감이 오늘이라 긴급하고, 업무 성과와 직결돼 중요해요. 시간관리 매트릭스에서는 '긴급하고 중요한 일'을 가장 먼저 처리해요. 업무 목록(자료)을 읽고 자원관리 이론(시간관리 매트릭스)까지 적용해야 해서 피듈형이에요.",
     },
   },
 ];
 
 function ExampleCard({ ex }: { ex: Example }) {
-  const [show, setShow] = useState(false);
   return (
     <div className="rounded-2xl border-2 border-brand-dark bg-canvas px-4 py-4 sm:px-5 sm:py-5">
       <p className="type-caption font-semibold text-primary-text">예시 문제</p>
@@ -359,39 +335,15 @@ function ExampleCard({ ex }: { ex: Example }) {
           </table>
         </div>
       )}
-      {ex.list && (
-        <ul className="mt-3 space-y-1.5 rounded-lg bg-canvas-soft px-3.5 py-3">
-          {ex.list.map((l) => (
-            <li key={l} className="type-body-md text-ink [word-break:keep-all]">
-              {l}
-            </li>
-          ))}
-        </ul>
-      )}
-      {!ex.list && <p className="mt-3 type-body-md font-semibold text-ink [word-break:keep-all]">{ex.question}</p>}
+      <p className="mt-3 type-body-md font-semibold text-ink [word-break:keep-all]">{ex.question}</p>
       <ol className="mt-3 space-y-1.5">
         {ex.options.map((o, i) => (
-          <li
-            key={o}
-            className={cn("flex gap-2 rounded-lg px-3 py-2 type-body-md [word-break:keep-all]", anim, show && i === ex.answer ? "bg-[#e3f6ea] font-semibold text-[#2f7d4f]" : "bg-canvas-soft text-ink")}
-          >
+          <li key={o} className="flex gap-2 rounded-lg bg-canvas-soft px-3 py-2 type-body-md text-ink [word-break:keep-all]">
             <span className="tabular">{"①②③④"[i]}</span>
             <span>{o}</span>
-            {show && i === ex.answer && <Check className="ml-auto h-4 w-4 shrink-0" strokeWidth={2.5} />}
           </li>
         ))}
       </ol>
-      {show ? (
-        <p className="mt-3 rounded-xl bg-canvas-cream px-4 py-3 type-body-md leading-relaxed text-ink [word-break:keep-all]" aria-live="polite">
-          <strong className="font-semibold">정답 {"①②③④"[ex.answer]} · </strong>
-          {ex.why}
-        </p>
-      ) : (
-        <button type="button" onClick={() => setShow(true)} className="btn btn-sm btn-secondary mt-3">
-          <Eye className="h-3.5 w-3.5" strokeWidth={2} />
-          정답·해설 보기
-        </button>
-      )}
       <p className="mt-3 type-caption text-ink-mute">※ 유형을 보여 드리려고 새로 만든 예시 문제예요. 실제 시험 문제가 아니에요.</p>
     </div>
   );
@@ -488,13 +440,13 @@ const MAJORS = [
 /** 상자 모양: 가로 = 시험 범위(과목 수), 세로 = 깊이 */
 function ShapeBox({ w, h, color }: { w: number; h: number; color: string }) {
   return (
-    <div className="relative h-32 w-full pt-5 pr-1 pb-6 pl-5">
+    <div className="relative h-36 w-full pt-5 pr-1 pb-8 pl-5">
       {/* 세로축: 깊이 */}
-      <span aria-hidden className="absolute top-4 bottom-5 left-2 w-px bg-ink/25" />
+      <span aria-hidden className="absolute top-4 bottom-7 left-2 w-px bg-ink/25" />
       <span className="absolute top-0 left-4 text-[11px] font-semibold text-ink-mute">↑ 깊이(난이도)</span>
       {/* 가로축: 범위 */}
-      <span aria-hidden className="absolute right-1 bottom-2 left-2 h-px bg-ink/25" />
-      <span className="absolute right-3 -bottom-1 text-[11px] font-semibold text-ink-mute">범위(과목 수) →</span>
+      <span aria-hidden className="absolute right-1 bottom-7 left-2 h-px bg-ink/25" />
+      <span className="absolute right-1 bottom-0 text-[11px] leading-4 font-semibold text-ink-mute">범위(과목 수) →</span>
       <div className="relative flex h-full w-full items-end">
         {w > 0 ? (
           <span className="block rounded-md" style={{ width: `${w}%`, height: `${h}%`, background: color, opacity: 0.85 }} />
@@ -600,9 +552,8 @@ function AMatch() {
           })}
         </ul>
       </div>
-      {pick == null ? (
-        <p className="type-body-lg text-ink-secondary [word-break:keep-all]">주요 금융공기업들은 같은 날 같은 시간에 필기를 치르기도 해요. 준비생들은 이걸 &lsquo;A매치&rsquo;라고 불러요.</p>
-      ) : (
+      <KongSays>시험 일정이 겹치는 만큼 지원자는 응시할 기관을 전략적으로 선택해야 해요.</KongSays>
+      {pick != null && (
         <Explain title={`${TICKETS[pick]}을 골랐다면, 나머지 두 곳은 포기해야 해요.`}>
           하루에 한 곳만 볼 수 있으니, 서류를 낼 때부터 어느 기관 필기를 볼지 미리 정해 두는 게 좋아요.
           <Link href="/" className="link mt-3 flex items-center gap-1 type-body-md">
@@ -690,7 +641,8 @@ interface Chapter {
   short: string;
   title: string;
   lead?: string;
-  kong: string;
+  /** 장 머리(서브헤드 아래) 콩이 한마디 — 없으면 안 보임 */
+  kong?: string;
   look?: Look;
   bg: string;
   body: ReactNode;
@@ -724,7 +676,6 @@ const CHAPTERS: Chapter[] = [
     short: "문제 유형",
     title: "같은 NCS라도 문제 유형은 달라요",
     lead: "NCS는 출제 방식에 따라 크게 세 가지 유형으로 나뉘어요. 각 유형이 어떤 특징을 가지고 있는지 살펴볼게요.",
-    kong: "유형을 눌러 예시 문제를 직접 풀어 보세요!",
     bg: "bg-[#f2fbf5]",
     body: <TypeExamples />,
   },
@@ -739,9 +690,8 @@ const CHAPTERS: Chapter[] = [
   },
   {
     short: "A매치",
-    title: "같은 날 시험, 하나만 고를 수 있어요",
-    lead: "필기 날짜가 겹치면 어떻게 될까요? 직접 골라 보세요.",
-    kong: "필기 날짜가 겹치는지 미리 보고, 꼭 가고 싶은 곳부터 골라 두세요!",
+    title: "같은 날 펼쳐지는 금융공기업 입사 경쟁",
+    lead: "한국은행, 금융감독원 등 주요 금융공공기관들이 같은 날 필기시험을 치르는 것을 흔히 ‘A매치’라고 불러요.",
     bg: "bg-[#f6f4ff]",
     body: <AMatch />,
   },
@@ -756,8 +706,8 @@ const CHAPTERS: Chapter[] = [
   },
 ];
 
-/** 본문 속 화살표 버튼 */
-function ArrowBtn({ dir, disabled, onClick, label, className }: { dir: "prev" | "next"; disabled: boolean; onClick: () => void; label: string; className?: string }) {
+/** 본문 좌우 넘기기 화살표 — 반투명이라 뒤 내용이 비쳐 보여요 */
+function ArrowBtn({ dir, disabled, onClick, label }: { dir: "prev" | "next"; disabled: boolean; onClick: () => void; label: string }) {
   const Icon = dir === "prev" ? ChevronLeft : ChevronRight;
   return (
     <button
@@ -767,11 +717,16 @@ function ArrowBtn({ dir, disabled, onClick, label, className }: { dir: "prev" | 
       aria-label={label}
       title={label}
       className={cn(
-        "items-center justify-center rounded-full border border-brand-dark/15 bg-canvas text-brand-dark shadow-level-1 transition-transform hover:scale-105 disabled:pointer-events-none disabled:opacity-25",
-        className,
+        "pointer-events-auto inline-flex items-center justify-center border border-brand-dark/10 bg-canvas/45 text-brand-dark/55 backdrop-blur-[2px] transition-all",
+        "hover:border-brand-dark/25 hover:bg-canvas/90 hover:text-brand-dark hover:shadow-level-2",
+        // 휴대폰: 화면 가장자리에 붙은 반원 손잡이(글자와 안 겹치게) / 넓은 화면: 본문 양옆 여백의 동그란 버튼
+        "h-12 w-7",
+        dir === "prev" ? "rounded-r-full border-l-0" : "rounded-l-full border-r-0",
+        "sm:h-12 sm:w-12 sm:rounded-full sm:border md:h-14 md:w-14",
+        "disabled:invisible",
       )}
     >
-      <Icon className="h-5 w-5" strokeWidth={2.2} />
+      <Icon className="h-5 w-5 sm:h-7 sm:w-7" strokeWidth={2} />
     </button>
   );
 }
@@ -850,44 +805,29 @@ export function WrittenExamGuide({ title }: { title: string }) {
 
       {/* 지금 장 */}
       <section role="tabpanel" aria-label={c.title} className={cn("relative min-h-[70svh]", c.bg)}>
-        {/* 넓은 화면: 본문 양옆 화살표 */}
-        <ArrowBtn dir="prev" disabled={ch === 0} onClick={() => go(ch - 1)} label={prevLabel} className="absolute top-40 left-[max(1rem,calc(50%-560px))] hidden h-12 w-12 xl:inline-flex" />
-        <ArrowBtn
-          dir="next"
-          disabled={ch === CHAPTERS.length - 1}
-          onClick={() => go(ch + 1)}
-          label={nextLabel}
-          className="absolute top-40 right-[max(1rem,calc(50%-560px))] hidden h-12 w-12 xl:inline-flex"
-        />
-
-        <div key={ch} className="mx-auto max-w-[960px] px-5 py-8 motion-safe:animate-[kk-fade-in_.35s_ease-out] md:px-8 md:py-12">
-          <div className="flex items-center justify-between gap-3">
-            <p className="type-micro-cap text-primary-text">
-              {String(ch + 1).padStart(2, "0")} · {c.short}
-            </p>
-            {/* 좁은 화면: 장 머리 오른쪽 화살표 */}
-            <span className="flex shrink-0 items-center gap-1.5 xl:hidden">
-              <ArrowBtn dir="prev" disabled={ch === 0} onClick={() => go(ch - 1)} label={prevLabel} className="inline-flex h-9 w-9" />
-              <span className="tabular type-caption text-ink-mute">
-                {ch + 1}/{CHAPTERS.length}
-              </span>
-              <ArrowBtn dir="next" disabled={ch === CHAPTERS.length - 1} onClick={() => go(ch + 1)} label={nextLabel} className="inline-flex h-9 w-9" />
-            </span>
+        {/* 본문 좌우 화살표 — 화면 세로 가운데에 붙어 따라오고, 내용을 가리지 않게 반투명 */}
+        <div aria-hidden={false} className="pointer-events-none absolute inset-0 z-10">
+          <div className="sticky top-[50svh] flex -translate-y-1/2 justify-between sm:px-2 md:px-3">
+            <ArrowBtn dir="prev" disabled={ch === 0} onClick={() => go(ch - 1)} label={prevLabel} />
+            <ArrowBtn dir="next" disabled={ch === CHAPTERS.length - 1} onClick={() => go(ch + 1)} label={nextLabel} />
           </div>
+        </div>
+
+        <div key={ch} className="mx-auto max-w-[1040px] px-5 py-8 motion-safe:animate-[kk-fade-in_.35s_ease-out] sm:px-14 md:px-20 md:py-12">
+          <p className="type-micro-cap text-primary-text">
+            {String(ch + 1).padStart(2, "0")} · {c.short}
+            <span className="ml-2 tabular text-ink-mute">
+              {ch + 1}/{CHAPTERS.length}
+            </span>
+          </p>
           <h2 className="mt-1 type-heading-lg font-bold text-ink [word-break:keep-all] md:type-display-md">{c.title}</h2>
           {c.lead && <p className="mt-2 type-body-lg text-ink-secondary [word-break:keep-all]">{c.lead}</p>}
-          <div className="mt-5">
-            <KongSays look={c.look}>{c.kong}</KongSays>
-          </div>
-          <div className="mt-7">{c.body}</div>
-          {ch < CHAPTERS.length - 1 && (
-            <button type="button" onClick={() => go(ch + 1)} className="group mt-10 flex w-full items-center justify-end gap-2 border-t border-ink/10 pt-5 type-body-md text-ink-secondary hover:text-ink">
-              다음 장 · <span className="font-semibold text-ink">{CHAPTERS[ch + 1].short}</span>
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-brand-dark/15 bg-canvas text-brand-dark shadow-level-1 transition-transform group-hover:translate-x-0.5">
-                <ChevronRight className="h-5 w-5" strokeWidth={2.2} />
-              </span>
-            </button>
+          {c.kong && (
+            <div className="mt-5">
+              <KongSays look={c.look}>{c.kong}</KongSays>
+            </div>
           )}
+          <div className="mt-7">{c.body}</div>
         </div>
       </section>
     </div>
