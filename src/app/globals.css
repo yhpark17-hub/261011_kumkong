@@ -6,7 +6,9 @@
  * - 글꼴: Sohne(유료) 대신 문서가 권장하는 Inter 계열 → Inter 기반 한글 폰트 Pretendard 사용.
  * - 일정 유형 색상은 문서 팔레트(ruby·indigo·magenta·lemon·shadow-blue·ink-mute)로만 매핑합니다.
  */
-:root {
+/* .theme-light — 다크 모드여도 밝은 종이처럼 보여야 하는 곳 (데일리 브리핑 본문·표지) */
+:root,
+.theme-light {
   /* Brand & Accent */
   --primary: #533afd;
   --primary-deep: #4434d4;
@@ -57,6 +59,11 @@
 
   --mesh-opacity: 0.9;
   color-scheme: light;
+}
+
+/* 물려받는 글자색도 밝은 쪽으로 다시 계산 */
+.theme-light {
+  color: var(--ink);
 }
 
 /* 다크 모드 — 문서의 "dashboard track flips polarity to a dark-app shell" */

@@ -59,14 +59,16 @@ function Cover({ n }: { n: NewsItem }) {
   }
   const Icon = NEWS_ICON[n.section];
   return (
-    <div aria-hidden className="relative mt-5 aspect-[16/9] overflow-hidden rounded-xl bg-brand-dark sm:aspect-[16/7]">
+    <div aria-hidden className="relative mt-5 flex min-h-[160px] flex-col justify-end overflow-hidden rounded-xl bg-brand-dark px-5 pt-10 pb-5 sm:min-h-[220px] md:px-8 md:pb-7">
       <span className={cn("absolute -top-20 -right-16 h-72 w-72 rounded-full opacity-60 blur-3xl", NEWS_SECTION_INFO[n.section].dot)} />
       <span className="absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-primary/40 blur-3xl" />
       <span className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.09)_1px,transparent_1px)] bg-[length:18px_18px]" />
-      <Icon className="absolute top-1/2 right-8 h-36 w-36 -translate-y-1/2 text-on-primary/10" strokeWidth={1} />
-      <span className="absolute inset-x-6 bottom-5 md:inset-x-8 md:bottom-7">
+      <Icon className="absolute top-1/2 right-4 h-28 w-28 -translate-y-1/2 text-on-primary/10 sm:right-8 sm:h-36 sm:w-36" strokeWidth={1} />
+      <span className="relative">
         <span className="type-micro-cap text-on-primary/70">{NEWS_SECTION_INFO[n.section].label} · 한 줄 요약</span>
-        {n.takeaway && <span className="mt-1.5 line-clamp-3 block max-w-xl type-heading-md text-on-primary [word-break:keep-all] md:type-heading-lg">{n.takeaway}</span>}
+        {n.takeaway && (
+          <span className="mt-1.5 block max-w-xl type-body-lg font-semibold text-on-primary [word-break:keep-all] sm:type-heading-md md:type-heading-lg">{n.takeaway}</span>
+        )}
       </span>
     </div>
   );
@@ -131,24 +133,37 @@ function ReadMore({ n }: { n: NewsItem }) {
   );
 }
 
-/** 번호 붙은 기사 머리 (01·02 …) */
+/** 번호 붙은 기사 머리 (01·02 …) — 휴대폰은 번호·태그 한 줄 + 제목 아래, 넓은 화면은 번호 왼쪽 */
 function StoryHead({ n, no, headline = false }: { n: NewsItem; no: number; headline?: boolean }) {
+  const tags = (
+    <>
+      {headline && <span className="tag bg-brand-dark text-on-primary">오늘의 헤드라인</span>}
+      <SectionLabel n={n} />
+    </>
+  );
   return (
-    <div className="flex items-start gap-4">
-      <span
-        className={cn(
-          "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full tabular type-heading-md md:h-14 md:w-14 md:type-heading-lg",
-          headline ? "bg-brand-dark text-on-primary" : "border-2 border-brand-dark bg-canvas text-brand-dark",
-        )}
-      >
-        {String(no).padStart(2, "0")}
-      </span>
-      <div className="min-w-0 pt-0.5">
-        <span className="flex flex-wrap items-center gap-1.5">
-          {headline && <span className="tag bg-brand-dark text-on-primary">오늘의 헤드라인</span>}
-          <SectionLabel n={n} />
+    <div className="md:flex md:items-start md:gap-4">
+      <div className="flex items-center gap-2 md:block">
+        <span
+          className={cn(
+            "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full tabular text-[15px] font-semibold md:h-14 md:w-14 md:type-heading-lg",
+            headline ? "bg-brand-dark text-on-primary" : "border-2 border-brand-dark bg-canvas text-brand-dark",
+          )}
+        >
+          {String(no).padStart(2, "0")}
         </span>
-        <h3 className={cn("mt-2 text-ink [word-break:keep-all]", headline ? "type-heading-lg md:type-display-md" : "type-heading-md md:type-heading-lg")}>{n.title}</h3>
+        <span className="flex flex-wrap items-center gap-1.5 md:hidden">{tags}</span>
+      </div>
+      <div className="min-w-0 md:pt-0.5">
+        <span className="hidden flex-wrap items-center gap-1.5 md:flex">{tags}</span>
+        <h3
+          className={cn(
+            "mt-3 text-ink [word-break:keep-all] md:mt-2",
+            headline ? "type-heading-md sm:type-heading-lg md:type-display-md" : "type-heading-sm sm:type-heading-md md:type-heading-lg",
+          )}
+        >
+          {n.title}
+        </h3>
       </div>
     </div>
   );
@@ -156,7 +171,7 @@ function StoryHead({ n, no, headline = false }: { n: NewsItem; no: number; headl
 
 function Box({ children, className, id }: { children: React.ReactNode; className?: string; id?: string }) {
   return (
-    <section id={id} className={cn("scroll-mt-24 rounded-2xl bg-canvas px-5 py-6 md:px-7", className)}>
+    <section id={id} className={cn("scroll-mt-24 rounded-2xl bg-canvas px-4 py-5 sm:px-5 sm:py-6 md:px-7", className)}>
       {children}
     </section>
   );
@@ -168,7 +183,7 @@ function MorningBody({ issue, content }: { issue: BriefingIssue; content: Letter
   return (
     <>
       {top.length > 0 && (
-        <section aria-labelledby="top-three" className="rounded-2xl bg-brand-dark px-5 py-6 text-on-primary md:px-7">
+        <section aria-labelledby="top-three" className="rounded-2xl bg-brand-dark px-4 py-5 text-on-primary sm:px-5 sm:py-6 md:px-7">
           <h3 id="top-three" className="type-heading-md">
             오늘 꼭 알아야 할 {top.length}가지
           </h3>
@@ -337,7 +352,7 @@ export function Letter({ issue, content }: { issue: BriefingIssue; content: Lett
   const count = morning ? `기사 ${content.all.length}건` : `용어 ${content.terms.length}개 · 면접 질문 ${content.questions.length}개`;
 
   return (
-    <article className="overflow-hidden rounded-3xl bg-canvas-cream">
+    <article className="theme-light overflow-hidden rounded-3xl bg-canvas-cream">
       {/* 머리 — 로고·호수·날짜 */}
       <header className="relative px-6 pt-8 pb-8 text-center md:px-10 md:pt-10">
         <p className="type-caption font-semibold text-lemon">{BRIEFING_TAGLINE[issue.edition]}</p>
@@ -350,9 +365,9 @@ export function Letter({ issue, content }: { issue: BriefingIssue; content: Lett
         </p>
       </header>
 
-      <div className="space-y-6 px-4 pb-10 md:px-10">
+      <div className="space-y-5 px-3 pb-10 sm:space-y-6 sm:px-4 md:px-10">
         {issue.lede && (
-          <section aria-label="오늘의 흐름" className="rounded-2xl bg-canvas px-5 py-5 md:px-7">
+          <section aria-label="오늘의 흐름" className="rounded-2xl bg-canvas px-4 py-5 sm:px-5 md:px-7">
             <p className="flex items-center gap-1.5 type-caption font-semibold text-primary-text">
               <Sparkles className="h-4 w-4" strokeWidth={2} />
               {morning ? "오늘의 흐름" : "점심 공부 안내"}

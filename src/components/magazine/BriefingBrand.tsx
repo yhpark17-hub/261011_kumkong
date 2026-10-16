@@ -26,7 +26,7 @@ export function Masthead({ edition, size = "lg", className }: { edition: IssueEd
   const morning = edition === "morning";
   const s = SIZE[size];
   return (
-    <div className={cn("relative w-fit", className)}>
+    <div className={cn("theme-light relative w-fit", className)}>
       <Sparkle className="absolute -top-4 -left-5 h-6 w-6 text-[#ffb36b]" />
       <Sparkle className="absolute -top-2 right-6 h-3.5 w-3.5 text-primary" />
       <Sparkle className="absolute -right-6 bottom-6 h-4 w-4 text-[#56c08a]" />
@@ -76,7 +76,7 @@ export function BriefingCover({
     <div
       aria-hidden
       className={cn(
-        "relative flex items-center justify-center overflow-hidden",
+        "theme-light relative flex items-center justify-center overflow-hidden",
         morning ? "bg-linear-to-b from-[#ffd9ae] via-[#ffeedb] to-[#fffaf0]" : "bg-linear-to-b from-[#bfe9cf] via-[#e3f6ea] to-[#f8fff9]",
         className,
       )}

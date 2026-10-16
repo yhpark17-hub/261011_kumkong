@@ -16,7 +16,7 @@ export function BriefingQuiz({ quiz }: { quiz: QuizItem[] }) {
   const pick = (qi: number, oi: number) => setPicked((prev) => prev.map((p, i) => (i === qi && p === null ? oi : p)));
 
   return (
-    <section aria-labelledby="briefing-quiz" className="rounded-2xl border-2 border-brand-dark bg-canvas px-5 py-6 md:px-7">
+    <section aria-labelledby="briefing-quiz" className="rounded-2xl border-2 border-brand-dark bg-canvas px-4 py-5 sm:px-5 sm:py-6 md:px-7">
       <div className="flex items-center gap-3">
         <KongMascot className="h-12 w-12" wave />
         <div>
@@ -33,7 +33,7 @@ export function BriefingQuiz({ quiz }: { quiz: QuizItem[] }) {
           const answered = chosen !== null;
           const ox = q.options.length === 2;
           return (
-            <li key={qi} className="rounded-xl bg-canvas-soft px-4 py-4 md:px-5">
+            <li key={qi} className="rounded-xl bg-canvas-soft px-3 py-4 sm:px-4 md:px-5">
               <p className="flex gap-2 type-body-md font-semibold text-ink [word-break:keep-all]">
                 <span className="tabular text-primary-text">Q{qi + 1}.</span>
                 <span>{q.question}</span>
