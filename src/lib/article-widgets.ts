@@ -17,9 +17,9 @@ export type ArticleWidgetKey = keyof typeof ARTICLE_WIDGETS;
 
 export const isArticleWidget = (v: string): v is ArticleWidgetKey => v in ARTICLE_WIDGETS;
 
-/** 글 전체를 스크롤형 인터랙티브(스토리)로 바꾸는 블록 — 본문 맨 위 한 줄 */
+/** 글 전체를 인터랙티브 가이드로 바꾸는 블록 — 본문 맨 위 한 줄 */
 export const ARTICLE_FEATURES = {
-  "feature:written-exam": { label: "스크롤 스토리 — 금공 필기 한눈에", hint: "글 전체가 스크롤하면 장면이 바뀌는 인터랙티브로 바뀌어요 (본문 맨 위 한 줄)" },
+  "feature:written-exam": { label: "인터랙티브 가이드 — 금공 필기 입문", hint: "글 전체가 눌러 보며 배우는 7장짜리 가이드로 바뀌어요 (본문 맨 위 한 줄)" },
 } as const;
 
 export type ArticleFeatureKey = keyof typeof ARTICLE_FEATURES;
