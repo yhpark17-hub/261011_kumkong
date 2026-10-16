@@ -12,13 +12,15 @@ import { db, dbConfigured } from "@/lib/server/db";
  * 아침판 { edition: "morning", title, lede, closing?, items: [기사 6~8건], quiz: [3~4문제] }
  *   - 기사: { section: finance|economy|policy|global|public, headline?: true, title, takeaway, summary, point, sourceName, sourceUrl }
  *     헤드라인(headline: true) 정확히 1건. 모든 기사에 원문 링크·한 줄 요약
- *   - 퀴즈: { question, options: [2~4개], answer: 정답 보기 번호(0부터), explain } — 그날 기사 내용으로만
+ *   - 퀴즈: { question, options: [2~4개], answer: 정답 보기 번호(0부터), explain, basis } — 그날 기사 내용으로만
+ *     basis = 이 문제의 근거 문장. 이 판 본문(기사 제목·한 줄 요약·요약·포인트)에 실린 문장을 그대로 옮겨야 하고, 본문에 없으면 거절
  * 금콩 스터디 { edition: "noon", title, lede, closing?, numbers: [3개], items: [용어 2~3개, 면접 질문 1~2개], essay, quiz: [O/X 3문제] }
  *   - 숫자로 보는 오늘: { value: "7.57%", label: "15일 코스피 하락률", note? } — 아침판 기사에 나온 숫자만
  *   - 용어: { section: "term", title, summary, point, body(헷갈리는 짝꿍 비교 표, 마크다운), sourceName?, sourceUrl? } — 최근 90일 안에 다룬 용어는 거절
  *   - 질문: { section: "question", title, summary, body(답변 뼈대), point, sourceName?, sourceUrl? }
  *   - 논술 한 문단: { topic, intro, body, conclusion, evidence: [근거 1~4개] }
- *   - 점심 퀴즈: { question, options: ["O", "X"], answer, explain } 3문제
+ *   - 점심 퀴즈: { question, options: ["O", "X"], answer, explain, basis } 3문제
+ *     basis = 금콩 스터디 본문(숫자·용어·논술·면접 질문)에 실린 근거 문장 그대로. 아침판에만 있고 금콩 스터디에는 없는 내용은 거절
  * 그날 그 판이 이미 있으면 아무것도 바꾸지 않고 skipped. 하나라도 틀리면 아무것도 저장하지 않고 errors.
  */
 
@@ -114,6 +116,25 @@ export async function POST(req: Request) {
   if (quiz.length !== rawQuiz.length) errors.push("quiz: 질문·보기(2~4개)·정답 번호(answer, 0부터)를 확인해 주세요");
   if (quiz.some((q) => q.explain.length < 10)) errors.push("quiz: 문제마다 explain(해설)을 써 주세요");
   const extras = edition === "noon" ? parseExtras({ numbers: b.numbers, essay: b.essay }) : parseExtras({});
+
+  // 퀴즈 근거 확인 — 문제마다 basis(근거 문장)가 이 판 본문에 그대로 있어야 해요.
+  // 독자가 읽은 내용만으로 풀 수 있게, 본문에 없는 지식(예: 본문에 설명 없는 용어의 정의)으로 낸 문제를 막아요.
+  const plain = (t: string) => t.replace(/[\s'"‘’“”·…]/g, "");
+  const corpus = plain(
+    edition === "morning"
+      ? ok.map((r) => [r.title, r.takeaway, r.summary, r.point].join(" ")).join(" ")
+      : [
+          ...ok.map((r) => [r.title, r.summary, r.point, r.body].join(" ")),
+          ...extras.numbers.map((n) => `${n.value} ${n.label} ${n.note}`),
+          ...(extras.essay ? [extras.essay.topic, extras.essay.intro, extras.essay.body, extras.essay.conclusion, ...extras.essay.evidence] : []),
+        ].join(" "),
+  );
+  const where = edition === "noon" ? "금콩 스터디 본문(숫자·용어·논술·면접 질문)" : "오늘 기사(제목·한 줄 요약·요약·포인트)";
+  rawQuiz.forEach((q, i) => {
+    const basis = plain(s(q && typeof q === "object" ? (q as Raw).basis : "", 400));
+    if (basis.length < 8) errors.push(`quiz[${i}]: basis(이 문제의 근거 문장 — ${where}에서 그대로 옮긴 문장)가 필요해요`);
+    else if (!corpus.includes(basis)) errors.push(`quiz[${i}]: basis 가 ${where}에 없어요. 이 판 본문에 실린 내용으로만 문제와 해설을 써 주세요`);
+  });
   if (edition === "morning") {
     const n = ok.length;
     if (n < LIMITS.morning.min || n > LIMITS.morning.max) errors.push(`아침판 기사는 ${LIMITS.morning.min}~${LIMITS.morning.max}건이에요 (지금 ${n}건)`);
