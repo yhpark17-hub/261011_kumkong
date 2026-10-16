@@ -95,6 +95,8 @@ export async function POST(req: Request) {
     return json(result);
   } catch (err) {
     console.error("[upload]", err);
-    return json({ error: "저장하지 못했어요. 잠시 뒤 다시 시도해 주세요." }, 500);
+    // 운영자에게는 원인을 함께 보여 줘서 저장소 설정 문제를 바로 알 수 있게
+    const detail = admin && err instanceof Error ? err.message.slice(0, 300) : undefined;
+    return json({ error: "저장하지 못했어요. 잠시 뒤 다시 시도해 주세요.", ...(detail ? { detail } : {}) }, 500);
   }
 }

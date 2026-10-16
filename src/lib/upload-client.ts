@@ -29,7 +29,7 @@ export async function uploadFile(original: File, purpose: UploadPurpose): Promis
   form.append("file", file);
   form.append("purpose", purpose);
   const res = await fetch("/api/upload", { method: "POST", body: form });
-  const body = (await res.json().catch(() => ({}))) as Partial<Attachment> & { error?: string };
-  if (!res.ok || !body.url) throw new Error(`${original.name}: ${body.error ?? "올리지 못했어요."}`);
+  const body = (await res.json().catch(() => ({}))) as Partial<Attachment> & { error?: string; detail?: string };
+  if (!res.ok || !body.url) throw new Error(`${original.name}: ${body.error ?? "올리지 못했어요."}${body.detail ? ` (원인: ${body.detail})` : ""}`);
   return body as Attachment;
 }
