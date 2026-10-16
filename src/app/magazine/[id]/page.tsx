@@ -133,7 +133,8 @@ async function ArticleView({ rawId }: { rawId: string }) {
     author: { "@type": "Organization", name: a.author },
     publisher: { "@type": "Organization", name: SITE.name, url: SITE.url },
     mainEntityOfPage: `${SITE.url}${articleHref(a.id)}`,
-    image: a.coverUrl ? [a.coverUrl] : undefined,
+    // 표지가 사이트 안 파일(/covers/…)이어도 전체 주소로
+    image: a.coverUrl ? [new URL(a.coverUrl, SITE.url).href] : undefined,
     articleSection: CATEGORY_INFO[a.category].label,
     keywords: a.tags.join(", ") || undefined,
   };

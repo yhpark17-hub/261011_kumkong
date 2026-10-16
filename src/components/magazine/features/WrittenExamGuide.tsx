@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardList, MessagesSquare, MousePointerClick, Plus, RotateCcw } from "lucide-react";
-import { cn } from "../../ui";
+import { cn, CompanyAvatar } from "../../ui";
 import { KongMascot } from "../KongMascot";
 
 /**
@@ -509,24 +509,35 @@ function MajorShapes() {
 /* 6. A매치 — 같은 날, 하나만                                              */
 /* ------------------------------------------------------------------ */
 
-const TICKETS = ["가 기관", "나 기관", "다 기관"];
+/** 실제로 같은 날 필기를 본 기관 — 금콩 채용 일정(src/data) 기준 2026년 하반기 10월 17일(토) 필기 */
+const AMATCH_DATE = "2026. 10. 17. (토)";
+const TICKETS = [
+  { id: "ibk", name: "IBK기업은행", shortName: "기은", logo: "/logos/ibk.png" },
+  { id: "kdic", name: "예금보험공사", shortName: "예보", logo: "/logos/kdic.png" },
+  { id: "kodit", name: "신용보증기금", shortName: "신보", logo: "/logos/kodit.png" },
+];
+
+/** 받침 있으면 '을', 없으면 '를' */
+const eulReul = (word: string) => {
+  const code = word.charCodeAt(word.length - 1) - 0xac00;
+  return code >= 0 && code <= 11171 && code % 28 !== 0 ? "을" : "를";
+};
 
 function AMatch() {
   const [pick, setPick] = useState<number | null>(null);
   return (
     <div className="space-y-5">
-      <TryHint>필기를 볼 기관을 하나 골라 보세요</TryHint>
       <div className="rounded-2xl border border-hairline bg-canvas p-4 shadow-level-2 sm:p-5">
-        <p className="flex items-center gap-2 type-body-md font-semibold text-ink">
-          <CalendarDays className="h-4 w-4 text-primary" strokeWidth={2} />
-          어느 토요일 오전 10시 — 필기 세 곳이 동시에
+        <p className="flex items-start gap-2 type-body-md font-semibold text-ink [word-break:keep-all]">
+          <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={2} />
+          어느 토요일 오전 10시 — 필기 세 곳이 동시에... 나의 선택은!?
         </p>
         <ul className="mt-4 grid gap-2.5 sm:grid-cols-3">
           {TICKETS.map((t, i) => {
             const chosen = pick === i;
             const blocked = pick != null && !chosen;
             return (
-              <li key={t}>
+              <li key={t.id}>
                 <button
                   type="button"
                   onClick={() => setPick(i)}
@@ -538,8 +549,11 @@ function AMatch() {
                   )}
                 >
                   <span className="type-caption opacity-70">필기시험 응시표</span>
-                  <span className="mt-1 type-heading-sm">{t}</span>
-                  <span className="mt-2 type-caption opacity-70">토요일 오전 10:00</span>
+                  <span className="mt-2 flex items-center gap-2">
+                    <CompanyAvatar company={t} size="sm" />
+                    <span className="type-heading-sm [word-break:keep-all]">{t.name}</span>
+                  </span>
+                  <span className="mt-2 type-caption tabular opacity-70">{AMATCH_DATE}</span>
                   {chosen && <span className="absolute top-3 right-3 rounded-full bg-on-primary px-2 py-0.5 type-caption font-bold text-brand-dark">응시</span>}
                   {blocked && (
                     <span className="absolute inset-0 flex items-center justify-center bg-canvas/70">
@@ -551,10 +565,11 @@ function AMatch() {
             );
           })}
         </ul>
+        <p className="mt-3 type-caption text-ink-mute [word-break:keep-all]">※ 2026년 하반기에 실제로 같은 날(10월 17일) 필기를 치른 기관이에요. 시험 시간은 기관마다 달라요.</p>
       </div>
       <KongSays>시험 일정이 겹치는 만큼 지원자는 응시할 기관을 전략적으로 선택해야 해요.</KongSays>
       {pick != null && (
-        <Explain title={`${TICKETS[pick]}을 골랐다면, 나머지 두 곳은 포기해야 해요.`}>
+        <Explain title={`${TICKETS[pick].name}${eulReul(TICKETS[pick].name)} 골랐다면, 나머지 두 곳은 포기해야 해요.`}>
           하루에 한 곳만 볼 수 있으니, 서류를 낼 때부터 어느 기관 필기를 볼지 미리 정해 두는 게 좋아요.
           <Link href="/" className="link mt-3 flex items-center gap-1 type-body-md">
             채용 캘린더에서 실제 필기 날짜 보기 <ArrowRight className="h-4 w-4" strokeWidth={2} />
@@ -570,12 +585,12 @@ function AMatch() {
 /* ------------------------------------------------------------------ */
 
 const SUMMARY = [
-  "필기는 서류 다음, 면접 바로 앞의 관문",
-  "필기전형의 기본은 NCS + 전공, 나머지는 기관마다 달라요",
-  "NCS는 10가지 기본 역량 — 기관마다 평가 영역이 달라요",
-  "문제 유형은 PSAT형·모듈형·피듈형 — 지원 기관 후기로 확인",
-  "전공은 없음·통합(넓게)·단일(깊게)",
-  "같은 날 시험(A매치)이 있으니 미리 골라 두기",
+  "필기시험은 서류전형 다음, 면접전형 이전의 핵심 관문",
+  "필기전형의 기본은 NCS와 전공시험, 세부 구성은 기관마다 달라요",
+  "NCS는 10가지 기본 역량을 평가하며, 출제 영역은 기관마다 달라요",
+  "NCS 문제는 크게 세 가지 유형, 지원 기관의 출제 유형을 확인하세요",
+  "전공시험은 미실시·통합전공·단일전공으로 구분돼요",
+  "같은 날 치러지는 A매치, 지원 기관을 전략적으로 선택하세요",
 ];
 
 const MORE = [
@@ -601,19 +616,6 @@ function Wrap() {
           </li>
         ))}
       </ol>
-      <div className="grid gap-2.5 sm:grid-cols-3">
-        {[
-          { href: "/companies", label: "기관별 필기 구성 보기", Icon: ClipboardList },
-          { href: "/", label: "다가오는 필기 일정", Icon: CalendarDays },
-          { href: "/reviews", label: "필기 후기·체감 난이도", Icon: MessagesSquare },
-        ].map((c) => (
-          <Link key={c.href} href={c.href} className="group flex items-center gap-2 rounded-xl bg-brand-dark px-4 py-3.5 type-body-md font-semibold text-on-primary">
-            <c.Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
-            <span className="min-w-0 flex-1 [word-break:keep-all]">{c.label}</span>
-            <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" strokeWidth={2} />
-          </Link>
-        ))}
-      </div>
       <div>
         <p className="type-caption font-semibold text-ink-secondary">더 알아 두면 좋은 것</p>
         <ul className="mt-2 divide-y divide-hairline rounded-2xl border border-hairline bg-canvas">
@@ -629,6 +631,19 @@ function Wrap() {
         </ul>
       </div>
       <p className="type-caption text-ink-mute [word-break:keep-all]">시험 구성과 일정은 기관·직렬·해마다 달라질 수 있어요. 지원 전에 각 기관 채용 공고를 꼭 확인하세요.</p>
+      <div className="grid gap-2.5 sm:grid-cols-3">
+        {[
+          { href: "/companies", label: "기관별 필기 구성 보기", Icon: ClipboardList },
+          { href: "/", label: "다가오는 필기 일정", Icon: CalendarDays },
+          { href: "/reviews", label: "필기 후기·체감 난이도", Icon: MessagesSquare },
+        ].map((c) => (
+          <Link key={c.href} href={c.href} className="group flex items-center gap-2 rounded-xl bg-brand-dark px-4 py-3.5 type-body-md font-semibold text-on-primary">
+            <c.Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+            <span className="min-w-0 flex-1 [word-break:keep-all]">{c.label}</span>
+            <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" strokeWidth={2} />
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
