@@ -19,13 +19,38 @@ import { cn } from "../ui";
 import { Masthead } from "./BriefingBrand";
 import { BriefingQuiz } from "./BriefingQuiz";
 import { Markdown } from "./Markdown";
-import { JOURNEY_DONE, JourneyDivider, journeyStage } from "./KongMascot";
+import { ReadingProgress } from "./KongMascot";
 import { ShareButton, SourceLink } from "./interactive";
 import { NEWS_ICON } from "./news-icons";
 
 const anchor = (n: NewsItem) => `item-${n.id}`;
 /** 긴 글은 양쪽 맞춤 */
 const JUSTIFY = "ko-justify";
+
+/** 읽은 정도 계산용 글자 수 */
+const textLength = (n: NewsItem) => n.title.length + n.summary.length + n.point.length + n.body.length;
+const quizLength = (issue: BriefingIssue) => issue.quiz.reduce((s, q) => s + q.question.length + q.options.join("").length + q.explain.length, 0);
+
+/**
+ * 읽은 정도 쉼표 자리 — 모든 칸 위가 아니라 글이 길어지는 곳에만 (긴 호는 2곳, 보통 1곳, 짧으면 없음).
+ * blocks: 차례대로 덩어리별 글자 수 / allowed: 쉼표를 넣어도 되는 덩어리 번호(그 덩어리 앞)
+ * → 덩어리 번호 → 그 앞까지 읽은 정도(0~1)
+ */
+function progressMarks(blocks: number[], allowed: number[]): Map<number, number> {
+  const total = blocks.reduce((a, b) => a + b, 0);
+  const marks = new Map<number, number>();
+  if (!total) return marks;
+  const count = total >= 2400 ? 2 : total >= 1000 ? 1 : 0;
+  const before = (i: number) => blocks.slice(0, i).reduce((a, b) => a + b, 0) / total;
+  for (let k = 1; k <= count; k++) {
+    const target = k / (count + 1);
+    const best = allowed
+      .filter((i) => [...marks.keys()].every((m) => Math.abs(m - i) >= 2))
+      .sort((a, b) => Math.abs(before(a) - target) - Math.abs(before(b) - target))[0];
+    if (best !== undefined) marks.set(best, before(best));
+  }
+  return marks;
+}
 
 function SectionLabel({ n, className }: { n: NewsItem; className?: string }) {
   return <span className={cn("tag", NEWS_SECTION_INFO[n.section].tone, className)}>{NEWS_SECTION_INFO[n.section].label}</span>;
@@ -165,11 +190,20 @@ function Box({ children, className, id }: { children: React.ReactNode; className
 /** 아침판 — 기사 브리핑 + 퀴즈 */
 function MorningBody({ issue, content }: { issue: BriefingIssue; content: LetterContent }) {
   const { headline, stories, top } = content;
-  // 콩이의 취업 여정 쉼표 — 기사 사이 몇 곳(+퀴즈 앞)에 고르게, 원서 → … → 최종 면접 순으로
   const quiz = issue.quiz.length > 0;
-  const k = Math.min(stories.length, quiz ? 4 : 5);
-  const marks = Array.from({ length: k }, (_, j) => Math.floor((j * stories.length) / k));
-  const slots = marks.length + (quiz ? 1 : 0);
+  // 읽은 정도 쉼표: 덩어리 = [여는 글·3가지·시간표·헤드라인, 기사들…, 퀴즈], 기사 앞에만
+  const intro = issue.lede.length + top.reduce((s, n) => s + n.title.length + n.takeaway.length, 0) + (headline ? textLength(headline) : 0);
+  const marks = progressMarks(
+    [intro, ...stories.map(textLength), quizLength(issue)],
+    stories.map((_, i) => i + 1),
+  );
+  // 콩이 말 — 다음에 읽을 기사 흐름에 맞춰
+  const say = (i: number, progress: number) => {
+    const label = NEWS_SECTION_INFO[stories[i].section].label;
+    const prev = i === 0 ? headline : stories[i - 1];
+    if (prev && prev.section === stories[i].section) return `${label} 소식 하나 더 있콩!`;
+    return progress < 0.5 ? `다음은 ${label} 소식이콩!` : `절반 넘었콩! 다음은 ${label} 소식`;
+  };
   return (
     <>
       {top.length > 0 && (
@@ -226,7 +260,7 @@ function MorningBody({ issue, content }: { issue: BriefingIssue; content: Letter
 
       {stories.map((n, i) => (
         <div key={n.id}>
-          {marks.includes(i) ? <JourneyDivider stage={journeyStage(marks.indexOf(i), slots)} /> : <div className="h-6" />}
+          {marks.has(i + 1) ? <ReadingProgress progress={marks.get(i + 1)!} say={say(i, marks.get(i + 1)!)} /> : <div className="h-6" />}
           <Box id={anchor(n)}>
             <StoryHead n={n} no={i + (headline ? 2 : 1)} />
             {n.imageUrl && <Cover n={n} />}
@@ -238,10 +272,9 @@ function MorningBody({ issue, content }: { issue: BriefingIssue; content: Letter
       ))}
 
       {quiz && (
-        <>
-          <JourneyDivider stage={journeyStage(marks.length, slots)} />
+        <div className="pt-6">
           <BriefingQuiz quiz={issue.quiz} />
-        </>
+        </div>
       )}
     </>
   );
@@ -271,8 +304,21 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
     issue.quiz.length > 0 && { id: "noon-quiz", title: "점심 퀴즈", time: "1분" },
   ].filter((c): c is { id: string; title: string; time: string } => Boolean(c));
   const no = (id: string) => corners.findIndex((c) => c.id === id) + 1;
-  // 코너마다 앞에 콩이의 취업 여정 쉼표 (숫자 = 원서 … 퀴즈 = 최종 면접)
-  const stage = (id: string) => journeyStage(no(id) - 1, corners.length);
+  // 읽은 정도 쉼표: 덩어리 = [여는 글·코스, 코너들…], 용어·논술·면접 코너 앞 중 글이 길어지는 곳에만
+  const sum = (ns: NewsItem[]) => ns.reduce((s, n) => s + textLength(n), 0);
+  const cornerLength: Record<string, number> = {
+    "noon-numbers": numbers.reduce((s, n) => s + n.value.length + n.label.length + n.note.length, 0),
+    "noon-terms": sum(terms),
+    "noon-essay": essay ? essay.topic.length + essay.intro.length + essay.body.length + essay.conclusion.length + essay.evidence.join("").length : 0,
+    "noon-question": sum(questions),
+    "noon-quiz": quizLength(issue),
+  };
+  const marks = progressMarks(
+    [issue.lede.length + 150, ...corners.map((c) => cornerLength[c.id])],
+    ["noon-terms", "noon-essay", "noon-question"].map(no).filter((n) => n > 0),
+  );
+  const SAY: Record<string, string> = { "noon-terms": "이제 용어 정리하콩!", "noon-essay": "한 문단 써 보콩!", "noon-question": "면접 연습 가 보콩!" };
+  const mark = (id: string) => (marks.has(no(id)) ? <ReadingProgress progress={marks.get(no(id))!} say={SAY[id]} /> : null);
 
   return (
     <>
@@ -299,10 +345,8 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
 
       {/* ① 숫자로 보는 오늘 */}
       {numbers.length > 0 && (
-        <div id="noon-numbers" className="scroll-mt-24">
-          <JourneyDivider stage={stage("noon-numbers")} />
-          <Box>
-            <CornerHead no={no("noon-numbers")} icon={Hash} title="숫자로 보는 오늘" time="1분" tone="text-primary-text" />
+        <Box id="noon-numbers">
+          <CornerHead no={no("noon-numbers")} icon={Hash} title="숫자로 보는 오늘" time="1분" tone="text-primary-text" />
           <ul className={cn("mt-4 grid gap-3", numbers.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
             {numbers.map((n, i) => (
               <li key={i} className="rounded-xl bg-canvas-soft px-4 py-4">
@@ -312,14 +356,13 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
               </li>
             ))}
           </ul>
-          </Box>
-        </div>
+        </Box>
       )}
 
       {/* ② 오늘의 용어 + 헷갈리는 짝꿍 */}
       {terms.map((n, i) => (
         <div key={n.id} id={i === 0 ? "noon-terms" : undefined} className="scroll-mt-24">
-          {i === 0 ? <JourneyDivider stage={stage("noon-terms")} /> : <div className="h-5" />}
+          {i === 0 ? mark("noon-terms") : <div className="h-5" />}
           <Box id={anchor(n)} className="border-2 border-ev-posting/40">
             {i === 0 ? (
               <CornerHead no={no("noon-terms")} icon={BookA} title={`오늘의 용어${terms.length > 1 ? ` ${i + 1}` : ""}`} time="1분" tone="text-ev-posting" />
@@ -351,7 +394,7 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
       {/* ③ 논술 한 문단 */}
       {essay && (
         <>
-          <JourneyDivider stage={stage("noon-essay")} />
+          {mark("noon-essay")}
           <Box id="noon-essay" className="border-2 border-primary/30">
             <CornerHead no={no("noon-essay")} icon={PenLine} title="논술 한 문단" time="1분" tone="text-primary-text" />
             <p className="mt-3 type-caption text-ink-mute">오늘 기사로 나올 법한 논술 주제예요. 개요를 보고 한 문단으로 직접 써 보세요.</p>
@@ -392,7 +435,7 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
       {/* ④ 오늘의 면접 질문 */}
       {questions.map((n, i) => (
         <div key={n.id} id={i === 0 ? "noon-question" : undefined} className="scroll-mt-24">
-          {i === 0 ? <JourneyDivider stage={stage("noon-question")} /> : <div className="h-5" />}
+          {i === 0 ? mark("noon-question") : <div className="h-5" />}
           <Box id={anchor(n)} className="border-2 border-ev-interview2/40">
             {i === 0 ? (
               <CornerHead no={no("noon-question")} icon={MessageCircleQuestion} title={`오늘의 면접 질문${questions.length > 1 ? ` ${i + 1}` : ""}`} time="1분" tone="text-ev-interview2" />
@@ -424,7 +467,6 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
       {/* ⑤ 점심 퀴즈 */}
       {issue.quiz.length > 0 && (
         <div id="noon-quiz" className="scroll-mt-24">
-          <JourneyDivider stage={stage("noon-quiz")} />
           <BriefingQuiz quiz={issue.quiz} title="점심 퀴즈" subtitle={`오늘 공부한 용어·숫자, O/X로 확인해요. ${issue.quiz.length}문제`} />
         </div>
       )}
@@ -498,8 +540,8 @@ export function Letter({
 
         {morning ? <MorningBody issue={issue} content={content} /> : <NoonBody issue={issue} content={content} />}
 
-        {/* 끝까지 읽으면 — 정장 입은 합격 콩이 */}
-        <JourneyDivider stage={JOURNEY_DONE} />
+        {/* 끝까지 읽으면 — 바가 다 차고 정장 입은 합격 콩이 */}
+        <ReadingProgress progress={1} say={morning ? "오늘 브리핑 끝까지 읽었콩!" : "오늘 스터디 끝까지 마쳤콩!"} />
 
         {/* 맺음 — ① 앞뒤 브리핑 바로 가기 ② 의견·공유와 원문 확인 안내 */}
         <footer className="space-y-4">

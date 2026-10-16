@@ -153,75 +153,56 @@ export function KongMascot({
   );
 }
 
-/** 금공 취업 여정 — 브리핑을 읽어 내려갈수록 콩이가 한 단계씩 나아가요 */
+/** 읽은 정도에 따라 바뀌는 콩이 옷차림 — 취준생에서 시작해 끝까지 읽으면 정장 입은 합격 콩이 */
 type Look = { hold?: KongHold; glasses?: boolean; tie?: boolean; suit?: boolean; sweat?: boolean; wave?: boolean };
-const JOURNEY: { label: string; say: string; look: Look }[] = [
-  { label: "원서", say: "원서 냈콩!", look: { hold: "resume" } },
-  { label: "서류", say: "서류 붙었콩!", look: { hold: "pass" } },
-  { label: "필기", say: "필기 공부 중이콩", look: { hold: "pencil", glasses: true } },
-  { label: "1차 면접", say: "면접 준비 됐콩!", look: { tie: true, wave: true } },
-  { label: "최종 면접", say: "마지막 면접이콩!", look: { tie: true, sweat: true } },
-  { label: "합격", say: "최종 합격했콩!", look: { suit: true, wave: true } },
+const LOOKS: Look[] = [
+  { hold: "resume" }, // 원서 든 취준생
+  { hold: "pass" }, // 서류 합격 통지
+  { hold: "pencil", glasses: true }, // 필기 공부
+  { tie: true, wave: true }, // 면접
+  { tie: true, sweat: true }, // 최종 면접
 ];
-/** 마지막 단계(합격) — 브리핑을 끝까지 읽었을 때만 */
-export const JOURNEY_DONE = JOURNEY.length - 1;
-
-/** 사이 칸 count 개 중 index 번째에 보일 단계 (원서 ~ 최종 면접에 고르게 나눔) */
-export function journeyStage(index: number, count: number): number {
-  if (count <= 1) return 0;
-  return Math.min(JOURNEY_DONE - 1, Math.round((index * (JOURNEY_DONE - 1)) / (count - 1)));
-}
+const lookAt = (progress: number): Look => (progress >= 1 ? { suit: true, wave: true } : LOOKS[Math.min(LOOKS.length - 1, Math.max(0, Math.floor(progress * LOOKS.length)))]);
 
 /**
- * 읽은 만큼 보여 주는 쉼표 — 원서 → 서류 → 필기 → 면접 → 합격 길 위에 콩이가 서 있어요.
- * 퍼센트 대신 '취업 과정 어디쯤 왔는지'로 읽은 정도를 보여 주고, 끝까지 읽으면 정장 입은 합격 콩이.
+ * 읽은 정도 쉼표 — 빈 바에 지금 어디쯤인지 대략 채워 보이고, 그 끝에 콩이가 본문 흐름에 맞는 한마디를 해요.
+ * progress: 0~1 (1 = 끝까지 읽음). 글자나 퍼센트는 적지 않아요.
  */
-export function JourneyDivider({ stage }: { stage: number }) {
-  const s = JOURNEY[stage];
-  const p = stage / JOURNEY_DONE;
-  const done = stage === JOURNEY_DONE;
-  // 길 위 점의 가로 위치 (양끝 9px 여백) · 콩이는 점 위에, 넘치면 안쪽으로
-  const x = (q: number) => `(9px + (100% - 18px) * ${q})`;
-  const kong = `clamp(0px, calc(${x(p)} - 26px), calc(100% - 52px))`;
+export function ReadingProgress({ progress, say }: { progress: number; say: string }) {
+  const p = Math.min(1, Math.max(0, progress));
+  const done = p >= 1;
+  // 콩이는 채워진 끝 위에 (양끝에서는 안쪽으로)
+  const kong = `clamp(0px, calc(${p} * 100% - 26px), calc(100% - 52px))`;
   return (
-    <div className="my-8 px-1" role="img" aria-label={`여기까지 읽었어요 — 취업 여정 ${s.label} 단계`}>
-      <div className="relative h-[64px]">
+    <div className="my-8 px-1" role="img" aria-label={done ? `끝까지 읽었어요. ${say}` : `읽은 정도 표시. ${say}`}>
+      <div className="relative h-[60px]">
         <span className="absolute bottom-0" style={{ left: kong }}>
-          <KongMascot className="h-[52px] w-[52px]" {...s.look} />
+          <KongMascot className="h-[52px] w-[52px]" {...lookAt(p)} />
         </span>
         <span
           className={cn(
-            "absolute bottom-[30px] rounded-full border-2 border-brand-dark px-3 py-1 type-caption font-semibold whitespace-nowrap text-brand-dark",
+            "absolute bottom-[28px] w-max rounded-2xl border-2 border-brand-dark px-3 py-1 type-caption font-semibold text-brand-dark [word-break:keep-all]",
             done ? "bg-[#ffcf8a]" : "bg-canvas",
           )}
-          style={p <= 0.5 ? { left: `calc(${kong} + 54px)` } : { right: `calc(100% - ${kong} + 2px)` }}
+          style={
+            p <= 0.5
+              ? { left: `calc(${kong} + 54px)`, maxWidth: `calc(100% - ${kong} - 54px)` }
+              : { right: `calc(100% - ${kong} + 2px)`, maxWidth: `calc(${kong} - 2px)` }
+          }
         >
-          {s.say}
+          {say}
         </span>
         {done && (
           <>
             <span aria-hidden className="absolute top-0 right-3 h-2 w-2 rotate-12 rounded-[2px] bg-[#ff7a8a]" />
             <span aria-hidden className="absolute top-4 right-0 h-1.5 w-1.5 -rotate-12 rounded-[2px] bg-primary" />
             <span aria-hidden className="absolute top-1 right-12 h-2 w-1 rotate-45 rounded-[2px] bg-[#56c08a]" />
-            <span aria-hidden className="absolute top-6 right-16 h-1.5 w-1.5 rotate-45 rounded-[2px] bg-[#ffb36b]" />
           </>
         )}
       </div>
-      {/* 길: 지나온 곳은 진하게, 남은 곳은 점선 */}
-      <div className="relative mt-1.5 h-9">
-        <span className="absolute top-[6px] right-[9px] left-[9px] border-t-[3px] border-dotted border-primary/30" />
-        <span className="absolute top-[6px] left-[9px] h-[3px] rounded-full bg-primary" style={{ width: `calc((100% - 18px) * ${p})` }} />
-        {JOURNEY.map((j, i) => {
-          const passed = i <= stage;
-          return (
-            <span key={j.label} className="absolute top-0 flex -translate-x-1/2 flex-col items-center" style={{ left: `calc${x(i / JOURNEY_DONE)}` }}>
-              <span className={cn("h-[15px] w-[15px] rounded-full border-[3px]", passed ? "border-primary bg-primary" : "border-primary/30 bg-canvas", i === stage && "ring-4 ring-primary/20")} />
-              <span className={cn("mt-1 text-[11px] leading-none whitespace-nowrap", i === stage ? "font-bold text-primary-text" : passed ? "text-ink-secondary" : "text-ink-mute")}>
-                {j.label}
-              </span>
-            </span>
-          );
-        })}
+      {/* 빈 바 — 읽은 만큼만 채움 */}
+      <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-brand-dark/10">
+        <div className="h-full rounded-full bg-linear-to-r from-[#ffb36b] to-primary" style={{ width: `${p * 100}%` }} />
       </div>
     </div>
   );
