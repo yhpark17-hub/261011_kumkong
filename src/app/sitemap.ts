@@ -52,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     })),
     ...letters.map((i) => ({
-      url: `${SITE.url}${letterHref(i.date)}`,
+      url: `${SITE.url}${letterHref(i.date, i.edition)}`,
       lastModified: new Date(i.updatedAt),
       changeFrequency: "monthly" as const,
       priority: 0.6,

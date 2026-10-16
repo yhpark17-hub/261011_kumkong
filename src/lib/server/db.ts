@@ -232,21 +232,24 @@ CREATE TABLE IF NOT EXISTS news (
 CREATE INDEX IF NOT EXISTS idx_news_date ON news (status, edition_date DESC, id);
 CREATE INDEX IF NOT EXISTS idx_news_section ON news (section, status, published_at DESC);
 
--- 데일리 브리핑 레터: 하루 한 호(아침판). 그날(issue_date = news.edition_date) 기사들을 한 편의 뉴스레터로 묶음
--- vol 은 처음 발행할 때 정해짐 (초안은 0) / status: 0 = 초안, 1 = 발행
+-- 데일리 브리핑 (호): 날짜·판(morning 아침판 / noon 점심판)마다 한 호. 그날 그 판의 기사(news.edition_date·edition)를 한 편으로 묶음
+-- 아침판 = 기사 브리핑 + 퀴즈(quiz JSON), 점심판 = 용어·면접 질문 / vol 은 판별로 처음 발행할 때 정해짐 (초안은 0) / status: 0 = 초안, 1 = 발행
 CREATE TABLE IF NOT EXISTS briefing_issues (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  issue_date TEXT NOT NULL UNIQUE,
+  issue_date TEXT NOT NULL,
+  edition TEXT NOT NULL DEFAULT 'morning',
   vol INTEGER NOT NULL DEFAULT 0,
   title TEXT NOT NULL,
   lede TEXT NOT NULL DEFAULT '',
   closing TEXT NOT NULL DEFAULT '',
+  quiz TEXT NOT NULL DEFAULT '[]',
   status INTEGER NOT NULL DEFAULT 0,
   origin TEXT NOT NULL DEFAULT 'admin',
   published_at INTEGER,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
-  views INTEGER NOT NULL DEFAULT 0
+  views INTEGER NOT NULL DEFAULT 0,
+  UNIQUE (issue_date, edition)
 );
 CREATE INDEX IF NOT EXISTS idx_issues_date ON briefing_issues (status, issue_date DESC);
 
@@ -282,7 +285,39 @@ async function migrate(c: Client) {
     const info = await c.execute(`PRAGMA table_info(${m.table})`);
     if (!info.rows.some((r) => r.name === m.column)) await c.execute(m.ddl);
   }
+  await upgradeIssues(c);
   await seedMagazine(c);
+}
+
+/**
+ * 2026-10-16: 브리핑 호를 '하루 한 호' → '날짜·판마다 한 호'로 (UNIQUE 를 바꾸려면 표를 다시 만들어야 함).
+ * 판(edition)·퀴즈(quiz) 칸이 없는 예전 표만 옮깁니다.
+ */
+async function upgradeIssues(c: Client) {
+  const cols = (await c.execute("PRAGMA table_info(briefing_issues)")).rows.map((r) => String(r.name));
+  if (cols.includes("edition")) return;
+  try {
+    await c.batch(
+      [
+        "DROP TABLE IF EXISTS briefing_issues_v2",
+        `CREATE TABLE briefing_issues_v2 (
+          id INTEGER PRIMARY KEY AUTOINCREMENT, issue_date TEXT NOT NULL, edition TEXT NOT NULL DEFAULT 'morning', vol INTEGER NOT NULL DEFAULT 0,
+          title TEXT NOT NULL, lede TEXT NOT NULL DEFAULT '', closing TEXT NOT NULL DEFAULT '', quiz TEXT NOT NULL DEFAULT '[]',
+          status INTEGER NOT NULL DEFAULT 0, origin TEXT NOT NULL DEFAULT 'admin', published_at INTEGER, created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL, views INTEGER NOT NULL DEFAULT 0, UNIQUE (issue_date, edition))`,
+        `INSERT INTO briefing_issues_v2 (id, issue_date, edition, vol, title, lede, closing, status, origin, published_at, created_at, updated_at, views)
+          SELECT id, issue_date, 'morning', vol, title, lede, closing, status, origin, published_at, created_at, updated_at, views FROM briefing_issues`,
+        "DROP TABLE briefing_issues",
+        "ALTER TABLE briefing_issues_v2 RENAME TO briefing_issues",
+        "CREATE INDEX IF NOT EXISTS idx_issues_date ON briefing_issues (status, issue_date DESC)",
+      ],
+      "write",
+    );
+  } catch (e) {
+    // 다른 서버가 동시에 옮겼으면 이미 끝난 것
+    const again = (await c.execute("PRAGMA table_info(briefing_issues)")).rows.map((r) => String(r.name));
+    if (!again.includes("edition")) throw e;
+  }
 }
 
 /** status: 0 = 공개, 1 = 숨김(신고 누적·운영자), 2 = 삭제 */

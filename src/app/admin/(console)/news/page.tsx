@@ -11,7 +11,7 @@ import { DbSection } from "@/components/db/DbSection";
 import { NewsSectionTag, newsTitle } from "@/components/magazine/news";
 import { cn } from "@/components/ui";
 import { formatDayHeading, todayKST } from "@/lib/date";
-import { NEWS_SECTIONS, isDateKey, isNewsSection, kindOf, letterHref, newsHref, volLabel, type NewsItem } from "@/lib/news-meta";
+import { EDITION_LABEL, NEWS_SECTIONS, isDateKey, isNewsSection, kindOf, letterHref, newsHref, volLabel, type NewsItem } from "@/lib/news-meta";
 import { adminListIssues, type AdminIssueRow } from "@/lib/server/briefing";
 import { requireAdmin } from "@/lib/server/admin";
 import { adminListNews, newsAdminCounts, type AdminNewsFilter } from "@/lib/server/news";
@@ -51,12 +51,12 @@ async function NewsAdmin({ sp }: { sp: SP }) {
     <>
       <AdminPageTitle
         title="데일리 브리핑"
-        desc="매일 아침 한 호씩 나가는 레터예요. 자동 점검이 아침 6시에 레터 초안(기사·용어·면접 질문 포함)을 만들면, 미리보기로 확인하고 '발행'을 누르세요."
+        desc="아침판(기사 브리핑·퀴즈)과 점심판(용어·면접 질문)이 매일 한 호씩 나가요. 자동 점검이 초안을 만들면 미리보기로 확인하고 '발행'을 누르세요."
         aside={
           <div className="flex flex-wrap gap-2">
             <Link href="/admin/news/issue/new" className="btn btn-sm btn-primary">
               <Mail className="h-4 w-4" strokeWidth={1.75} />
-              레터 만들기
+              브리핑 만들기
             </Link>
             <Link href="/admin/news/new" className="btn btn-sm btn-secondary">
               <PenLine className="h-4 w-4" strokeWidth={1.75} />
@@ -67,19 +67,19 @@ async function NewsAdmin({ sp }: { sp: SP }) {
       />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-        <StatTile label="발행 대기 레터" value={nf.format(draftIssues)} tone={draftIssues ? "alert" : "default"} href="#letters" />
+        <StatTile label="발행 대기 브리핑" value={nf.format(draftIssues)} tone={draftIssues ? "alert" : "default"} href="#letters" />
         <StatTile label="검토 대기 기사" value={nf.format(counts.drafts)} tone={counts.drafts ? "alert" : "default"} href={listHref("/admin/news", { filter: "draft" })} />
         <StatTile label="오늘 공개 기사" value={nf.format(counts.todayPublished)} sub={formatDayHeading(today)} href={listHref("/admin/news", { filter: "published", date: today })} />
       </div>
 
       <AdminCard>
         <h2 id="letters" className="type-heading-sm text-ink">
-          레터
+          브리핑 (호)
         </h2>
-        <p className="mt-1 type-caption text-ink-mute">발행하면 그날 기사 초안도 모두 함께 공개돼요. 빼고 싶은 기사는 아래 목록에서 먼저 지워 주세요.</p>
+        <p className="mt-1 type-caption text-ink-mute">발행하면 그 호에 실린 기사 초안도 함께 공개돼요. 빼고 싶은 기사는 아래 목록에서 먼저 지워 주세요.</p>
         {issues.length === 0 ? (
           <div className="mt-3">
-            <EmptyRow>아직 레터가 없어요. 내일 아침 6시 자동 점검이 첫 초안을 만들어요.</EmptyRow>
+            <EmptyRow>아직 브리핑이 없어요. 자동 점검이 아침 6시·낮 12시 30분에 초안을 만들어요.</EmptyRow>
           </div>
         ) : (
           <ul className="mt-3 divide-y divide-hairline">
@@ -158,7 +158,7 @@ function Row({ n }: { n: NewsItem }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <NewsSectionTag section={n.section} />
-          {kindOf(n.section) === "news" && <span className="tag bg-canvas-soft text-ink-secondary">{n.headline ? "헤드라인" : n.tier === "brief" ? "한 줄" : "핵심"}</span>}
+          <span className="tag bg-canvas-soft text-ink-secondary">{kindOf(n.section) === "news" ? (n.edition === "morning" ? "아침판" : "판 없음 · 안 실림") : "점심판"}</span>
           {n.status === 1 ? <span className="tag bg-ev-final-soft text-ev-final">공개</span> : <span className="tag bg-canvas-soft text-ink-secondary">초안</span>}
           {n.origin === "auto" && <span className="tag bg-canvas-cream text-lemon">자동</span>}
           {n.headline && (
@@ -203,7 +203,7 @@ function IssueRow({ r }: { r: AdminIssueRow }) {
           {issue.status === 1 ? <span className="tag bg-ev-final-soft text-ev-final">발행</span> : <span className="tag bg-ev-doc-soft text-ev-doc">발행 대기</span>}
           {issue.origin === "auto" && <span className="tag bg-canvas-cream text-lemon">자동</span>}
           <span className="tabular type-caption text-ink-mute">
-            {volLabel(issue.vol)} · {formatDayHeading(issue.date)} · 기사 {r.items}건{r.drafts ? ` (초안 ${r.drafts})` : ""}
+            {formatDayHeading(issue.date)} {EDITION_LABEL[issue.edition]} · {volLabel(issue.vol)} · {issue.edition === "morning" ? "기사" : "용어·질문"} {r.items}건{r.drafts ? ` (초안 ${r.drafts})` : ""}
           </span>
         </div>
         <Link href={`/admin/news/issue/${issue.id}`} className="mt-1 block type-body-md font-semibold text-ink hover:underline">
@@ -212,7 +212,7 @@ function IssueRow({ r }: { r: AdminIssueRow }) {
         {issue.lede && <p className="mt-0.5 line-clamp-2 type-caption text-ink-secondary">{issue.lede}</p>}
       </div>
       <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-        <Link href={letterHref(issue.date)} target="_blank" className="rounded-full border border-hairline px-2.5 py-1 type-micro text-ink-secondary hover:border-hairline-input">
+        <Link href={letterHref(issue.date, issue.edition)} target="_blank" className="rounded-full border border-hairline px-2.5 py-1 type-micro text-ink-secondary hover:border-hairline-input">
           미리보기
         </Link>
         <Link href={`/admin/news/issue/${issue.id}`} className="rounded-full border border-hairline px-2.5 py-1 type-micro text-ink-secondary hover:border-hairline-input">
@@ -227,7 +227,7 @@ function IssueRow({ r }: { r: AdminIssueRow }) {
               type="submit"
               name="target"
               value={`publish:${issue.id}`}
-              data-confirm={`${formatDayHeading(issue.date)} 레터를 발행할까요? 그날 기사 초안도 모두 공개돼요.`}
+              data-confirm={`${formatDayHeading(issue.date)} ${EDITION_LABEL[issue.edition]}을 발행할까요? 실린 기사 초안도 모두 공개돼요.`}
               className="btn btn-sm btn-primary"
             >
               발행
@@ -235,7 +235,7 @@ function IssueRow({ r }: { r: AdminIssueRow }) {
           </ConfirmForm>
         ) : (
           <ConfirmForm action={issueAction}>
-            <button type="submit" name="target" value={`unpublish:${issue.id}`} data-confirm="레터를 내릴까요? 그날 기사도 다시 초안이 돼요." className="btn btn-sm btn-toggle">
+            <button type="submit" name="target" value={`unpublish:${issue.id}`} data-confirm="브리핑을 내릴까요? 실린 기사도 다시 초안이 돼요." className="btn btn-sm btn-toggle">
               내리기
             </button>
           </ConfirmForm>

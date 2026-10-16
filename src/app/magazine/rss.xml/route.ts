@@ -1,6 +1,6 @@
 import { connection } from "next/server";
 import { CATEGORY_INFO, MAGAZINE_NAME, MAGAZINE_TAGLINE, articleHref, summaryLines } from "@/lib/magazine-meta";
-import { letterHref, volLabel } from "@/lib/news-meta";
+import { EDITION_LABEL, letterHref, volLabel } from "@/lib/news-meta";
 import { publishedIssueIndex } from "@/lib/server/briefing";
 import { dbConfigured } from "@/lib/server/db";
 import { listArticles } from "@/lib/server/magazine";
@@ -28,8 +28,8 @@ export async function GET() {
     ]);
     items = [
       ...letters.map((i) => ({
-        title: `[데일리 브리핑 ${volLabel(i.vol)}] ${i.title}`,
-        link: `${SITE.url}${letterHref(i.date)}`,
+        title: `[데일리 브리핑 ${EDITION_LABEL[i.edition]} ${volLabel(i.vol)}] ${i.title}`,
+        link: `${SITE.url}${letterHref(i.date, i.edition)}`,
         category: "데일리 브리핑",
         description: i.lede,
         at: i.publishedAt,

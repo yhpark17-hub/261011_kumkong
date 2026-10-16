@@ -271,7 +271,7 @@ function renderBlock(b: Block, k: string, variant: MarkdownVariant): ReactNode {
         <p
           key={k}
           className={cn(
-            "mt-5 type-body-lg leading-[1.85] text-ink first:mt-0",
+            "mt-5 type-body-lg leading-[1.85] text-ink ko-justify first:mt-0",
             variant === "webtoon" && "mx-auto max-w-[560px] text-center text-ink-secondary",
           )}
         >
@@ -289,7 +289,7 @@ function renderBlock(b: Block, k: string, variant: MarkdownVariant): ReactNode {
       return b.items.some((it) => it.checked !== null) ? (
         <ul key={k} className="mt-5 space-y-2 first:mt-0">
           {b.items.map((it, i) => (
-            <li key={i} className="flex items-start gap-2.5 type-body-lg leading-[1.7] text-ink">
+            <li key={i} className="flex items-start gap-2.5 type-body-lg leading-[1.7] text-ink ko-justify">
               {it.checked ? (
                 <CheckSquare className="mt-1 h-5 w-5 shrink-0 text-primary" strokeWidth={1.75} />
               ) : (

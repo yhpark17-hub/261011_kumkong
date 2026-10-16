@@ -167,6 +167,13 @@
 }
 
 /* ───────────── Typography (DESIGN.md typography 토큰) ───────────── */
+/* 긴 글 양쪽 맞춤 — 한글은 음절 단위로 줄을 바꿔 낱말 사이가 벌어지지 않게 */
+@utility ko-justify {
+  text-align: justify;
+  word-break: normal;
+  line-break: strict;
+}
+
 @utility type-display-xxl {
   font-size: 56px;
   font-weight: 300;
@@ -473,6 +480,16 @@
   }
   .kk-ticker-viewport {
     overflow-x: auto;
+  }
+}
+
+/* 브리핑 헤드라인 넘김 진행 막대 */
+@keyframes kk-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
   }
 }
 

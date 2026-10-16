@@ -263,6 +263,15 @@ export function IssueViewRecorder({ id }: { id: number }) {
   return null;
 }
 
+/** 기사 원문 링크 — 누르면 '많이 본 기사' 순위에 한 번 셉니다 */
+export function SourceLink({ id, href, className, children }: { id: number; href: string; className?: string; children: React.ReactNode }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={className} onClick={() => recordNewsView(id).catch(() => {})}>
+      {children}
+    </a>
+  );
+}
+
 export function NewsViewRecorder({ id }: { id: number }) {
   const done = useRef(false);
   useEffect(() => {

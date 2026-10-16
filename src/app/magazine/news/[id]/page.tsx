@@ -12,7 +12,7 @@ import { NewsViewRecorder, ShareButton } from "@/components/magazine/interactive
 import { NewsRow, NewsSectionTag, newsTitle } from "@/components/magazine/news";
 import { formatDayHeading } from "@/lib/date";
 import { MAGAZINE_NAME } from "@/lib/magazine-meta";
-import { KIND_LABELS, NEWS_SECTION_INFO, briefingArchiveHref, briefingDateHref, formatNewsTime, letterHref, newsHref, volLabel } from "@/lib/news-meta";
+import { EDITION_LABEL, KIND_LABELS, NEWS_SECTION_INFO, briefingArchiveHref, briefingDateHref, formatNewsTime, itemEdition, letterHref, newsHref, volLabel } from "@/lib/news-meta";
 import { getIssue } from "@/lib/server/briefing";
 import { dbConfigured } from "@/lib/server/db";
 import { getNews, newsByDate, sameSectionNews } from "@/lib/server/news";
@@ -99,13 +99,16 @@ async function NewsView({ rawId }: { rawId: string }) {
   const admin = await isAdmin();
   const n = await getNews(id, { admin });
   if (!n) notFound();
+  const ed = itemEdition(n);
   const [sameDay, sameSection, issue] = n.live
-    ? await Promise.all([newsByDate(n.editionDate), sameSectionNews(n, 4), getIssue(n.editionDate)])
-    : [[], [], await getIssue(n.editionDate, { admin })];
+    ? await Promise.all([newsByDate(n.editionDate), sameSectionNews(n, 4), getIssue(n.editionDate, ed)])
+    : [[], [], await getIssue(n.editionDate, ed, { admin })];
   const others = sameDay.filter((x) => x.id !== n.id).slice(0, 8);
-  // 이 기사가 실린 레터 (없으면 그날 기사 모아보기)
-  const dayHref = issue ? letterHref(n.editionDate) : briefingDateHref(n.editionDate);
-  const dayLabel = issue ? `${volLabel(issue.vol)} · ${formatDayHeading(n.editionDate)} 레터` : `${formatDayHeading(n.editionDate)} 브리핑`;
+  // 이 기사가 실린 브리핑 (없으면 그날 기사 모아보기)
+  const dayHref = issue ? letterHref(n.editionDate, ed, n.id) : briefingDateHref(n.editionDate);
+  const dayLabel = issue
+    ? `${formatDayHeading(n.editionDate)} ${EDITION_LABEL[ed]} · ${volLabel(issue.vol)}`
+    : `${formatDayHeading(n.editionDate)} 브리핑`;
   const info = NEWS_SECTION_INFO[n.section];
   const L = KIND_LABELS[info.kind];
 
@@ -175,7 +178,7 @@ async function NewsView({ rawId }: { rawId: string }) {
           <div className="mt-8 space-y-5">
             {info.kind === "question" && <p className="type-caption font-semibold text-ink-mute">{L.summary}</p>}
             {toParagraphs(n.summary).map((p, i) => (
-              <p key={i} className="type-body-lg leading-[1.85] text-ink">
+              <p key={i} className="type-body-lg leading-[1.85] text-ink ko-justify">
                 {p}
               </p>
             ))}
@@ -225,7 +228,7 @@ async function NewsView({ rawId }: { rawId: string }) {
         {others.length > 0 && (
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <div className="rounded-2xl border border-hairline p-5">
-              <p className="type-heading-sm text-ink">{issue ? "이 레터의 다른 기사" : "같은 날 브리핑"}</p>
+              <p className="type-heading-sm text-ink">같은 날 브리핑</p>
               <ul className="mt-2 divide-y divide-hairline">
                 {others.map((x) => (
                   <li key={x.id}>
@@ -237,7 +240,7 @@ async function NewsView({ rawId }: { rawId: string }) {
                 ))}
               </ul>
               <Link href={dayHref} className="link mt-3 inline-block type-caption">
-                {issue ? "레터 전체 읽기 →" : "이날 브리핑 전체 보기 →"}
+                {issue ? "브리핑 전체 읽기 →" : "이날 브리핑 전체 보기 →"}
               </Link>
             </div>
           </aside>

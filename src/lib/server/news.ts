@@ -98,6 +98,16 @@ export async function newsSectionCounts(): Promise<Map<NewsSection, number>> {
   return m;
 }
 
+/** 가장 최근 공개된 그 카테고리 한 건 (첫 화면 '오늘의 용어·면접 질문' 칸) */
+export async function latestInSection(section: NewsSection): Promise<NewsItem | null> {
+  const client = await db();
+  const res = await client.execute({
+    sql: `SELECT ${COLS} FROM news WHERE ${PUBLIC} AND section = ? ORDER BY edition_date DESC, published_at DESC, id DESC LIMIT 1`,
+    args: [Date.now(), section],
+  });
+  return res.rows[0] ? toItem(res.rows[0]) : null;
+}
+
 /** 공개 브리핑이 있는 가장 오래된 날짜 (기간 선택 최솟값) */
 export async function firstNewsDate(): Promise<string | null> {
   const client = await db();

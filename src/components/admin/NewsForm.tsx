@@ -121,17 +121,11 @@ export function NewsForm({ initial }: { initial: NewsFormInitial }) {
       </div>
 
       {kind === "news" && (
-        <div className="grid gap-3 rounded-lg border border-hairline px-4 py-3 sm:grid-cols-[auto_180px_110px] sm:items-end">
+        <div className="grid gap-3 rounded-lg border border-hairline px-4 py-3 sm:grid-cols-[auto_110px] sm:items-end">
+          <input type="hidden" name="tier" value="key" />
           <label className="flex items-center gap-2 pb-2 type-body-md text-ink-secondary">
             <input type="checkbox" name="headline" defaultChecked={initial.headline} className="h-4 w-4 accent-[#533afd]" />
-            이날 레터의 헤드라인 (맨 위에 가장 크게)
-          </label>
-          <label className="block">
-            <span className="mb-1 block type-caption text-ink-secondary">레터 안 비중</span>
-            <select name="tier" defaultValue={initial.tier} className="input w-full">
-              <option value="key">핵심 기사 (자세히)</option>
-              <option value="brief">한 줄 뉴스</option>
-            </select>
+            이날 아침판의 헤드라인 (01 — 맨 위에 가장 크게)
           </label>
           <label className="block">
             <span className="mb-1 block type-caption text-ink-secondary">순서</span>

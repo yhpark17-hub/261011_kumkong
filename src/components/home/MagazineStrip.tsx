@@ -5,15 +5,15 @@ import { KongMascot } from "@/components/magazine/KongMascot";
 import { ArticleRow } from "@/components/magazine/parts";
 import { formatDayHeading } from "@/lib/date";
 import { BLOG_CATEGORIES, SECTION_INFO } from "@/lib/magazine-meta";
-import { NEWS_SECTION_INFO, newsHref, volLabel } from "@/lib/news-meta";
+import { NEWS_SECTION_INFO, itemHref, letterHref } from "@/lib/news-meta";
 import { arrangeLetter, issueItems, latestIssue } from "@/lib/server/briefing";
 import { listArticles } from "@/lib/server/magazine";
 
 /** 홈: 오늘의 레터(데일리 브리핑) + 금융 블로그 새 글 */
 export async function MagazineStrip() {
   await connection();
-  const [issue, latest] = await Promise.all([latestIssue(), listArticles({ categories: BLOG_CATEGORIES.map((c) => c.key), pageSize: 3 })]);
-  const top = issue ? arrangeLetter(await issueItems(issue.date)).top : [];
+  const [issue, latest] = await Promise.all([latestIssue("morning"), listArticles({ categories: BLOG_CATEGORIES.map((c) => c.key), pageSize: 3 })]);
+  const top = issue ? arrangeLetter(await issueItems(issue.date, "morning")).top : [];
   if (!issue && latest.items.length === 0) return null;
 
   return (
@@ -23,27 +23,23 @@ export async function MagazineStrip() {
           <h2 className="flex items-center gap-2 type-heading-md text-ink">
             <KongMascot className="h-7 w-7" />
             데일리 브리핑
-            {issue && (
-              <span className="type-caption font-normal text-ink-mute">
-                {volLabel(issue.vol)} · {formatDayHeading(issue.date)}
-              </span>
-            )}
+            {issue && <span className="type-caption font-normal text-ink-mute">{formatDayHeading(issue.date)} 아침판</span>}
           </h2>
-          <Link href="/magazine" className="link inline-flex shrink-0 items-center gap-1 type-caption">
-            레터 읽기
+          <Link href={issue ? letterHref(issue.date, "morning") : "/magazine"} className="link inline-flex shrink-0 items-center gap-1 type-caption">
+            브리핑 읽기
             <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.75} />
           </Link>
         </div>
         {issue ? (
           <>
-            <Link href="/magazine" className="mt-4 block type-heading-md text-ink [word-break:keep-all] hover:underline">
+            <Link href={letterHref(issue.date, "morning")} className="mt-4 block type-heading-md text-ink [word-break:keep-all] hover:underline">
               {issue.title}
             </Link>
             {top.length > 0 && (
               <ol className="mt-3 space-y-2">
                 {top.map((n, i) => (
                   <li key={n.id}>
-                    <Link href={newsHref(n.id)} className="group flex gap-2.5 rounded-lg bg-canvas px-3 py-2.5">
+                    <Link href={itemHref(n)} className="group flex gap-2.5 rounded-lg bg-canvas px-3 py-2.5">
                       <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-dark tabular type-micro font-bold text-on-primary">
                         {i + 1}
                       </span>
@@ -61,7 +57,7 @@ export async function MagazineStrip() {
             )}
           </>
         ) : (
-          <p className="mt-4 type-body-md text-ink-mute">매일 아침 한 편의 레터로 찾아올게요.</p>
+          <p className="mt-4 type-body-md text-ink-mute">매일 아침 기사 브리핑, 점심에는 용어·면접 공부로 찾아올게요.</p>
         )}
       </section>
 

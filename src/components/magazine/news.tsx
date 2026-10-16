@@ -1,15 +1,19 @@
 import Link from "next/link";
-import { Lightbulb, Newspaper, TrendingUp } from "lucide-react";
-import { formatDayHeading } from "@/lib/date";
+import { ArrowRight, Lightbulb, Mail, Newspaper, Soup, Sunrise, TrendingUp } from "lucide-react";
+import { formatDayHeading, formatShort } from "@/lib/date";
 import {
+  BRIEFING_ARCHIVE,
   EDITION_LABEL,
   NEWS_SECTIONS,
   NEWS_SECTION_INFO,
   briefingArchiveHref,
   briefingDateHref,
   formatNewsTime,
+  itemHref,
   kindOf,
-  newsHref,
+  letterHref,
+  volLabel,
+  type BriefingIssue,
   type NewsItem,
   type NewsSection,
   type NewsView,
@@ -53,7 +57,7 @@ function Meta({ n, className, views = false }: { n: NewsItem; className?: string
 /** 한 줄 뉴스 (상세 화면 '최근 뉴스') */
 export function NewsRow({ n, showSection = false }: { n: NewsItem; showSection?: boolean }) {
   return (
-    <Link href={newsHref(n.id)} className="group block py-4">
+    <Link href={itemHref(n)} className="group block py-4">
       {showSection && <NewsSectionTag section={n.section} className="mb-1.5" />}
       <span className="block type-heading-sm text-ink [word-break:keep-all] group-hover:underline">{newsTitle(n)}</span>
       <span className="mt-1.5 line-clamp-2 type-body-md leading-relaxed text-ink-secondary">{n.summary}</span>
@@ -93,7 +97,7 @@ function NewsCover({ n, className }: { n: NewsItem; className?: string }) {
 /** 카드 보기 */
 export function NewsCard({ n }: { n: NewsItem }) {
   return (
-    <Link href={newsHref(n.id)} className="group flex flex-col overflow-hidden rounded-xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
+    <Link href={itemHref(n)} className="group flex flex-col overflow-hidden rounded-xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
       <NewsCover n={n} className="aspect-[16/9] w-full" />
       <div className="flex flex-1 flex-col p-5 md:p-6">
         <span className="flex flex-wrap items-center gap-2">
@@ -111,7 +115,7 @@ export function NewsCard({ n }: { n: NewsItem }) {
 /** 목록 보기 — 글만 */
 export function NewsListRow({ n }: { n: NewsItem }) {
   return (
-    <Link href={newsHref(n.id)} className="group flex items-start gap-4 py-5">
+    <Link href={itemHref(n)} className="group flex items-start gap-4 py-5">
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-2">
           <NewsSectionTag section={n.section} />
@@ -149,7 +153,7 @@ export function PopularNews({ items, className, days = 7 }: { items: NewsItem[];
         <ol className="mt-2 divide-y divide-hairline">
           {items.map((n, i) => (
             <li key={n.id}>
-              <Link href={newsHref(n.id)} className="group flex gap-3 py-3">
+              <Link href={itemHref(n)} className="group flex gap-3 py-3">
                 <span className={cn("w-5 shrink-0 tabular type-heading-sm", i < 3 ? "text-ruby" : "text-ink-mute")}>{i + 1}</span>
                 <span className="min-w-0">
                   <span className="line-clamp-2 type-body-md text-ink [word-break:keep-all] group-hover:underline">{newsTitle(n)}</span>
@@ -253,5 +257,149 @@ export function NewsGroupedList({ items, view, dayLinks = true }: { items: NewsI
         </section>
       ))}
     </>
+  );
+}
+
+/** 오늘의 용어 · 면접 질문 칸 — 누르면 점심판 브리핑의 그 자리로 */
+export function FeatureItemCard({ section, n, today }: { section: "term" | "question"; n: NewsItem | null; today: string }) {
+  const info = NEWS_SECTION_INFO[section];
+  const Icon = NEWS_ICON[section];
+  const head = section === "term" ? "오늘의 용어" : "오늘의 면접 질문";
+  const old = n && n.editionDate !== today;
+  return (
+    <section aria-label={head} className="flex flex-col rounded-2xl border border-hairline bg-canvas p-5">
+      <p className="flex items-center gap-2 type-caption font-semibold text-ink">
+        <span className={cn("inline-flex h-7 w-7 items-center justify-center rounded-lg", info.tone)}>
+          <Icon className="h-4 w-4" strokeWidth={1.75} />
+        </span>
+        {head}
+        {old && <span className="ml-auto font-normal text-ink-mute tabular">{formatShort(n.editionDate)}</span>}
+      </p>
+      {n ? (
+        <Link href={itemHref(n)} className="group mt-4 flex flex-1 flex-col">
+          <span className={cn("[word-break:keep-all] group-hover:underline", section === "term" ? "type-heading-lg text-ev-posting" : "type-heading-sm text-ink")}>
+            {newsTitle(n)}
+          </span>
+          <span className="mt-2 line-clamp-3 type-body-md leading-relaxed text-ink-secondary ko-justify">{n.summary}</span>
+          <span className="mt-auto inline-flex items-center gap-1 pt-4 type-caption text-primary-text">
+            점심판 브리핑에서 보기
+            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+          </span>
+        </Link>
+      ) : (
+        <p className="mt-4 type-body-md text-ink-mute">
+          {section === "term" ? "점심판에서 그날 기사에 나온 용어를 풀어 드려요." : "점심판에서 그날 기사로 나올 법한 면접 질문을 드려요."}
+        </p>
+      )}
+    </section>
+  );
+}
+
+/** 브리핑 한 호 카드 — 카드(크게) / 목록(글만) */
+export function IssueCard({ issue, top, count, view }: { issue: BriefingIssue; top: NewsItem[]; count: number; view: NewsView }) {
+  const morning = issue.edition === "morning";
+  const Icon = morning ? Sunrise : Soup;
+  const what = morning ? `기사 ${count}건` : `용어·면접 ${count}개`;
+  if (view === "list") {
+    return (
+      <Link href={letterHref(issue.date, issue.edition)} className="group flex items-start gap-4 py-5">
+        <span className={cn("inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", morning ? "bg-[#ffe6cc] text-[#b85c12]" : "bg-[#d9f2e2] text-[#2f7d4f]")}>
+          <Icon className="h-5 w-5" strokeWidth={1.75} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="type-caption text-ink-mute">
+            {EDITION_LABEL[issue.edition]} · {volLabel(issue.vol)} · {what}
+          </span>
+          <span className="mt-1 block type-heading-sm text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
+          {issue.lede && <span className="mt-1 line-clamp-1 block type-body-md text-ink-secondary">{issue.lede}</span>}
+        </span>
+      </Link>
+    );
+  }
+  return (
+    <Link href={letterHref(issue.date, issue.edition)} className="group flex flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
+      <span className={cn("relative flex items-center gap-3 px-5 py-4", morning ? "bg-[#fff1e0]" : "bg-[#e6f6ec]")}>
+        <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-brand-dark bg-canvas">
+          <Icon className="h-5 w-5 text-brand-dark" strokeWidth={1.75} />
+        </span>
+        <span>
+          <span className="block type-micro-cap text-ink-mute">Daily Briefing</span>
+          <span className="block type-heading-sm text-brand-dark">
+            {EDITION_LABEL[issue.edition]} <span className="tabular type-caption text-ink-mute">{volLabel(issue.vol)}</span>
+          </span>
+        </span>
+        <span className="ml-auto type-caption text-ink-mute">{what}</span>
+      </span>
+      <span className="flex flex-1 flex-col p-5">
+        <span className="type-heading-md text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
+        {top.length > 0 && (
+          <ol className="mt-3 space-y-1.5">
+            {top.map((n, i) => (
+              <li key={n.id} className="flex gap-2 type-caption text-ink-secondary">
+                <span className="tabular font-semibold text-primary-text">{i + 1}</span>
+                <span className="min-w-0 truncate">
+                  [{NEWS_SECTION_INFO[n.section].label}] {n.title}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+        <span className="mt-auto inline-flex items-center gap-1 pt-4 type-caption text-primary-text">
+          브리핑 읽기
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+        </span>
+      </span>
+    </Link>
+  );
+}
+
+/** 지난 브리핑 모아보기로 가는 큰 버튼 */
+export function ArchiveCallout({ total, className }: { total: number; className?: string }) {
+  return (
+    <Link
+      href={BRIEFING_ARCHIVE}
+      className={cn("group flex items-center gap-4 rounded-2xl border border-hairline bg-canvas-soft px-5 py-5 transition-colors hover:border-hairline-input md:px-6", className)}
+    >
+      <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-canvas text-primary-text">
+        <Mail className="h-5 w-5" strokeWidth={1.75} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block type-heading-sm text-ink group-hover:underline">지난 브리핑 전체 보기</span>
+        <span className="mt-0.5 block type-caption text-ink-mute">
+          지금까지 {total.toLocaleString()}호 · 날짜와 기간을 골라 한 달 전, 두 달 전 브리핑도 찾아볼 수 있어요
+        </span>
+      </span>
+      <ArrowRight className="h-5 w-5 shrink-0 text-ink-mute transition-transform group-hover:translate-x-0.5" strokeWidth={1.75} />
+    </Link>
+  );
+}
+
+/** 날짜별 브리핑 바로가기 (옆 칸) */
+export function BriefingDates({ issues, today }: { issues: BriefingIssue[]; today: string }) {
+  if (!issues.length) return null;
+  return (
+    <section aria-labelledby="past-title" className="rounded-xl border border-hairline p-5">
+      <h2 id="past-title" className="type-heading-sm text-ink">
+        날짜별 브리핑
+      </h2>
+      <ul className="mt-2 divide-y divide-hairline">
+        {issues.map((i) => (
+          <li key={i.id}>
+            <Link href={letterHref(i.date, i.edition)} className="group flex items-center justify-between gap-3 py-2.5">
+              <span className="tabular type-body-md text-ink group-hover:underline">
+                {formatShort(i.date)}
+                {i.date === today && <span className="ml-1.5 type-micro text-primary-text">오늘</span>}
+              </span>
+              <span className={cn("rounded-full px-2 py-0.5 type-micro", i.edition === "morning" ? "bg-[#fff1e0] text-[#b85c12]" : "bg-[#e6f6ec] text-[#2f7d4f]")}>
+                {EDITION_LABEL[i.edition]}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <Link href={BRIEFING_ARCHIVE} className="link mt-3 inline-block type-caption">
+        기간을 골라 찾아보기 →
+      </Link>
+    </section>
   );
 }

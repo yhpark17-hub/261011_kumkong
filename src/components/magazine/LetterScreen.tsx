@@ -1,16 +1,16 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, PenLine } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, PenLine } from "lucide-react";
 import { formatShort } from "@/lib/date";
-import { BRIEFING_ARCHIVE, letterHref, volLabel, type BriefingIssue, type NewsItem, type NewsSection } from "@/lib/news-meta";
+import { BRIEFING_ARCHIVE, EDITION_LABEL, letterHref, volLabel, type BriefingIssue, type NewsItem } from "@/lib/news-meta";
 import type { LetterContent } from "@/lib/server/briefing";
+import { AD_SLOTS } from "@/lib/site";
 import { AdSlot } from "../ads/AdSlot";
 import { cn } from "../ui";
-import { AD_SLOTS } from "@/lib/site";
 import { IssueViewRecorder } from "./interactive";
 import { Letter } from "./Letter";
-import { NewsCategoryNav, PopularNews } from "./news";
+import { PopularNews } from "./news";
 
-/** 레터 한 호 + 옆 칸(지난 레터·많이 본 기사) — 브리핑 첫 화면과 호별 페이지가 함께 씀 */
+/** 브리핑 한 호 + 옆 칸(지난 브리핑·많이 본 기사) */
 export function LetterScreen({
   issue,
   content,
@@ -18,7 +18,7 @@ export function LetterScreen({
   recent,
   popular,
   around,
-  counts,
+  sibling,
 }: {
   issue: BriefingIssue;
   content: LetterContent;
@@ -26,22 +26,35 @@ export function LetterScreen({
   recent: BriefingIssue[];
   popular: NewsItem[];
   around: { prev: BriefingIssue | null; next: BriefingIssue | null };
-  counts: Map<NewsSection, number>;
+  /** 같은 날 다른 판 (아침판이면 점심판) */
+  sibling: BriefingIssue | null;
 }) {
   const nav = "inline-flex min-w-0 items-center gap-1.5 rounded-full border border-hairline px-3.5 py-2 type-caption text-ink-secondary hover:border-hairline-input";
+  const isCurrent = (i: BriefingIssue) => i.date === issue.date && i.edition === issue.edition;
   return (
     <div className="mt-8">
       {issue.live && <IssueViewRecorder id={issue.id} />}
-      <NewsCategoryNav active={null} counts={counts} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link href="/magazine" className="link inline-flex items-center gap-1 type-caption">
+          <ArrowLeft className="h-4 w-4" strokeWidth={1.75} />
+          데일리 브리핑
+        </Link>
+        {sibling && (
+          <Link href={letterHref(sibling.date, sibling.edition)} className={nav}>
+            같은 날 {EDITION_LABEL[sibling.edition]} 보기
+            <ChevronRight className="h-4 w-4" strokeWidth={2} />
+          </Link>
+        )}
+      </div>
 
       {admin && (
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-canvas-cream px-4 py-3">
           <p className="type-caption text-ink-secondary">
-            {issue.live ? "운영자 화면 — 발행된 레터예요." : "미리보기 — 아직 초안이라 독자에게는 보이지 않아요. 초안 기사도 함께 보여요."}
+            {issue.live ? "운영자 화면 — 발행된 브리핑이에요." : "미리보기 — 아직 초안이라 독자에게는 보이지 않아요. 초안 기사도 함께 보여요."}
           </p>
           <Link href={`/admin/news/issue/${issue.id}`} className="btn btn-sm btn-secondary">
             <PenLine className="h-3.5 w-3.5" strokeWidth={1.75} />
-            레터 관리
+            브리핑 관리
           </Link>
         </div>
       )}
@@ -53,19 +66,19 @@ export function LetterScreen({
             {(around.prev || around.next) && (
               <nav aria-label="다른 호" className="mt-6 flex items-center justify-between gap-3">
                 {around.prev ? (
-                  <Link href={letterHref(around.prev.date)} className={nav}>
+                  <Link href={letterHref(around.prev.date, around.prev.edition)} className={nav}>
                     <ChevronLeft className="h-4 w-4 shrink-0" strokeWidth={2} />
                     <span className="truncate">
-                      이전 호 · {volLabel(around.prev.vol)} {formatShort(around.prev.date)}
+                      이전 {EDITION_LABEL[around.prev.edition]} · {formatShort(around.prev.date)}
                     </span>
                   </Link>
                 ) : (
                   <span />
                 )}
                 {around.next && (
-                  <Link href={letterHref(around.next.date)} className={nav}>
+                  <Link href={letterHref(around.next.date, around.next.edition)} className={nav}>
                     <span className="truncate">
-                      다음 호 · {volLabel(around.next.vol)} {formatShort(around.next.date)}
+                      다음 {EDITION_LABEL[around.next.edition]} · {formatShort(around.next.date)}
                     </span>
                     <ChevronRight className="h-4 w-4 shrink-0" strokeWidth={2} />
                   </Link>
@@ -76,24 +89,24 @@ export function LetterScreen({
         </div>
 
         <aside className="space-y-4">
-          <section aria-labelledby="letters-title" className="rounded-xl border border-hairline p-5">
-            <h2 id="letters-title" className="type-heading-sm text-ink">
-              지난 레터
+          <section aria-labelledby="briefings-title" className="rounded-xl border border-hairline p-5">
+            <h2 id="briefings-title" className="type-heading-sm text-ink">
+              지난 브리핑
             </h2>
             {recent.length === 0 ? (
-              <p className="mt-2 type-caption text-ink-mute">레터가 쌓이면 여기에서 다시 볼 수 있어요.</p>
+              <p className="mt-2 type-caption text-ink-mute">브리핑이 쌓이면 여기에서 다시 볼 수 있어요.</p>
             ) : (
               <ul className="mt-2 divide-y divide-hairline">
                 {recent.map((i) => (
                   <li key={i.id}>
                     <Link
-                      href={letterHref(i.date)}
-                      aria-current={i.date === issue.date ? "page" : undefined}
-                      className={cn("group block py-3", i.date === issue.date && "pointer-events-none")}
+                      href={letterHref(i.date, i.edition)}
+                      aria-current={isCurrent(i) ? "page" : undefined}
+                      className={cn("group block py-3", isCurrent(i) && "pointer-events-none")}
                     >
-                      <span className={cn("tabular type-micro", i.date === issue.date ? "font-semibold text-primary-text" : "text-ink-mute")}>
-                        {volLabel(i.vol)} · {formatShort(i.date)}
-                        {i.date === issue.date && " · 지금 보는 호"}
+                      <span className={cn("tabular type-micro", isCurrent(i) ? "font-semibold text-primary-text" : "text-ink-mute")}>
+                        {formatShort(i.date)} {EDITION_LABEL[i.edition]} · {volLabel(i.vol)}
+                        {isCurrent(i) && " · 지금 보는 호"}
                       </span>
                       <span className="mt-0.5 line-clamp-2 block type-body-md text-ink [word-break:keep-all] group-hover:underline">{i.title}</span>
                     </Link>
@@ -102,7 +115,7 @@ export function LetterScreen({
               </ul>
             )}
             <Link href={BRIEFING_ARCHIVE} className="link mt-3 inline-block type-caption">
-              지난 레터 전체 보기 →
+              지난 브리핑 전체 보기 →
             </Link>
           </section>
           <PopularNews items={popular} />
@@ -114,5 +127,3 @@ export function LetterScreen({
     </div>
   );
 }
-
-export type { LetterContent };

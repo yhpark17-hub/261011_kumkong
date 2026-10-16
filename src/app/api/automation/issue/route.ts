@@ -1,28 +1,40 @@
 import { revalidatePath } from "next/cache";
+import { connection } from "next/server";
 import { addDays, todayKST } from "@/lib/date";
-import { isNewsSection, kindOf } from "@/lib/news-meta";
+import { isIssueEdition, isNewsSection, kindOf, parseQuiz } from "@/lib/news-meta";
 import { automationAuthorized, json, unauthorized } from "@/lib/server/automation";
+import { morningForAutomation } from "@/lib/server/briefing";
 import { db, dbConfigured } from "@/lib/server/db";
 
 /**
- * 데일리 브리핑 레터 초안 한 호 올리기 — 항상 '초안 · 자동'으로만 들어가고 운영자가 확인 후 발행합니다.
+ * 데일리 브리핑 초안 한 호 올리기 — 항상 '초안 · 자동'으로만 들어가고 운영자가 확인 후 발행합니다.
  *
- * body: {
- *   title, lede, closing?,
- *   items: [
- *     { section: finance|economy|policy|global|public, tier: "headline"|"key"|"brief", title, takeaway, summary, point?, sourceName, sourceUrl },
- *     { section: "term", title, summary, point, sourceName?, sourceUrl? },
- *     { section: "question", title, summary, body(답변 뼈대), point, sourceName?, sourceUrl? }
- *   ]
- * }
- * - 뉴스: headline 정확히 1건, key 1~3건, brief 0~6건. 모든 뉴스는 원문 링크(sourceUrl)와 한 줄 요약(takeaway) 필수
- * - 용어·면접 질문 각 1건 필수. 용어는 최근 90일 안에 다룬 것이면 거절
- * - 그날 레터가 이미 있으면 아무것도 바꾸지 않고 skipped
- * 항목 순서 = 배열 순서. 하나라도 틀리면 아무것도 저장하지 않고 errors 를 돌려줍니다.
+ * 아침판 { edition: "morning", title, lede, closing?, items: [기사 6~8건], quiz: [3~4문제] }
+ *   - 기사: { section: finance|economy|policy|global|public, headline?: true, title, takeaway, summary, point, sourceName, sourceUrl }
+ *     헤드라인(headline: true) 정확히 1건. 모든 기사에 원문 링크·한 줄 요약
+ *   - 퀴즈: { question, options: [2~4개], answer: 정답 보기 번호(0부터), explain } — 그날 기사 내용으로만
+ * 점심판 { edition: "noon", title, lede, closing?, items: [용어 2~3개, 면접 질문 1~2개] }
+ *   - 용어: { section: "term", title, summary, point, body?, sourceName?, sourceUrl? } — 최근 90일 안에 다룬 용어는 거절
+ *   - 질문: { section: "question", title, summary, body(답변 뼈대), point, sourceName?, sourceUrl? }
+ * 그날 그 판이 이미 있으면 아무것도 바꾸지 않고 skipped. 하나라도 틀리면 아무것도 저장하지 않고 errors.
  */
 
 type Raw = Record<string, unknown>;
-const MAX = { headline: 1, key: 3, brief: 6 } as const;
+const LIMITS = { morning: { min: 6, max: 8 }, terms: { min: 2, max: 3 }, questions: { min: 1, max: 2 }, quiz: { min: 3, max: 4 } };
+
+/** 점심판을 만들 때 그날 아침판 기사 보기 */
+export async function GET(req: Request) {
+  await connection();
+  if (!automationAuthorized(req)) return unauthorized();
+  if (!dbConfigured()) return json({ error: "DB 없음" }, 503);
+  const date = todayKST();
+  const { issue, items } = await morningForAutomation(date);
+  return json({
+    date,
+    morning: issue ? { title: issue.title, lede: issue.lede, status: issue.status === 1 ? "published" : "draft" } : null,
+    items: items.map((n) => ({ section: n.section, title: n.title, takeaway: n.takeaway, summary: n.summary, sourceName: n.sourceName, sourceUrl: n.sourceUrl })),
+  });
+}
 
 export async function POST(req: Request) {
   if (!automationAuthorized(req)) return unauthorized();
@@ -36,19 +48,21 @@ export async function POST(req: Request) {
     return /^https?:\/\/[^\s/]+\.\S+$/i.test(u) ? u : null;
   };
   const date = todayKST();
+  const edition = b.edition;
+  if (!isIssueEdition(edition)) return json({ date, ok: false, errors: ['edition 은 "morning"(아침판) 또는 "noon"(점심판)이에요'] }, 400);
   const title = s(b.title, 120);
   const lede = s(b.lede, 1200);
   const closing = s(b.closing, 400);
   const raw = Array.isArray(b.items) ? (b.items as Raw[]).slice(0, 20) : [];
 
   const errors: string[] = [];
-  if (title.length < 4) errors.push("title(레터 제목)이 필요해요");
+  if (title.length < 4) errors.push("title(목록·카드에 보이는 제목)이 필요해요");
   if (lede.length < 30) errors.push("lede(오늘의 흐름)를 30자 이상 써 주세요");
 
-  const counts = { headline: 0, key: 0, brief: 0, term: 0, question: 0 };
+  let headlines = 0;
   const rows = raw.map((it, i) => {
-    const section = it.section;
     const where = `items[${i}]`;
+    const section = it.section;
     if (!isNewsSection(section)) {
       errors.push(`${where}: section 이 올바르지 않아요`);
       return null;
@@ -64,65 +78,73 @@ export async function POST(req: Request) {
       sourceName: s(it.sourceName, 60),
       sourceUrl: url(it.sourceUrl),
       headline: 0,
-      tier: "key" as "key" | "brief",
       position: i,
     };
     if (row.title.length < (kind === "term" ? 2 : 4)) errors.push(`${where}: title 이 너무 짧아요`);
     if (row.summary.length < 20) errors.push(`${where}: summary 를 20자 이상 써 주세요`);
-    if (kind === "news") {
-      const tier = it.tier === "headline" || it.tier === "key" || it.tier === "brief" ? it.tier : null;
-      if (!tier) errors.push(`${where}: tier 는 headline·key·brief 중 하나예요`);
-      else {
-        counts[tier]++;
-        row.headline = tier === "headline" ? 1 : 0;
-        row.tier = tier === "brief" ? "brief" : "key";
-      }
-      if (!row.sourceUrl) errors.push(`${where}: 뉴스는 sourceUrl(직접 연 원문 링크)이 필요해요`);
+    if (edition === "morning") {
+      if (kind !== "news") errors.push(`${where}: 아침판에는 기사(finance·economy·policy·global·public)만 넣어요. 용어·면접 질문은 점심판에`);
+      if (!row.sourceUrl) errors.push(`${where}: 기사는 sourceUrl(직접 연 원문 링크)이 필요해요`);
       if (row.takeaway.length < 8) errors.push(`${where}: takeaway(한 줄 요약)가 필요해요`);
+      if (row.point.length < 10) errors.push(`${where}: point(왜 중요할까·필기·면접 포인트)가 필요해요`);
+      if (it.headline === true || it.tier === "headline") {
+        row.headline = 1;
+        headlines++;
+      }
     } else {
-      counts[kind]++;
+      if (kind === "news") errors.push(`${where}: 점심판에는 용어(term)·면접 질문(question)만 넣어요`);
       if (kind === "question" && row.body.length < 10) errors.push(`${where}: 면접 질문은 body(답변 뼈대)가 필요해요`);
     }
     return row;
   });
+  const ok = rows.filter((r): r is NonNullable<typeof r> => Boolean(r));
 
-  if (counts.headline !== 1) errors.push(`헤드라인(tier: headline)은 정확히 1건이어야 해요 (지금 ${counts.headline}건)`);
-  if (counts.key < 1 || counts.key > MAX.key) errors.push(`핵심 기사(tier: key)는 1~${MAX.key}건이에요 (지금 ${counts.key}건)`);
-  if (counts.brief > MAX.brief) errors.push(`한 줄 뉴스(tier: brief)는 ${MAX.brief}건까지예요 (지금 ${counts.brief}건)`);
-  if (counts.term !== 1) errors.push(`오늘의 용어(section: term)는 1건이어야 해요 (지금 ${counts.term}건)`);
-  if (counts.question !== 1) errors.push(`면접 질문(section: question)은 1건이어야 해요 (지금 ${counts.question}건)`);
+  let quiz: ReturnType<typeof parseQuiz> = [];
+  if (edition === "morning") {
+    const n = ok.length;
+    if (n < LIMITS.morning.min || n > LIMITS.morning.max) errors.push(`아침판 기사는 ${LIMITS.morning.min}~${LIMITS.morning.max}건이에요 (지금 ${n}건)`);
+    if (headlines !== 1) errors.push(`헤드라인(headline: true)은 정확히 1건이어야 해요 (지금 ${headlines}건)`);
+    const rawQuiz = Array.isArray(b.quiz) ? b.quiz : [];
+    quiz = parseQuiz(rawQuiz);
+    if (quiz.length !== rawQuiz.length) errors.push("quiz: 질문·보기(2~4개)·정답 번호(answer, 0부터)를 확인해 주세요");
+    if (quiz.length < LIMITS.quiz.min || quiz.length > LIMITS.quiz.max) errors.push(`퀴즈는 ${LIMITS.quiz.min}~${LIMITS.quiz.max}문제예요 (지금 ${quiz.length}문제)`);
+    if (quiz.some((q) => q.explain.length < 10)) errors.push("quiz: 문제마다 explain(해설)을 써 주세요");
+  } else {
+    const terms = ok.filter((r) => r.section === "term");
+    const questions = ok.filter((r) => r.section === "question");
+    if (terms.length < LIMITS.terms.min || terms.length > LIMITS.terms.max) errors.push(`용어는 ${LIMITS.terms.min}~${LIMITS.terms.max}개예요 (지금 ${terms.length}개)`);
+    if (questions.length < LIMITS.questions.min || questions.length > LIMITS.questions.max)
+      errors.push(`면접 질문은 ${LIMITS.questions.min}~${LIMITS.questions.max}개예요 (지금 ${questions.length}개)`);
+  }
 
   const client = await db();
-  const existing = await client.execute({ sql: "SELECT id, status FROM briefing_issues WHERE issue_date = ?", args: [date] });
-  if (existing.rows.length) {
-    return json({ date, skipped: true, issueId: Number(existing.rows[0].id), reason: "오늘 레터가 이미 있어요" });
-  }
+  const existing = await client.execute({ sql: "SELECT id FROM briefing_issues WHERE issue_date = ? AND edition = ?", args: [date, edition] });
+  if (existing.rows.length) return json({ date, edition, skipped: true, issueId: Number(existing.rows[0].id), reason: "오늘 이 판이 이미 있어요" });
 
-  const term = rows.find((r) => r?.section === "term");
-  if (term) {
+  for (const t of ok.filter((r) => r.section === "term")) {
     const dup = await client.execute({
       sql: "SELECT id FROM news WHERE section = 'term' AND title = ? AND edition_date >= ? LIMIT 1",
-      args: [term.title, addDays(date, -90)],
+      args: [t.title, addDays(date, -90)],
     });
-    if (dup.rows.length) errors.push(`오늘의 용어 '${term.title}'는 최근 90일 안에 다뤘어요. 다른 용어를 골라 주세요`);
+    if (dup.rows.length) errors.push(`용어 '${t.title}'는 최근 90일 안에 다뤘어요. 다른 용어를 골라 주세요`);
   }
-  if (errors.length) return json({ date, ok: false, errors }, 400);
+  if (errors.length) return json({ date, edition, ok: false, errors }, 400);
 
   const now = Date.now();
-  const stmts = [
-    {
-      sql: "INSERT INTO briefing_issues (issue_date, title, lede, closing, status, origin, created_at, updated_at) VALUES (?, ?, ?, ?, 0, 'auto', ?, ?)",
-      args: [date, title, lede, closing, now, now],
-    },
-    ...rows
-      .filter((r): r is NonNullable<typeof r> => Boolean(r))
-      .map((r) => ({
+  const res = await client.batch(
+    [
+      {
+        sql: "INSERT INTO briefing_issues (issue_date, edition, title, lede, closing, quiz, status, origin, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 0, 'auto', ?, ?)",
+        args: [date, edition, title, lede, closing, JSON.stringify(quiz), now, now],
+      },
+      ...ok.map((r) => ({
         sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, tier, position, takeaway, headline, status, origin, created_at, updated_at)
-              VALUES (?, 'morning', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 'auto', ?, ?)`,
-        args: [date, r.section, r.title, r.summary, r.point, r.body, r.sourceName, r.sourceUrl, r.tier, r.position, r.takeaway, r.headline, now, now],
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'key', ?, ?, ?, 0, 'auto', ?, ?)`,
+        args: [date, edition, r.section, r.title, r.summary, r.point, r.body, r.sourceName, r.sourceUrl, r.position, r.takeaway, r.headline, now, now],
       })),
-  ];
-  const res = await client.batch(stmts, "write");
+    ],
+    "write",
+  );
   revalidatePath("/admin/news");
-  return json({ date, ok: true, issueId: Number(res[0].lastInsertRowid), items: stmts.length - 1 });
+  return json({ date, edition, ok: true, issueId: Number(res[0].lastInsertRowid), items: ok.length, quiz: quiz.length });
 }

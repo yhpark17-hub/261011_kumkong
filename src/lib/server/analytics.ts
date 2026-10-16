@@ -139,7 +139,7 @@ async function labelPaths(paths: string[]): Promise<Map<string, string>> {
     if (article) articleIds.push(Number(article[1]));
     const news = p.match(/^\/magazine\/news\/(\d+)$/);
     if (news) newsIds.push(Number(news[1]));
-    const letter = p.match(/^\/magazine\/letter\/(\d{4}-\d{2}-\d{2})$/);
+    const letter = p.match(/^\/magazine\/letter\/(\d{4}-\d{2}-\d{2})\/(morning|noon)$/);
     if (letter) letterDates.push(letter[1]);
   }
   if (postIds.length) {
@@ -169,10 +169,11 @@ async function labelPaths(paths: string[]): Promise<Map<string, string>> {
   if (letterDates.length) {
     const client = await db();
     const res = await client.execute({
-      sql: `SELECT issue_date, vol, title FROM briefing_issues WHERE issue_date IN (${letterDates.map(() => "?").join(",")})`,
+      sql: `SELECT issue_date, edition, vol, title FROM briefing_issues WHERE issue_date IN (${letterDates.map(() => "?").join(",")})`,
       args: letterDates,
     });
-    for (const row of res.rows) labels.set(`/magazine/letter/${row.issue_date}`, `브리핑 레터 Vol.${row.vol} · ${row.title}`);
+    for (const row of res.rows)
+      labels.set(`/magazine/letter/${row.issue_date}/${row.edition}`, `브리핑 ${row.edition === "noon" ? "점심판" : "아침판"} Vol.${row.vol} · ${row.title}`);
   }
   for (const p of paths) if (!labels.has(p)) labels.set(p, p);
   return labels;

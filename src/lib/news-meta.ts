@@ -52,10 +52,10 @@ export type NewsEdition = "morning" | "noon" | "";
 export const EDITION_LABEL: Record<Exclude<NewsEdition, "">, string> = { morning: "아침판", noon: "점심판" };
 export const isEdition = (v: unknown): v is NewsEdition => v === "morning" || v === "noon" || v === "";
 
-/** 언제 어떤 내용이 올라오는지 — 브리핑 화면 안내와 자동 점검 설명이 같은 내용을 씁니다 */
+/** 판마다 무엇이 실리는지 — 아침판은 기사 브리핑, 점심판은 용어·면접 공부 */
 export const EDITION_SCHEDULE: { key: Exclude<NewsEdition, "">; label: string; time: string; items: string[] }[] = [
-  { key: "morning", label: "아침판", time: "오전 6시", items: ["밤사이 금융·경제·시사 뉴스", "오늘의 용어", "오늘의 채용 일정"] },
-  { key: "noon", label: "점심판", time: "낮 12시 30분", items: ["오전 주요 뉴스", "오늘의 면접 질문"] },
+  { key: "morning", label: "아침판", time: "오전 6시", items: ["오늘의 기사 브리핑", "브리핑 퀴즈"] },
+  { key: "noon", label: "점심판", time: "낮 12시 30분", items: ["오늘의 용어", "오늘의 면접 질문"] },
 ];
 
 export interface NewsItem {
@@ -72,11 +72,11 @@ export interface NewsItem {
   /** 운영자가 올린 사진 (저작권 문제 없는 것만) */
   imageUrl: string | null;
   imageCredit: string;
-  /** 레터 안 비중: key = 핵심(자세히), brief = 한 줄 뉴스 */
+  /** 예전 '한 줄 뉴스' 구분 (지금은 모두 key) */
   tier: NewsTier;
-  /** 레터 안 순서 (작을수록 앞) */
+  /** 브리핑 안 순서 (작을수록 앞) */
   position: number;
-  /** 한 줄 요약 — '오늘 꼭 알아야 할 3가지'와 한 줄 뉴스에 */
+  /** 한 줄 요약 — '오늘 꼭 알아야 할 3가지'와 헤드라인 표지에 */
   takeaway: string;
   headline: boolean;
   status: number;
@@ -94,24 +94,73 @@ export type NewsTier = "key" | "brief";
 export const isNewsTier = (v: unknown): v is NewsTier => v === "key" || v === "brief";
 
 /* ------------------------------------------------------------------ */
-/* 데일리 브리핑 레터 (하루 한 호, 아침판)                                */
+/* 데일리 브리핑 (호) — 날짜·판마다 한 편의 뉴스레터                       */
 /* ------------------------------------------------------------------ */
 
-export const LETTER_TAGLINE = "금공 준비생의 아침을 여는 5분 레터";
+export type IssueEdition = Exclude<NewsEdition, "">;
+export const isIssueEdition = (v: unknown): v is IssueEdition => v === "morning" || v === "noon";
+
+export const BRIEFING_TAGLINE: Record<IssueEdition, string> = {
+  morning: "금공 준비생의 아침을 여는 5분 브리핑",
+  noon: "점심시간 10분, 오늘의 용어·면접 공부",
+};
 export const LETTER_EDITOR = "금콩 에디터";
+
+/** 아침판 브리핑 퀴즈 한 문제 (보기 2~4개, answer 는 0부터) */
+export interface QuizItem {
+  question: string;
+  options: string[];
+  answer: number;
+  explain: string;
+}
+
+export function parseQuiz(raw: unknown): QuizItem[] {
+  let v: unknown = raw;
+  if (typeof raw === "string") {
+    try {
+      v = JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((q) => q as Partial<QuizItem>)
+    .filter(
+      (q) =>
+        typeof q.question === "string" &&
+        q.question.trim().length > 0 &&
+        Array.isArray(q.options) &&
+        q.options.filter((o) => typeof o === "string" && o.trim()).length >= 2 &&
+        Number.isInteger(q.answer),
+    )
+    .map((q) => {
+      const options = (q.options as string[]).map((o) => String(o).trim().slice(0, 120)).filter(Boolean).slice(0, 4);
+      return {
+        question: String(q.question).trim().slice(0, 300),
+        options,
+        answer: Math.min(Math.max(0, Number(q.answer)), options.length - 1),
+        explain: String(q.explain ?? "").trim().slice(0, 500),
+      };
+    })
+    .slice(0, 5);
+}
 
 export interface BriefingIssue {
   id: number;
-  /** 'YYYY-MM-DD' — 그날 기사(news.edition_date)를 묶음 */
+  /** 'YYYY-MM-DD' — 그날 그 판의 기사(news.edition_date·edition)를 묶음 */
   date: string;
-  /** 처음 발행할 때 정해짐 (초안은 0) */
+  edition: IssueEdition;
+  /** 판별로 처음 발행할 때 정해짐 (초안은 0) */
   vol: number;
-  /** 제목 (메일 제목처럼 그날의 핵심) */
+  /** 제목 — 목록·카드·검색에 쓰임 (브리핑 본문 위에는 안 나옴) */
   title: string;
-  /** 여는 글: 오늘 흐름을 2~3문장으로 */
+  /** 오늘의 흐름: 2~3문장 */
   lede: string;
   /** 맺는 말 (선택) */
   closing: string;
+  /** 아침판 퀴즈 */
+  quiz: QuizItem[];
   status: number;
   origin: string;
   publishedAt: number | null;
@@ -120,8 +169,19 @@ export interface BriefingIssue {
   live: boolean;
 }
 
-export const letterHref = (date: string) => `/magazine/letter/${date}`;
+/** 브리핑 한 호 주소 (기사 id 를 주면 그 기사 자리로) */
+export function letterHref(date: string, edition: IssueEdition = "morning", itemId?: number): string {
+  return `/magazine/letter/${date}/${edition}${itemId ? `#item-${itemId}` : ""}`;
+}
+
+/** 기사가 실린 판 — 용어·면접 질문은 점심판, 기사는 아침판 */
+export const itemEdition = (n: Pick<NewsItem, "section">): IssueEdition => (n.section === "term" || n.section === "question" ? "noon" : "morning");
+
+/** 기사를 누르면 → 그 기사가 실린 브리핑의 그 자리 */
+export const itemHref = (n: Pick<NewsItem, "id" | "section" | "editionDate">) => letterHref(n.editionDate, itemEdition(n), n.id);
+
 export const volLabel = (vol: number) => (vol > 0 ? `Vol.${vol}` : "Vol.—");
+export const issueLabel = (i: Pick<BriefingIssue, "edition" | "vol">) => `${EDITION_LABEL[i.edition]} ${volLabel(i.vol)}`;
 
 export const NEWS_PAGE_SIZE = 20;
 

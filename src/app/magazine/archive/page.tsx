@@ -16,6 +16,7 @@ import { addDays, formatDayHeading, formatShort, todayKST } from "@/lib/date";
 import { MAGAZINE_NAME } from "@/lib/magazine-meta";
 import {
   NEWS_PAGE_SIZE,
+  EDITION_LABEL,
   NEWS_SECTION_INFO,
   briefingArchiveHref,
   isDateKey,
@@ -30,8 +31,8 @@ import { adjacentNewsDates, firstNewsDate, listNews, newsSectionCounts, popularN
 import { AD_SLOTS } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: `지난 브리핑 — 데일리 브리핑 레터를 기간별로 | ${MAGAZINE_NAME}`,
-  description: "지난 데일리 브리핑 레터를 기간으로 찾아보고, 카테고리(금융·경제·용어·면접 질문 등)를 고르면 기사별로 모아 볼 수 있어요.",
+  title: `지난 브리핑 — 데일리 브리핑을 기간별로 | ${MAGAZINE_NAME}`,
+  description: "지난 데일리 브리핑(아침판·점심판)을 기간으로 찾아보고, 카테고리(금융·경제·용어·면접 질문 등)를 고르면 기사별로 모아 볼 수 있어요.",
   alternates: { canonical: "/magazine/archive" },
 };
 
@@ -77,8 +78,11 @@ async function Archive({ sp }: { sp: SP }) {
   const view: NewsView = asked === "card" || asked === "list" ? asked : saved === "card" ? "card" : "list";
   const keepView = asked === "card" || asked === "list" ? view : undefined;
   const single = from && to && from === to ? from : null;
-  // 카테고리 없이 하루만 고르면 그날 레터로
-  if (single && !section && (await getIssue(single))) redirect(letterHref(single));
+  // 카테고리 없이 하루만 고르면 그날 아침판(없으면 점심판)으로
+  if (single && !section) {
+    if (await getIssue(single, "morning")) redirect(letterHref(single, "morning"));
+    if (await getIssue(single, "noon")) redirect(letterHref(single, "noon"));
+  }
 
   // 카테고리를 고르지 않으면 레터(호) 단위, 고르면 기사 단위
   const letters = !section;
@@ -122,10 +126,10 @@ async function Archive({ sp }: { sp: SP }) {
     <div className="mt-8">
       <Link href="/magazine" className="link inline-flex items-center gap-1 type-caption">
         <ArrowLeft className="h-4 w-4" strokeWidth={1.75} />
-        오늘의 레터로
+        데일리 브리핑
       </Link>
       <h2 className="mt-3 type-heading-lg text-ink md:type-display-md">지난 브리핑</h2>
-      <p className="mt-1 type-body-md text-ink-mute">지난 레터를 기간으로 찾아보세요. 카테고리를 고르면 기사별로 모아 볼 수 있어요.</p>
+      <p className="mt-1 type-body-md text-ink-mute">지난 브리핑을 기간으로 찾아보세요. 카테고리를 고르면 기사별로 모아 볼 수 있어요.</p>
 
       <div className="mt-6">
         <NewsCategoryNav active={section} counts={counts} archive={{ from, to, view: keepView }} />
@@ -192,7 +196,7 @@ async function Archive({ sp }: { sp: SP }) {
                     {letters ? "호" : "건"}
                   </span>
                 </h3>
-                <p className="mt-0.5 type-caption text-ink-mute">{info ? `${info.label} · ${info.desc}` : "데일리 브리핑 레터 — 최신 호부터"}</p>
+                <p className="mt-0.5 type-caption text-ink-mute">{info ? `${info.label} · ${info.desc}` : "아침판·점심판 브리핑 — 최신 호부터"}</p>
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -219,7 +223,7 @@ async function Archive({ sp }: { sp: SP }) {
           {letters ? (
             issues.items.length === 0 ? (
               <div className="mt-8">
-                <EmptyLine text="이 기간에는 발행된 레터가 없어요. 기간을 넓혀 보세요." />
+                <EmptyLine text="이 기간에는 발행된 브리핑이 없어요. 기간을 넓혀 보세요." />
               </div>
             ) : (
               <ul className="mt-6 space-y-4">
@@ -254,19 +258,20 @@ async function Archive({ sp }: { sp: SP }) {
   );
 }
 
-/** 지난 레터 한 줄 — 호수·날짜·제목·여는 글·오늘 꼭 알아야 할 3가지 */
+/** 지난 브리핑 한 줄 — 판·호수·날짜·제목·여는 글·핵심 3가지(또는 용어·질문) */
 function IssueRow({ row }: { row: IssueSummary }) {
   const { issue, top, count } = row;
+  const morning = issue.edition === "morning";
   return (
-    <Link href={letterHref(issue.date)} className="group block rounded-2xl border border-hairline bg-canvas p-5 transition-shadow hover:shadow-level-2 md:p-6">
+    <Link href={letterHref(issue.date, issue.edition)} className="group block rounded-2xl border border-hairline bg-canvas p-5 transition-shadow hover:shadow-level-2 md:p-6">
       <span className="flex flex-wrap items-center gap-x-2 gap-y-1 type-caption text-ink-mute">
-        <span className="inline-flex items-center gap-1 rounded-full bg-canvas-cream px-2 py-0.5 font-semibold text-brand-dark">
+        <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold", morning ? "bg-[#fff1e0] text-[#b85c12]" : "bg-[#e6f6ec] text-[#2f7d4f]")}>
           <Mail className="h-3 w-3" strokeWidth={2} />
-          {volLabel(issue.vol)}
+          {EDITION_LABEL[issue.edition]} {volLabel(issue.vol)}
         </span>
         <span className="tabular">{formatDayHeading(issue.date)}</span>
         <span aria-hidden>·</span>
-        <span>기사 {count}건</span>
+        <span>{morning ? `기사 ${count}건` : `용어·면접 ${count}개`}</span>
       </span>
       <span className="mt-2 block type-heading-md text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
       {issue.lede && <span className="mt-1.5 line-clamp-2 block type-body-md text-ink-secondary">{issue.lede}</span>}
@@ -283,7 +288,7 @@ function IssueRow({ row }: { row: IssueSummary }) {
         </ol>
       )}
       <span className="mt-4 inline-flex items-center gap-1 type-caption text-primary-text">
-        레터 읽기
+        브리핑 읽기
         <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
       </span>
     </Link>
