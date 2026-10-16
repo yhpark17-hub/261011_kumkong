@@ -95,9 +95,24 @@ const ITEMS_OF = {
   noon: "edition_date = ? AND section IN ('term', 'question')",
 } as const;
 
+/** 판별 호수(Vol)를 날짜 순서대로 다시 매김 — 발행된 호만 1부터, 초안은 0. 지난 날짜 호를 나중에 발행해도 순서가 맞아요 */
+async function renumberVols(client: Awaited<ReturnType<typeof db>>, edition: "morning" | "noon"): Promise<void> {
+  await client.batch(
+    [
+      {
+        sql: `UPDATE briefing_issues SET vol = (SELECT COUNT(*) FROM briefing_issues b WHERE b.edition = briefing_issues.edition AND b.status = 1 AND b.issue_date <= briefing_issues.issue_date)
+              WHERE edition = ? AND status = 1`,
+        args: [edition],
+      },
+      { sql: "UPDATE briefing_issues SET vol = 0 WHERE edition = ? AND status = 0", args: [edition] },
+    ],
+    "write",
+  );
+}
+
 /**
  * 브리핑 발행·내리기·지우기 (target="publish:3")
- * - 발행: 판별 호수(Vol)를 처음 한 번 정하고, 그 호의 기사도 모두 공개
+ * - 발행: 그 호의 기사도 모두 공개, 판별 호수(Vol)는 날짜 순서대로 다시 매김
  * - 내리기: 브리핑과 그 호의 기사를 다시 초안으로
  * - 지우기: 브리핑만 지움 (기사는 초안으로 남음)
  */
@@ -107,24 +122,21 @@ export async function issueAction(fd: FormData): Promise<void> {
   const id = Number(raw);
   if (!Number.isInteger(id) || id <= 0) return;
   const client = await db();
-  const row = (await client.execute({ sql: "SELECT issue_date, edition, vol FROM briefing_issues WHERE id = ?", args: [id] })).rows[0];
+  const row = (await client.execute({ sql: "SELECT issue_date, edition FROM briefing_issues WHERE id = ?", args: [id] })).rows[0];
   if (!row) return;
   const date = String(row.issue_date);
   const edition = isIssueEdition(row.edition) ? row.edition : "morning";
   const now = Date.now();
 
   if (op === "publish") {
-    let vol = Number(row.vol ?? 0);
-    if (!vol) {
-      vol = Number((await client.execute({ sql: "SELECT COALESCE(MAX(vol), 0) + 1 AS v FROM briefing_issues WHERE edition = ?", args: [edition] })).rows[0]?.v ?? 1);
-    }
     await client.batch(
       [
-        { sql: "UPDATE briefing_issues SET status = 1, vol = ?, published_at = COALESCE(published_at, ?), updated_at = ? WHERE id = ?", args: [vol, now, now, id] },
+        { sql: "UPDATE briefing_issues SET status = 1, published_at = COALESCE(published_at, ?), updated_at = ? WHERE id = ?", args: [now, now, id] },
         { sql: `UPDATE news SET status = 1, published_at = COALESCE(published_at, ?), updated_at = ? WHERE ${ITEMS_OF[edition]} AND status = 0`, args: [now, now, date] },
       ],
       "write",
     );
+    await renumberVols(client, edition);
   } else if (op === "unpublish") {
     await client.batch(
       [
@@ -133,8 +145,10 @@ export async function issueAction(fd: FormData): Promise<void> {
       ],
       "write",
     );
+    await renumberVols(client, edition);
   } else if (op === "delete") {
     await client.execute({ sql: "DELETE FROM briefing_issues WHERE id = ?", args: [id] });
+    await renumberVols(client, edition);
     revalidateBriefings();
     redirect("/admin/news");
   }
