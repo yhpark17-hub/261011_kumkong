@@ -13,7 +13,7 @@ import { db, dbConfigured } from "@/lib/server/db";
  *   - 기사: { section: finance|economy|policy|global|public, headline?: true, title, takeaway, summary, point, sourceName, sourceUrl }
  *     헤드라인(headline: true) 정확히 1건. 모든 기사에 원문 링크·한 줄 요약
  *   - 퀴즈: { question, options: [2~4개], answer: 정답 보기 번호(0부터), explain } — 그날 기사 내용으로만
- * 점심판 { edition: "noon", title, lede, closing?, numbers: [3개], items: [용어 2~3개, 면접 질문 1~2개], essay, quiz: [O/X 3문제] }
+ * 금콩 스터디 { edition: "noon", title, lede, closing?, numbers: [3개], items: [용어 2~3개, 면접 질문 1~2개], essay, quiz: [O/X 3문제] }
  *   - 숫자로 보는 오늘: { value: "7.57%", label: "15일 코스피 하락률", note? } — 아침판 기사에 나온 숫자만
  *   - 용어: { section: "term", title, summary, point, body(헷갈리는 짝꿍 비교 표, 마크다운), sourceName?, sourceUrl? } — 최근 90일 안에 다룬 용어는 거절
  *   - 질문: { section: "question", title, summary, body(답변 뼈대), point, sourceName?, sourceUrl? }
@@ -32,7 +32,7 @@ const LIMITS = {
   noonQuiz: { min: 2, max: 4 },
 };
 
-/** 점심판을 만들 때 그날 아침판 기사 보기 */
+/** 금콩 스터디를 만들 때 그날 아침판 기사 보기 */
 export async function GET(req: Request) {
   await connection();
   if (!automationAuthorized(req)) return unauthorized();
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
   };
   const date = todayKST();
   const edition = b.edition;
-  if (!isIssueEdition(edition)) return json({ date, ok: false, errors: ['edition 은 "morning"(아침판) 또는 "noon"(점심판)이에요'] }, 400);
+  if (!isIssueEdition(edition)) return json({ date, ok: false, errors: ['edition 은 "morning"(아침판) 또는 "noon"(금콩 스터디)예요'] }, 400);
   const title = s(b.title, 120);
   const lede = s(b.lede, 1200);
   const closing = s(b.closing, 400);
@@ -93,7 +93,7 @@ export async function POST(req: Request) {
     if (row.title.length < (kind === "term" ? 2 : 4)) errors.push(`${where}: title 이 너무 짧아요`);
     if (row.summary.length < 20) errors.push(`${where}: summary 를 20자 이상 써 주세요`);
     if (edition === "morning") {
-      if (kind !== "news") errors.push(`${where}: 아침판에는 기사(finance·economy·policy·global·public)만 넣어요. 용어·면접 질문은 점심판에`);
+      if (kind !== "news") errors.push(`${where}: 아침판에는 기사(finance·economy·policy·global·public)만 넣어요. 용어·면접 질문은 금콩 스터디에`);
       if (!row.sourceUrl) errors.push(`${where}: 기사는 sourceUrl(직접 연 원문 링크)이 필요해요`);
       if (row.takeaway.length < 8) errors.push(`${where}: takeaway(한 줄 요약)가 필요해요`);
       if (row.point.length < 10) errors.push(`${where}: point(왜 중요할까·필기·면접 포인트)가 필요해요`);
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
         headlines++;
       }
     } else {
-      if (kind === "news") errors.push(`${where}: 점심판에는 용어(term)·면접 질문(question)만 넣어요`);
+      if (kind === "news") errors.push(`${where}: 금콩 스터디에는 용어(term)·면접 질문(question)만 넣어요`);
       if (kind === "question" && row.body.length < 10) errors.push(`${where}: 면접 질문은 body(답변 뼈대)가 필요해요`);
     }
     return row;

@@ -1,11 +1,11 @@
 import "server-only";
 import type { InValue, Row } from "@libsql/client";
-import { isIssueEdition, kindOf, parseExtras, parseQuiz, type BriefingIssue, type IssueEdition, type NewsItem } from "../news-meta";
+import { briefingMinutes, isIssueEdition, kindOf, parseExtras, parseQuiz, type BriefingIssue, type IssueEdition, type NewsItem } from "../news-meta";
 import { db } from "./db";
 import { COLS, PUBLIC, toItem } from "./news";
 
 /**
- * 데일리 브리핑 (호) — 날짜·판(아침판/점심판)마다 한 편. 그날 그 판의 기사(news.edition_date·edition)를 묶어 보여 줍니다.
+ * 데일리 브리핑 (호) — 날짜·판(아침판/금콩 스터디)마다 한 편. 그날 그 판의 기사(news.edition_date·edition)를 묶어 보여 줍니다.
  * 공개 = status 1 + 발행 시각이 지난 것. 발행하면 그 판의 기사도 함께 공개됩니다(운영자 화면).
  */
 
@@ -33,7 +33,7 @@ function toIssue(r: Row): BriefingIssue {
   };
 }
 
-/** 브리핑 한 호에 실린 기사 — 아침판은 헤드라인 → 기사들, 점심판은 용어 → 면접 질문 */
+/** 브리핑 한 호에 실린 기사 — 아침판은 헤드라인 → 기사들, 금콩 스터디는 용어 → 면접 질문 */
 export interface LetterContent {
   headline: NewsItem | null;
   /** 헤드라인을 뺀 기사들 (순서대로) */
@@ -83,7 +83,7 @@ export async function getIssue(date: string, edition: IssueEdition, opts: { admi
   return res.rows[0] ? toIssue(res.rows[0]) : null;
 }
 
-/** 그날 발행된 호들 (아침판·점심판) */
+/** 그날 발행된 호들 (아침판·금콩 스터디) */
 export async function issuesOn(date: string): Promise<BriefingIssue[]> {
   const client = await db();
   const res = await client.execute({ sql: `SELECT ${ISSUE_COLS} FROM briefing_issues WHERE issue_date = ? AND ${ISSUE_PUBLIC} ORDER BY edition DESC`, args: [date, Date.now()] });
@@ -99,7 +99,7 @@ export async function getIssueById(id: number): Promise<BriefingIssue | null> {
 /** 그날 그 판의 기사 — 독자에게는 공개된 것만, 운영자 미리보기는 초안까지 */
 export async function issueItems(date: string, edition: IssueEdition, opts: { admin?: boolean } = {}): Promise<NewsItem[]> {
   const client = await db();
-  // 점심판 = 그날 용어·면접 질문, 아침판 = 아침판으로 적힌 기사
+  // 금콩 스터디 = 그날 용어·면접 질문, 아침판 = 아침판으로 적힌 기사
   const where = edition === "noon" ? "section IN ('term', 'question')" : "edition = 'morning' AND section NOT IN ('term', 'question')";
   const res = await client.execute({
     sql: opts.admin
@@ -110,12 +110,14 @@ export async function issueItems(date: string, edition: IssueEdition, opts: { ad
   return res.rows.map(toItem);
 }
 
-/** 목록 한 줄: 호 + 오늘 꼭 알아야 할 3가지(아침판) 또는 용어·질문(점심판) */
+/** 목록 한 줄: 호 + 오늘 꼭 알아야 할 3가지(아침판) 또는 용어·질문(금콩 스터디) */
 export interface IssueSummary {
   issue: BriefingIssue;
-  /** 아침판: 헤드라인 + 앞의 두 기사 / 점심판: 용어·질문 */
+  /** 아침판: 헤드라인 + 앞의 두 기사 / 금콩 스터디: 용어·질문 */
   top: NewsItem[];
   count: number;
+  /** 예상 소요 시간 (최대 5분) */
+  minutes: number;
 }
 
 async function summarize(issues: BriefingIssue[]): Promise<IssueSummary[]> {
@@ -135,7 +137,7 @@ async function summarize(issues: BriefingIssue[]): Promise<IssueSummary[]> {
     });
     const c = arrangeLetter(mine);
     const top = issue.edition === "noon" ? [...c.terms, ...c.questions].slice(0, 4) : c.top;
-    return { issue, top, count: issue.edition === "noon" ? c.terms.length + c.questions.length : c.all.length };
+    return { issue, top, count: issue.edition === "noon" ? c.terms.length + c.questions.length : c.all.length, minutes: briefingMinutes(issue, mine) };
   });
 }
 
@@ -164,13 +166,19 @@ export async function listIssues(opts: { from?: string | null; to?: string | nul
   return { items: await summarize(rows.rows.map(toIssue)), total: Number(count.rows[0]?.n ?? 0) };
 }
 
-/** 같은 판의 앞뒤 호 */
+/** 바로 앞뒤 호 — 판 상관없이 발행 순서대로 (아침판 → 금콩 스터디 → 다음 날 아침판). 'morning' < 'noon' 이라 글자 순서가 곧 하루 안의 순서 */
 export async function adjacentIssues(date: string, edition: IssueEdition): Promise<{ prev: BriefingIssue | null; next: BriefingIssue | null }> {
   const client = await db();
   const now = Date.now();
   const [p, n] = await Promise.all([
-    client.execute({ sql: `SELECT ${ISSUE_COLS} FROM briefing_issues WHERE ${ISSUE_PUBLIC} AND edition = ? AND issue_date < ? ORDER BY issue_date DESC LIMIT 1`, args: [now, edition, date] }),
-    client.execute({ sql: `SELECT ${ISSUE_COLS} FROM briefing_issues WHERE ${ISSUE_PUBLIC} AND edition = ? AND issue_date > ? ORDER BY issue_date ASC LIMIT 1`, args: [now, edition, date] }),
+    client.execute({
+      sql: `SELECT ${ISSUE_COLS} FROM briefing_issues WHERE ${ISSUE_PUBLIC} AND (issue_date < ? OR (issue_date = ? AND edition < ?)) ORDER BY issue_date DESC, edition DESC LIMIT 1`,
+      args: [now, date, date, edition],
+    }),
+    client.execute({
+      sql: `SELECT ${ISSUE_COLS} FROM briefing_issues WHERE ${ISSUE_PUBLIC} AND (issue_date > ? OR (issue_date = ? AND edition > ?)) ORDER BY issue_date ASC, edition ASC LIMIT 1`,
+      args: [now, date, date, edition],
+    }),
   ]);
   return { prev: p.rows[0] ? toIssue(p.rows[0]) : null, next: n.rows[0] ? toIssue(n.rows[0]) : null };
 }
@@ -233,7 +241,7 @@ export async function adminListIssues(limit = 30): Promise<AdminIssueRow[]> {
   );
 }
 
-/** 자동 점검(점심판)이 그날 아침판 기사를 보고 용어·질문을 고를 수 있게 */
+/** 자동 점검(금콩 스터디 만들 때)이 그날 아침판 기사를 보고 용어·질문을 고를 수 있게 */
 export async function morningForAutomation(date: string): Promise<{ issue: BriefingIssue | null; items: NewsItem[] }> {
   const [issue, items] = await Promise.all([getIssue(date, "morning", { admin: true }), issueItems(date, "morning", { admin: true })]);
   return { issue, items };

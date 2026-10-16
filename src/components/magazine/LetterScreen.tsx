@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ChevronLeft, ChevronRight, PenLine } from "lucide-react";
+import { ArrowLeft, ChevronRight, PenLine } from "lucide-react";
 import { formatShort } from "@/lib/date";
 import { BRIEFING_ARCHIVE, EDITION_LABEL, letterHref, volLabel, type BriefingIssue, type NewsItem } from "@/lib/news-meta";
 import type { LetterContent } from "@/lib/server/briefing";
@@ -25,8 +25,9 @@ export function LetterScreen({
   admin: boolean;
   recent: BriefingIssue[];
   popular: NewsItem[];
+  /** 발행 순서로 바로 앞뒤 호 — 브리핑 맨 아래 바로 가기 */
   around: { prev: BriefingIssue | null; next: BriefingIssue | null };
-  /** 같은 날 다른 판 (아침판이면 점심판) */
+  /** 같은 날 다른 판 (아침판이면 금콩 스터디) */
   sibling: BriefingIssue | null;
 }) {
   const nav = "inline-flex min-w-0 items-center gap-1.5 rounded-full border border-hairline px-3.5 py-2 type-caption text-ink-secondary hover:border-hairline-input";
@@ -62,29 +63,7 @@ export function LetterScreen({
       <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0">
           <div className="mx-auto max-w-[760px]">
-            <Letter issue={issue} content={content} />
-            {(around.prev || around.next) && (
-              <nav aria-label="다른 호" className="mt-6 flex items-center justify-between gap-3">
-                {around.prev ? (
-                  <Link href={letterHref(around.prev.date, around.prev.edition)} className={nav}>
-                    <ChevronLeft className="h-4 w-4 shrink-0" strokeWidth={2} />
-                    <span className="truncate">
-                      이전 {EDITION_LABEL[around.prev.edition]} · {formatShort(around.prev.date)}
-                    </span>
-                  </Link>
-                ) : (
-                  <span />
-                )}
-                {around.next && (
-                  <Link href={letterHref(around.next.date, around.next.edition)} className={nav}>
-                    <span className="truncate">
-                      다음 {EDITION_LABEL[around.next.edition]} · {formatShort(around.next.date)}
-                    </span>
-                    <ChevronRight className="h-4 w-4 shrink-0" strokeWidth={2} />
-                  </Link>
-                )}
-              </nav>
-            )}
+            <Letter issue={issue} content={content} around={around} />
           </div>
         </div>
 

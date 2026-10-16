@@ -35,7 +35,7 @@ function readQuiz(fd: FormData): { quiz: QuizItem[]; error?: string } {
   return { quiz: parseQuiz(out) };
 }
 
-/** 점심판 코너 칸(num0_v·num0_l·num0_n …, essay_topic …) → 숫자로 보는 오늘·논술 한 문단 */
+/** 금콩 스터디 코너 칸(num0_v·num0_l·num0_n …, essay_topic …) → 숫자로 보는 오늘·논술 한 문단 */
 function readExtras(fd: FormData): IssueExtras {
   const numbers = [0, 1, 2, 3].map((i) => ({ value: str(fd, `num${i}_v`, 24), label: str(fd, `num${i}_l`, 80), note: str(fd, `num${i}_n`, 160) }));
   const essay = {
@@ -48,7 +48,7 @@ function readExtras(fd: FormData): IssueExtras {
   return parseExtras({ numbers, essay });
 }
 
-/** 브리핑(호) 저장 — 날짜·판·제목·오늘의 흐름·맺는 말·퀴즈(·점심판 코너). 새로 만들면 편집 화면으로 */
+/** 브리핑(호) 저장 — 날짜·판·제목·오늘의 흐름·맺는 말·퀴즈(·금콩 스터디 코너). 새로 만들면 편집 화면으로 */
 export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<IssueFormState> {
   if (!(await isAdmin())) return { ok: false, error: "운영자 로그인이 필요해요." };
   const id = Number(fd.get("id")) || null;
@@ -58,7 +58,7 @@ export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<Is
   const lede = str(fd, "lede", 1200);
   const closing = str(fd, "closing", 400);
   if (!isDateKey(date)) return { ok: false, error: "브리핑 날짜를 골라 주세요." };
-  if (!isIssueEdition(edition)) return { ok: false, error: "아침판·점심판을 골라 주세요." };
+  if (!isIssueEdition(edition)) return { ok: false, error: "아침판·금콩 스터디를 골라 주세요." };
   if (title.length < 4) return { ok: false, error: "제목을 적어 주세요. (목록·카드에 쓰여요)" };
   if (lede.length < 20) return { ok: false, error: "오늘의 흐름을 20자 이상 적어 주세요." };
   const { quiz, error } = readQuiz(fd);
@@ -68,7 +68,7 @@ export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<Is
   const client = await db();
   const now = Date.now();
   const clash = await client.execute({ sql: "SELECT id FROM briefing_issues WHERE issue_date = ? AND edition = ? AND id != ?", args: [date, edition, id ?? 0] });
-  if (clash.rows.length) return { ok: false, error: "그 날짜·판에는 이미 브리핑이 있어요. 하루에 아침판·점심판 한 호씩만 낼 수 있어요." };
+  if (clash.rows.length) return { ok: false, error: "그 날짜·판에는 이미 브리핑이 있어요. 하루에 아침판·금콩 스터디 한 호씩만 낼 수 있어요." };
 
   if (id) {
     const prev = (await client.execute({ sql: "SELECT id FROM briefing_issues WHERE id = ?", args: [id] })).rows[0];
@@ -89,7 +89,7 @@ export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<Is
   redirect(`/admin/news/issue/${Number(res.lastInsertRowid)}`);
 }
 
-/** 그 호에 실리는 기사 조건 (아침판 = 아침판 기사, 점심판 = 그날 용어·면접 질문) */
+/** 그 호에 실리는 기사 조건 (아침판 = 아침판 기사, 금콩 스터디 = 그날 용어·면접 질문) */
 const ITEMS_OF = {
   morning: "edition_date = ? AND edition = 'morning' AND section NOT IN ('term', 'question')",
   noon: "edition_date = ? AND section IN ('term', 'question')",

@@ -49,13 +49,14 @@ export const KIND_LABELS: Record<NewsKind, { title: string; summary: string; poi
 
 /** 발행 판 */
 export type NewsEdition = "morning" | "noon" | "";
-export const EDITION_LABEL: Record<Exclude<NewsEdition, "">, string> = { morning: "아침판", noon: "점심판" };
+/** 점심 판(noon)의 이름은 '금콩 스터디' */
+export const EDITION_LABEL: Record<Exclude<NewsEdition, "">, string> = { morning: "아침판", noon: "금콩 스터디" };
 export const isEdition = (v: unknown): v is NewsEdition => v === "morning" || v === "noon" || v === "";
 
-/** 판마다 무엇이 실리는지 — 아침판은 기사 브리핑, 점심판은 용어·면접 공부 */
+/** 판마다 무엇이 실리는지 — 아침판은 기사 브리핑, 금콩 스터디(점심)는 용어·논술·면접 공부 */
 export const EDITION_SCHEDULE: { key: Exclude<NewsEdition, "">; label: string; time: string; items: string[] }[] = [
   { key: "morning", label: "아침판", time: "오전 6시", items: ["오늘의 기사 브리핑", "브리핑 퀴즈"] },
-  { key: "noon", label: "점심판", time: "낮 12시 30분", items: ["오늘의 용어", "오늘의 면접 질문"] },
+  { key: "noon", label: "금콩 스터디", time: "낮 12시 30분", items: ["오늘의 용어", "오늘의 면접 질문"] },
 ];
 
 export interface NewsItem {
@@ -102,7 +103,7 @@ export const isIssueEdition = (v: unknown): v is IssueEdition => v === "morning"
 
 export const BRIEFING_TAGLINE: Record<IssueEdition, string> = {
   morning: "금공 준비생의 아침을 여는 5분 브리핑",
-  noon: "점심시간 10분, 오늘 기사로 하는 금공 공부",
+  noon: "점심 10분, 주요 뉴스로 보는 금공 시사 스터디",
 };
 
 /** 아침판 브리핑 퀴즈 한 문제 (보기 2~4개, answer 는 0부터) */
@@ -145,7 +146,7 @@ export function parseQuiz(raw: unknown): QuizItem[] {
     .slice(0, 5);
 }
 
-/** 점심판 ① 숫자로 보는 오늘 — 아침판 기사 속 숫자 하나 */
+/** 금콩 스터디 ① 숫자로 보는 오늘 — 아침판 기사 속 숫자 하나 */
 export interface NumberItem {
   /** 예: 7.57% */
   value: string;
@@ -155,7 +156,7 @@ export interface NumberItem {
   note: string;
 }
 
-/** 점심판 ③ 논술 한 문단 — 주제 + 서론·본론·결론 개요 + 쓸 만한 근거 */
+/** 금콩 스터디 ③ 논술 한 문단 — 주제 + 서론·본론·결론 개요 + 쓸 만한 근거 */
 export interface EssayItem {
   topic: string;
   intro: string;
@@ -164,7 +165,7 @@ export interface EssayItem {
   evidence: string[];
 }
 
-/** 호마다 붙는 코너 (지금은 점심판만 씀) */
+/** 호마다 붙는 코너 (지금은 금콩 스터디만 씀) */
 export interface IssueExtras {
   numbers: NumberItem[];
   essay: EssayItem | null;
@@ -214,9 +215,9 @@ export interface BriefingIssue {
   lede: string;
   /** 맺는 말 (선택) */
   closing: string;
-  /** 퀴즈 (아침판 사지선다·점심판 O/X) */
+  /** 퀴즈 (아침판 사지선다·금콩 스터디 O/X) */
   quiz: QuizItem[];
-  /** 점심판 코너 (숫자로 보는 오늘·논술 한 문단) */
+  /** 금콩 스터디 코너 (숫자로 보는 오늘·논술 한 문단) */
   extras: IssueExtras;
   status: number;
   origin: string;
@@ -231,11 +232,25 @@ export function letterHref(date: string, edition: IssueEdition = "morning", item
   return `/magazine/letter/${date}/${edition}${itemId ? `#item-${itemId}` : ""}`;
 }
 
-/** 기사가 실린 판 — 용어·면접 질문은 점심판, 기사는 아침판 */
+/** 기사가 실린 판 — 용어·면접 질문은 금콩 스터디, 기사는 아침판 */
 export const itemEdition = (n: Pick<NewsItem, "section">): IssueEdition => (n.section === "term" || n.section === "question" ? "noon" : "morning");
 
 /** 기사를 누르면 → 그 기사가 실린 브리핑의 그 자리 */
 export const itemHref = (n: Pick<NewsItem, "id" | "section" | "editionDate">) => letterHref(n.editionDate, itemEdition(n), n.id);
+
+/** 썸네일·머리에 적는 예상 소요 시간의 최댓값 — 실제로 더 걸려도 이보다 길게 적지 않아요 */
+export const MAX_MINUTES = 5;
+
+/** 예상 소요 시간 (한국어 약 500자/분, 3~5분) — 기사 본문 + 숫자·논술 코너 + 퀴즈 */
+export function briefingMinutes(issue: Pick<BriefingIssue, "quiz" | "extras">, items: Pick<NewsItem, "summary" | "point" | "body">[]): number {
+  const { numbers, essay } = issue.extras;
+  const chars =
+    items.reduce((s, n) => s + n.summary.length + n.point.length + n.body.length, 0) +
+    numbers.reduce((s, n) => s + n.value.length + n.label.length + n.note.length, 0) +
+    (essay ? essay.topic.length + essay.intro.length + essay.body.length + essay.conclusion.length + essay.evidence.join("").length : 0) +
+    issue.quiz.reduce((s, q) => s + q.question.length + q.options.join("").length, 0);
+  return Math.min(MAX_MINUTES, Math.max(3, Math.round(chars / 500)));
+}
 
 export const volLabel = (vol: number) => (vol > 0 ? `Vol.${vol}` : "Vol.—");
 export const issueLabel = (i: Pick<BriefingIssue, "edition" | "vol">) => `${EDITION_LABEL[i.edition]} ${volLabel(i.vol)}`;

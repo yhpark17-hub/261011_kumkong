@@ -1,6 +1,6 @@
 import { Jua } from "next/font/google";
-import { Soup, Sunrise } from "lucide-react";
-import { EDITION_LABEL, type IssueEdition } from "@/lib/news-meta";
+import { Clock3, Soup, Sunrise } from "lucide-react";
+import type { IssueEdition } from "@/lib/news-meta";
 import { cn } from "../ui";
 import { KongMascot } from "./KongMascot";
 
@@ -21,20 +21,27 @@ const SIZE = {
   sm: { box: "py-1.5 pr-4 pl-2", mascot: "-my-3 -ml-3 h-12 w-12", word: "text-[21px]", cap: "text-[8px]", sticker: "text-[12px]", icon: "h-3 w-3" },
 } as const;
 
-/** 브리핑 로고 — 콩이(아침판 신문·점심판 책) + '금콩 브리핑' + 판 스티커 */
+/** 판마다 로고 글씨 — 아침판은 '금콩 브리핑', 점심은 '금콩 스터디' */
+const BRAND = {
+  morning: { cap: "DAILY BRIEFING", word: "금콩 브리핑", sticker: "아침판" },
+  noon: { cap: "DAILY STUDY", word: "금콩 스터디", sticker: "점심" },
+} as const;
+
+/** 브리핑 로고 — 콩이(아침판 신문 · 금콩 스터디 안경 쓰고 책) + 로고 글씨 + 판 스티커 */
 export function Masthead({ edition, size = "lg", className }: { edition: IssueEdition; size?: keyof typeof SIZE; className?: string }) {
   const morning = edition === "morning";
   const s = SIZE[size];
+  const b = BRAND[edition];
   return (
     <div className={cn("theme-light relative w-fit", className)}>
       <Sparkle className="absolute -top-4 -left-5 h-6 w-6 text-[#ffb36b]" />
       <Sparkle className="absolute -top-2 right-6 h-3.5 w-3.5 text-primary" />
       <Sparkle className="absolute -right-6 bottom-6 h-4 w-4 text-[#56c08a]" />
       <div className={cn("relative flex -rotate-1 items-center gap-1 rounded-[28px] border-[3px] border-brand-dark bg-[#fffaf0] shadow-[5px_5px_0_0_var(--color-brand-dark)]", s.box)}>
-        <KongMascot hold={morning ? "news" : "book"} className={s.mascot} />
+        <KongMascot hold={morning ? "news" : "book"} glasses={!morning} className={s.mascot} />
         <span className="text-left">
-          <span className={cn("block font-bold tracking-[0.32em] text-primary-text", s.cap)}>DAILY BRIEFING</span>
-          <span className={cn(jua.className, "block leading-[1.1] whitespace-nowrap text-brand-dark [text-shadow:2px_2px_0_#ffcf8a]", s.word)}>금콩 브리핑</span>
+          <span className={cn("block font-bold tracking-[0.32em] text-primary-text", s.cap)}>{b.cap}</span>
+          <span className={cn(jua.className, "block leading-[1.1] whitespace-nowrap text-brand-dark [text-shadow:2px_2px_0_#ffcf8a]", s.word)}>{b.word}</span>
         </span>
       </div>
       <span
@@ -46,7 +53,7 @@ export function Masthead({ edition, size = "lg", className }: { edition: IssueEd
         )}
       >
         {morning ? <Sunrise className={s.icon} strokeWidth={2.2} /> : <Soup className={s.icon} strokeWidth={2.2} />}
-        {EDITION_LABEL[edition]}
+        {b.sticker}
       </span>
     </div>
   );
@@ -61,17 +68,14 @@ export function BriefingCover({
   date,
   note,
   size = "md",
-  kicker = false,
   className,
 }: {
   edition: IssueEdition;
   /** 'M.D (요일)' 처럼 보여 줄 날짜 */
   date: string;
-  /** 오른쪽 아래 작은 글씨 (예: 기사 7건 · 퀴즈 4문제) */
+  /** 오른쪽 아래 작은 글씨 — 예상 소요 시간 (예: 약 5분) */
   note?: string;
   size?: "md" | "sm";
-  /** 왼쪽 위 판 이름표를 보일지 */
-  kicker?: boolean;
   className?: string;
 }) {
   const morning = edition === "morning";
@@ -92,25 +96,19 @@ export function BriefingCover({
       <Sparkle className={cn("absolute top-[18%] left-[10%] text-[#ffb36b]", size === "sm" ? "h-4 w-4" : "h-6 w-6")} />
       <Sparkle className={cn("absolute bottom-[22%] right-[14%] text-primary/60", size === "sm" ? "h-3 w-3" : "h-4 w-4")} />
 
-      {kicker && (
-        <span
-          className={cn(
-            jua.className,
-            "absolute top-3 left-4 inline-flex items-center gap-1.5 rounded-full border-2 border-brand-dark px-3 py-1 text-[14px] text-brand-dark shadow-[2px_2px_0_0_var(--color-brand-dark)] md:top-4 md:left-5 md:text-[15px]",
-            morning ? "bg-[#ffb36b]" : "bg-[#8fd6a8]",
-          )}
-        >
-          {morning ? <Sunrise className="h-4 w-4" strokeWidth={2.2} /> : <Soup className="h-4 w-4" strokeWidth={2.2} />}
-          {morning ? "아침판 · 기사 브리핑" : "점심판 · 10분 공부"}
-        </span>
-      )}
       <Masthead edition={edition} size={size === "sm" ? "sm" : "md"} className="relative" />
 
       <span className={cn(jua.className, "absolute bottom-3 left-4 rounded-full bg-brand-dark px-3 py-1 text-on-primary", size === "sm" ? "text-[13px]" : "text-[15px] md:bottom-4 md:left-5")}>
         {date}
       </span>
       {note && (
-        <span className={cn("absolute right-4 bottom-3 rounded-full border border-brand-dark/15 bg-[#fffaf0]/90 px-2.5 py-1 font-semibold text-brand-dark", size === "sm" ? "text-[11px]" : "text-[12px] md:right-5 md:bottom-4")}>
+        <span
+          className={cn(
+            "absolute right-4 bottom-3 inline-flex items-center gap-1 rounded-full border border-brand-dark/15 bg-[#fffaf0]/90 px-2.5 py-1 font-semibold text-brand-dark",
+            size === "sm" ? "text-[11px]" : "text-[12px] md:right-5 md:bottom-4",
+          )}
+        >
+          <Clock3 className={size === "sm" ? "h-3 w-3" : "h-3.5 w-3.5"} strokeWidth={2.2} />
           {note}
         </span>
       )}

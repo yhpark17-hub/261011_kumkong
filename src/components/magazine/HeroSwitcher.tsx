@@ -1,32 +1,34 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
-import { ChevronLeft, ChevronRight, Soup, Sunrise } from "lucide-react";
-import type { IssueEdition } from "@/lib/news-meta";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ChevronLeft, ChevronRight, Clock3 } from "lucide-react";
+import { EDITION_LABEL, type IssueEdition } from "@/lib/news-meta";
 import { cn } from "../ui";
 
 export interface HeroSlide {
   edition: IssueEdition;
   /** 이 판의 대표 카드 (없으면 아직 안 올라온 판) */
   card: ReactNode | null;
-  /** 아직 없을 때 탭에 보일 말 (예: 12:30 공개) */
+  /** 아직 없을 때 썸네일 위에 보일 말 (예: 금콩 스터디는 낮 12시 30분에 올라와요) */
   hint?: string;
 }
 
 const INTERVAL = 7000;
-const TAB = {
-  morning: { label: "아침판", sub: "기사 브리핑", Icon: Sunrise, on: "bg-[#ffb36b] text-brand-dark", bar: "bg-[#ff9a4d]" },
-  noon: { label: "점심판", sub: "10분 공부", Icon: Soup, on: "bg-[#8fd6a8] text-brand-dark", bar: "bg-[#3fa36b]" },
-} as const;
+const BAR = { morning: "bg-[#ff9a4d]", noon: "bg-[#3fa36b]" } as const;
 
-/** 첫 화면 대표 브리핑 — 아침판·점심판 카드를 번갈아 보여 주고, 탭·화살표로 직접 넘겨 볼 수 있어요 */
+/**
+ * 첫 화면 대표 브리핑 — 아침판·금콩 스터디 카드를 번갈아 보여 줘요.
+ * 넘기는 화살표와 판 표시 점은 썸네일 안에 (휴대폰은 옆으로 밀어서도 넘겨요).
+ */
 export function HeroSwitcher({ slides }: { slides: HeroSlide[] }) {
   const ready = slides.map((s, i) => (s.card ? i : -1)).filter((i) => i >= 0);
   const [index, setIndex] = useState(ready[0] ?? 0);
   const [hover, setHover] = useState(false);
   const [reduce, setReduce] = useState(false);
+  const touch = useRef<number | null>(null);
   const many = ready.length > 1;
   const running = many && !hover && !reduce;
+  const waiting = slides.find((s) => !s.card && s.hint);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -43,76 +45,89 @@ export function HeroSwitcher({ slides }: { slides: HeroSlide[] }) {
   }, [running, index, ready]);
 
   const go = (d: number) => setIndex((i) => ready[(ready.indexOf(i) + d + ready.length) % ready.length]);
-  const arrow = "inline-flex h-9 w-9 items-center justify-center rounded-full border border-hairline bg-canvas text-ink-secondary transition-colors hover:border-hairline-input disabled:opacity-30";
+  const arrow =
+    "pointer-events-auto inline-flex h-8 w-8 items-center justify-center rounded-full border border-brand-dark/15 bg-[#fffaf0]/90 text-brand-dark shadow-level-1 backdrop-blur-[2px] transition-transform hover:scale-105 sm:h-9 sm:w-9 md:h-10 md:w-10";
 
   return (
     <div
-      className="flex h-full flex-col gap-3"
+      className="relative grid h-full"
+      aria-roledescription="carousel"
+      aria-label="오늘의 브리핑"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       onFocus={() => setHover(true)}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHover(false);
       }}
+      onTouchStart={(e) => {
+        touch.current = e.touches[0]?.clientX ?? null;
+      }}
+      onTouchEnd={(e) => {
+        const start = touch.current;
+        touch.current = null;
+        const end = e.changedTouches[0]?.clientX;
+        if (!many || start == null || end == null || Math.abs(end - start) < 48) return;
+        go(end < start ? 1 : -1);
+      }}
     >
-      <div className="flex items-center justify-between gap-2">
-        <div role="tablist" aria-label="아침판·점심판" className="inline-flex rounded-full border border-hairline bg-canvas-soft p-1">
-          {slides.map((s, i) => {
-            const t = TAB[s.edition];
-            const on = i === index;
-            return (
-              <button
-                key={s.edition}
-                type="button"
-                role="tab"
-                aria-selected={on}
-                disabled={!s.card}
-                onClick={() => setIndex(i)}
-                className={cn(
-                  "relative inline-flex items-center gap-1.5 overflow-hidden rounded-full px-3.5 py-1.5 type-caption font-semibold transition-colors",
-                  on ? t.on : "text-ink-secondary hover:text-ink",
-                  !s.card && "cursor-default text-ink-mute hover:text-ink-mute",
-                )}
-              >
-                <t.Icon className="h-4 w-4" strokeWidth={2} />
-                {t.label}
-                <span className={cn("hidden font-normal sm:inline", on ? "text-brand-dark/70" : "text-ink-mute")}>· {s.card ? t.sub : (s.hint ?? "준비 중")}</span>
-                {/* 자동 넘김 진행 막대 */}
-                {on && running && (
-                  <span aria-hidden className="absolute inset-x-3 bottom-0.5 h-[2px] overflow-hidden rounded-full bg-brand-dark/15">
-                    <span key={index} className={cn("block h-full w-full origin-left", t.bar)} style={{ animation: `kk-fill ${INTERVAL}ms linear forwards` }} />
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-        {many && (
-          <div className="flex items-center gap-1.5">
-            <button type="button" onClick={() => go(-1)} className={arrow} aria-label="이전 판">
-              <ChevronLeft className="h-4 w-4" strokeWidth={2} />
-            </button>
-            <button type="button" onClick={() => go(1)} className={arrow} aria-label="다음 판">
-              <ChevronRight className="h-4 w-4" strokeWidth={2} />
-            </button>
-          </div>
-        )}
-      </div>
-
       {/* 카드는 겹쳐 두고 지금 판만 보이게 (높이는 큰 쪽에 맞춤) */}
-      <div className="grid flex-1">
-        {slides.map((s, i) =>
-          s.card ? (
-            <div
-              key={s.edition}
-              role="tabpanel"
-              aria-hidden={i !== index}
-              inert={i !== index}
-              className={cn("col-start-1 row-start-1 transition-opacity duration-500", i === index ? "opacity-100" : "pointer-events-none opacity-0")}
-            >
-              {s.card}
+      {slides.map((s, i) =>
+        s.card ? (
+          <div
+            key={s.edition}
+            role="group"
+            aria-roledescription="slide"
+            aria-label={EDITION_LABEL[s.edition]}
+            aria-hidden={i !== index}
+            inert={i !== index}
+            className={cn("col-start-1 row-start-1 transition-opacity duration-500", i === index ? "opacity-100" : "pointer-events-none opacity-0")}
+          >
+            {s.card}
+          </div>
+        ) : null,
+      )}
+
+      {/* 썸네일(카드 위쪽 16:9) 안에 얹는 조작 — 점·화살표 */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[16/9]">
+        {many ? (
+          <>
+            <div className="pointer-events-auto absolute top-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-brand-dark/25 px-2 py-1.5 backdrop-blur-[2px] md:top-4">
+              {slides.map((s, i) =>
+                s.card ? (
+                  <button
+                    key={s.edition}
+                    type="button"
+                    onClick={() => setIndex(i)}
+                    aria-label={`${EDITION_LABEL[s.edition]} 보기`}
+                    aria-current={i === index}
+                    className={cn("relative h-2 overflow-hidden rounded-full transition-all", i === index ? "w-7 bg-[#fffaf0]/60" : "w-2 bg-[#fffaf0]/80 hover:bg-[#fffaf0]")}
+                  >
+                    {i === index && (
+                      <span
+                        key={`${index}-${running}`}
+                        aria-hidden
+                        className={cn("absolute inset-0 origin-left rounded-full", BAR[s.edition])}
+                        style={running ? { animation: `kk-fill ${INTERVAL}ms linear forwards` } : undefined}
+                      />
+                    )}
+                  </button>
+                ) : null,
+              )}
             </div>
-          ) : null,
+            <button type="button" onClick={() => go(-1)} className={cn(arrow, "absolute top-1/2 left-2.5 -translate-y-1/2 md:left-3.5")} aria-label="이전 판 보기">
+              <ChevronLeft className="h-5 w-5" strokeWidth={2.2} />
+            </button>
+            <button type="button" onClick={() => go(1)} className={cn(arrow, "absolute top-1/2 right-2.5 -translate-y-1/2 md:right-3.5")} aria-label="다음 판 보기">
+              <ChevronRight className="h-5 w-5" strokeWidth={2.2} />
+            </button>
+          </>
+        ) : (
+          waiting && (
+            <span className="absolute top-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-[#fffaf0]/90 px-3 py-1 type-caption font-semibold whitespace-nowrap text-brand-dark shadow-level-1 md:top-4">
+              <Clock3 className="h-3.5 w-3.5" strokeWidth={2.2} />
+              {waiting.hint}
+            </span>
+          )
         )}
       </div>
     </div>

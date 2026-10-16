@@ -44,7 +44,7 @@ export async function saveNews(_prev: NewsFormState, fd: FormData): Promise<News
 
   if (!isDateKey(editionDate)) return { ok: false, error: "브리핑 날짜를 골라 주세요." };
   if (!isNewsSection(section)) return { ok: false, error: "카테고리를 골라 주세요." };
-  if (!isEdition(edition)) return { ok: false, error: "아침판·점심판을 골라 주세요." };
+  if (!isEdition(edition)) return { ok: false, error: "아침판·금콩 스터디를 골라 주세요." };
   const kind = kindOf(section);
   // 헤드라인은 뉴스만
   const headline = headlineAsked && kind === "news" ? 1 : 0;

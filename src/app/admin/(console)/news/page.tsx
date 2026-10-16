@@ -51,7 +51,7 @@ async function NewsAdmin({ sp }: { sp: SP }) {
     <>
       <AdminPageTitle
         title="데일리 브리핑"
-        desc="아침판(기사 브리핑·퀴즈)과 점심판(용어·면접 질문)이 매일 한 호씩 나가요. 자동 점검이 초안을 만들면 미리보기로 확인하고 '발행'을 누르세요."
+        desc="아침판(기사 브리핑·퀴즈)과 금콩 스터디(용어·면접 질문)이 매일 한 호씩 나가요. 자동 점검이 초안을 만들면 미리보기로 확인하고 '발행'을 누르세요."
         aside={
           <div className="flex flex-wrap gap-2">
             <Link href="/admin/news/issue/new" className="btn btn-sm btn-primary">
@@ -158,7 +158,7 @@ function Row({ n }: { n: NewsItem }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <NewsSectionTag section={n.section} />
-          <span className="tag bg-canvas-soft text-ink-secondary">{kindOf(n.section) === "news" ? (n.edition === "morning" ? "아침판" : "판 없음 · 안 실림") : "점심판"}</span>
+          <span className="tag bg-canvas-soft text-ink-secondary">{kindOf(n.section) === "news" ? (n.edition === "morning" ? "아침판" : "판 없음 · 안 실림") : "금콩 스터디"}</span>
           {n.status === 1 ? <span className="tag bg-ev-final-soft text-ev-final">공개</span> : <span className="tag bg-canvas-soft text-ink-secondary">초안</span>}
           {n.origin === "auto" && <span className="tag bg-canvas-cream text-lemon">자동</span>}
           {n.headline && (
@@ -227,7 +227,7 @@ function IssueRow({ r }: { r: AdminIssueRow }) {
               type="submit"
               name="target"
               value={`publish:${issue.id}`}
-              data-confirm={`${formatDayHeading(issue.date)} ${EDITION_LABEL[issue.edition]}을 발행할까요? 실린 기사 초안도 모두 공개돼요.`}
+              data-confirm={`${formatDayHeading(issue.date)} ${EDITION_LABEL[issue.edition]} 브리핑을 발행할까요? 실린 기사 초안도 모두 공개돼요.`}
               className="btn btn-sm btn-primary"
             >
               발행

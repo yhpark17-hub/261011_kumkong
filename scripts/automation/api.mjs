@@ -3,8 +3,8 @@
  *
  *   node scripts/automation/api.mjs inbox                      → 할 일 목록 JSON 출력
  *   node scripts/automation/api.mjs proposals <payload.json>    → 제안 올리기
- *   node scripts/automation/api.mjs issue <briefing.json>        → 데일리 브리핑 초안 한 호(아침판 또는 점심판) 올리기
- *   node scripts/automation/api.mjs today                      → 오늘 아침판 기사 보기 (점심판 만들 때)
+ *   node scripts/automation/api.mjs issue <briefing.json>        → 데일리 브리핑 초안 한 호(아침판 또는 금콩 스터디=점심판) 올리기
+ *   node scripts/automation/api.mjs today                      → 오늘 아침판 기사 보기 (금콩 스터디 만들 때)
  *   node scripts/automation/api.mjs articles <draft.json>       → 금융 블로그 자동 초안 올리기
  *   node scripts/automation/api.mjs applied <ids.json>          → 승인 건을 저장소에 반영했다고 알리기
  *

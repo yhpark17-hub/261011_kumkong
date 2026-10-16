@@ -32,7 +32,7 @@ import { AD_SLOTS } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: `지난 브리핑 — 데일리 브리핑을 기간별로 | ${MAGAZINE_NAME}`,
-  description: "지난 데일리 브리핑(아침판·점심판)을 기간으로 찾아보고, 카테고리(금융·경제·용어·면접 질문 등)를 고르면 기사별로 모아 볼 수 있어요.",
+  description: "지난 데일리 브리핑(아침판·금콩 스터디)을 기간으로 찾아보고, 카테고리(금융·경제·용어·면접 질문 등)를 고르면 기사별로 모아 볼 수 있어요.",
   alternates: { canonical: "/magazine/archive" },
 };
 
@@ -78,7 +78,7 @@ async function Archive({ sp }: { sp: SP }) {
   const view: NewsView = asked === "card" || asked === "list" ? asked : saved === "card" ? "card" : "list";
   const keepView = asked === "card" || asked === "list" ? view : undefined;
   const single = from && to && from === to ? from : null;
-  // 카테고리 없이 하루만 고르면 그날 아침판(없으면 점심판)으로
+  // 카테고리 없이 하루만 고르면 그날 아침판(없으면 금콩 스터디)으로
   if (single && !section) {
     if (await getIssue(single, "morning")) redirect(letterHref(single, "morning"));
     if (await getIssue(single, "noon")) redirect(letterHref(single, "noon"));
@@ -196,7 +196,7 @@ async function Archive({ sp }: { sp: SP }) {
                     {letters ? "호" : "건"}
                   </span>
                 </h3>
-                <p className="mt-0.5 type-caption text-ink-mute">{info ? `${info.label} · ${info.desc}` : "아침판·점심판 브리핑 — 최신 호부터"}</p>
+                <p className="mt-0.5 type-caption text-ink-mute">{info ? `${info.label} · ${info.desc}` : "아침판·금콩 스터디 브리핑 — 최신 호부터"}</p>
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -260,7 +260,7 @@ async function Archive({ sp }: { sp: SP }) {
 
 /** 지난 브리핑 한 줄 — 판·호수·날짜·제목·여는 글·핵심 3가지(또는 용어·질문) */
 function IssueRow({ row }: { row: IssueSummary }) {
-  const { issue, top, count } = row;
+  const { issue, top, count, minutes } = row;
   const morning = issue.edition === "morning";
   return (
     <Link href={letterHref(issue.date, issue.edition)} className="group block rounded-2xl border border-hairline bg-canvas p-5 transition-shadow hover:shadow-level-2 md:p-6">
@@ -271,7 +271,7 @@ function IssueRow({ row }: { row: IssueSummary }) {
         </span>
         <span className="tabular">{formatDayHeading(issue.date)}</span>
         <span aria-hidden>·</span>
-        <span>{morning ? `기사 ${count}건` : "점심 공부 5코스"}</span>
+        <span>{morning ? `기사 ${count}건 · 약 ${minutes}분` : `약 ${minutes}분`}</span>
       </span>
       <span className="mt-2 block type-heading-md text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
       {issue.lede && <span className="mt-1.5 line-clamp-2 block type-body-md text-ink-secondary">{issue.lede}</span>}

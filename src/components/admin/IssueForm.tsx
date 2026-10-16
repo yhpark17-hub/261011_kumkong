@@ -37,7 +37,7 @@ export function IssueForm({ initial }: { initial: IssueFormInitial }) {
           <span className="mb-1 block type-caption text-ink-secondary">판</span>
           <select name="edition" value={edition} onChange={(e) => setEdition(e.target.value as IssueEdition)} className="input w-full">
             <option value="morning">아침판 — 기사 브리핑 + 퀴즈</option>
-            <option value="noon">점심판 — 숫자·용어·논술·면접·퀴즈</option>
+            <option value="noon">금콩 스터디 (점심) — 숫자·용어·논술·면접·퀴즈</option>
           </select>
         </label>
       </div>
@@ -54,13 +54,13 @@ export function IssueForm({ initial }: { initial: IssueFormInitial }) {
       </label>
       <label className="block">
         <span className="mb-1 flex justify-between gap-3 type-caption text-ink-secondary">
-          <span>{edition === "morning" ? "오늘의 흐름 — 오늘 기사들이 어떻게 이어지는지 2~3문장" : "점심 공부 안내 — 오늘 공부할 것을 2~3문장으로"}</span>
+          <span>{edition === "morning" ? "오늘의 흐름 — 오늘 기사들이 어떻게 이어지는지 2~3문장" : "오늘의 스터디 — 오늘 공부할 것을 2~3문장으로"}</span>
           <span className="tabular text-ink-mute">{lede.length}/1200</span>
         </span>
         <textarea name="lede" value={lede} onChange={(e) => setLede(e.target.value)} rows={4} maxLength={1200} required className="input w-full resize-y leading-relaxed" />
       </label>
       <label className="block">
-        <span className="mb-1 block type-caption text-ink-secondary">맺는 말 (선택) — 브리핑 끝 콩이 옆에 들어가는 한마디</span>
+        <span className="mb-1 block type-caption text-ink-secondary">맺는 말 (선택) — 지금은 브리핑 화면에 나오지 않아요 (메모용)</span>
         <input name="closing" defaultValue={initial.closing} maxLength={400} className="input w-full" placeholder="예: 시장이 출렁일수록 '왜 그런지' 설명할 수 있는 사람이 돋보여요." />
       </label>
 

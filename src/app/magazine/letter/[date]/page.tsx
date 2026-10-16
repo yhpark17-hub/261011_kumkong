@@ -5,7 +5,7 @@ import { isDateKey, letterHref } from "@/lib/news-meta";
 import { getIssue } from "@/lib/server/briefing";
 import { isAdmin } from "@/lib/server/security";
 
-/** 날짜만 있는 예전 주소 → 그날 아침판 (없으면 점심판) */
+/** 날짜만 있는 예전 주소 → 그날 아침판 (없으면 금콩 스터디) */
 export default function LetterDatePage({ params }: PageProps<"/magazine/letter/[date]">) {
   return <Suspense fallback={null}>{params.then(({ date }) => <Go date={date} />)}</Suspense>;
 }

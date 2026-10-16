@@ -204,7 +204,7 @@ CREATE INDEX IF NOT EXISTS idx_proposals_status ON proposals (status, id DESC);
 
 -- 데일리 브리핑: 뉴스·오늘의 용어·면접 질문 한 건 = 한 줄 (분류·많이 본 기사·날짜별 모아 보기)
 -- section: finance·economy·policy·global·public(뉴스) · term(용어) · question(면접 질문)
--- edition: morning(아침판) · noon(점심판) · '' / status: 0 = 초안, 1 = 공개
+-- edition: morning(아침판) · noon(금콩 스터디) · '' / status: 0 = 초안, 1 = 공개
 CREATE TABLE IF NOT EXISTS news (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   edition_date TEXT NOT NULL,
@@ -232,8 +232,8 @@ CREATE TABLE IF NOT EXISTS news (
 CREATE INDEX IF NOT EXISTS idx_news_date ON news (status, edition_date DESC, id);
 CREATE INDEX IF NOT EXISTS idx_news_section ON news (section, status, published_at DESC);
 
--- 데일리 브리핑 (호): 날짜·판(morning 아침판 / noon 점심판)마다 한 호. 그날 그 판의 기사(news.edition_date·edition)를 한 편으로 묶음
--- 아침판 = 기사 브리핑 + 퀴즈(quiz JSON), 점심판 = 용어·면접 질문 / vol 은 판별로 처음 발행할 때 정해짐 (초안은 0) / status: 0 = 초안, 1 = 발행
+-- 데일리 브리핑 (호): 날짜·판(morning 아침판 / noon 금콩 스터디)마다 한 호. 그날 그 판의 기사(news.edition_date·edition)를 한 편으로 묶음
+-- 아침판 = 기사 브리핑 + 퀴즈(quiz JSON), 금콩 스터디 = 용어·면접 질문 / vol 은 판별로 처음 발행할 때 정해짐 (초안은 0) / status: 0 = 초안, 1 = 발행
 CREATE TABLE IF NOT EXISTS briefing_issues (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   issue_date TEXT NOT NULL,
@@ -269,7 +269,7 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: "exam_reviews", column: "totals", ddl: "ALTER TABLE exam_reviews ADD COLUMN totals TEXT NOT NULL DEFAULT '{}'" },
   // 콩밭 글 첨부(사진·파일) — 2026-10 추가
   { table: "posts", column: "attachments", ddl: "ALTER TABLE posts ADD COLUMN attachments TEXT NOT NULL DEFAULT '[]'" },
-  // 브리핑 아침판·점심판 — 2026-10 추가
+  // 브리핑 아침판·금콩 스터디 — 2026-10 추가
   { table: "news", column: "edition", ddl: "ALTER TABLE news ADD COLUMN edition TEXT NOT NULL DEFAULT ''" },
   // 브리핑 헤드라인 사진 (운영자가 올린 것만) — 2026-10 추가
   { table: "news", column: "image_url", ddl: "ALTER TABLE news ADD COLUMN image_url TEXT" },
@@ -278,7 +278,7 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: "news", column: "tier", ddl: "ALTER TABLE news ADD COLUMN tier TEXT NOT NULL DEFAULT 'key'" },
   { table: "news", column: "position", ddl: "ALTER TABLE news ADD COLUMN position INTEGER NOT NULL DEFAULT 0" },
   { table: "news", column: "takeaway", ddl: "ALTER TABLE news ADD COLUMN takeaway TEXT NOT NULL DEFAULT ''" },
-  // 점심판 코너(숫자로 보는 오늘·논술 한 문단) — 2026-10 추가
+  // 금콩 스터디 코너(숫자로 보는 오늘·논술 한 문단) — 2026-10 추가
   { table: "briefing_issues", column: "extras", ddl: "ALTER TABLE briefing_issues ADD COLUMN extras TEXT NOT NULL DEFAULT '{}'" },
 ];
 

@@ -57,7 +57,7 @@ export async function MagazineStrip() {
             )}
           </>
         ) : (
-          <p className="mt-4 type-body-md text-ink-mute">매일 아침 기사 브리핑, 점심에는 용어·면접 공부로 찾아올게요.</p>
+          <p className="mt-4 type-body-md text-ink-mute">매일 아침 기사 브리핑, 점심에는 금콩 스터디로 찾아올게요.</p>
         )}
       </section>
 

@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { ArrowDown, ArrowRight, BookA, ExternalLink, Hash, Info, Lightbulb, MessageCircleQuestion, PenLine, Soup, Sparkles, Sunrise } from "lucide-react";
-import { formatDayHeading } from "@/lib/date";
+import { ArrowDown, ArrowRight, BookA, ChevronLeft, ChevronRight, ExternalLink, Hash, Info, Lightbulb, Mail, MessageCircleQuestion, PenLine, Soup, Sparkles, Sunrise } from "lucide-react";
+import { formatDayHeading, formatShort } from "@/lib/date";
 import {
+  BRIEFING_ARCHIVE,
   BRIEFING_TAGLINE,
   EDITION_LABEL,
-  EDITION_SCHEDULE,
   NEWS_SECTION_INFO,
+  briefingMinutes,
   letterHref,
   newsHref,
   volLabel,
@@ -18,39 +19,13 @@ import { cn } from "../ui";
 import { Masthead } from "./BriefingBrand";
 import { BriefingQuiz } from "./BriefingQuiz";
 import { Markdown } from "./Markdown";
-import { KongMascot, MascotDivider } from "./KongMascot";
+import { JOURNEY_DONE, JourneyDivider, journeyStage } from "./KongMascot";
 import { ShareButton, SourceLink } from "./interactive";
 import { NEWS_ICON } from "./news-icons";
-
-/** 콩이가 기사 사이에서 하는 말 */
-const QUIPS = ["알고 있었콩?", "이것도 챙기콩!", "숨 한번 돌리콩", "거의 다 왔콩!", "끝까지 가 보콩"];
 
 const anchor = (n: NewsItem) => `item-${n.id}`;
 /** 긴 글은 양쪽 맞춤 */
 const JUSTIFY = "ko-justify";
-
-/** 문장마다 한 줄씩 (맺는 말) — 마침표·물음표·느낌표 뒤, 또는 '/' 로 나눔 */
-function splitSentences(text: string): string[] {
-  return text
-    .split(/\s*\/\s*|(?<=[.!?])\s+/)
-    .map((t) => t.trim())
-    .filter(Boolean);
-}
-
-/** 읽는 데 걸리는 시간 (한국어 약 500자/분) */
-export function letterMinutes(c: LetterContent, extra = 0): number {
-  const chars = [...c.all, ...c.terms, ...c.questions].reduce((sum, n) => sum + n.summary.length + n.point.length + n.body.length, extra);
-  return Math.max(3, Math.round(chars / 500));
-}
-
-/** 점심판 코너 글자 수 (읽는 시간 계산용) */
-function extrasLength(issue: BriefingIssue): number {
-  const { numbers, essay } = issue.extras;
-  const nums = numbers.reduce((s, n) => s + n.value.length + n.label.length + n.note.length, 0);
-  const es = essay ? essay.topic.length + essay.intro.length + essay.body.length + essay.conclusion.length + essay.evidence.join("").length : 0;
-  const quiz = issue.quiz.reduce((s, q) => s + q.question.length + q.options.join("").length, 0);
-  return nums + es + quiz;
-}
 
 function SectionLabel({ n, className }: { n: NewsItem; className?: string }) {
   return <span className={cn("tag", NEWS_SECTION_INFO[n.section].tone, className)}>{NEWS_SECTION_INFO[n.section].label}</span>;
@@ -190,6 +165,11 @@ function Box({ children, className, id }: { children: React.ReactNode; className
 /** 아침판 — 기사 브리핑 + 퀴즈 */
 function MorningBody({ issue, content }: { issue: BriefingIssue; content: LetterContent }) {
   const { headline, stories, top } = content;
+  // 콩이의 취업 여정 쉼표 — 기사 사이 몇 곳(+퀴즈 앞)에 고르게, 원서 → … → 최종 면접 순으로
+  const quiz = issue.quiz.length > 0;
+  const k = Math.min(stories.length, quiz ? 4 : 5);
+  const marks = Array.from({ length: k }, (_, j) => Math.floor((j * stories.length) / k));
+  const slots = marks.length + (quiz ? 1 : 0);
   return (
     <>
       {top.length > 0 && (
@@ -246,8 +226,7 @@ function MorningBody({ issue, content }: { issue: BriefingIssue; content: Letter
 
       {stories.map((n, i) => (
         <div key={n.id}>
-          {/* 두 기사마다 콩이가 한마디 */}
-          {i % 2 === 0 ? <MascotDivider text={QUIPS[(i / 2) % QUIPS.length]} flip={(i / 2) % 2 === 1} /> : <div className="h-6" />}
+          {marks.includes(i) ? <JourneyDivider stage={journeyStage(marks.indexOf(i), slots)} /> : <div className="h-6" />}
           <Box id={anchor(n)}>
             <StoryHead n={n} no={i + (headline ? 2 : 1)} />
             {n.imageUrl && <Cover n={n} />}
@@ -258,9 +237,9 @@ function MorningBody({ issue, content }: { issue: BriefingIssue; content: Letter
         </div>
       ))}
 
-      {issue.quiz.length > 0 && (
+      {quiz && (
         <>
-          <MascotDivider text="퀴즈 풀어 보콩!" flip={Math.ceil(stories.length / 2) % 2 === 1} />
+          <JourneyDivider stage={journeyStage(marks.length, slots)} />
           <BriefingQuiz quiz={issue.quiz} />
         </>
       )}
@@ -268,7 +247,7 @@ function MorningBody({ issue, content }: { issue: BriefingIssue; content: Letter
   );
 }
 
-/** 점심판 코너 머리 — ① 숫자로 보는 오늘 · 1분 */
+/** 금콩 스터디 코너 머리 — ① 숫자로 보는 오늘 · 1분 */
 function CornerHead({ no, icon: Icon, title, time, tone }: { no: number; icon: typeof Hash; title: string; time: string; tone: string }) {
   return (
     <p className={cn("flex items-center gap-2 type-caption font-semibold", tone)}>
@@ -280,24 +259,26 @@ function CornerHead({ no, icon: Icon, title, time, tone }: { no: number; icon: t
   );
 }
 
-/** 점심판 — 오늘 아침판 기사로 하는 10분 공부: 숫자 → 용어 → 논술 → 면접 → 퀴즈 */
+/** 금콩 스터디 — 오늘 아침판 기사로 하는 점심 공부: 숫자 → 용어 → 논술 → 면접 → 퀴즈 (코너마다 1분, 모두 5분 안쪽) */
 function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterContent }) {
   const { terms, questions } = content;
   const { numbers, essay } = issue.extras;
   const corners = [
     numbers.length > 0 && { id: "noon-numbers", title: "숫자로 보는 오늘", time: "1분" },
-    terms.length > 0 && { id: "noon-terms", title: "오늘의 용어 + 헷갈리는 짝꿍", time: "2분" },
-    essay && { id: "noon-essay", title: "논술 한 문단", time: "3분" },
-    questions.length > 0 && { id: "noon-question", title: "오늘의 면접 질문", time: "2분" },
+    terms.length > 0 && { id: "noon-terms", title: "오늘의 용어 + 헷갈리는 짝꿍", time: "1분" },
+    essay && { id: "noon-essay", title: "논술 한 문단", time: "1분" },
+    questions.length > 0 && { id: "noon-question", title: "오늘의 면접 질문", time: "1분" },
     issue.quiz.length > 0 && { id: "noon-quiz", title: "점심 퀴즈", time: "1분" },
   ].filter((c): c is { id: string; title: string; time: string } => Boolean(c));
   const no = (id: string) => corners.findIndex((c) => c.id === id) + 1;
+  // 코너마다 앞에 콩이의 취업 여정 쉼표 (숫자 = 원서 … 퀴즈 = 최종 면접)
+  const stage = (id: string) => journeyStage(no(id) - 1, corners.length);
 
   return (
     <>
       <Box>
         <h3 className="flex items-baseline gap-2 type-heading-sm text-ink">
-          오늘의 점심 코스 <span className="type-micro-cap text-ink-mute">Lunch course</span>
+          오늘의 스터디 코스 <span className="type-micro-cap text-ink-mute">Study course</span>
         </h3>
         <ol className="mt-3 space-y-2">
           {corners.map((c, i) => (
@@ -318,8 +299,10 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
 
       {/* ① 숫자로 보는 오늘 */}
       {numbers.length > 0 && (
-        <Box id="noon-numbers">
-          <CornerHead no={no("noon-numbers")} icon={Hash} title="숫자로 보는 오늘" time="1분" tone="text-primary-text" />
+        <div id="noon-numbers" className="scroll-mt-24">
+          <JourneyDivider stage={stage("noon-numbers")} />
+          <Box>
+            <CornerHead no={no("noon-numbers")} icon={Hash} title="숫자로 보는 오늘" time="1분" tone="text-primary-text" />
           <ul className={cn("mt-4 grid gap-3", numbers.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
             {numbers.map((n, i) => (
               <li key={i} className="rounded-xl bg-canvas-soft px-4 py-4">
@@ -329,16 +312,17 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
               </li>
             ))}
           </ul>
-        </Box>
+          </Box>
+        </div>
       )}
 
       {/* ② 오늘의 용어 + 헷갈리는 짝꿍 */}
       {terms.map((n, i) => (
         <div key={n.id} id={i === 0 ? "noon-terms" : undefined} className="scroll-mt-24">
-          {i === 0 ? <MascotDivider text="용어부터 정리하콩!" /> : <div className="h-5" />}
+          {i === 0 ? <JourneyDivider stage={stage("noon-terms")} /> : <div className="h-5" />}
           <Box id={anchor(n)} className="border-2 border-ev-posting/40">
             {i === 0 ? (
-              <CornerHead no={no("noon-terms")} icon={BookA} title={`오늘의 용어${terms.length > 1 ? ` ${i + 1}` : ""}`} time="2분" tone="text-ev-posting" />
+              <CornerHead no={no("noon-terms")} icon={BookA} title={`오늘의 용어${terms.length > 1 ? ` ${i + 1}` : ""}`} time="1분" tone="text-ev-posting" />
             ) : (
               <p className="flex items-center gap-1.5 type-caption font-semibold text-ev-posting">
                 <BookA className="h-4 w-4" strokeWidth={2} />
@@ -367,9 +351,9 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
       {/* ③ 논술 한 문단 */}
       {essay && (
         <>
-          <MascotDivider text="한 문단 써 보콩!" flip />
+          <JourneyDivider stage={stage("noon-essay")} />
           <Box id="noon-essay" className="border-2 border-primary/30">
-            <CornerHead no={no("noon-essay")} icon={PenLine} title="논술 한 문단" time="3분" tone="text-primary-text" />
+            <CornerHead no={no("noon-essay")} icon={PenLine} title="논술 한 문단" time="1분" tone="text-primary-text" />
             <p className="mt-3 type-caption text-ink-mute">오늘 기사로 나올 법한 논술 주제예요. 개요를 보고 한 문단으로 직접 써 보세요.</p>
             <h3 className="mt-2 type-heading-md text-ink [word-break:keep-all] md:type-heading-lg">{essay.topic}</h3>
             <ol className="mt-4 space-y-3">
@@ -408,10 +392,10 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
       {/* ④ 오늘의 면접 질문 */}
       {questions.map((n, i) => (
         <div key={n.id} id={i === 0 ? "noon-question" : undefined} className="scroll-mt-24">
-          {i === 0 ? <MascotDivider text="면접 연습 가 보콩!" /> : <div className="h-5" />}
+          {i === 0 ? <JourneyDivider stage={stage("noon-question")} /> : <div className="h-5" />}
           <Box id={anchor(n)} className="border-2 border-ev-interview2/40">
             {i === 0 ? (
-              <CornerHead no={no("noon-question")} icon={MessageCircleQuestion} title={`오늘의 면접 질문${questions.length > 1 ? ` ${i + 1}` : ""}`} time="2분" tone="text-ev-interview2" />
+              <CornerHead no={no("noon-question")} icon={MessageCircleQuestion} title={`오늘의 면접 질문${questions.length > 1 ? ` ${i + 1}` : ""}`} time="1분" tone="text-ev-interview2" />
             ) : (
               <p className="flex items-center gap-1.5 type-caption font-semibold text-ev-interview2">
                 <MessageCircleQuestion className="h-4 w-4" strokeWidth={2} />
@@ -440,7 +424,7 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
       {/* ⑤ 점심 퀴즈 */}
       {issue.quiz.length > 0 && (
         <div id="noon-quiz" className="scroll-mt-24">
-          <MascotDivider text="마지막 퀴즈콩!" flip />
+          <JourneyDivider stage={stage("noon-quiz")} />
           <BriefingQuiz quiz={issue.quiz} title="점심 퀴즈" subtitle={`오늘 공부한 용어·숫자, O/X로 확인해요. ${issue.quiz.length}문제`} />
         </div>
       )}
@@ -448,11 +432,43 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
   );
 }
 
-/** 데일리 브리핑 한 호 (아침판·점심판) */
-export function Letter({ issue, content }: { issue: BriefingIssue; content: LetterContent }) {
-  const minutes = letterMinutes(content, extrasLength(issue));
+/** 맺음의 앞뒤 호 카드 — 누르면 바로 그 브리핑으로 */
+function NearIssue({ issue, dir }: { issue: BriefingIssue; dir: "prev" | "next" }) {
   const morning = issue.edition === "morning";
-  const count = morning ? `기사 ${content.all.length}건` : "점심 공부 5코스";
+  const Icon = morning ? Sunrise : Soup;
+  const Arrow = dir === "prev" ? ChevronLeft : ChevronRight;
+  return (
+    <Link
+      href={letterHref(issue.date, issue.edition)}
+      className={cn("group flex items-center gap-3 rounded-2xl bg-canvas px-4 py-3.5 transition-shadow hover:shadow-level-1", dir === "next" && "flex-row-reverse text-right")}
+    >
+      <Arrow className="h-5 w-5 shrink-0 text-ink-mute transition-colors group-hover:text-ink" strokeWidth={2} />
+      <span className="min-w-0 flex-1">
+        <span className={cn("flex items-center gap-1.5 type-caption text-ink-mute", dir === "next" && "justify-end")}>
+          <span className={cn("inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-brand-dark", morning ? "bg-[#ffb36b]" : "bg-[#8fd6a8]")}>
+            <Icon className="h-3 w-3" strokeWidth={2.2} />
+          </span>
+          {dir === "prev" ? "이전" : "다음"} 브리핑 · {formatShort(issue.date)} {EDITION_LABEL[issue.edition]}
+        </span>
+        <span className="mt-1 line-clamp-2 type-body-md font-semibold text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
+      </span>
+    </Link>
+  );
+}
+
+/** 데일리 브리핑 한 호 (아침판·금콩 스터디) */
+export function Letter({
+  issue,
+  content,
+  around = { prev: null, next: null },
+}: {
+  issue: BriefingIssue;
+  content: LetterContent;
+  /** 발행 순서로 바로 앞뒤 호 (판 상관없이) */
+  around?: { prev: BriefingIssue | null; next: BriefingIssue | null };
+}) {
+  const minutes = briefingMinutes(issue, [...content.all, ...content.terms, ...content.questions]);
+  const morning = issue.edition === "morning";
 
   return (
     <article className="theme-light overflow-hidden rounded-3xl bg-canvas-cream">
@@ -464,16 +480,17 @@ export function Letter({ issue, content }: { issue: BriefingIssue; content: Lett
           {volLabel(issue.vol)} · {formatDayHeading(issue.date)}
         </p>
         <p className="mt-1 type-caption text-ink-mute">
-          {EDITION_LABEL[issue.edition]} · {count} · 약 {minutes}분
+          {EDITION_LABEL[issue.edition]}
+          {morning && ` · 기사 ${content.all.length}건`} · 약 {minutes}분
         </p>
       </header>
 
       <div className="space-y-5 px-3 pb-10 sm:space-y-6 sm:px-4 md:px-10">
         {issue.lede && (
-          <section aria-label="오늘의 흐름" className="rounded-2xl bg-canvas px-4 py-5 sm:px-5 md:px-7">
+          <section aria-label={morning ? "오늘의 흐름" : "오늘의 스터디"} className="rounded-2xl bg-canvas px-4 py-5 sm:px-5 md:px-7">
             <p className="flex items-center gap-1.5 type-caption font-semibold text-primary-text">
               <Sparkles className="h-4 w-4" strokeWidth={2} />
-              {morning ? "오늘의 흐름" : "점심 공부 안내"}
+              {morning ? "오늘의 흐름" : "오늘의 스터디"}
             </p>
             <p className={cn("mt-2 type-body-lg leading-[1.85] whitespace-pre-line text-ink", JUSTIFY)}>{issue.lede}</p>
           </section>
@@ -481,46 +498,25 @@ export function Letter({ issue, content }: { issue: BriefingIssue; content: Lett
 
         {morning ? <MorningBody issue={issue} content={content} /> : <NoonBody issue={issue} content={content} />}
 
-        {/* 맺음 — ① 콩이의 맺는 말 ② 다음 판 안내 ③ 의견·공유와 원문 확인 안내를 한 장에 */}
-        <footer className="space-y-4 pt-4">
-          <div className="flex items-end justify-center gap-3">
-            <KongMascot className="h-14 w-14" wave />
-            {issue.closing && (
-              <p className="relative max-w-sm rounded-2xl rounded-bl-sm border-2 border-brand-dark bg-canvas px-4 py-3 text-left type-body-md text-ink [word-break:keep-all]">
-                {splitSentences(issue.closing).map((line, i) => (
-                  <span key={i} className="block">
-                    {line}
-                  </span>
-                ))}
-              </p>
-            )}
-          </div>
+        {/* 끝까지 읽으면 — 정장 입은 합격 콩이 */}
+        <JourneyDivider stage={JOURNEY_DONE} />
 
-          {morning ? (
-            <Link
-              href={letterHref(issue.date, "noon")}
-              className="group flex items-center gap-3 rounded-2xl border border-[#8fd6a8] bg-[#eefaf2] px-4 py-3.5 transition-colors hover:bg-[#e3f6ea] sm:px-5"
-            >
-              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#8fd6a8] text-brand-dark">
-                <Soup className="h-5 w-5" strokeWidth={2} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block type-body-md font-semibold text-ink group-hover:underline">다음은 점심판 · {EDITION_SCHEDULE[1].time}</span>
-                <span className="block type-caption text-ink-secondary">오늘 기사로 숫자·용어·논술·면접·퀴즈 10분 공부</span>
-              </span>
-              <ArrowRight className="h-4 w-4 shrink-0 text-ink-mute transition-transform group-hover:translate-x-0.5" strokeWidth={2} />
-            </Link>
-          ) : (
-            <div className="flex items-center gap-3 rounded-2xl border border-[#ffcf8a] bg-[#fff6ea] px-4 py-3.5 sm:px-5">
-              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#ffb36b] text-brand-dark">
-                <Sunrise className="h-5 w-5" strokeWidth={2} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block type-body-md font-semibold text-ink">내일 아침판은 {EDITION_SCHEDULE[0].time}</span>
-                <span className="block type-caption text-ink-secondary">밤사이 금융·경제 기사를 브리핑과 퀴즈로 정리해 둘게요</span>
-              </span>
-            </div>
-          )}
+        {/* 맺음 — ① 앞뒤 브리핑 바로 가기 ② 의견·공유와 원문 확인 안내 */}
+        <footer className="space-y-4">
+          <nav aria-label="이전·다음 브리핑" className="grid gap-3 sm:grid-cols-2">
+            {around.prev ? <NearIssue issue={around.prev} dir="prev" /> : <span aria-hidden className="hidden sm:block" />}
+            {around.next ? (
+              <NearIssue issue={around.next} dir="next" />
+            ) : (
+              <Link href={BRIEFING_ARCHIVE} className="group flex flex-row-reverse items-center gap-3 rounded-2xl bg-canvas px-4 py-3.5 text-right transition-shadow hover:shadow-level-1">
+                <Mail className="h-5 w-5 shrink-0 text-ink-mute transition-colors group-hover:text-ink" strokeWidth={1.75} />
+                <span className="min-w-0 flex-1">
+                  <span className="block type-caption text-ink-mute">날짜·카테고리로 찾아보기</span>
+                  <span className="mt-1 block type-body-md font-semibold text-ink group-hover:underline">지난 브리핑 전체 보기</span>
+                </span>
+              </Link>
+            )}
+          </nav>
 
           <div className="rounded-2xl bg-canvas px-4 py-5 sm:px-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

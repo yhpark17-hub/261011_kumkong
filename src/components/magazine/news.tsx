@@ -269,7 +269,7 @@ export function NewsGroupedList({ items, view, dayLinks = true }: { items: NewsI
   );
 }
 
-/** 오늘의 용어 · 면접 질문 칸 — 누르면 점심판 브리핑의 그 자리로 */
+/** 오늘의 용어 · 면접 질문 칸 — 누르면 금콩 스터디의 그 자리로 */
 export function FeatureItemCard({ section, n, today }: { section: "term" | "question"; n: NewsItem | null; today: string }) {
   const info = NEWS_SECTION_INFO[section];
   const Icon = NEWS_ICON[section];
@@ -291,13 +291,13 @@ export function FeatureItemCard({ section, n, today }: { section: "term" | "ques
           </span>
           <span className="mt-2 line-clamp-3 type-body-md leading-relaxed text-ink-secondary ko-justify">{n.summary}</span>
           <span className="mt-auto inline-flex items-center gap-1 pt-4 type-caption text-primary-text">
-            점심판 브리핑에서 보기
+            금콩 스터디에서 보기
             <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
           </span>
         </Link>
       ) : (
         <p className="mt-4 type-body-md text-ink-mute">
-          {section === "term" ? "점심판에서 그날 기사에 나온 용어를 풀어 드려요." : "점심판에서 그날 기사로 나올 법한 면접 질문을 드려요."}
+          {section === "term" ? "금콩 스터디에서 그날 기사에 나온 용어를 풀어 드려요." : "금콩 스터디에서 그날 기사로 나올 법한 면접 질문을 드려요."}
         </p>
       )}
     </section>
@@ -305,10 +305,10 @@ export function FeatureItemCard({ section, n, today }: { section: "term" | "ques
 }
 
 /** 브리핑 한 호 카드 — 카드(크게) / 목록(글만) */
-export function IssueCard({ issue, top, count, view }: { issue: BriefingIssue; top: NewsItem[]; count: number; view: NewsView }) {
+export function IssueCard({ issue, top, count, minutes, view }: { issue: BriefingIssue; top: NewsItem[]; count: number; minutes: number; view: NewsView }) {
   const morning = issue.edition === "morning";
   const Icon = morning ? Sunrise : Soup;
-  const what = morning ? `기사 ${count}건` : "점심 공부 5코스";
+  const what = morning ? `기사 ${count}건 · 약 ${minutes}분` : `약 ${minutes}분`;
   if (view === "list") {
     return (
       <Link href={letterHref(issue.date, issue.edition)} className="group flex items-start gap-4 py-5">
@@ -327,7 +327,7 @@ export function IssueCard({ issue, top, count, view }: { issue: BriefingIssue; t
   }
   return (
     <Link href={letterHref(issue.date, issue.edition)} className="group flex flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
-      <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={coverNote(issue, count)} size="sm" className="aspect-[16/9] w-full" />
+      <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`약 ${minutes}분`} size="sm" className="aspect-[16/9] w-full" />
       <span className="flex flex-1 flex-col p-5">
         <span className="type-caption text-ink-mute">
           {EDITION_LABEL[issue.edition]} · {volLabel(issue.vol)}
@@ -354,24 +354,19 @@ export function IssueCard({ issue, top, count, view }: { issue: BriefingIssue; t
   );
 }
 
-/** 표지 오른쪽 아래 한 줄 (기사 7건 · 퀴즈 4문제) */
-function coverNote(issue: BriefingIssue, count: number): string {
-  return issue.edition === "morning" ? `기사 ${count}건${issue.quiz.length ? ` · 퀴즈 ${issue.quiz.length}문제` : ""}` : "점심 공부 5코스";
-}
-
 /** 첫 화면 맨 위 — 오늘의 브리핑 한 편 (위 썸네일 · 아래 헤드라인), 누르면 브리핑으로 */
-export function BriefingHeroCard({ issue, count }: { issue: BriefingIssue; count: number }) {
+export function BriefingHeroCard({ issue, minutes }: { issue: BriefingIssue; minutes: number }) {
   return (
     <Link
       href={letterHref(issue.date, issue.edition)}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-level-1 transition-shadow hover:shadow-level-2"
     >
-      <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={coverNote(issue, count)} kicker className="aspect-[16/9] w-full" />
+      <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`약 ${minutes}분`} className="aspect-[16/9] w-full" />
       <span className={cn("h-1.5 w-full", issue.edition === "morning" ? "bg-[#ffb36b]" : "bg-[#8fd6a8]")} aria-hidden />
       <span className="flex flex-1 flex-col p-5 md:p-6">
         <span className="flex flex-wrap items-center gap-2 type-caption">
           <span className={cn("rounded-full px-2.5 py-0.5 font-semibold text-brand-dark", issue.edition === "morning" ? "bg-[#ffe6cc]" : "bg-[#d9f2e2]")}>
-            {issue.edition === "morning" ? "아침판 · 오늘의 기사 브리핑" : "점심판 · 점심 10분 공부"}
+            {issue.edition === "morning" ? "아침판 · 오늘의 기사 브리핑" : "금콩 스터디 · 점심 시사 공부"}
           </span>
           <span className="text-ink-mute">{volLabel(issue.vol)}</span>
         </span>

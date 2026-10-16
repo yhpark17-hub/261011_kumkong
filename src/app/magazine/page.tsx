@@ -12,7 +12,7 @@ import { ArchiveCallout, BriefingHeroCard, FeatureItemCard, IssueCard, NewsCateg
 import { EmptyLine, MagazineShell } from "@/components/magazine/sections";
 import { addDays, formatDayHeading, todayKST } from "@/lib/date";
 import { MAGAZINE_NAME, isBlogCategory, magazineHref } from "@/lib/magazine-meta";
-import { EDITION_SCHEDULE, briefingArchiveHref, isDateKey, isNewsSection, type NewsView } from "@/lib/news-meta";
+import { EDITION_LABEL, EDITION_SCHEDULE, briefingArchiveHref, briefingMinutes, isDateKey, isNewsSection, type NewsView } from "@/lib/news-meta";
 import { arrangeLetter, getIssue, issueItems, issuesBetween, latestIssue, listIssues, type IssueSummary } from "@/lib/server/briefing";
 import { latestInSection, newsSectionCounts, popularNews } from "@/lib/server/news";
 import { AD_SLOTS } from "@/lib/site";
@@ -20,7 +20,7 @@ import { AD_SLOTS } from "@/lib/site";
 export const metadata: Metadata = {
   title: `데일리 브리핑 — 오늘의 금융·경제·시사 뉴스와 용어·면접 질문 | ${MAGAZINE_NAME}`,
   description:
-    "매일 아침 기사 브리핑과 퀴즈, 점심에는 오늘의 용어와 면접 질문. 금융공기업 준비생이 알아야 할 금융·경제·정책·국제·공공기관 뉴스를 한 편의 브리핑으로.",
+    "매일 아침 기사 브리핑과 퀴즈, 점심에는 금콩 스터디로 오늘의 용어·논술·면접 질문. 금융공기업 준비생이 알아야 할 금융·경제·정책·국제·공공기관 뉴스를 한 편의 브리핑으로.",
   alternates: { canonical: "/magazine", types: { "application/rss+xml": "/magazine/rss.xml" } },
 };
 
@@ -54,7 +54,7 @@ function NewsSkeleton() {
   );
 }
 
-/** 날짜별로 묶기 (최신 날짜 먼저, 같은 날은 아침판 → 점심판) */
+/** 날짜별로 묶기 (최신 날짜 먼저, 같은 날은 아침판 → 금콩 스터디) */
 function byDate(rows: IssueSummary[]): { date: string; rows: IssueSummary[] }[] {
   const out: { date: string; rows: IssueSummary[] }[] = [];
   for (const r of [...rows].sort((a, b) => (a.issue.date === b.issue.date ? (a.issue.edition === "morning" ? -1 : 1) : a.issue.date < b.issue.date ? 1 : -1))) {
@@ -94,7 +94,6 @@ async function BriefingFront({ sp }: { sp: SP }) {
     morningIssue ? issueItems(heroDate, "morning") : Promise.resolve([]),
     noonIssue ? issueItems(heroDate, "noon") : Promise.resolve([]),
   ]);
-  const morning = arrangeLetter(morningItems);
   const noon = arrangeLetter(noonItems);
   const [term, question] = await Promise.all([noon.terms[0] ?? latestInSection("term"), noon.questions[0] ?? latestInSection("question")]);
 
@@ -113,20 +112,28 @@ async function BriefingFront({ sp }: { sp: SP }) {
           <p className="mt-0.5 type-heading-lg text-ink">{formatDayHeading(heroDate)}</p>
         </div>
 
-        {/* 대표 브리핑(아침판·점심판 번갈아)이 더 중요해서 넓게, 많이 본 기사는 옆에 좁게 */}
+        {/* 대표 브리핑(아침판·금콩 스터디 번갈아)이 더 중요해서 넓게, 많이 본 기사는 옆에 좁게 */}
         <div className="grid gap-6 md:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
           {morningIssue || noonIssue ? (
             <HeroSwitcher
               slides={[
-                { edition: "morning", card: morningIssue ? <BriefingHeroCard issue={morningIssue} count={morning.all.length} /> : null, hint: `${EDITION_SCHEDULE[0].time} 공개` },
-                { edition: "noon", card: noonIssue ? <BriefingHeroCard issue={noonIssue} count={0} /> : null, hint: `${EDITION_SCHEDULE[1].time} 공개` },
+                {
+                  edition: "morning",
+                  card: morningIssue ? <BriefingHeroCard issue={morningIssue} minutes={briefingMinutes(morningIssue, morningItems)} /> : null,
+                  hint: `${EDITION_LABEL.morning}은 ${EDITION_SCHEDULE[0].time}에 올라와요`,
+                },
+                {
+                  edition: "noon",
+                  card: noonIssue ? <BriefingHeroCard issue={noonIssue} minutes={briefingMinutes(noonIssue, noonItems)} /> : null,
+                  hint: `${EDITION_LABEL.noon}는 ${EDITION_SCHEDULE[1].time}에 올라와요`,
+                },
               ]}
             />
           ) : (
             <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-hairline-input px-6 py-14 text-center md:min-h-[440px]">
               <Newspaper className="h-8 w-8 text-ink-mute-2" strokeWidth={1.5} />
               <p className="mt-3 type-heading-sm text-ink">첫 브리핑을 준비하고 있어요</p>
-              <p className="mt-1 type-body-md text-ink-mute">아침에는 기사 브리핑, 점심에는 용어·면접 공부로 찾아올게요.</p>
+              <p className="mt-1 type-body-md text-ink-mute">아침에는 기사 브리핑, 점심에는 금콩 스터디로 찾아올게요.</p>
             </div>
           )}
           <PopularNews items={popular} fill />
@@ -164,14 +171,14 @@ async function BriefingFront({ sp }: { sp: SP }) {
                 {view === "card" ? (
                   <div className="mt-4 grid gap-6 sm:grid-cols-2">
                     {g.rows.map((r) => (
-                      <IssueCard key={r.issue.id} issue={r.issue} top={r.top} count={r.count} view="card" />
+                      <IssueCard key={r.issue.id} issue={r.issue} top={r.top} count={r.count} minutes={r.minutes} view="card" />
                     ))}
                   </div>
                 ) : (
                   <ul className="mt-1 divide-y divide-hairline border-t border-hairline">
                     {g.rows.map((r) => (
                       <li key={r.issue.id}>
-                        <IssueCard issue={r.issue} top={r.top} count={r.count} view="list" />
+                        <IssueCard issue={r.issue} top={r.top} count={r.count} minutes={r.minutes} view="list" />
                       </li>
                     ))}
                   </ul>
