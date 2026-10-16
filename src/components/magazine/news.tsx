@@ -296,8 +296,9 @@ export function FeatureItemCard({ section, n, today }: { section: "term" | "ques
       </p>
       {n ? (
         <Link href={itemHref(n)} className="group mt-4 flex flex-1 flex-col">
-          <span className={cn("[word-break:keep-all] group-hover:underline", section === "term" ? "type-heading-lg text-ev-posting" : "type-heading-sm text-ink")}>
-            {newsTitle(n)}
+          {/* 제목 칸은 두 줄 높이로 고정하고 그 안에서 가운데 — 옆 칸과 제목·요약 줄이 나란히 맞게 */}
+          <span className="flex min-h-[2lh] items-center type-heading-md">
+            <span className="line-clamp-2 text-ink [word-break:keep-all] group-hover:underline">{newsTitle(n)}</span>
           </span>
           <span className="mt-2 line-clamp-3 type-body-md leading-relaxed text-ink-secondary ko-justify">{n.summary}</span>
           <span className="mt-auto inline-flex items-center gap-1 pt-4 type-caption text-primary-text">

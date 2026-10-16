@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { HomeDashboard } from "@/components/calendar/HomeDashboard";
 import { DbSection } from "@/components/db/DbSection";
-import { CommunityStrip, CommunityStripSkeleton } from "@/components/home/CommunityStrip";
+import { CommunityStrip, CommunityStripSkeleton, RecentExamsPanel, RecentExamsPanelSkeleton } from "@/components/home/CommunityStrip";
 import { MagazineStrip, MagazineStripSkeleton } from "@/components/home/MagazineStrip";
 import { NewPostingsTicker, NewPostingsTickerSkeleton } from "@/components/home/NewPostingsTicker";
 import { CompanyAvatar, Eyebrow } from "@/components/ui";
@@ -29,7 +29,16 @@ export default function Home() {
       </div>
 
       <div className="mx-auto max-w-[1200px] px-4 pb-12 md:px-6">
-        <HomeDashboard catalog={buildCatalog()} />
+        <HomeDashboard
+          catalog={buildCatalog()}
+          afterStatus={
+            <DbSection silent>
+              <Suspense fallback={<RecentExamsPanelSkeleton />}>
+                <RecentExamsPanel />
+              </Suspense>
+            </DbSection>
+          }
+        />
       </div>
 
       <section aria-label="오늘의 브리핑과 매거진" className="mx-auto max-w-[1200px] px-4 pb-12 md:px-6">
@@ -40,7 +49,7 @@ export default function Home() {
         </DbSection>
       </section>
 
-      <section aria-label="필기 후기와 콩밭" className="mx-auto max-w-[1200px] px-4 pb-16 md:px-6">
+      <section aria-label="콩밭 새 글" className="mx-auto max-w-[1200px] px-4 pb-16 md:px-6">
         <DbSection>
           <Suspense fallback={<CommunityStripSkeleton />}>
             <CommunityStrip />

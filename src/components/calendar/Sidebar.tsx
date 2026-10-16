@@ -18,16 +18,20 @@ export function Sidebar({
   today,
   favorites,
   onOpen,
+  afterStatus,
 }: {
   catalog: Catalog;
   today: string | null;
   favorites: Set<string>;
   onOpen: (id: string) => void;
+  /** '지금 채용 현황' 바로 아래에 넣을 칸 (서버에서 그린 최근 필기 체감 난이도) */
+  afterStatus?: React.ReactNode;
 }) {
   return (
     <aside className="space-y-4" aria-label="보조 정보">
       <AdSlot slot={AD_SLOTS.sidebar} variant="rectangle" />
       <PhaseSummary catalog={catalog} today={today} />
+      {afterStatus}
       <FavoritesPanel catalog={catalog} today={today} favorites={favorites} onOpen={onOpen} />
       <TopCompetition catalog={catalog} />
       <div className="lg:sticky lg:top-24">

@@ -19,7 +19,7 @@ import { UrgentStrip } from "./UrgentStrip";
 /** 기관 상세(자소서·필기 등 전체 데이터)는 패널을 처음 열 때 불러옵니다. */
 const CompanyDrawer = dynamic(() => import("../company/CompanyDrawer").then((m) => m.CompanyDrawer));
 
-export function HomeDashboard({ catalog }: { catalog: Catalog }) {
+export function HomeDashboard({ catalog, afterStatus }: { catalog: Catalog; afterStatus?: React.ReactNode }) {
   const today = useTodayKey();
   const { favorites } = useFavorites();
   const allEvents = useMemo(() => buildEvents(catalog), [catalog]);
@@ -104,7 +104,7 @@ export function HomeDashboard({ catalog }: { catalog: Catalog }) {
           )}
         </section>
 
-        <Sidebar catalog={catalog} today={today} favorites={favorites} onOpen={setOpenCompany} />
+        <Sidebar catalog={catalog} today={today} favorites={favorites} onOpen={setOpenCompany} afterStatus={afterStatus} />
       </div>
 
       {dayModal && (
