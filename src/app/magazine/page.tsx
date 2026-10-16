@@ -8,13 +8,13 @@ import { Newspaper, Soup, Sunrise } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { DbSection } from "@/components/db/DbSection";
 import { NEWS_VIEW_COOKIE, ViewToggle } from "@/components/magazine/BlogControls";
-import { ArchiveCallout, BriefingDates, BriefingHeroCard, FeatureItemCard, IssueCard, NewsCategoryNav, PopularNews } from "@/components/magazine/news";
+import { ArchiveCallout, BriefingHeroCard, FeatureItemCard, IssueCard, NewsCategoryNav, PopularNews } from "@/components/magazine/news";
 import { EmptyLine, MagazineShell } from "@/components/magazine/sections";
 import { cn } from "@/components/ui";
 import { addDays, formatDayHeading, todayKST } from "@/lib/date";
 import { MAGAZINE_NAME, isBlogCategory, magazineHref } from "@/lib/magazine-meta";
 import { EDITION_SCHEDULE, briefingArchiveHref, isDateKey, isNewsSection, letterHref, type NewsView } from "@/lib/news-meta";
-import { arrangeLetter, getIssue, issueItems, issuesBetween, latestIssue, listIssues, recentIssues, type IssueSummary } from "@/lib/server/briefing";
+import { arrangeLetter, getIssue, issueItems, issuesBetween, latestIssue, listIssues, type IssueSummary } from "@/lib/server/briefing";
 import { latestInSection, newsSectionCounts, popularNews } from "@/lib/server/news";
 import { AD_SLOTS } from "@/lib/site";
 
@@ -82,10 +82,9 @@ async function BriefingFront({ sp }: { sp: SP }) {
   const view: NewsView = asked === "card" || asked === "list" ? asked : saved === "card" ? "card" : "list";
   const today = todayKST();
 
-  const [counts, latest, recentList, popular, all] = await Promise.all([
+  const [counts, latest, popular, all] = await Promise.all([
     newsSectionCounts(),
     latestIssue(),
-    recentIssues(10),
     popularNews(7, 5),
     listIssues({ pageSize: 1 }),
   ]);
@@ -208,7 +207,6 @@ async function BriefingFront({ sp }: { sp: SP }) {
         </div>
 
         <aside className="space-y-4">
-          <BriefingDates issues={recentList} today={today} />
           <div className="lg:sticky lg:top-24">
             <AdSlot slot={AD_SLOTS.sidebar} variant="rectangle" />
           </div>

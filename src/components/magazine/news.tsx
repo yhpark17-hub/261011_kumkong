@@ -394,33 +394,3 @@ export function ArchiveCallout({ total, className }: { total: number; className?
     </Link>
   );
 }
-
-/** 날짜별 브리핑 바로가기 (옆 칸) */
-export function BriefingDates({ issues, today }: { issues: BriefingIssue[]; today: string }) {
-  if (!issues.length) return null;
-  return (
-    <section aria-labelledby="past-title" className="rounded-xl border border-hairline p-5">
-      <h2 id="past-title" className="type-heading-sm text-ink">
-        날짜별 브리핑
-      </h2>
-      <ul className="mt-2 divide-y divide-hairline">
-        {issues.map((i) => (
-          <li key={i.id}>
-            <Link href={letterHref(i.date, i.edition)} className="group flex items-center justify-between gap-3 py-2.5">
-              <span className="tabular type-body-md text-ink group-hover:underline">
-                {formatShort(i.date)}
-                {i.date === today && <span className="ml-1.5 type-micro text-primary-text">오늘</span>}
-              </span>
-              <span className={cn("rounded-full px-2 py-0.5 type-micro", i.edition === "morning" ? "bg-[#fff1e0] text-[#b85c12]" : "bg-[#e6f6ec] text-[#2f7d4f]")}>
-                {EDITION_LABEL[i.edition]}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <Link href={BRIEFING_ARCHIVE} className="link mt-3 inline-block type-caption">
-        기간을 골라 찾아보기 →
-      </Link>
-    </section>
-  );
-}
