@@ -116,7 +116,7 @@ export function isBlogCategory(v: unknown): v is MagazineCategory {
 /** 매거진 안의 두 섹션 */
 export type MagazineSection = "briefing" | "blog";
 export const SECTION_INFO: Record<MagazineSection, { label: string; desc: string; href: string }> = {
-  briefing: { label: "데일리 브리핑", desc: "아침에는 오늘의 기사 브리핑과 퀴즈, 점심에는 금콩 스터디(용어·논술·면접) — 금공 준비생의 하루를 여는 브리핑", href: "/magazine" },
+  briefing: { label: "데일리 브리핑", desc: "아침에는 금콩 브리핑(기사 브리핑·퀴즈), 점심에는 금콩 스터디(용어·논술·면접) — 금공 준비생의 하루를 여는 브리핑", href: "/magazine" },
   blog: { label: "금융 블로그", desc: "필기·면접·금공 지식까지, 준비에 바로 쓰는 깊이 있는 글", href: "/magazine/blog" },
 };
 

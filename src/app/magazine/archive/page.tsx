@@ -9,14 +9,14 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { Pagination } from "@/components/board/parts";
 import { DbSection } from "@/components/db/DbSection";
 import { NEWS_VIEW_COOKIE, ViewToggle } from "@/components/magazine/BlogControls";
-import { NEWS_ICON, NewsCategoryNav, NewsGroupedList, PopularNews } from "@/components/magazine/news";
+import { EditionBadge, NEWS_ICON, NewsCategoryNav, NewsGroupedList, PopularNews } from "@/components/magazine/news";
 import { EmptyLine, MagazineShell } from "@/components/magazine/sections";
 import { cn } from "@/components/ui";
 import { addDays, formatDayHeading, formatShort, todayKST } from "@/lib/date";
 import { MAGAZINE_NAME } from "@/lib/magazine-meta";
 import {
   NEWS_PAGE_SIZE,
-  EDITION_LABEL,
+  EDITION_SLOT,
   NEWS_SECTION_INFO,
   briefingArchiveHref,
   isDateKey,
@@ -32,7 +32,7 @@ import { AD_SLOTS } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: `지난 브리핑 — 데일리 브리핑을 기간별로 | ${MAGAZINE_NAME}`,
-  description: "지난 데일리 브리핑(아침판·금콩 스터디)을 기간으로 찾아보고, 카테고리(금융·경제·용어·면접 질문 등)를 고르면 기사별로 모아 볼 수 있어요.",
+  description: "지난 데일리 브리핑(금콩 브리핑·금콩 스터디)을 기간으로 찾아보고, 카테고리(금융·경제·용어·면접 질문 등)를 고르면 기사별로 모아 볼 수 있어요.",
   alternates: { canonical: "/magazine/archive" },
 };
 
@@ -196,7 +196,7 @@ async function Archive({ sp }: { sp: SP }) {
                     {letters ? "호" : "건"}
                   </span>
                 </h3>
-                <p className="mt-0.5 type-caption text-ink-mute">{info ? `${info.label} · ${info.desc}` : "아침판·금콩 스터디 브리핑 — 최신 호부터"}</p>
+                <p className="mt-0.5 type-caption text-ink-mute">{info ? `${info.label} · ${info.desc}` : "금콩 브리핑·금콩 스터디 — 최신 호부터"}</p>
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -265,16 +265,17 @@ function IssueRow({ row }: { row: IssueSummary }) {
   return (
     <Link href={letterHref(issue.date, issue.edition)} className="group block rounded-2xl border border-hairline bg-canvas p-5 transition-shadow hover:shadow-level-2 md:p-6">
       <span className="flex flex-wrap items-center gap-x-2 gap-y-1 type-caption text-ink-mute">
-        <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold", morning ? "bg-[#fff1e0] text-[#b85c12]" : "bg-[#e6f6ec] text-[#2f7d4f]")}>
-          <Mail className="h-3 w-3" strokeWidth={2} />
-          {EDITION_LABEL[issue.edition]} {volLabel(issue.vol)}
+        <EditionBadge edition={issue.edition} />
+        <span>
+          {EDITION_SLOT[issue.edition]} · {volLabel(issue.vol)}
         </span>
+        <span aria-hidden>·</span>
         <span className="tabular">{formatDayHeading(issue.date)}</span>
         <span aria-hidden>·</span>
         <span>{morning ? `기사 ${count}건 · 약 ${minutes}분` : `약 ${minutes}분`}</span>
       </span>
       <span className="mt-2 block type-heading-md text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
-      {issue.lede && <span className="mt-1.5 line-clamp-2 block type-body-md text-ink-secondary">{issue.lede}</span>}
+      {issue.lede && <span className="mt-1.5 line-clamp-2 type-body-md text-ink-secondary">{issue.lede}</span>}
       {top.length > 0 && (
         <ol className="mt-3 space-y-1">
           {top.map((n, i) => (

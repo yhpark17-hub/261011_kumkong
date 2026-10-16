@@ -87,7 +87,7 @@ export function LetterScreen({
                         {formatShort(i.date)} {EDITION_LABEL[i.edition]} · {volLabel(i.vol)}
                         {isCurrent(i) && " · 지금 보는 호"}
                       </span>
-                      <span className="mt-0.5 line-clamp-2 block type-body-md text-ink [word-break:keep-all] group-hover:underline">{i.title}</span>
+                      <span className="mt-0.5 line-clamp-2 type-body-md text-ink [word-break:keep-all] group-hover:underline">{i.title}</span>
                     </Link>
                   </li>
                 ))}

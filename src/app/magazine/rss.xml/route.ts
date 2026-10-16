@@ -28,7 +28,7 @@ export async function GET() {
     ]);
     items = [
       ...letters.map((i) => ({
-        title: `[데일리 브리핑 ${EDITION_LABEL[i.edition]} ${volLabel(i.vol)}] ${i.title}`,
+        title: `[${EDITION_LABEL[i.edition]} ${volLabel(i.vol)}] ${i.title}`,
         link: `${SITE.url}${letterHref(i.date, i.edition)}`,
         category: "데일리 브리핑",
         description: i.lede,

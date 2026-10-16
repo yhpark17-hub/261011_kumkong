@@ -173,7 +173,7 @@ async function labelPaths(paths: string[]): Promise<Map<string, string>> {
       args: letterDates,
     });
     for (const row of res.rows)
-      labels.set(`/magazine/letter/${row.issue_date}/${row.edition}`, `브리핑 ${row.edition === "noon" ? "금콩 스터디" : "아침판"} Vol.${row.vol} · ${row.title}`);
+      labels.set(`/magazine/letter/${row.issue_date}/${row.edition}`, `${row.edition === "noon" ? "금콩 스터디" : "금콩 브리핑"} Vol.${row.vol} · ${row.title}`);
   }
   for (const p of paths) if (!labels.has(p)) labels.set(p, p);
   return labels;

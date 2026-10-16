@@ -338,7 +338,7 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
           ))}
         </ol>
         <Link href={letterHref(issue.date, "morning")} className="link mt-4 inline-flex items-center gap-1 type-caption">
-          오늘 아침판 기사 다시 보기
+          오늘 금콩 브리핑 기사 다시 보기
           <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
         </Link>
       </Box>
@@ -577,7 +577,7 @@ export function Letter({
                 <FeedbackButton kind="site" className="btn btn-sm btn-primary">
                   의견 보내기
                 </FeedbackButton>
-                <ShareButton title={`금콩 브리핑 ${EDITION_LABEL[issue.edition]} ${formatDayHeading(issue.date)}`} path={letterHref(issue.date, issue.edition)} />
+                <ShareButton title={`${EDITION_LABEL[issue.edition]} ${formatDayHeading(issue.date)}`} path={letterHref(issue.date, issue.edition)} />
               </div>
             </div>
             <p className="mt-4 flex gap-2 border-t border-hairline pt-4 type-caption leading-relaxed text-ink-secondary [word-break:keep-all]">

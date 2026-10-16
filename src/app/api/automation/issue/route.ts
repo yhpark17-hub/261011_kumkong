@@ -61,7 +61,7 @@ export async function POST(req: Request) {
   };
   const date = todayKST();
   const edition = b.edition;
-  if (!isIssueEdition(edition)) return json({ date, ok: false, errors: ['edition 은 "morning"(아침판) 또는 "noon"(금콩 스터디)예요'] }, 400);
+  if (!isIssueEdition(edition)) return json({ date, ok: false, errors: ['edition 은 "morning"(금콩 브리핑·아침판) 또는 "noon"(금콩 스터디·점심판)이에요'] }, 400);
   const title = s(b.title, 120);
   const lede = s(b.lede, 1200);
   const closing = s(b.closing, 400);

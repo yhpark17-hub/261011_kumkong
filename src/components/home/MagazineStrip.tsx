@@ -23,7 +23,7 @@ export async function MagazineStrip() {
           <h2 className="flex items-center gap-2 type-heading-md text-ink">
             <KongMascot className="h-7 w-7" />
             데일리 브리핑
-            {issue && <span className="type-caption font-normal text-ink-mute">{formatDayHeading(issue.date)} 아침판</span>}
+            {issue && <span className="type-caption font-normal text-ink-mute">{formatDayHeading(issue.date)} 금콩 브리핑</span>}
           </h2>
           <Link href={issue ? letterHref(issue.date, "morning") : "/magazine"} className="link inline-flex shrink-0 items-center gap-1 type-caption">
             브리핑 읽기

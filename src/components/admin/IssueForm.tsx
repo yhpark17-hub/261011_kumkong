@@ -36,8 +36,8 @@ export function IssueForm({ initial }: { initial: IssueFormInitial }) {
         <label className="block">
           <span className="mb-1 block type-caption text-ink-secondary">판</span>
           <select name="edition" value={edition} onChange={(e) => setEdition(e.target.value as IssueEdition)} className="input w-full">
-            <option value="morning">아침판 — 기사 브리핑 + 퀴즈</option>
-            <option value="noon">금콩 스터디 (점심) — 숫자·용어·논술·면접·퀴즈</option>
+            <option value="morning">금콩 브리핑 (아침판) — 기사 브리핑 + 퀴즈</option>
+            <option value="noon">금콩 스터디 (점심판) — 숫자·용어·논술·면접·퀴즈</option>
           </select>
         </label>
       </div>

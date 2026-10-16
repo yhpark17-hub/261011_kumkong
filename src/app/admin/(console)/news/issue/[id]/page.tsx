@@ -50,7 +50,7 @@ async function EditIssue({ rawId }: { rawId: string }) {
         데일리 브리핑
       </Link>
       <AdminPageTitle
-        title={`${EDITION_LABEL[issue.edition]} 브리핑 편집 · ${volLabel(issue.vol)}`}
+        title={`${EDITION_LABEL[issue.edition]} 편집 · ${volLabel(issue.vol)}`}
         desc={`${formatDayHeading(issue.date)} · ${issue.status === 1 ? "발행됨" : "발행 대기"}${issue.origin === "auto" ? " · 자동 점검이 만든 초안" : ""}`}
         aside={
           <div className="flex flex-wrap gap-2">

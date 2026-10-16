@@ -49,13 +49,15 @@ export const KIND_LABELS: Record<NewsKind, { title: string; summary: string; poi
 
 /** 발행 판 */
 export type NewsEdition = "morning" | "noon" | "";
-/** 점심 판(noon)의 이름은 '금콩 스터디' */
-export const EDITION_LABEL: Record<Exclude<NewsEdition, "">, string> = { morning: "아침판", noon: "금콩 스터디" };
+/** 판 이름 — 아침은 '금콩 브리핑', 점심은 '금콩 스터디' */
+export const EDITION_LABEL: Record<Exclude<NewsEdition, "">, string> = { morning: "금콩 브리핑", noon: "금콩 스터디" };
+/** 올라오는 시간대 — 썸네일 스티커·부가 설명에 */
+export const EDITION_SLOT: Record<Exclude<NewsEdition, "">, string> = { morning: "아침판", noon: "점심판" };
 export const isEdition = (v: unknown): v is NewsEdition => v === "morning" || v === "noon" || v === "";
 
 /** 판마다 무엇이 실리는지 — 아침판은 기사 브리핑, 금콩 스터디(점심)는 용어·논술·면접 공부 */
 export const EDITION_SCHEDULE: { key: Exclude<NewsEdition, "">; label: string; time: string; items: string[] }[] = [
-  { key: "morning", label: "아침판", time: "오전 6시", items: ["오늘의 기사 브리핑", "브리핑 퀴즈"] },
+  { key: "morning", label: "금콩 브리핑", time: "오전 6시", items: ["오늘의 기사 브리핑", "브리핑 퀴즈"] },
   { key: "noon", label: "금콩 스터디", time: "낮 12시 30분", items: ["오늘의 용어", "오늘의 면접 질문"] },
 ];
 

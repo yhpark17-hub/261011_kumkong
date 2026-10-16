@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, Lightbulb, Mail, Newspaper, Soup, Sunrise, TrendingUp } from "lucide-react";
+import { ArrowRight, Lightbulb, Mail, Newspaper, TrendingUp } from "lucide-react";
 import { formatDayHeading, formatShort } from "@/lib/date";
 import {
   BRIEFING_ARCHIVE,
   EDITION_LABEL,
+  EDITION_SLOT,
   NEWS_SECTIONS,
   NEWS_SECTION_INFO,
   briefingArchiveHref,
@@ -313,23 +314,38 @@ export function FeatureItemCard({ section, n, today }: { section: "term" | "ques
   );
 }
 
-/** 브리핑 한 호 카드 — 카드(크게) / 목록(글만) */
+/** 판 색 — 금콩 브리핑(주황)·금콩 스터디(초록) */
+export const EDITION_TONE = {
+  morning: { bar: "bg-[#ffb36b]", soft: "bg-[#ffe6cc]" },
+  noon: { bar: "bg-[#8fd6a8]", soft: "bg-[#d9f2e2]" },
+} as const;
+
+/** 판 이름표 — '금콩 브리핑' / '금콩 스터디' (판 색 바탕) */
+export function EditionBadge({ edition, className }: { edition: BriefingIssue["edition"]; className?: string }) {
+  return (
+    <span className={cn("inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 type-caption font-semibold whitespace-nowrap text-brand-dark", EDITION_TONE[edition].soft, className)}>
+      {EDITION_LABEL[edition]}
+    </span>
+  );
+}
+
+/** 브리핑 한 호 카드 — 카드(크게) / 목록(글만, 왼쪽 판 색 줄 + 판 이름표로 구분) */
 export function IssueCard({ issue, top, count, minutes, view }: { issue: BriefingIssue; top: NewsItem[]; count: number; minutes: number; view: NewsView }) {
   const morning = issue.edition === "morning";
-  const Icon = morning ? Sunrise : Soup;
   const what = morning ? `기사 ${count}건 · 약 ${minutes}분` : `약 ${minutes}분`;
   if (view === "list") {
     return (
-      <Link href={letterHref(issue.date, issue.edition)} className="group flex items-start gap-4 py-5">
-        <span className={cn("inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", morning ? "bg-[#ffe6cc] text-[#b85c12]" : "bg-[#d9f2e2] text-[#2f7d4f]")}>
-          <Icon className="h-5 w-5" strokeWidth={1.75} />
-        </span>
+      <Link href={letterHref(issue.date, issue.edition)} className="group flex items-stretch gap-4 py-5">
+        <span aria-hidden className={cn("w-1 shrink-0 rounded-full", EDITION_TONE[issue.edition].bar)} />
         <span className="min-w-0 flex-1">
-          <span className="type-caption text-ink-mute">
-            {EDITION_LABEL[issue.edition]} · {volLabel(issue.vol)} · {what}
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1 type-caption text-ink-mute">
+            <EditionBadge edition={issue.edition} />
+            <span>
+              {EDITION_SLOT[issue.edition]} · {volLabel(issue.vol)} · {what}
+            </span>
           </span>
-          <span className="mt-1 block type-heading-sm text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
-          {issue.lede && <span className="mt-1 line-clamp-1 block type-body-md text-ink-secondary">{issue.lede}</span>}
+          <span className="mt-1.5 block type-heading-sm text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
+          {issue.lede && <span className="mt-1 line-clamp-1 type-body-md text-ink-secondary">{issue.lede}</span>}
         </span>
       </Link>
     );
@@ -338,10 +354,13 @@ export function IssueCard({ issue, top, count, minutes, view }: { issue: Briefin
     <Link href={letterHref(issue.date, issue.edition)} className="group flex flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
       <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`약 ${minutes}분`} size="sm" className="aspect-[16/9] w-full" />
       <span className="flex flex-1 flex-col p-5">
-        <span className="type-caption text-ink-mute">
-          {EDITION_LABEL[issue.edition]} · {volLabel(issue.vol)}
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-1 type-caption text-ink-mute">
+          <EditionBadge edition={issue.edition} />
+          <span>
+            {EDITION_SLOT[issue.edition]} · {volLabel(issue.vol)}
+          </span>
         </span>
-        <span className="mt-1 type-heading-md text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
+        <span className="mt-1.5 type-heading-md text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
         {top.length > 0 && (
           <ol className="mt-3 space-y-1.5">
             {top.map((n, i) => (
@@ -371,11 +390,11 @@ export function BriefingHeroCard({ issue, minutes }: { issue: BriefingIssue; min
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-level-1 transition-shadow hover:shadow-level-2"
     >
       <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`약 ${minutes}분`} className="aspect-[16/9] w-full" />
-      <span className={cn("h-1.5 w-full", issue.edition === "morning" ? "bg-[#ffb36b]" : "bg-[#8fd6a8]")} aria-hidden />
+      <span className={cn("h-1.5 w-full", EDITION_TONE[issue.edition].bar)} aria-hidden />
       <span className="flex flex-1 flex-col p-5 md:p-6">
         <span className="flex flex-wrap items-center gap-2 type-caption">
-          <span className={cn("rounded-full px-2.5 py-0.5 font-semibold text-brand-dark", issue.edition === "morning" ? "bg-[#ffe6cc]" : "bg-[#d9f2e2]")}>
-            {issue.edition === "morning" ? "아침판 · 오늘의 기사 브리핑" : "금콩 스터디 · 점심 시사 공부"}
+          <span className={cn("rounded-full px-2.5 py-0.5 font-semibold text-brand-dark", EDITION_TONE[issue.edition].soft)}>
+            {issue.edition === "morning" ? "금콩 브리핑 · 오늘의 기사 브리핑" : "금콩 스터디 · 점심 시사 공부"}
           </span>
           <span className="text-ink-mute">{volLabel(issue.vol)}</span>
         </span>

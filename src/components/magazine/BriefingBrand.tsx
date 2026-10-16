@@ -24,7 +24,7 @@ const SIZE = {
 /** 판마다 로고 글씨 — 아침판은 '금콩 브리핑', 점심은 '금콩 스터디' */
 const BRAND = {
   morning: { cap: "DAILY BRIEFING", word: "금콩 브리핑", sticker: "아침판" },
-  noon: { cap: "DAILY STUDY", word: "금콩 스터디", sticker: "점심" },
+  noon: { cap: "DAILY STUDY", word: "금콩 스터디", sticker: "점심판" },
 } as const;
 
 /** 브리핑 로고 — 콩이(아침판 신문 · 금콩 스터디 안경 쓰고 책) + 로고 글씨 + 판 스티커 */
