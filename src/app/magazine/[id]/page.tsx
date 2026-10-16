@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronRight, MessagesSquar
 import { AdSlot } from "@/components/ads/AdSlot";
 import { DbSection } from "@/components/db/DbSection";
 import { Markdown, extractHeadings } from "@/components/magazine/Markdown";
+import { ArticleFeature } from "@/components/magazine/features";
 import { articleWidgets } from "@/components/magazine/widgets";
 import {
   ArticleActions,
@@ -32,6 +33,7 @@ import {
 import { dbConfigured } from "@/lib/server/db";
 import { adjacentArticles, getArticle, relatedArticles } from "@/lib/server/magazine";
 import { isAdmin } from "@/lib/server/security";
+import { articleFeatureIn } from "@/lib/article-widgets";
 import { AD_SLOTS, OG_IMAGE, SITE } from "@/lib/site";
 
 function parseId(raw: string): number | null {
@@ -63,13 +65,24 @@ export async function generateMetadata({ params }: PageProps<"/magazine/[id]">):
   };
 }
 
+/** 보통 글은 가운데 틀 안에, 스크롤 스토리 글은 화면 가득 */
+const CONTAINER = "mx-auto max-w-[1200px] px-4 pt-6 pb-16 md:px-6 md:pt-10";
+
 export default function ArticlePage({ params }: PageProps<"/magazine/[id]">) {
   return (
-    <div className="mx-auto max-w-[1200px] px-4 pt-6 pb-16 md:px-6 md:pt-10">
-      <DbSection noticeTitle="매거진을 준비하고 있어요">
-        <Suspense fallback={<ArticleSkeleton />}>{params.then(({ id }) => <ArticleView rawId={id} />)}</Suspense>
-      </DbSection>
-    </div>
+    <DbSection noticeTitle="매거진을 준비하고 있어요">
+      <Suspense
+        fallback={
+          <div className={CONTAINER}>
+            <ArticleSkeleton />
+          </div>
+        }
+      >
+        {params.then(({ id }) => (
+          <ArticleView rawId={id} />
+        ))}
+      </Suspense>
+    </DbSection>
   );
 }
 
@@ -125,29 +138,80 @@ async function ArticleView({ rawId }: { rawId: string }) {
     keywords: a.tags.join(", ") || undefined,
   };
 
+  const adminBar = admin && (
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-canvas-cream px-4 py-3">
+      <p className="type-caption text-ink-secondary">
+        {isPublic
+          ? "운영자 화면 — 공개 중인 글이에요."
+          : a.status === 0
+            ? "미리보기 — 아직 임시저장 상태라 다른 사람에게는 보이지 않아요."
+            : `미리보기 — ${a.publishedAt ? formatArticleDate(a.publishedAt) : ""} 예약 발행 글이에요.`}
+      </p>
+      <Link href={`/admin/magazine/${a.id}`} className="btn btn-sm btn-secondary">
+        <PenLine className="h-3.5 w-3.5" strokeWidth={1.75} />
+        수정하기
+      </Link>
+    </div>
+  );
+  const ld = isPublic && (
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+  );
+  const relatedSection = related.length > 0 && (
+    <section aria-labelledby="related-title" className="mt-16 border-t border-hairline pt-10">
+      <div className="mb-5 flex items-end justify-between">
+        <h2 id="related-title" className="type-heading-lg text-ink">
+          함께 읽으면 좋은 글
+        </h2>
+        <Link href={magazineHref({ category: a.category })} className="link type-caption">
+          {CATEGORY_INFO[a.category].label} 더 보기 →
+        </Link>
+      </div>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {related.map((r) => (
+          <ArticleCard key={r.id} a={r} />
+        ))}
+      </div>
+    </section>
+  );
+
+  // 스크롤 스토리 글 — 화면 가득 장면, 그 아래에 도움돼요·다음 글·함께 읽을 글
+  const feature = articleFeatureIn(a.body);
+  if (feature) {
+    return (
+      <>
+        {isPublic && <ViewRecorder id={a.id} />}
+        <ReadingProgress targetId="article-body" />
+        {ld}
+        {admin && <div className="mx-auto max-w-[1200px] px-4 pt-6 md:px-6">{adminBar}</div>}
+        <ArticleFeature name={feature} title={a.title} />
+        <div className={CONTAINER}>
+          <div className="mx-auto max-w-[720px]">
+            <div className="rounded-xl border border-hairline px-5 py-7 text-center">
+              <p className="type-heading-sm text-ink">이 글이 도움이 됐나요?</p>
+              <p className="mt-1 type-caption text-ink-mute">반응이 많은 주제를 더 자주, 더 깊게 다룰게요.</p>
+              <div className="mt-5">
+                <ArticleActions id={a.id} title={a.title} category={a.category} initialLikes={a.likes} preview={!isPublic} />
+              </div>
+            </div>
+            {(adjacent.prev || adjacent.next) && (
+              <nav aria-label="이전·다음 글" className="mt-10 grid gap-3 sm:grid-cols-2">
+                {adjacent.prev ? <AdjacentLink a={adjacent.prev} dir="prev" briefing={false} /> : <span />}
+                {adjacent.next ? <AdjacentLink a={adjacent.next} dir="next" briefing={false} /> : <span />}
+              </nav>
+            )}
+          </div>
+          {relatedSection}
+        </div>
+      </>
+    );
+  }
+
   return (
-    <>
+    <div className={CONTAINER}>
       {isPublic && <ViewRecorder id={a.id} />}
       <ReadingProgress targetId="article-body" />
-      {isPublic && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-      )}
-
-      {admin && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-canvas-cream px-4 py-3">
-          <p className="type-caption text-ink-secondary">
-            {isPublic
-              ? "운영자 화면 — 공개 중인 글이에요."
-              : a.status === 0
-                ? "미리보기 — 아직 임시저장 상태라 다른 사람에게는 보이지 않아요."
-                : `미리보기 — ${a.publishedAt ? formatArticleDate(a.publishedAt) : ""} 예약 발행 글이에요.`}
-          </p>
-          <Link href={`/admin/magazine/${a.id}`} className="btn btn-sm btn-secondary">
-            <PenLine className="h-3.5 w-3.5" strokeWidth={1.75} />
-            수정하기
-          </Link>
-        </div>
-      )}
+      {ld}
+      {adminBar}
 
       <nav aria-label="위치" className="flex items-center gap-1 type-caption text-ink-mute">
         <span>{MAGAZINE_NAME}</span>
@@ -299,24 +363,8 @@ async function ArticleView({ rawId }: { rawId: string }) {
         )}
       </div>
 
-      {related.length > 0 && (
-        <section aria-labelledby="related-title" className="mt-16 border-t border-hairline pt-10">
-          <div className="mb-5 flex items-end justify-between">
-            <h2 id="related-title" className="type-heading-lg text-ink">
-              함께 읽으면 좋은 글
-            </h2>
-            <Link href={magazineHref({ category: a.category })} className="link type-caption">
-              {CATEGORY_INFO[a.category].label} 더 보기 →
-            </Link>
-          </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((r) => (
-              <ArticleCard key={r.id} a={r} />
-            ))}
-          </div>
-        </section>
-      )}
-    </>
+      {relatedSection}
+    </div>
   );
 }
 

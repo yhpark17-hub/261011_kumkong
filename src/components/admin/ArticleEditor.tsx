@@ -37,7 +37,7 @@ import {
   summaryLines,
   type MagazineCategory,
 } from "@/lib/magazine-meta";
-import { ARTICLE_WIDGETS } from "@/lib/article-widgets";
+import { ARTICLE_FEATURES, ARTICLE_WIDGETS } from "@/lib/article-widgets";
 import { uploadFile } from "@/lib/upload-client";
 import { cn } from "../ui";
 
@@ -502,6 +502,11 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
                   {Object.entries(ARTICLE_WIDGETS).map(([k, w]) => (
                     <option key={k} value={k}>
                       {w.label}
+                    </option>
+                  ))}
+                  {Object.entries(ARTICLE_FEATURES).map(([k, w]) => (
+                    <option key={k} value={k}>
+                      {w.label} (글 전체)
                     </option>
                   ))}
                 </select>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
 import { CheckSquare, MousePointerClick, Square } from "lucide-react";
-import { ARTICLE_WIDGETS, WIDGET_LINE, isArticleWidget } from "@/lib/article-widgets";
+import { WIDGET_LINE, blockInfo } from "@/lib/article-widgets";
 import { cn } from "../ui";
 
 /**
@@ -260,7 +260,7 @@ function renderBlock(b: Block, k: string, variant: MarkdownVariant, widgets?: Wi
   switch (b.t) {
     case "widget": {
       if (widgets) return widgets[b.name] ? <Fragment key={k}>{widgets[b.name]}</Fragment> : null;
-      const info = isArticleWidget(b.name) ? ARTICLE_WIDGETS[b.name] : null;
+      const info = blockInfo(b.name);
       return (
         <div key={k} className="mt-8 flex items-center gap-3 rounded-2xl border-2 border-dashed border-primary/30 bg-ev-written-soft/40 px-4 py-4 first:mt-0">
           <MousePointerClick className="h-5 w-5 shrink-0 text-primary-text" strokeWidth={1.75} />

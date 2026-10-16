@@ -17,8 +17,31 @@ export type ArticleWidgetKey = keyof typeof ARTICLE_WIDGETS;
 
 export const isArticleWidget = (v: string): v is ArticleWidgetKey => v in ARTICLE_WIDGETS;
 
-/** 본문 한 줄이 블록 자리인지 — {{ncs-areas}} */
-export const WIDGET_LINE = /^\s*\{\{\s*([a-z][a-z0-9-]*)\s*\}\}\s*$/;
+/** 글 전체를 스크롤형 인터랙티브(스토리)로 바꾸는 블록 — 본문 맨 위 한 줄 */
+export const ARTICLE_FEATURES = {
+  "feature:written-exam": { label: "스크롤 스토리 — 금공 필기 한눈에", hint: "글 전체가 스크롤하면 장면이 바뀌는 인터랙티브로 바뀌어요 (본문 맨 위 한 줄)" },
+} as const;
+
+export type ArticleFeatureKey = keyof typeof ARTICLE_FEATURES;
+
+const isArticleFeature = (v: string): v is ArticleFeatureKey => v in ARTICLE_FEATURES;
+
+/** 본문 한 줄이 블록 자리인지 — {{ncs-areas}} · {{feature:written-exam}} */
+export const WIDGET_LINE = /^\s*\{\{\s*([a-z][a-z0-9:-]*)\s*\}\}\s*$/;
+
+/** 블록 이름 → 편집기에 보일 이름·설명 */
+export function blockInfo(name: string): { label: string; hint: string } | null {
+  if (isArticleWidget(name)) return ARTICLE_WIDGETS[name];
+  if (isArticleFeature(name)) return ARTICLE_FEATURES[name];
+  return null;
+}
+
+/** 본문 첫 줄이 스토리 블록이면 그 이름 */
+export function articleFeatureIn(body: string): ArticleFeatureKey | null {
+  const first = body.split(/\r?\n/).find((l) => l.trim());
+  const m = first?.match(WIDGET_LINE);
+  return m && isArticleFeature(m[1]) ? m[1] : null;
+}
 
 /** 본문에 쓰인 블록 이름들 */
 export function widgetsIn(body: string): ArticleWidgetKey[] {
