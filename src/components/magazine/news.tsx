@@ -20,6 +20,7 @@ import {
 } from "@/lib/news-meta";
 import { cn } from "../ui";
 import { BriefingCover } from "./BriefingBrand";
+import { MoreChips } from "./interactive";
 import { NEWS_ICON } from "./news-icons";
 
 export { NEWS_ICON };
@@ -177,9 +178,13 @@ export function PopularNews({ items, className, days = 7, fill = false }: { item
   );
 }
 
+/** 처음부터 보이는 브리핑 카테고리 (나머지 국제·공공기관·용어·면접 질문은 '더보기') */
+const MAIN_SECTIONS = 3;
+
 /**
  * 브리핑 카테고리 칩 줄 — 금융 블로그와 같은 모양.
  * 첫 화면에서는 '전체'가 첫 화면, 카테고리는 전체 브리핑(모아보기)으로 이동. 모아보기에서는 기간을 그대로 두고 카테고리만 바꿔요.
+ * 금융·경제·정책·사회까지만 보이고 나머지는 '더보기'로 (고른 카테고리가 그 안에 있으면 펼친 채로).
  */
 export function NewsCategoryNav({
   active,
@@ -196,6 +201,20 @@ export function NewsCategoryNav({
   const on = (yes: boolean) => (yes ? "border-brand-dark bg-brand-dark text-on-primary" : "border-hairline text-ink-secondary hover:border-hairline-input");
   const href = (section: NewsSection | null) =>
     archive ? briefingArchiveHref({ section, from: archive.from, to: archive.to, view: archive.view }) : section ? briefingArchiveHref({ section }) : "/magazine";
+  const item = (s: (typeof NEWS_SECTIONS)[number]) => {
+    const Icon = NEWS_ICON[s.key];
+    const n = counts.get(s.key) ?? 0;
+    const isOn = active === s.key;
+    return (
+      <li key={s.key} className={cn(s.key === "term" && "md:ml-3 md:border-l md:border-hairline md:pl-3")}>
+        <Link href={href(s.key)} aria-current={isOn ? "page" : undefined} className={cn(chip, on(isOn))}>
+          <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
+          {s.label}
+          {n > 0 && <span className={cn("tabular", isOn ? "text-on-primary/70" : "text-ink-mute")}>{n}</span>}
+        </Link>
+      </li>
+    );
+  };
   return (
     <nav aria-label="데일리 브리핑 카테고리" className="no-scrollbar fade-x -mx-4 overflow-x-auto px-4 md:fade-x-none md:mx-0 md:px-0">
       <ul className="flex gap-2 pb-1 md:flex-wrap [&>li]:shrink-0">
@@ -206,20 +225,10 @@ export function NewsCategoryNav({
             {total > 0 && <span className={cn("tabular", active === null ? "text-on-primary/70" : "text-ink-mute")}>{total}</span>}
           </Link>
         </li>
-        {NEWS_SECTIONS.map((s, i) => {
-          const Icon = NEWS_ICON[s.key];
-          const n = counts.get(s.key) ?? 0;
-          const isOn = active === s.key;
-          return (
-            <li key={s.key} className={cn(i === 5 && "md:ml-3 md:border-l md:border-hairline md:pl-3")}>
-              <Link href={href(s.key)} aria-current={isOn ? "page" : undefined} className={cn(chip, on(isOn))}>
-                <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
-                {s.label}
-                {n > 0 && <span className={cn("tabular", isOn ? "text-on-primary/70" : "text-ink-mute")}>{n}</span>}
-              </Link>
-            </li>
-          );
-        })}
+        {NEWS_SECTIONS.slice(0, MAIN_SECTIONS).map(item)}
+        <MoreChips open={NEWS_SECTIONS.slice(MAIN_SECTIONS).some((s) => s.key === active)} className={chip}>
+          {NEWS_SECTIONS.slice(MAIN_SECTIONS).map(item)}
+        </MoreChips>
       </ul>
     </nav>
   );

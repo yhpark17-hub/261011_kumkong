@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
-import { Bookmark, BookmarkCheck, Check, Heart, Link2, Share2 } from "lucide-react";
+import { Bookmark, BookmarkCheck, Check, ChevronDown, Heart, Link2, Share2 } from "lucide-react";
 import { likeArticle, recordArticleView, recordIssueView, recordNewsView } from "@/app/magazine/actions";
 import {
   getRead,
@@ -308,5 +308,21 @@ export function ShareButton({ title, path, className }: { title: string; path: s
       {copied ? <Link2 className="h-4 w-4" strokeWidth={1.75} /> : <Share2 className="h-4 w-4" strokeWidth={1.75} />}
       {copied ? "링크 복사됨" : "공유"}
     </button>
+  );
+}
+
+/** 칩 줄의 '더보기' — 누르면 숨겨 둔 칩(<li>)이 이어서 나오고, 다시 누르면 접혀요 */
+export function MoreChips({ open: initial = false, className, children }: { open?: boolean; className?: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(initial);
+  return (
+    <>
+      {open && children}
+      <li>
+        <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className={cn(className, "border-dashed border-hairline-input text-ink-secondary hover:border-brand-dark hover:text-ink")}>
+          {open ? "접기" : "더보기"}
+          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} strokeWidth={2} />
+        </button>
+      </li>
+    </>
   );
 }

@@ -498,6 +498,22 @@ function NearIssue({ issue, dir }: { issue: BriefingIssue; dir: "prev" | "next" 
   );
 }
 
+/** 맺음의 '지난 브리핑 전체 보기' 카드 — 앞뒤 호가 없는 쪽에 */
+function ArchiveCard({ side }: { side: "left" | "right" }) {
+  return (
+    <Link
+      href={BRIEFING_ARCHIVE}
+      className={cn("group flex items-center gap-3 rounded-2xl bg-canvas px-4 py-3.5 transition-shadow hover:shadow-level-1", side === "right" && "flex-row-reverse text-right")}
+    >
+      <Mail className="h-5 w-5 shrink-0 text-ink-mute transition-colors group-hover:text-ink" strokeWidth={1.75} />
+      <span className="min-w-0 flex-1">
+        <span className="block type-caption text-ink-mute">날짜·카테고리로 찾아보기</span>
+        <span className="mt-1 block type-body-md font-semibold text-ink group-hover:underline">지난 브리핑 전체 보기</span>
+      </span>
+    </Link>
+  );
+}
+
 /** 데일리 브리핑 한 호 (아침판·금콩 스터디) */
 export function Letter({
   issue,
@@ -545,19 +561,10 @@ export function Letter({
 
         {/* 맺음 — ① 앞뒤 브리핑 바로 가기 ② 의견·공유와 원문 확인 안내 */}
         <footer className="space-y-4">
+          {/* 앞뒤 호가 있으면 그 호로, 빈 쪽에는 '지난 브리핑 전체 보기' (한 번만) */}
           <nav aria-label="이전·다음 브리핑" className="grid gap-3 sm:grid-cols-2">
-            {around.prev ? <NearIssue issue={around.prev} dir="prev" /> : <span aria-hidden className="hidden sm:block" />}
-            {around.next ? (
-              <NearIssue issue={around.next} dir="next" />
-            ) : (
-              <Link href={BRIEFING_ARCHIVE} className="group flex flex-row-reverse items-center gap-3 rounded-2xl bg-canvas px-4 py-3.5 text-right transition-shadow hover:shadow-level-1">
-                <Mail className="h-5 w-5 shrink-0 text-ink-mute transition-colors group-hover:text-ink" strokeWidth={1.75} />
-                <span className="min-w-0 flex-1">
-                  <span className="block type-caption text-ink-mute">날짜·카테고리로 찾아보기</span>
-                  <span className="mt-1 block type-body-md font-semibold text-ink group-hover:underline">지난 브리핑 전체 보기</span>
-                </span>
-              </Link>
-            )}
+            {around.prev ? <NearIssue issue={around.prev} dir="prev" /> : <ArchiveCard side="left" />}
+            {around.next ? <NearIssue issue={around.next} dir="next" /> : around.prev && <ArchiveCard side="right" />}
           </nav>
 
           <div className="rounded-2xl bg-canvas px-4 py-5 sm:px-5">

@@ -10,7 +10,6 @@ export type MagazineCategory =
   | "exam"
   | "knowledge"
   | "starter"
-  | "tips"
   | "interview"
   | "story"
   | "insider"
@@ -59,13 +58,6 @@ export const MAGAZINE_CATEGORIES: CategoryInfo[] = [
     desc: "금공 준비를 처음 시작한다면 여기부터",
     tone: "bg-canvas-cream text-lemon",
     cover: "from-canvas-cream",
-  },
-  {
-    key: "tips",
-    label: "꿀팁",
-    desc: "서류·자소서·일정 관리, 바로 써먹는 팁",
-    tone: "bg-tag-soft-bg text-tag-soft-text",
-    cover: "from-tag-soft-bg",
   },
   {
     key: "interview",
