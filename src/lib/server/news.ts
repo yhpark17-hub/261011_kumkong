@@ -1,15 +1,15 @@
 import "server-only";
 import type { InValue, Row } from "@libsql/client";
-import { NEWS_PAGE_SIZE, isEdition, isNewsSection, type NewsItem, type NewsSection } from "../news-meta";
+import { NEWS_PAGE_SIZE, isEdition, isNewsSection, isNewsTier, type NewsItem, type NewsSection } from "../news-meta";
 import { db } from "./db";
 
 /** 데일리 브리핑(뉴스·용어·면접 질문) 조회 — 공개 = status 1 + 발행 시각이 지난 것 */
 
-const PUBLIC = "status = 1 AND published_at <= ?";
-const COLS =
-  "id, edition_date, edition, section, title, summary, body, point, source_name, source_url, image_url, image_credit, headline, status, origin, published_at, updated_at, views";
+export const PUBLIC = "status = 1 AND published_at <= ?";
+export const COLS =
+  "id, edition_date, edition, section, title, summary, body, point, source_name, source_url, image_url, image_credit, tier, position, takeaway, headline, status, origin, published_at, updated_at, views";
 
-function toItem(r: Row): NewsItem {
+export function toItem(r: Row): NewsItem {
   const publishedAt = r.published_at == null ? null : Number(r.published_at);
   return {
     id: Number(r.id),
@@ -24,6 +24,9 @@ function toItem(r: Row): NewsItem {
     sourceUrl: (r.source_url as string | null) || null,
     imageUrl: (r.image_url as string | null) || null,
     imageCredit: String(r.image_credit ?? ""),
+    tier: isNewsTier(r.tier) ? r.tier : "key",
+    position: Number(r.position ?? 0),
+    takeaway: String(r.takeaway ?? ""),
     headline: Boolean(r.headline),
     status: Number(r.status),
     origin: String(r.origin ?? "admin"),
@@ -32,13 +35,6 @@ function toItem(r: Row): NewsItem {
     views: Number(r.views),
     live: Number(r.status) === 1 && publishedAt != null && publishedAt <= Date.now(),
   };
-}
-
-/** 공개 뉴스가 있는 가장 최근 날짜 */
-export async function latestNewsDate(): Promise<string | null> {
-  const client = await db();
-  const r = (await client.execute({ sql: `SELECT MAX(edition_date) AS d FROM news WHERE ${PUBLIC}`, args: [Date.now()] })).rows[0];
-  return r?.d ? String(r.d) : null;
 }
 
 /** 그날의 공개 뉴스 — 헤드라인 먼저, 그다음 발행 순 */
@@ -102,16 +98,6 @@ export async function newsSectionCounts(): Promise<Map<NewsSection, number>> {
   return m;
 }
 
-/** 가장 최근 공개된 그 카테고리 한 건 (오늘의 용어·면접 질문 칸) */
-export async function latestInSection(section: NewsSection): Promise<NewsItem | null> {
-  const client = await db();
-  const res = await client.execute({
-    sql: `SELECT ${COLS} FROM news WHERE ${PUBLIC} AND section = ? ORDER BY edition_date DESC, published_at DESC, id DESC LIMIT 1`,
-    args: [Date.now(), section],
-  });
-  return res.rows[0] ? toItem(res.rows[0]) : null;
-}
-
 /** 공개 브리핑이 있는 가장 오래된 날짜 (기간 선택 최솟값) */
 export async function firstNewsDate(): Promise<string | null> {
   const client = await db();
@@ -128,16 +114,6 @@ export async function adjacentNewsDates(date: string): Promise<{ prev: string | 
     client.execute({ sql: `SELECT MIN(edition_date) AS d FROM news WHERE ${PUBLIC} AND edition_date > ?`, args: [now, date] }),
   ]);
   return { prev: p.rows[0]?.d ? String(p.rows[0].d) : null, next: n.rows[0]?.d ? String(n.rows[0].d) : null };
-}
-
-/** 날짜별 공개 뉴스 수 (최근 순) */
-export async function newsDates(limit = 14): Promise<{ date: string; count: number }[]> {
-  const client = await db();
-  const res = await client.execute({
-    sql: `SELECT edition_date, COUNT(*) AS n FROM news WHERE ${PUBLIC} GROUP BY edition_date ORDER BY edition_date DESC LIMIT ?`,
-    args: [Date.now(), limit],
-  });
-  return res.rows.map((r) => ({ date: String(r.edition_date), count: Number(r.n) }));
 }
 
 /** 많이 본 기사 — 최근 days일 발행분 중 조회수 순 */

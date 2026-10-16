@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/server/db";
 import { incrementArticleViews } from "@/lib/server/magazine";
+import { incrementIssueViews } from "@/lib/server/briefing";
 import { incrementNewsViews } from "@/lib/server/news";
 import { isAdmin, rateLimit, requester } from "@/lib/server/security";
 
@@ -26,6 +27,13 @@ export async function recordArticleView(id: number): Promise<void> {
   if (!Number.isInteger(id) || (await isAdmin())) return;
   const who = await requester();
   if (await rateLimit(`aview:${id}`, who.hash, 1800)) await incrementArticleViews(id);
+}
+
+/** 레터 조회수 — 같은 IP 는 호마다 30분에 한 번, 운영자는 세지 않음 */
+export async function recordIssueView(id: number): Promise<void> {
+  if (!Number.isInteger(id) || (await isAdmin())) return;
+  const who = await requester();
+  if (await rateLimit(`iview:${id}`, who.hash, 1800)) await incrementIssueViews(id);
 }
 
 /** 뉴스 조회수 (많이 본 뉴스 순위용) — 같은 IP 는 뉴스마다 30분에 한 번, 운영자는 세지 않음 */

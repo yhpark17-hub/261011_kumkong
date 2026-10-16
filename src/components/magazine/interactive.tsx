@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { Bookmark, BookmarkCheck, Check, Heart, Link2, Share2 } from "lucide-react";
-import { likeArticle, recordArticleView, recordNewsView } from "@/app/magazine/actions";
+import { likeArticle, recordArticleView, recordIssueView, recordNewsView } from "@/app/magazine/actions";
 import {
   getRead,
   getSaved,
@@ -253,6 +253,16 @@ export function UnreadDot({ id }: { id: number }) {
 
 
 /** 뉴스를 열면 조회수 1회 (많이 본 뉴스 순위) */
+export function IssueViewRecorder({ id }: { id: number }) {
+  const done = useRef(false);
+  useEffect(() => {
+    if (done.current) return;
+    done.current = true;
+    recordIssueView(id).catch(() => {});
+  }, [id]);
+  return null;
+}
+
 export function NewsViewRecorder({ id }: { id: number }) {
   const done = useRef(false);
   useEffect(() => {

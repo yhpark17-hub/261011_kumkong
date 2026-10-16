@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { connection } from "next/server";
 import { COMPANIES, getRecruitment } from "@/lib/data";
 import { articleHref } from "@/lib/magazine-meta";
+import { letterHref } from "@/lib/news-meta";
+import { publishedIssueIndex } from "@/lib/server/briefing";
 import { dbConfigured } from "@/lib/server/db";
 import { publishedArticleIndex } from "@/lib/server/magazine";
 import { publishedNewsIndex } from "@/lib/server/news";
@@ -17,6 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 매거진 글 (DB 가 없거나 잠시 안 되면 빼고 만듦)
   const articles = dbConfigured() ? await publishedArticleIndex().catch(() => []) : [];
   const news = dbConfigured() ? await publishedNewsIndex().catch(() => []) : [];
+  const letters = dbConfigured() ? await publishedIssueIndex().catch(() => []) : [];
 
   return [
     { url: SITE.url, lastModified: latest, changeFrequency: "daily", priority: 1 },
@@ -47,6 +50,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(a.updatedAt),
       changeFrequency: "weekly" as const,
       priority: 0.7,
+    })),
+    ...letters.map((i) => ({
+      url: `${SITE.url}${letterHref(i.date)}`,
+      lastModified: new Date(i.updatedAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
     })),
     ...news.map((n) => ({
       url: `${SITE.url}/magazine/news/${n.id}`,

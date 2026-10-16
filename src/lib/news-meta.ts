@@ -72,6 +72,12 @@ export interface NewsItem {
   /** 운영자가 올린 사진 (저작권 문제 없는 것만) */
   imageUrl: string | null;
   imageCredit: string;
+  /** 레터 안 비중: key = 핵심(자세히), brief = 한 줄 뉴스 */
+  tier: NewsTier;
+  /** 레터 안 순서 (작을수록 앞) */
+  position: number;
+  /** 한 줄 요약 — '오늘 꼭 알아야 할 3가지'와 한 줄 뉴스에 */
+  takeaway: string;
   headline: boolean;
   status: number;
   origin: string;
@@ -83,6 +89,39 @@ export interface NewsItem {
 }
 
 export type NewsView = "card" | "list";
+
+export type NewsTier = "key" | "brief";
+export const isNewsTier = (v: unknown): v is NewsTier => v === "key" || v === "brief";
+
+/* ------------------------------------------------------------------ */
+/* 데일리 브리핑 레터 (하루 한 호, 아침판)                                */
+/* ------------------------------------------------------------------ */
+
+export const LETTER_TAGLINE = "금공 준비생의 아침을 여는 5분 레터";
+export const LETTER_EDITOR = "금콩 에디터";
+
+export interface BriefingIssue {
+  id: number;
+  /** 'YYYY-MM-DD' — 그날 기사(news.edition_date)를 묶음 */
+  date: string;
+  /** 처음 발행할 때 정해짐 (초안은 0) */
+  vol: number;
+  /** 제목 (메일 제목처럼 그날의 핵심) */
+  title: string;
+  /** 여는 글: 오늘 흐름을 2~3문장으로 */
+  lede: string;
+  /** 맺는 말 (선택) */
+  closing: string;
+  status: number;
+  origin: string;
+  publishedAt: number | null;
+  updatedAt: number;
+  views: number;
+  live: boolean;
+}
+
+export const letterHref = (date: string) => `/magazine/letter/${date}`;
+export const volLabel = (vol: number) => (vol > 0 ? `Vol.${vol}` : "Vol.—");
 
 export const NEWS_PAGE_SIZE = 20;
 

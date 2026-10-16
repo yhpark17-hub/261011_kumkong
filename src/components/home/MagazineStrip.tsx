@@ -1,58 +1,67 @@
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowRight, Newspaper } from "lucide-react";
-import { NewsSectionTag, newsTitle } from "@/components/magazine/news";
+import { ArrowRight } from "lucide-react";
+import { KongMascot } from "@/components/magazine/KongMascot";
 import { ArticleRow } from "@/components/magazine/parts";
 import { formatDayHeading } from "@/lib/date";
 import { BLOG_CATEGORIES, SECTION_INFO } from "@/lib/magazine-meta";
-import { kindOf, newsHref } from "@/lib/news-meta";
+import { NEWS_SECTION_INFO, newsHref, volLabel } from "@/lib/news-meta";
+import { arrangeLetter, issueItems, latestIssue } from "@/lib/server/briefing";
 import { listArticles } from "@/lib/server/magazine";
-import { latestNewsDate, newsByDate } from "@/lib/server/news";
 
-/** 홈: 오늘의 브리핑(시사 뉴스) + 금융 블로그 새 글 */
+/** 홈: 오늘의 레터(데일리 브리핑) + 금융 블로그 새 글 */
 export async function MagazineStrip() {
   await connection();
-  const [date, latest] = await Promise.all([latestNewsDate(), listArticles({ categories: BLOG_CATEGORIES.map((c) => c.key), pageSize: 3 })]);
-  const day = date ? await newsByDate(date) : [];
-  if (day.length === 0 && latest.items.length === 0) return null;
-  // 맨 위는 뉴스(헤드라인 우선), 아래 줄에 나머지 뉴스·용어·면접 질문
-  const top = day.find((n) => kindOf(n.section) === "news") ?? day[0];
-  const more = day.filter((n) => n !== top).slice(0, 4);
+  const [issue, latest] = await Promise.all([latestIssue(), listArticles({ categories: BLOG_CATEGORIES.map((c) => c.key), pageSize: 3 })]);
+  const top = issue ? arrangeLetter(await issueItems(issue.date)).top : [];
+  if (!issue && latest.items.length === 0) return null;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-      <section aria-label="오늘의 브리핑" className="flex flex-col rounded-xl border border-hairline bg-canvas p-6">
+      <section aria-label="오늘의 브리핑" className="flex flex-col rounded-xl bg-canvas-cream p-6">
         <div className="flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 type-heading-md text-ink">
-            <Newspaper className="h-5 w-5 text-primary-text" strokeWidth={1.75} />
-            오늘의 브리핑
-            {date && <span className="type-caption font-normal text-ink-mute">{formatDayHeading(date)}</span>}
+            <KongMascot className="h-7 w-7" />
+            데일리 브리핑
+            {issue && (
+              <span className="type-caption font-normal text-ink-mute">
+                {volLabel(issue.vol)} · {formatDayHeading(issue.date)}
+              </span>
+            )}
           </h2>
           <Link href="/magazine" className="link inline-flex shrink-0 items-center gap-1 type-caption">
-            전체
+            레터 읽기
             <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.75} />
           </Link>
         </div>
-        {top ? (
+        {issue ? (
           <>
-            <Link href={newsHref(top.id)} className="group mt-4 block rounded-lg bg-canvas-soft p-4">
-              <NewsSectionTag section={top.section} />
-              <span className="mt-2 block type-heading-sm text-ink [word-break:keep-all] group-hover:underline">{newsTitle(top)}</span>
-              <span className="mt-1.5 line-clamp-2 type-body-md text-ink-secondary">{top.summary}</span>
+            <Link href="/magazine" className="mt-4 block type-heading-md text-ink [word-break:keep-all] hover:underline">
+              {issue.title}
             </Link>
-            <ul className="mt-2 divide-y divide-hairline">
-              {more.map((n) => (
-                <li key={n.id}>
-                  <Link href={newsHref(n.id)} className="group flex items-center gap-2 py-2.5">
-                    <NewsSectionTag section={n.section} className="shrink-0" />
-                    <span className="min-w-0 truncate type-body-md text-ink group-hover:underline">{newsTitle(n)}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {top.length > 0 && (
+              <ol className="mt-3 space-y-2">
+                {top.map((n, i) => (
+                  <li key={n.id}>
+                    <Link href={newsHref(n.id)} className="group flex gap-2.5 rounded-lg bg-canvas px-3 py-2.5">
+                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-dark tabular type-micro font-bold text-on-primary">
+                        {i + 1}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate type-body-md font-semibold text-ink group-hover:underline">{n.title}</span>
+                        <span className="block truncate type-caption text-ink-mute">
+                          {NEWS_SECTION_INFO[n.section].label}
+                          {n.takeaway ? ` · ${n.takeaway}` : ""}
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            )}
           </>
         ) : (
-          <p className="mt-4 type-body-md text-ink-mute">오늘의 시사 뉴스를 준비하고 있어요.</p>
+          <p className="mt-4 type-body-md text-ink-mute">매일 아침 한 편의 레터로 찾아올게요.</p>
         )}
       </section>
 

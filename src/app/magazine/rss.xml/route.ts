@@ -1,12 +1,12 @@
 import { connection } from "next/server";
 import { CATEGORY_INFO, MAGAZINE_NAME, MAGAZINE_TAGLINE, articleHref, summaryLines } from "@/lib/magazine-meta";
-import { NEWS_SECTION_INFO, kindOf, newsHref } from "@/lib/news-meta";
+import { letterHref, volLabel } from "@/lib/news-meta";
+import { publishedIssueIndex } from "@/lib/server/briefing";
 import { dbConfigured } from "@/lib/server/db";
 import { listArticles } from "@/lib/server/magazine";
-import { latestNewsDate, newsByDate } from "@/lib/server/news";
 import { SITE } from "@/lib/site";
 
-/** 매거진 RSS — 데일리 브리핑 뉴스 + 금융 블로그 글 (피드 구독기·뉴스 앱용) */
+/** 매거진 RSS — 데일리 브리핑 레터(호) + 금융 블로그 글 (피드 구독기·뉴스 앱용) */
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
@@ -22,18 +22,17 @@ export async function GET() {
   await connection();
   let items: FeedItem[] = [];
   if (dbConfigured()) {
-    const [articles, date] = await Promise.all([
+    const [articles, letters] = await Promise.all([
       listArticles({ pageSize: 20 }).catch(() => ({ items: [] })),
-      latestNewsDate().catch(() => null),
+      publishedIssueIndex(14).catch(() => []),
     ]);
-    const news = date ? await newsByDate(date).catch(() => []) : [];
     items = [
-      ...news.map((n) => ({
-        title: kindOf(n.section) === "question" ? `Q. ${n.title}` : kindOf(n.section) === "term" ? `오늘의 용어 · ${n.title}` : n.title,
-        link: `${SITE.url}${newsHref(n.id)}`,
-        category: `데일리 브리핑 · ${NEWS_SECTION_INFO[n.section].label}`,
-        description: n.summary,
-        at: n.publishedAt,
+      ...letters.map((i) => ({
+        title: `[데일리 브리핑 ${volLabel(i.vol)}] ${i.title}`,
+        link: `${SITE.url}${letterHref(i.date)}`,
+        category: "데일리 브리핑",
+        description: i.lede,
+        at: i.publishedAt,
       })),
       ...articles.items.map((a) => ({
         title: a.title,

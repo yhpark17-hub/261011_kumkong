@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, Lightbulb, Newspaper, TrendingUp } from "lucide-react";
-import { formatDayHeading, formatShort } from "@/lib/date";
+import { Lightbulb, Newspaper, TrendingUp } from "lucide-react";
+import { formatDayHeading } from "@/lib/date";
 import {
   EDITION_LABEL,
   NEWS_SECTIONS,
@@ -135,13 +135,13 @@ export function NewsListRow({ n }: { n: NewsItem }) {
 }
 
 /** 많이 본 기사 */
-export function PopularNews({ items, className }: { items: NewsItem[]; className?: string }) {
+export function PopularNews({ items, className, days = 7 }: { items: NewsItem[]; className?: string; days?: number }) {
   return (
     <section aria-labelledby="popular-news" className={cn("flex flex-col rounded-2xl border border-hairline bg-canvas p-5", className)}>
       <h2 id="popular-news" className="flex items-center gap-2 type-heading-sm text-ink">
         <TrendingUp className="h-4 w-4 text-ruby" strokeWidth={2} />
         많이 본 기사
-        <span className="ml-auto type-micro font-normal text-ink-mute">최근 3일</span>
+        <span className="ml-auto type-micro font-normal text-ink-mute">최근 {days}일</span>
       </h2>
       {items.length === 0 ? (
         <p className="mt-4 type-caption text-ink-mute">기사가 쌓이면 많이 본 순서로 보여 드려요.</p>
@@ -212,41 +212,6 @@ export function NewsCategoryNav({
   );
 }
 
-/** 오늘의 용어 · 면접 질문 칸 */
-export function FeatureItemCard({ section, n, today }: { section: "term" | "question"; n: NewsItem | null; today: string }) {
-  const info = NEWS_SECTION_INFO[section];
-  const Icon = NEWS_ICON[section];
-  const head = section === "term" ? "오늘의 용어" : "오늘의 면접 질문";
-  const old = n && n.editionDate !== today;
-  return (
-    <section aria-label={head} className="flex flex-col rounded-2xl border border-hairline bg-canvas p-5">
-      <p className="flex items-center gap-2 type-caption font-semibold text-ink">
-        <span className={cn("inline-flex h-7 w-7 items-center justify-center rounded-lg", info.tone)}>
-          <Icon className="h-4 w-4" strokeWidth={1.75} />
-        </span>
-        {head}
-        {old && <span className="ml-auto font-normal text-ink-mute tabular">{formatShort(n.editionDate)}</span>}
-      </p>
-      {n ? (
-        <Link href={newsHref(n.id)} className="group mt-4 flex flex-1 flex-col">
-          <span className={cn("[word-break:keep-all] group-hover:underline", section === "term" ? "type-heading-lg text-ev-posting" : "type-heading-sm text-ink")}>
-            {newsTitle(n)}
-          </span>
-          <span className="mt-2 line-clamp-3 type-body-md leading-relaxed text-ink-secondary">{n.summary}</span>
-          <span className="mt-auto inline-flex items-center gap-1 pt-4 type-caption text-primary-text">
-            {section === "term" ? "뜻·출제 포인트 보기" : "답변 뼈대 보기"}
-            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
-          </span>
-        </Link>
-      ) : (
-        <p className="mt-4 type-body-md text-ink-mute">
-          {section === "term" ? "아침판에서 필기·면접에 나오는 용어를 하나씩 풀어 드려요." : "점심판에서 그날 뉴스로 나올 법한 면접 질문을 드려요."}
-        </p>
-      )}
-    </section>
-  );
-}
-
 /** 날짜별로 묶어 카드 / 목록으로 */
 export function NewsGroupedList({ items, view, dayLinks = true }: { items: NewsItem[]; view: NewsView; dayLinks?: boolean }) {
   const groups: { date: string; items: NewsItem[] }[] = [];
@@ -288,58 +253,5 @@ export function NewsGroupedList({ items, view, dayLinks = true }: { items: NewsI
         </section>
       ))}
     </>
-  );
-}
-
-/** 지난 브리핑 모아보기로 가는 큰 버튼 */
-export function ArchiveCallout({ total, className }: { total: number; className?: string }) {
-  return (
-    <Link
-      href={briefingArchiveHref()}
-      className={cn("group flex items-center gap-4 rounded-2xl border border-hairline bg-canvas-soft px-5 py-5 transition-colors hover:border-hairline-input md:px-6", className)}
-    >
-      <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-canvas text-primary-text">
-        <Newspaper className="h-5 w-5" strokeWidth={1.75} />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block type-heading-sm text-ink group-hover:underline">지난 브리핑 전체 보기</span>
-        <span className="mt-0.5 block type-caption text-ink-mute">
-          지금까지 {total.toLocaleString()}건 · 날짜와 기간을 골라 한 달 전, 두 달 전 브리핑도 찾아볼 수 있어요
-        </span>
-      </span>
-      <ArrowRight className="h-5 w-5 shrink-0 text-ink-mute transition-transform group-hover:translate-x-0.5" strokeWidth={1.75} />
-    </Link>
-  );
-}
-
-/** 날짜별 브리핑 바로가기 (옆 칸) */
-export function BriefingDates({ dates, active, today }: { dates: { date: string; count: number }[]; active?: string | null; today: string }) {
-  if (!dates.length) return null;
-  return (
-    <section aria-labelledby="past-title" className="rounded-xl border border-hairline p-5">
-      <h2 id="past-title" className="type-heading-sm text-ink">
-        날짜별 브리핑
-      </h2>
-      <ul className="mt-2 divide-y divide-hairline">
-        {dates.map((d) => (
-          <li key={d.date}>
-            <Link
-              href={briefingDateHref(d.date)}
-              aria-current={d.date === active ? "page" : undefined}
-              className={cn("group flex items-center justify-between gap-3 py-2.5", d.date === active && "font-semibold")}
-            >
-              <span className="tabular type-body-md text-ink group-hover:underline">
-                {formatShort(d.date)}
-                {d.date === today && <span className="ml-1.5 type-micro text-primary-text">오늘</span>}
-              </span>
-              <span className="tabular type-caption text-ink-mute">{d.count}건</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <Link href={briefingArchiveHref()} className="link mt-3 inline-block type-caption">
-        기간을 골라 찾아보기 →
-      </Link>
-    </section>
   );
 }

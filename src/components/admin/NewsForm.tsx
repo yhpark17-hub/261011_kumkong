@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
 import { ExternalLink, ImagePlus, Loader2, X } from "lucide-react";
 import { saveNews, type NewsFormState } from "@/app/admin/news-actions";
-import { EDITION_SCHEDULE, KIND_LABELS, NEWS_ONLY_SECTIONS, NEWS_SECTION_INFO, newsHref, type NewsEdition, type NewsItem } from "@/lib/news-meta";
+import { EDITION_SCHEDULE, KIND_LABELS, NEWS_ONLY_SECTIONS, NEWS_SECTION_INFO, newsHref, type NewsEdition, type NewsItem, type NewsTier } from "@/lib/news-meta";
 import { uploadFile } from "@/lib/upload-client";
 import { cn } from "../ui";
 
@@ -19,6 +19,9 @@ export interface NewsFormInitial {
   body: string;
   sourceName: string;
   sourceUrl: string;
+  tier: NewsTier;
+  position: number;
+  takeaway: string;
   imageUrl: string;
   imageCredit: string;
   headline: boolean;
@@ -118,16 +121,37 @@ export function NewsForm({ initial }: { initial: NewsFormInitial }) {
       </div>
 
       {kind === "news" && (
-        <label className="flex items-center gap-2 type-body-md text-ink-secondary">
-          <input type="checkbox" name="headline" defaultChecked={initial.headline} className="h-4 w-4 accent-[#533afd]" />
-          이날의 헤드라인 (브리핑 맨 위에 크게)
-        </label>
+        <div className="grid gap-3 rounded-lg border border-hairline px-4 py-3 sm:grid-cols-[auto_180px_110px] sm:items-end">
+          <label className="flex items-center gap-2 pb-2 type-body-md text-ink-secondary">
+            <input type="checkbox" name="headline" defaultChecked={initial.headline} className="h-4 w-4 accent-[#533afd]" />
+            이날 레터의 헤드라인 (맨 위에 가장 크게)
+          </label>
+          <label className="block">
+            <span className="mb-1 block type-caption text-ink-secondary">레터 안 비중</span>
+            <select name="tier" defaultValue={initial.tier} className="input w-full">
+              <option value="key">핵심 기사 (자세히)</option>
+              <option value="brief">한 줄 뉴스</option>
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-1 block type-caption text-ink-secondary">순서</span>
+            <input type="number" name="position" min={0} max={99} defaultValue={initial.position} className="input w-full" />
+          </label>
+        </div>
       )}
+      {kind !== "news" && <input type="hidden" name="position" value={initial.position} />}
 
       <label className="block">
         <span className="mb-1 block type-caption text-ink-secondary">{L.title}</span>
         <input name="title" defaultValue={initial.title} maxLength={140} required className="input w-full !text-[17px]" placeholder={hint.title} />
       </label>
+
+      {kind === "news" && (
+        <label className="block">
+          <span className="mb-1 block type-caption text-ink-secondary">한 줄 요약 — &lsquo;오늘 꼭 알아야 할 3가지&rsquo;와 한 줄 뉴스에 그대로 나가요 (무슨 일 + 그래서 뭐가 중요한지)</span>
+          <input name="takeaway" defaultValue={initial.takeaway} maxLength={160} className="input w-full" placeholder="예: 가계대출 9개월 만에 2.2조 순감 — 신용대출 3조 감소가 주도" />
+        </label>
+      )}
 
       <label className="block">
         <span className="mb-1 flex justify-between gap-3 type-caption text-ink-secondary">

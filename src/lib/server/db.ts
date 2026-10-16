@@ -218,6 +218,9 @@ CREATE TABLE IF NOT EXISTS news (
   source_url TEXT,
   image_url TEXT,
   image_credit TEXT NOT NULL DEFAULT '',
+  tier TEXT NOT NULL DEFAULT 'key',
+  position INTEGER NOT NULL DEFAULT 0,
+  takeaway TEXT NOT NULL DEFAULT '',
   headline INTEGER NOT NULL DEFAULT 0,
   status INTEGER NOT NULL DEFAULT 0,
   origin TEXT NOT NULL DEFAULT 'admin',
@@ -228,6 +231,24 @@ CREATE TABLE IF NOT EXISTS news (
 );
 CREATE INDEX IF NOT EXISTS idx_news_date ON news (status, edition_date DESC, id);
 CREATE INDEX IF NOT EXISTS idx_news_section ON news (section, status, published_at DESC);
+
+-- 데일리 브리핑 레터: 하루 한 호(아침판). 그날(issue_date = news.edition_date) 기사들을 한 편의 뉴스레터로 묶음
+-- vol 은 처음 발행할 때 정해짐 (초안은 0) / status: 0 = 초안, 1 = 발행
+CREATE TABLE IF NOT EXISTS briefing_issues (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  issue_date TEXT NOT NULL UNIQUE,
+  vol INTEGER NOT NULL DEFAULT 0,
+  title TEXT NOT NULL,
+  lede TEXT NOT NULL DEFAULT '',
+  closing TEXT NOT NULL DEFAULT '',
+  status INTEGER NOT NULL DEFAULT 0,
+  origin TEXT NOT NULL DEFAULT 'admin',
+  published_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  views INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_issues_date ON briefing_issues (status, issue_date DESC);
 
 -- 작은 설정값 (시드 여부, 마지막 자동 점검 시각 등)
 CREATE TABLE IF NOT EXISTS kv (
@@ -249,6 +270,10 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   // 브리핑 헤드라인 사진 (운영자가 올린 것만) — 2026-10 추가
   { table: "news", column: "image_url", ddl: "ALTER TABLE news ADD COLUMN image_url TEXT" },
   { table: "news", column: "image_credit", ddl: "ALTER TABLE news ADD COLUMN image_credit TEXT NOT NULL DEFAULT ''" },
+  // 레터 안에서의 비중(key 핵심 / brief 한 줄)·순서·한 줄 요약 — 2026-10 추가
+  { table: "news", column: "tier", ddl: "ALTER TABLE news ADD COLUMN tier TEXT NOT NULL DEFAULT 'key'" },
+  { table: "news", column: "position", ddl: "ALTER TABLE news ADD COLUMN position INTEGER NOT NULL DEFAULT 0" },
+  { table: "news", column: "takeaway", ddl: "ALTER TABLE news ADD COLUMN takeaway TEXT NOT NULL DEFAULT ''" },
 ];
 
 async function migrate(c: Client) {
