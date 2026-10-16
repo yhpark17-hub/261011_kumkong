@@ -111,6 +111,9 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [dismissedDraft, setDismissedDraft] = useState(false);
   const [statusLabel, setStatusLabel] = useState(initial.statusLabel);
+  // 확인 창은 화면 안에 (앱 안 브라우저는 confirm() 을 막음)
+  const [pendingTemplate, setPendingTemplate] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const imageInput = useRef<HTMLInputElement>(null);
@@ -255,10 +258,14 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
     if (coverInput.current) coverInput.current.value = "";
   }
 
-  function applyTemplate(key: string) {
+  function applyTemplate(key: string, confirmed = false) {
     const t = TEMPLATES.find((x) => x.key === key);
     if (!t) return;
-    if (f.body.trim() && !window.confirm("지금 본문을 틀로 바꿀까요? (작성한 내용은 사라져요)")) return;
+    if (f.body.trim() && !confirmed) {
+      setPendingTemplate(key);
+      return;
+    }
+    setPendingTemplate(null);
     const now = new Date(Date.now() + 9 * 3600_000);
     const dated = t.title.replace("M월 D일", `${now.getUTCMonth() + 1}월 ${now.getUTCDate()}일`);
     setF((prev) => ({
@@ -369,6 +376,17 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
                   </option>
                 ))}
               </select>
+              {pendingTemplate && (
+                <span className="mt-2 flex flex-wrap items-center gap-2 rounded-md bg-ev-doc-soft px-3 py-2 type-caption text-ev-doc">
+                  지금 본문을 틀로 바꿀까요? 작성한 내용은 사라져요.
+                  <button type="button" onClick={() => applyTemplate(pendingTemplate, true)} className="btn btn-sm btn-primary">
+                    바꾸기
+                  </button>
+                  <button type="button" onClick={() => setPendingTemplate(null)} className="btn btn-sm btn-toggle">
+                    그대로 두기
+                  </button>
+                </span>
+              )}
             </label>
           </div>
 
@@ -606,20 +624,24 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
       </div>
 
       {initial.id && (
-        <div className="flex justify-end border-t border-hairline pt-5">
-          <button
-            type="submit"
-            formAction={deleteArticle}
-            formNoValidate
-            onClick={(e) => {
-              if (!window.confirm("이 글을 완전히 지울까요? 되돌릴 수 없어요.")) e.preventDefault();
-              else clearDraft();
-            }}
-            className="btn btn-sm border-ruby bg-canvas text-ruby"
-          >
-            <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
-            글 삭제
-          </button>
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-hairline pt-5">
+          {confirmDelete ? (
+            <>
+              <span className="type-caption text-ruby">이 글을 완전히 지울까요? 되돌릴 수 없어요.</span>
+              <button type="button" onClick={() => setConfirmDelete(false)} className="btn btn-sm btn-toggle">
+                취소
+              </button>
+              <button type="submit" formAction={deleteArticle} formNoValidate onClick={() => clearDraft()} className="btn btn-sm border-ruby bg-ruby text-on-primary">
+                <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+                지우기
+              </button>
+            </>
+          ) : (
+            <button type="button" onClick={() => setConfirmDelete(true)} className="btn btn-sm border-ruby bg-canvas text-ruby">
+              <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+              글 삭제
+            </button>
+          )}
         </div>
       )}
     </form>
