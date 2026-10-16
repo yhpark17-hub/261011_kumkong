@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronRight, MessagesSquar
 import { AdSlot } from "@/components/ads/AdSlot";
 import { DbSection } from "@/components/db/DbSection";
 import { Markdown, extractHeadings } from "@/components/magazine/Markdown";
+import { articleWidgets } from "@/components/magazine/widgets";
 import {
   ArticleActions,
   ReadingProgress,
@@ -251,7 +252,7 @@ async function ArticleView({ rawId }: { rawId: string }) {
           )}
 
           <div id="article-body" className="mt-10">
-            <Markdown source={a.body} variant={isBriefing ? "briefing" : isWebtoon ? "webtoon" : "article"} />
+            <Markdown source={a.body} variant={isBriefing ? "briefing" : isWebtoon ? "webtoon" : "article"} widgets={articleWidgets(a.body)} />
           </div>
 
           {a.tags.length > 0 && (

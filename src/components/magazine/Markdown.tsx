@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
-import { CheckSquare, Square } from "lucide-react";
+import { CheckSquare, MousePointerClick, Square } from "lucide-react";
+import { ARTICLE_WIDGETS, WIDGET_LINE, isArticleWidget } from "@/lib/article-widgets";
 import { cn } from "../ui";
 
 /**
@@ -14,6 +15,7 @@ import { cn } from "../ui";
  * | 표 | 머리 |  + |---|---|
  * ---                            → 구분선
  * 출처: [언론사](https://…)        → 작은 출처 줄
+ * {{ncs-areas}}                   → 인터랙티브 블록 (src/lib/article-widgets.ts)
  */
 
 export interface Heading {
@@ -32,7 +34,8 @@ type Block =
   | { t: "callout"; kind: string; title: string; lines: string[] }
   | { t: "images"; items: { alt: string; url: string }[] }
   | { t: "table"; head: string[]; rows: string[][] }
-  | { t: "hr" };
+  | { t: "hr" }
+  | { t: "widget"; name: string };
 
 const RE = {
   heading: /^(#{1,3})\s+(.+)$/,
@@ -60,6 +63,7 @@ function startsBlock(lines: string[], i: number): boolean {
     RE.ul.test(l) ||
     RE.ol.test(l) ||
     RE.source.test(l) ||
+    WIDGET_LINE.test(l) ||
     isTableStart(lines, i)
   );
 }
@@ -84,7 +88,10 @@ export function parseMarkdown(src: string): Block[] {
       continue;
     }
     let m: RegExpMatchArray | null;
-    if ((m = line.match(RE.heading))) {
+    if ((m = line.match(WIDGET_LINE))) {
+      blocks.push({ t: "widget", name: m[1] });
+      i++;
+    } else if ((m = line.match(RE.heading))) {
       const level = m[1].length === 3 ? 3 : 2;
       blocks.push({ t: "h", level, text: m[2].trim(), id: `s-${++headingNo}` });
       i++;
@@ -246,8 +253,24 @@ const CALLOUTS: Record<string, { box: string; label: string }> = {
 
 export type MarkdownVariant = "article" | "briefing" | "webtoon";
 
-function renderBlock(b: Block, k: string, variant: MarkdownVariant): ReactNode {
+/** 인터랙티브 블록 자리 — 발행 화면은 실제 블록, 편집기 미리보기는 자리 표시 */
+type Widgets = Partial<Record<string, ReactNode>>;
+
+function renderBlock(b: Block, k: string, variant: MarkdownVariant, widgets?: Widgets): ReactNode {
   switch (b.t) {
+    case "widget": {
+      if (widgets) return widgets[b.name] ? <Fragment key={k}>{widgets[b.name]}</Fragment> : null;
+      const info = isArticleWidget(b.name) ? ARTICLE_WIDGETS[b.name] : null;
+      return (
+        <div key={k} className="mt-8 flex items-center gap-3 rounded-2xl border-2 border-dashed border-primary/30 bg-ev-written-soft/40 px-4 py-4 first:mt-0">
+          <MousePointerClick className="h-5 w-5 shrink-0 text-primary-text" strokeWidth={1.75} />
+          <span className="min-w-0">
+            <span className="block type-body-md font-semibold text-ink">{info ? info.label : `알 수 없는 블록 {{${b.name}}}`}</span>
+            <span className="block type-caption text-ink-mute">{info ? `인터랙티브 블록 · ${info.hint} — 발행 화면에서 움직여요` : "이름을 확인해 주세요"}</span>
+          </span>
+        </div>
+      );
+    }
     case "h":
       return b.level === 2 ? (
         <h2
@@ -403,12 +426,23 @@ function renderBlock(b: Block, k: string, variant: MarkdownVariant): ReactNode {
   }
 }
 
-export function Markdown({ source, variant = "article", className }: { source: string; variant?: MarkdownVariant; className?: string }) {
+export function Markdown({
+  source,
+  variant = "article",
+  widgets,
+  className,
+}: {
+  source: string;
+  variant?: MarkdownVariant;
+  /** {{블록}} 자리에 넣을 실제 블록 (없으면 편집기용 자리 표시) */
+  widgets?: Widgets;
+  className?: string;
+}) {
   const blocks = parseMarkdown(source);
   return (
     <div className={cn("[overflow-wrap:anywhere]", className)}>
       {blocks.map((b, i) => (
-        <Fragment key={i}>{renderBlock(b, `b${i}`, variant)}</Fragment>
+        <Fragment key={i}>{renderBlock(b, `b${i}`, variant, widgets)}</Fragment>
       ))}
     </div>
   );

@@ -37,6 +37,7 @@ import {
   summaryLines,
   type MagazineCategory,
 } from "@/lib/magazine-meta";
+import { ARTICLE_WIDGETS } from "@/lib/article-widgets";
 import { uploadFile } from "@/lib/upload-client";
 import { cn } from "../ui";
 
@@ -490,6 +491,20 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
                 <button type="button" className={tool} title="출처 줄 (뉴스)" onClick={() => insertBlock("출처: [언론사](https://)", 5, 3)}>
                   <span className="type-micro">출처</span>
                 </button>
+                <select
+                  aria-label="인터랙티브 블록 넣기"
+                  title="인터랙티브 블록 넣기 — 금콩 기관 정보로 움직이는 표·그림"
+                  value=""
+                  onChange={(e) => e.target.value && insertBlock(`{{${e.target.value}}}`)}
+                  className="h-8 rounded-md border border-hairline bg-canvas px-1.5 type-caption text-ink-secondary"
+                >
+                  <option value="">인터랙티브 블록…</option>
+                  {Object.entries(ARTICLE_WIDGETS).map(([k, w]) => (
+                    <option key={k} value={k}>
+                      {w.label}
+                    </option>
+                  ))}
+                </select>
                 <span className="mx-1 h-5 w-px bg-hairline" />
                 <input ref={imageInput} type="file" accept=".jpg,.jpeg,.png,.webp,.gif" multiple className="hidden" onChange={(e) => uploadImages(e.target.files, "body")} />
                 <button type="button" className={cn(tool, "px-2")} title="사진 넣기 (여러 장 가능 · 웹툰은 순서대로)" onClick={() => imageInput.current?.click()} disabled={Boolean(busy)}>
