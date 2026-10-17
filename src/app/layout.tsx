@@ -40,6 +40,8 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image", title: SITE.title, description: SITE.description, images: [OG_IMAGE.url] },
   alternates: { canonical: "/" },
+  // 검색 등록 소유 확인 (네이버 서치어드바이저) — 모든 페이지 <head> 에 들어가요
+  verification: { other: { "naver-site-verification": "47e31a4fc989d1ce09c99baf2d0166d94731c709" } },
   ...(ADSENSE_CLIENT ? { other: { "google-adsense-account": ADSENSE_CLIENT } } : {}),
 };
 
