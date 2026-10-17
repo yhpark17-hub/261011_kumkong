@@ -5,7 +5,7 @@ import { formatDayHeading } from "@/lib/date";
 import { isDateKey, isIssueEdition } from "@/lib/news-meta";
 import { getIssue, issueItems } from "@/lib/server/briefing";
 import { dbConfigured } from "@/lib/server/db";
-import { C, OG_SIZE, clip, kongSvg, ogFonts, svgUri, type OgKong } from "@/lib/server/og";
+import { C, OG_SIZE, fitText, kongSvg, ogFonts, svgUri, wrapLines, type OgKong } from "@/lib/server/og";
 
 /**
  * 데일리 브리핑 공유 썸네일 — 그날 제목으로 그리는 한 칸 시사 만화
@@ -147,8 +147,13 @@ export default async function Image({ params }: { params: Promise<{ date: string
     ? { hold: "book", glasses: true }
     : { hold: mood === "up" ? undefined : "news", worried: mood === "down", wave: mood === "up" };
   const burst = noon ? "#d9d1ff" : mood === "down" ? "#ffb3c1" : mood === "up" ? "#ffe066" : "#d9d1ff";
-  const headline = clip(main, 40);
-  const fontSize = headline.length <= 14 ? 66 : headline.length <= 22 ? 58 : headline.length <= 30 ? 50 : 44;
+  // 말풍선 안쪽 폭 548 — 두 줄에 크게, 안 되면 세 줄로 (띄어쓰기에서만 줄바꿈)
+  const head = wrapLines(main, 50, 548, 2).overflow ? fitText(main, [50, 44, 40], 548, 3) : fitText(main, [66, 58, 50], 548, 2);
+  // 칠판: 용어 괄호 설명은 빼고 두 개까지, 없으면 면접 질문
+  const board = terms.length
+    ? fitText(terms.slice(0, 2).map((t) => t.replace(/\s*\([^)]*\)/g, "").trim()).join(" · "), [40, 36, 32], 568, 2)
+    : fitText(question ?? sub ?? "", [30, 28, 26], 568, 2);
+  const subLine = sub ? wrapLines(sub, 30, 596, 1).lines[0] : "";
 
   return new ImageResponse(
     <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", background: C.cream, fontFamily: "Pretendard" }}>
@@ -204,7 +209,13 @@ export default async function Image({ params }: { params: Promise<{ date: string
           alignItems: "center",
         }}
       >
-        <div style={{ display: "flex", fontSize, fontWeight: 800, color: C.ink, lineHeight: 1.22, letterSpacing: -1.5, wordBreak: "keep-all" }}>{headline}</div>
+        <div style={{ display: "flex", flexDirection: "column", fontSize: head.size, fontWeight: 800, color: C.ink, lineHeight: 1.22, letterSpacing: -1.5 }}>
+          {head.lines.map((l) => (
+            <div key={l} style={{ display: "flex", whiteSpace: "nowrap" }}>
+              {l}
+            </div>
+          ))}
+        </div>
       </Abs>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={TAIL} width={96} height={80} alt="" style={{ position: "absolute", left: 694, top: noon ? 250 : 280 }} />
@@ -226,12 +237,16 @@ export default async function Image({ params }: { params: Promise<{ date: string
           }}
         >
           <div style={{ display: "flex", fontSize: 24, fontWeight: 700, color: "#ffe9a8" }}>{terms.length ? "오늘의 용어" : "오늘의 면접 질문"}</div>
-          <div style={{ display: "flex", marginTop: 8, fontSize: terms.length ? 40 : 30, fontWeight: 800, color: "#f6f4ec", letterSpacing: -1, lineHeight: 1.25 }}>
-            {terms.length ? clip(terms.slice(0, 2).join(" · "), 26) : clip(question ?? sub ?? "", 44)}
+          <div style={{ display: "flex", flexDirection: "column", marginTop: 8, fontSize: board.size, fontWeight: 800, color: "#f6f4ec", letterSpacing: -1, lineHeight: 1.25 }}>
+            {board.lines.map((l) => (
+              <div key={l} style={{ display: "flex", whiteSpace: "nowrap" }}>
+                {l}
+              </div>
+            ))}
           </div>
         </Abs>
       ) : (
-        sub && (
+        subLine && (
           <Abs
             style={{
               left: 64,
@@ -246,7 +261,7 @@ export default async function Image({ params }: { params: Promise<{ date: string
               letterSpacing: -0.5,
             }}
           >
-            {clip(sub, 30)}
+            {subLine}
           </Abs>
         )
       )}

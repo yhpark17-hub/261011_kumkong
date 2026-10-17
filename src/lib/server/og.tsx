@@ -138,3 +138,49 @@ export function kongSvg({ hold, glasses, worried, wave }: OgKong = {}): string {
 
 /** 텍스트를 n 글자에서 자르고 … */
 export const clip = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s);
+
+/** 글자 폭 어림 (Pretendard, 글자 크기 1 기준) */
+function charWidth(ch: string): number {
+  if (/[ᄀ-ᇿ㄰-㆏가-힣]/.test(ch)) return 0.95;
+  if (/\s/.test(ch)) return 0.28;
+  if (/[.,·'’"()\-:!?]/.test(ch)) return 0.36;
+  if (/[A-Z%$₩@&]/.test(ch)) return 0.72;
+  if (/[0-9a-z]/.test(ch)) return 0.58;
+  return 0.8;
+}
+const textWidth = (s: string, size: number) => [...s].reduce((w, ch) => w + charWidth(ch), 0) * size;
+
+/**
+ * 띄어쓰기에서만 줄을 바꿔 maxLines 줄로 나누기 — 썸네일 그리기 도구는 '2%'·단어 중간에서도 줄을 바꿔서 직접 나눠요.
+ * 넘치면 마지막 줄 끝을 … 로.
+ */
+export function wrapLines(text: string, size: number, maxWidth: number, maxLines: number): { lines: string[]; overflow: boolean } {
+  const words = text.trim().split(/\s+/);
+  const lines: string[] = [];
+  let cur = "";
+  for (const w of words) {
+    const next = cur ? `${cur} ${w}` : w;
+    if (textWidth(next, size) <= maxWidth) cur = next;
+    else {
+      if (cur) lines.push(cur);
+      cur = w;
+    }
+  }
+  if (cur) lines.push(cur);
+  if (lines.length <= maxLines) return { lines, overflow: false };
+  const kept = lines.slice(0, maxLines);
+  let last = kept[maxLines - 1];
+  while (last.length > 1 && textWidth(`${last}…`, size) > maxWidth) last = last.slice(0, -1);
+  kept[maxLines - 1] = `${last.trimEnd()}…`;
+  return { lines: kept, overflow: true };
+}
+
+/** 정해진 칸에 들어가는 가장 큰 글자 크기와 그때의 줄들 */
+export function fitText(text: string, sizes: number[], maxWidth: number, maxLines: number): { size: number; lines: string[] } {
+  for (const size of sizes) {
+    const r = wrapLines(text, size, maxWidth, maxLines);
+    if (!r.overflow) return { size, lines: r.lines };
+  }
+  const size = sizes[sizes.length - 1];
+  return { size, lines: wrapLines(text, size, maxWidth, maxLines).lines };
+}
