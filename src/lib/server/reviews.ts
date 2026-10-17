@@ -138,6 +138,16 @@ export async function examCounts(): Promise<Map<string, { n: number; avg: number
   return new Map(res.rows.map((r) => [String(r.exam_id), { n: Number(r.n), avg: Number(r.avg) }]));
 }
 
+/** 한 시험의 보이는 후기 수 (검색 노출 여부 판단용) */
+export async function examReviewCount(examId: string): Promise<number> {
+  const client = await db();
+  const res = await client.execute({
+    sql: "SELECT COUNT(*) AS n FROM exam_reviews WHERE exam_id = ? AND status = ?",
+    args: [examId, STATUS.visible],
+  });
+  return Number(res.rows[0]?.n ?? 0);
+}
+
 export interface ExamActivity {
   /** 오늘(한국 시각 0시 이후) 들어온 후기 수 */
   today: number;

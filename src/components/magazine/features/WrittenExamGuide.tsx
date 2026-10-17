@@ -828,22 +828,41 @@ export function WrittenExamGuide({ title }: { title: string }) {
         </div>
 
         <div key={ch} className="mx-auto max-w-[1040px] px-5 py-8 motion-safe:animate-[kk-fade-in_.35s_ease-out] sm:px-14 md:px-20 md:py-12">
-          <p className="type-micro-cap text-primary-text">
-            {String(ch + 1).padStart(2, "0")} · {c.short}
-            <span className="ml-2 tabular text-ink-mute">
-              {ch + 1}/{CHAPTERS.length}
-            </span>
-          </p>
-          <h2 className="mt-1 type-heading-lg font-bold text-ink [word-break:keep-all] md:type-display-md">{c.title}</h2>
-          {c.lead && <p className="mt-2 type-body-lg text-ink-secondary [word-break:keep-all]">{c.lead}</p>}
-          {c.kong && (
-            <div className="mt-5">
-              <KongSays look={c.look}>{c.kong}</KongSays>
-            </div>
-          )}
-          <div className="mt-7">{c.body}</div>
+          <ChapterContent i={ch} />
         </div>
       </section>
+
+      {/* 검색엔진용 — 지금 장이 아닌 장의 글도 HTML 에 (화면에는 안 보이고, 장을 고르면 위에서 새로 열려요) */}
+      {CHAPTERS.map((x, i) =>
+        i === ch ? null : (
+          <section key={x.short} hidden>
+            <ChapterContent i={i} />
+          </section>
+        ),
+      )}
     </div>
+  );
+}
+
+/** 한 장의 머리(번호·제목·서브헤드·콩이)와 본문 */
+function ChapterContent({ i }: { i: number }) {
+  const c = CHAPTERS[i];
+  return (
+    <>
+      <p className="type-micro-cap text-primary-text">
+        {String(i + 1).padStart(2, "0")} · {c.short}
+        <span className="ml-2 tabular text-ink-mute">
+          {i + 1}/{CHAPTERS.length}
+        </span>
+      </p>
+      <h2 className="mt-1 type-heading-lg font-bold text-ink [word-break:keep-all] md:type-display-md">{c.title}</h2>
+      {c.lead && <p className="mt-2 type-body-lg text-ink-secondary [word-break:keep-all]">{c.lead}</p>}
+      {c.kong && (
+        <div className="mt-5">
+          <KongSays look={c.look}>{c.kong}</KongSays>
+        </div>
+      )}
+      <div className="mt-7">{c.body}</div>
+    </>
   );
 }

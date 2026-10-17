@@ -34,7 +34,7 @@ import { BlindBadge, Card, CategoryBadge, CompanyAvatar } from "@/components/ui"
 import { COMPANIES, getCompany, getRecruitment, latestStat } from "@/lib/data";
 import { formatLong } from "@/lib/date";
 import { CATEGORY_META, MAJOR_META } from "@/lib/meta";
-import { AD_SLOTS, OG_IMAGE, SITE } from "@/lib/site";
+import { AD_SLOTS, SITE, pageOpenGraph } from "@/lib/site";
 
 export function generateStaticParams() {
   return COMPANIES.map((c) => ({ id: c.id }));
@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: PageProps<"/companies/[id]">)
     title,
     description,
     alternates: { canonical: `/companies/${id}` },
-    openGraph: { title: `${title} | ${SITE.name}`, description, images: [OG_IMAGE] },
+    openGraph: pageOpenGraph(`/companies/${id}`, { title: `${title} | ${SITE.name}`, description }),
   };
 }
 

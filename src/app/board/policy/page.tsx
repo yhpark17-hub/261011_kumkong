@@ -3,13 +3,13 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Card, Eyebrow } from "@/components/ui";
 import { BOARD_NAME } from "@/lib/board-meta";
-import { SITE } from "@/lib/site";
+import { SITE, pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: `${BOARD_NAME} 운영정책`,
   description: `${SITE.name} 익명 게시판 ${BOARD_NAME}과 필기 후기의 이용 수칙, 금지 행위, 신고·임시조치 기준입니다.`,
-  alternates: { canonical: "/board/policy" },
-};
+  path: "/board/policy",
+});
 
 const RULES: { title: string; items: string[] }[] = [
   {

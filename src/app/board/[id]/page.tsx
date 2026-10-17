@@ -22,7 +22,7 @@ import { getCompany } from "@/lib/data";
 import { getPost, listComments } from "@/lib/server/board";
 import { dbConfigured } from "@/lib/server/db";
 import { isAdmin } from "@/lib/server/security";
-import { AD_SLOTS, OG_IMAGE, SITE } from "@/lib/site";
+import { AD_SLOTS, SITE, pageOpenGraph } from "@/lib/site";
 
 function parseId(raw: string): number | null {
   const n = Number(raw);
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: PageProps<"/board/[id]">): Pr
     description,
     alternates: { canonical: `/board/${post.id}` },
     robots: thin ? { index: false, follow: true } : undefined,
-    openGraph: { title: `${post.title} | ${BOARD_NAME} · ${SITE.name}`, description, type: "article", images: [OG_IMAGE] },
+    openGraph: pageOpenGraph(`/board/${post.id}`, { title: `${post.title} | ${BOARD_NAME} · ${SITE.name}`, description, type: "article" }),
   };
 }
 

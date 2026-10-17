@@ -34,7 +34,7 @@ import { dbConfigured } from "@/lib/server/db";
 import { adjacentArticles, getArticle, relatedArticles } from "@/lib/server/magazine";
 import { isAdmin } from "@/lib/server/security";
 import { articleFeatureIn } from "@/lib/article-widgets";
-import { AD_SLOTS, OG_IMAGE, SITE } from "@/lib/site";
+import { AD_SLOTS, OG_IMAGE, SITE, pageOpenGraph } from "@/lib/site";
 
 function parseId(raw: string): number | null {
   const n = Number(raw);
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: PageProps<"/magazine/[id]">):
     description,
     alternates: { canonical: articleHref(a.id) },
     keywords: a.tags,
-    openGraph: {
+    openGraph: pageOpenGraph(articleHref(a.id), {
       title: a.title,
       description,
       type: "article",
@@ -61,7 +61,7 @@ export async function generateMetadata({ params }: PageProps<"/magazine/[id]">):
       section: CATEGORY_INFO[a.category].label,
       tags: a.tags,
       images: a.coverUrl ? [{ url: a.coverUrl }] : [OG_IMAGE],
-    },
+    }),
   };
 }
 

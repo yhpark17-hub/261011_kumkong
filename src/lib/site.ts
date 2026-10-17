@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 /**
  * 사이트 기본 주소 (sitemap·OG 이미지·canonical 에 사용)
  * 1) NEXT_PUBLIC_SITE_URL (개인 도메인 연결 시)  2) Vercel 이 자동으로 넣어 주는 운영 주소  3) 로컬
@@ -25,6 +27,26 @@ export const SITE = {
  * 페이지별로 openGraph 를 덮어쓰면 상위 이미지가 사라지므로 각 페이지에서도 함께 넣습니다.
  */
 export const OG_IMAGE = { url: "/og/kumkong.png", width: 1200, height: 630, alt: "금콩 · 금융공기업·공공기관 채용 캘린더" } as const;
+
+type OpenGraph = NonNullable<Metadata["openGraph"]>;
+
+/**
+ * 페이지별 공유 정보(og:*) — 페이지에서 openGraph 를 쓰면 상위 값이 통째로 바뀌므로
+ * 사이트 공통 값(종류·언어·사이트 이름·주소·기본 이미지)을 깔고 페이지 값으로 덮어써요.
+ */
+export function pageOpenGraph(path: string, og: OpenGraph): OpenGraph {
+  return { type: "website", locale: "ko_KR", siteName: SITE.name, url: path, images: [OG_IMAGE], ...og } as OpenGraph;
+}
+
+/** 목록·안내 페이지 메타데이터 — 제목·설명·대표 주소에 더해, 카톡 공유·검색에도 이 페이지의 제목·설명이 나가게 */
+export function pageMetadata({ title, description, path, alternates }: { title: string; description: string; path: string; alternates?: Metadata["alternates"] }): Metadata {
+  return {
+    title,
+    description,
+    alternates: { ...alternates, canonical: path },
+    openGraph: pageOpenGraph(path, { title: `${title} | ${SITE.name}`, description }),
+  };
+}
 
 /** Google AdSense 퍼블리셔 ID (예: ca-pub-1234567890123456). 비어 있으면 광고 대신 자리표시만 보입니다. */
 export const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT ?? "";

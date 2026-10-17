@@ -22,14 +22,14 @@ import {
   type MagazineCategory,
 } from "@/lib/magazine-meta";
 import { categoryCounts, listArticles, popularArticles } from "@/lib/server/magazine";
-import { AD_SLOTS } from "@/lib/site";
+import { AD_SLOTS, pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: `금융 블로그 — 필기·면접·금공 지식 | ${MAGAZINE_NAME}`,
   description:
     "NCS 필기 준비법, 면접 전략, 금융공기업이 하는 일과 금융 상식, 입문 가이드와 현직자 이야기까지. 금융공기업 준비생을 위한 금콩 금융 블로그.",
-  alternates: { canonical: "/magazine/blog" },
-};
+  path: "/magazine/blog",
+});
 
 type SP = Record<string, string | string[] | undefined>;
 type Sort = "latest" | "popular";

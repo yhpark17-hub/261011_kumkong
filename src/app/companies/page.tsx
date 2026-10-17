@@ -3,14 +3,14 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { CompanyTable } from "@/components/company/CompanyTable";
 import { Eyebrow } from "@/components/ui";
 import { buildCatalog } from "@/lib/data";
-import { AD_SLOTS } from "@/lib/site";
+import { AD_SLOTS, pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "기관 정보·경쟁률 비교",
   description:
     "금융공기업·공공기관·공제회·중앙회·시중은행의 블라인드 여부, 필기 유형(NCS·PSAT형), 전공 시험, 알리오 경쟁률을 한 표로 비교하세요.",
-  alternates: { canonical: "/companies" },
-};
+  path: "/companies",
+});
 
 export default function CompaniesPage() {
   return (

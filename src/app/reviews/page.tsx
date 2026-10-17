@@ -8,13 +8,14 @@ import { Eyebrow } from "@/components/ui";
 import { diffDays, todayKST } from "@/lib/date";
 import { PRIORITY_DAYS, type ExamInfo } from "@/lib/review-meta";
 import { examActivity, examCounts, listExams } from "@/lib/server/reviews";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "필기 후기 — 금융공기업·공공기관 필기 체감 난이도 투표",
   description:
     "금감원·한국은행·산업은행 등 금융공기업과 공공기관 필기시험이 끝나면, 응시자들이 남긴 전체 난이도·과목별 체감 난이도·못 푼 문항 수·시간 여유를 그래프로 확인하세요.",
-  alternates: { canonical: "/reviews" },
-};
+  path: "/reviews",
+});
 
 const STEPS = [
   { icon: MousePointerClick, title: "터치 몇 번", desc: "전체 난이도, 시간 여유, 못 푼 문항 수를 고르기만 하면 돼요." },

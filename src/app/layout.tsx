@@ -38,8 +38,9 @@ export const metadata: Metadata = {
     description: SITE.description,
     images: [OG_IMAGE],
   },
-  twitter: { card: "summary_large_image", title: SITE.title, description: SITE.description, images: [OG_IMAGE.url] },
-  alternates: { canonical: "/" },
+  // 제목·설명·이미지는 페이지마다의 og:* 를 그대로 써요 (여기 적으면 모든 페이지가 사이트 기본값으로 공유됨)
+  twitter: { card: "summary_large_image" },
+  // 대표 주소(canonical)는 페이지마다 — 여기 두면 따로 안 정한 페이지가 '홈과 같은 페이지'로 알려져요
   // 검색 등록 소유 확인 (네이버 서치어드바이저) — 모든 페이지 <head> 에 들어가요
   verification: { other: { "naver-site-verification": "47e31a4fc989d1ce09c99baf2d0166d94731c709" } },
   ...(ADSENSE_CLIENT ? { other: { "google-adsense-account": ADSENSE_CLIENT } } : {}),

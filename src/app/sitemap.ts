@@ -7,7 +7,7 @@ import { publishedIssueIndex } from "@/lib/server/briefing";
 import { dbConfigured } from "@/lib/server/db";
 import { publishedArticleIndex } from "@/lib/server/magazine";
 import { publishedNewsIndex } from "@/lib/server/news";
-import { listExams } from "@/lib/server/reviews";
+import { examCounts, listExams } from "@/lib/server/reviews";
 import { SITE } from "@/lib/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -20,6 +20,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const articles = dbConfigured() ? await publishedArticleIndex().catch(() => []) : [];
   const news = dbConfigured() ? await publishedNewsIndex().catch(() => []) : [];
   const letters = dbConfigured() ? await publishedIssueIndex().catch(() => []) : [];
+  // 필기 후기는 후기가 하나라도 있는 시험만 (빈 페이지를 검색엔진에 내지 않게) — DB 를 못 읽으면 예전처럼 전부
+  const reviewCounts = dbConfigured() ? await examCounts().catch(() => null) : null;
 
   return [
     { url: SITE.url, lastModified: latest, changeFrequency: "daily", priority: 1 },
@@ -39,7 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     })),
     ...listExams()
-      .filter((e) => !e.expected)
+      .filter((e) => !e.expected && (!reviewCounts || (reviewCounts.get(e.id)?.n ?? 0) > 0))
       .map((e) => ({
         url: `${SITE.url}/reviews/${e.id}`,
         changeFrequency: "daily" as const,

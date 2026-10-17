@@ -11,7 +11,7 @@ import { adjacentIssues, arrangeLetter, getIssue, issueItems, recentIssues } fro
 import { dbConfigured } from "@/lib/server/db";
 import { popularNews } from "@/lib/server/news";
 import { isAdmin } from "@/lib/server/security";
-import { OG_IMAGE } from "@/lib/site";
+import { pageOpenGraph } from "@/lib/site";
 
 export async function generateMetadata({ params }: PageProps<"/magazine/letter/[date]/[edition]">): Promise<Metadata> {
   const { date, edition } = await params;
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps<"/magazine/letter/[
     title: `${title} | 데일리 브리핑`,
     description,
     alternates: { canonical: letterHref(issue.date, issue.edition) },
-    openGraph: { title, description, type: "article", images: [OG_IMAGE] },
+    openGraph: pageOpenGraph(letterHref(issue.date, issue.edition), { title, description, type: "article" }),
   };
 }
 

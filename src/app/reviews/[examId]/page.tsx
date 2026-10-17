@@ -15,9 +15,10 @@ import { Card, Chip, CompanyAvatar, Eyebrow, cn } from "@/components/ui";
 import { formatPostDateTime } from "@/lib/board-meta";
 import { ddayLabel, diffDays, formatLong, parseKey, todayKST, weekdayLabel } from "@/lib/date";
 import { OVERALL_OPTIONS, resultsPublicFrom, type ExamInfo } from "@/lib/review-meta";
-import { getExam, listExams, myReview, reviewComments, reviewStats } from "@/lib/server/reviews";
+import { dbConfigured } from "@/lib/server/db";
+import { examReviewCount, getExam, listExams, myReview, reviewComments, reviewStats } from "@/lib/server/reviews";
 import { isAdmin, voterToken } from "@/lib/server/security";
-import { AD_SLOTS, OG_IMAGE } from "@/lib/site";
+import { AD_SLOTS, pageOpenGraph } from "@/lib/site";
 
 /** "10월 13일(화)" */
 function monthDay(key: string): string {
@@ -34,11 +35,15 @@ export async function generateMetadata({ params }: PageProps<"/reviews/[examId]"
   if (!exam) return {};
   const title = `${exam.companyName} ${exam.label} 후기 · 체감 난이도`;
   const description = `${formatLong(exam.date)} ${exam.companyName} ${exam.label} 응시자들이 남긴 전체 난이도, 과목별 체감 난이도(${exam.subjects.join("·")}), 시간 여유, 한 줄 후기를 그래프로 확인하세요.`;
+  // 후기가 아직 없는 페이지(시험 전 등)는 검색에서 빼 두고, 첫 후기가 들어오면 자동으로 다시 노출 (DB 오류 땐 그대로 노출)
+  await connection();
+  const reviews = dbConfigured() ? await examReviewCount(exam.id).catch(() => null) : null;
   return {
     title,
     description,
     alternates: { canonical: `/reviews/${exam.id}` },
-    openGraph: { title, description, images: [OG_IMAGE] },
+    robots: reviews === 0 ? { index: false, follow: true } : undefined,
+    openGraph: pageOpenGraph(`/reviews/${exam.id}`, { title, description }),
   };
 }
 

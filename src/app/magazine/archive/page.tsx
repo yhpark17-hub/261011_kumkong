@@ -28,13 +28,13 @@ import {
 } from "@/lib/news-meta";
 import { getIssue, listIssues, type IssueSummary } from "@/lib/server/briefing";
 import { adjacentNewsDates, firstNewsDate, listNews, newsSectionCounts, popularNews } from "@/lib/server/news";
-import { AD_SLOTS } from "@/lib/site";
+import { AD_SLOTS, pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: `지난 브리핑 — 데일리 브리핑을 기간별로 | ${MAGAZINE_NAME}`,
   description: "지난 데일리 브리핑(금콩 브리핑·금콩 스터디)을 기간으로 찾아보고, 카테고리(금융·경제·용어·면접 질문 등)를 고르면 기사별로 모아 볼 수 있어요.",
-  alternates: { canonical: "/magazine/archive" },
-};
+  path: "/magazine/archive",
+});
 
 type SP = Record<string, string | string[] | undefined>;
 const LETTER_PAGE_SIZE = 10;

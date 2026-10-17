@@ -17,7 +17,7 @@ import { getIssue } from "@/lib/server/briefing";
 import { dbConfigured } from "@/lib/server/db";
 import { getNews, newsByDate, sameSectionNews } from "@/lib/server/news";
 import { isAdmin } from "@/lib/server/security";
-import { AD_SLOTS, OG_IMAGE, SITE } from "@/lib/site";
+import { AD_SLOTS, SITE, pageOpenGraph } from "@/lib/site";
 
 /** 긴 요약은 두 문장씩 끊어서 읽기 쉽게 */
 function toParagraphs(text: string): string[] {
@@ -67,14 +67,13 @@ export async function generateMetadata({ params }: PageProps<"/magazine/news/[id
     title: `${newsTitle(n)} - ${label}`,
     description,
     alternates: { canonical: newsHref(n.id) },
-    openGraph: {
+    openGraph: pageOpenGraph(newsHref(n.id), {
       title: newsTitle(n),
       description,
       type: "article",
       publishedTime: n.publishedAt ? new Date(n.publishedAt).toISOString() : undefined,
       section: NEWS_SECTION_INFO[n.section].label,
-      images: [OG_IMAGE],
-    },
+    }),
   };
 }
 

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Card, Eyebrow } from "@/components/ui";
-import { SITE } from "@/lib/site";
+import { SITE, pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "개인정보처리방침",
   description: "금콩 개인정보처리방침",
-  alternates: { canonical: "/privacy" },
-};
+  path: "/privacy",
+});
 
 const SECTIONS = [
   {

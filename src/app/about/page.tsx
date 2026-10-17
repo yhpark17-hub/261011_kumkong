@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Card, Eyebrow } from "@/components/ui";
-import { SITE } from "@/lib/site";
+import { SITE, pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "서비스 소개·데이터 출처",
   description: "금콩은 금융공기업·공공기관 채용 일정을 달력으로 모아 보여주는 취업 준비 정보 서비스입니다.",
-  alternates: { canonical: "/about" },
-};
+  path: "/about",
+});
 
 export default function AboutPage() {
   return (

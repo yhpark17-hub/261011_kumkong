@@ -14,14 +14,14 @@ import { companyOptions, getCompany } from "@/lib/data";
 import { todayKST } from "@/lib/date";
 import { companyPostCounts, listPosts } from "@/lib/server/board";
 import { examsForCompany } from "@/lib/server/reviews";
-import { AD_SLOTS } from "@/lib/site";
+import { AD_SLOTS, pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: `${BOARD_NAME} — ${BOARD_TAGLINE}`,
   description:
     "로그인 없이 쓰는 금융공기업·공공기관 준비생 익명 게시판. 필기·면접 후기, 질문, 채용 정보를 자유롭게 나눠 보세요.",
-  alternates: { canonical: "/board" },
-};
+  path: "/board",
+});
 
 type SP = Record<string, string | string[] | undefined>;
 

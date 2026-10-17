@@ -15,14 +15,15 @@ import { MAGAZINE_NAME, isBlogCategory, magazineHref } from "@/lib/magazine-meta
 import { EDITION_LABEL, EDITION_SCHEDULE, briefingArchiveHref, briefingMinutes, isDateKey, isNewsSection, type NewsView } from "@/lib/news-meta";
 import { arrangeLetter, getIssue, issueItems, issuesBetween, latestIssue, listIssues, type IssueSummary } from "@/lib/server/briefing";
 import { latestInSection, newsSectionCounts, popularNews } from "@/lib/server/news";
-import { AD_SLOTS } from "@/lib/site";
+import { AD_SLOTS, pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: `데일리 브리핑 — 오늘의 금융·경제·시사 뉴스와 용어·면접 질문 | ${MAGAZINE_NAME}`,
   description:
     "매일 아침 기사 브리핑과 퀴즈, 점심에는 금콩 스터디로 오늘의 용어·논술·면접 질문. 금융공기업 준비생이 알아야 할 금융·경제·정책·국제·공공기관 뉴스를 한 편의 브리핑으로.",
-  alternates: { canonical: "/magazine", types: { "application/rss+xml": "/magazine/rss.xml" } },
-};
+  path: "/magazine",
+  alternates: { types: { "application/rss+xml": "/magazine/rss.xml" } },
+});
 
 type SP = Record<string, string | string[] | undefined>;
 const one = (v: string | string[] | undefined) => ((Array.isArray(v) ? v[0] : v) ?? "").trim();

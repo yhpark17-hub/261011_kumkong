@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { HomeDashboard } from "@/components/calendar/HomeDashboard";
@@ -9,6 +10,13 @@ import { CompanyAvatar, Eyebrow } from "@/components/ui";
 import { COMPANIES, buildCatalog, getRecruitment, sortedEvents } from "@/lib/data";
 import { formatRange } from "@/lib/date";
 import { CATEGORY_META, CATEGORY_ORDER, EVENT_META } from "@/lib/meta";
+import { SITE, pageOpenGraph } from "@/lib/site";
+
+// 제목·설명은 사이트 기본값(layout) 그대로, 대표 주소와 공유 주소만 홈으로
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+  openGraph: pageOpenGraph("/", { title: SITE.title, description: SITE.description }),
+};
 
 export default function Home() {
   return (
