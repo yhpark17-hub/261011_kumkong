@@ -3483,14 +3483,13 @@
     "events": [
       {
         "type": "posting",
-        "date": "2025-11-24",
-        "note": "캐치 게시일 기준(접수 시작일 원문 미확인)"
+        "date": "2025-12-01",
+        "time": "09:00"
       },
       {
         "type": "doc",
         "date": "2025-12-08",
-        "time": "23:00",
-        "note": "캐치 마감일시 기준"
+        "time": "23:00"
       }
     ],
     "essayQuestions": [
@@ -3500,10 +3499,10 @@
       }
     ],
     "essayRef": "T4 캐치(530067) 1번 문항만 공개, 나머지 문항 미확인.",
-    "postingUrl": "https://m.catch.co.kr/NCS/RecruitInfoDetails/530067",
-    "confidence": "low",
-    "updatedAt": "2026-10-13",
-    "note": "2025년 11월 공고된 '2026년 상반기' 신입 공채가 최신. 2026-10-13 기준 후속(2027년 상반기) 공고 미확인. 과거 공고 시기: 2022.11.22~12.04, 2023.12.22~2024.01.04, 2024.11.12~11.25, 2025.11 → 통상 11~12월 게시. 전형 일정·인원 미확인, 공식 채용 사이트 원문 미확인.",
-    "sourceUrl": "https://m.catch.co.kr/NCS/RecruitInfoDetails/530067"
+    "postingUrl": "https://jrs.jobkorea.co.kr/woorifcapital",
+    "sourceUrl": "https://jrs.jobkorea.co.kr/woorifcapital",
+    "confidence": "high",
+    "updatedAt": "2026-10-17",
+    "note": "접수기간은 공식 채용 사이트(jrs.jobkorea.co.kr/woorifcapital) 2025.12.01 09:00 ~ 12.08 23:00 기준. 2026-10-17 기준 후속(2027년 상반기) 공고 미확인. 과거 공고 시기: 2022.11.22~12.04, 2023.12.22~2024.01.04, 2024.11.12~11.25, 2025.12.01~12.08 → 통상 11~12월 게시. 전형 일정·인원 미확인."
   }
 ]
