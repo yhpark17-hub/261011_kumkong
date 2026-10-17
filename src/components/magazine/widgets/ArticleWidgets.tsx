@@ -424,7 +424,7 @@ export function AMatchWidget({ title, hint, days, financeCats }: { title: string
       )}
       <p className="mt-3 type-caption text-ink-mute [word-break:keep-all]">
         점선은 공고 전이라 작년 일정으로 추정한 &lsquo;예상&rsquo; 날짜예요. 기관 이름을 누르면 일정·필기 구성을 볼 수 있어요.{" "}
-        <Link href="/" className="link">
+        <Link href="/calendar" className="link">
           채용 캘린더에서 보기
         </Link>
       </p>

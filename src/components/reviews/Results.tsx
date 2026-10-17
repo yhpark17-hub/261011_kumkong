@@ -6,6 +6,7 @@ import {
   TOTAL_MIN_REPORTS,
   UNSOLVED_OPTIONS,
   difficultyWord,
+  unsolvedOption,
   type ReviewStats,
   type UnsolvedStat,
 } from "@/lib/review-meta";
@@ -65,7 +66,8 @@ function Stat({ icon: Icon, label, value, sub }: { icon: typeof Users; label: st
 /** 가운데 응답 구간 + (총 문항 수가 모였으면) 대략 푼 문항 수 */
 function unsolvedSummary(stat: UnsolvedStat): string | null {
   if (stat.median == null) return null;
-  const m = UNSOLVED_OPTIONS[stat.median];
+  const m = unsolvedOption(stat.median);
+  if (!m) return null;
   const head =
     m.value === 0
       ? "응답자 절반 이상이 끝까지 다 풀었어요."
@@ -90,9 +92,12 @@ function UnsolvedSection({ stat, showName }: { stat: UnsolvedStat; showName: boo
       </p>
       {stat.n > 0 && (
         <div className="space-y-2.5">
-          {UNSOLVED_OPTIONS.map((o, i) => (
-            <BarRow key={o.value} label={o.label} count={stat.dist[i]} total={stat.n} max={max} tone="bg-ev-interview1" />
-          ))}
+          {UNSOLVED_OPTIONS.map((o, i) =>
+            // 예전 선택지는 그 응답이 있을 때만
+            o.legacy && !stat.dist[i] ? null : (
+              <BarRow key={o.value} label={o.label} count={stat.dist[i]} total={stat.n} max={max} tone="bg-ev-interview1" />
+            ),
+          )}
         </div>
       )}
       {summary && <p className="mt-3 type-caption text-ink-secondary">{summary}</p>}

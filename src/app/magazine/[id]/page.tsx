@@ -393,7 +393,7 @@ function AdjacentLink({ a, dir, briefing }: { a: ArticleSummary; dir: "prev" | "
 function ContinueCard({ briefing }: { briefing: boolean }) {
   return (
     <div className="mt-10 grid gap-3 sm:grid-cols-2">
-      <Link href="/" className="group flex items-center gap-3 rounded-xl bg-canvas-soft p-4 hover:bg-hairline/60">
+      <Link href="/calendar" className="group flex items-center gap-3 rounded-xl bg-canvas-soft p-4 hover:bg-hairline/60">
         <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-canvas text-primary-text">
           <CalendarDays className="h-5 w-5" strokeWidth={1.75} />
         </span>

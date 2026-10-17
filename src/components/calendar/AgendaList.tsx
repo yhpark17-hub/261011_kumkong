@@ -65,7 +65,7 @@ export function AgendaList({
   );
 }
 
-/** 특정 날짜의 전체 일정 (데스크톱 모달 · Level 2 floating panel) */
+/** 특정 날짜의 전체 일정 (넓은 화면은 가운데 창, 휴대폰은 아래 시트 · Level 2 floating panel) */
 export function DayModal({
   day,
   events,
@@ -85,13 +85,14 @@ export function DayModal({
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-center justify-center p-4"
+      // 휴대폰은 화면 아래에서 올라오는 시트, 넓은 화면은 가운데 창
+      className="fixed inset-0 z-40 flex items-end justify-center md:items-center md:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="day-modal-title"
     >
       <button type="button" aria-label="닫기" onClick={onClose} className="animate-fade-in absolute inset-0 bg-brand-dark/40" />
-      <div className="animate-fade-in card relative w-full max-w-md p-2 shadow-level-2">
+      <div className="animate-fade-in card relative w-full max-w-md p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-level-2 max-md:rounded-b-none md:pb-2">
         <header className="flex items-center gap-2 px-3 pt-2 pb-1">
           <h3 id="day-modal-title" className="type-heading-md text-ink">
             {formatDayHeading(day)}

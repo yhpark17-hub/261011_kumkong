@@ -7,7 +7,7 @@ const GROUPS = [
   {
     title: "서비스",
     links: [
-      { href: "/", label: "채용 캘린더" },
+      { href: "/calendar", label: "채용 캘린더" },
       { href: "/companies", label: "기관 정보·경쟁률" },
       { href: "/magazine", label: "매거진" },
       { href: "/reviews", label: "필기 후기" },

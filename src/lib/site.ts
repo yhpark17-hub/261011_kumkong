@@ -33,9 +33,11 @@ type OpenGraph = NonNullable<Metadata["openGraph"]>;
 /**
  * 페이지별 공유 정보(og:*) — 페이지에서 openGraph 를 쓰면 상위 값이 통째로 바뀌므로
  * 사이트 공통 값(종류·언어·사이트 이름·주소·기본 이미지)을 깔고 페이지 값으로 덮어써요.
+ * fileImage: 그 경로에 opengraph-image 파일(그때그때 그리는 썸네일)이 있으면 기본 이미지를 빼야 그 그림이 쓰여요.
  */
-export function pageOpenGraph(path: string, og: OpenGraph): OpenGraph {
-  return { type: "website", locale: "ko_KR", siteName: SITE.name, url: path, images: [OG_IMAGE], ...og } as OpenGraph;
+export function pageOpenGraph(path: string, og: OpenGraph, { fileImage = false }: { fileImage?: boolean } = {}): OpenGraph {
+  const base = { type: "website", locale: "ko_KR", siteName: SITE.name, url: path };
+  return (fileImage ? { ...base, ...og } : { ...base, images: [OG_IMAGE], ...og }) as OpenGraph;
 }
 
 /** 목록·안내 페이지 메타데이터 — 제목·설명·대표 주소에 더해, 카톡 공유·검색에도 이 페이지의 제목·설명이 나가게 */

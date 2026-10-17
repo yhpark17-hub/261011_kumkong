@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps<"/magazine/letter/[
     title: `${title} | 데일리 브리핑`,
     description,
     alternates: { canonical: letterHref(issue.date, issue.edition) },
-    openGraph: pageOpenGraph(letterHref(issue.date, issue.edition), { title, description, type: "article" }),
+    openGraph: pageOpenGraph(letterHref(issue.date, issue.edition), { title, description, type: "article" }, { fileImage: true }),
   };
 }
 

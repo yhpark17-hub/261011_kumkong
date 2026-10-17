@@ -4,6 +4,7 @@ import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { GradientMesh } from "@/components/layout/GradientMesh";
 import { FeedbackFab, FeedbackHost } from "@/components/feedback/Feedback";
 import { Tracker } from "@/components/analytics/Tracker";
@@ -75,6 +76,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
+        <MobileTabBar />
         <FeedbackFab />
         <FeedbackHost />
         <Tracker />

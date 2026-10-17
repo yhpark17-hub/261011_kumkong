@@ -15,18 +15,39 @@ export function resultsPublicFrom(examDate: string): string {
   return addDays(examDate, PRIORITY_DAYS);
 }
 
+export interface UnsolvedOption {
+  /** DB 저장값 */
+  value: number;
+  label: string;
+  /** 구간 (hi=null 은 '이상') */
+  lo: number;
+  hi: number | null;
+  /** 예전 선택지 — 이미 들어온 응답을 보여 줄 때만 쓰고 새로 고를 수는 없어요 */
+  legacy?: boolean;
+}
+
 /**
  * 못 풀고 넘긴(찍은) 문항 수 — 총 문항 수를 몰라도 답할 수 있게 구간으로 묻습니다.
- * value 는 DB 저장값(0~5), lo/hi 는 구간 (hi=null 은 '이상')
+ * 배열 순서가 분포·가운데 값 계산 순서예요 (value 순서가 아님).
+ * 예전 '16개 이상'(5)은 16~30개를 나누기 전 응답이라 뜻을 바꾸지 않고 그대로 둬요.
  */
-export const UNSOLVED_OPTIONS = [
+export const UNSOLVED_OPTIONS: readonly UnsolvedOption[] = [
   { value: 0, label: "다 풀었어요", lo: 0, hi: 0 },
   { value: 1, label: "1~3개", lo: 1, hi: 3 },
   { value: 2, label: "4~6개", lo: 4, hi: 6 },
   { value: 3, label: "7~10개", lo: 7, hi: 10 },
   { value: 4, label: "11~15개", lo: 11, hi: 15 },
-  { value: 5, label: "16개 이상", lo: 16, hi: null },
-] as const;
+  { value: 5, label: "16개 이상(예전 응답)", lo: 16, hi: null, legacy: true },
+  { value: 6, label: "16~20개", lo: 16, hi: 20 },
+  { value: 7, label: "21~25개", lo: 21, hi: 25 },
+  { value: 8, label: "26~30개", lo: 26, hi: 30 },
+  { value: 9, label: "31개 이상", lo: 31, hi: null },
+];
+
+/** 후기 양식에서 고를 수 있는 선택지 */
+export const UNSOLVED_CHOICES = UNSOLVED_OPTIONS.filter((o) => !o.legacy);
+
+export const unsolvedOption = (value: number) => UNSOLVED_OPTIONS.find((o) => o.value === value);
 
 /** 총 문항 수 제보가 이 수 이상 모이고, 절반 이상이 같은 값을 말해야 화면에 보여 줍니다 */
 export const TOTAL_MIN_REPORTS = 3;
@@ -83,7 +104,7 @@ export interface UnsolvedStat {
   /** UNSOLVED_OPTIONS 순서대로 응답 수 */
   dist: number[];
   n: number;
-  /** 응답의 가운데 구간 (UNSOLVED_OPTIONS 의 value) */
+  /** 응답의 가운데 구간 (UNSOLVED_OPTIONS 의 value — 배열 위치가 아님) */
   median: number | null;
   /** 응시자 제보 총 문항 수 — 충분히 모였을 때만 값이 있음 */
   total: { value: number; votes: number } | null;

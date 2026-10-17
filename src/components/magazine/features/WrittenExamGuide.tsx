@@ -570,7 +570,7 @@ function AMatch() {
       {pick != null && (
         <Explain title={`${TICKETS[pick].name}${eulReul(TICKETS[pick].name)} 골랐다면, 나머지 두 곳은 포기해야 해요.`}>
           하루에 한 곳만 볼 수 있으니, 서류를 낼 때부터 어느 기관 필기를 볼지 미리 정해 두는 게 좋아요.
-          <Link href="/" className="link mt-3 flex items-center gap-1 type-body-md">
+          <Link href="/calendar" className="link mt-3 flex items-center gap-1 type-body-md">
             채용 캘린더에서 실제 필기 날짜 보기 <ArrowRight className="h-4 w-4" strokeWidth={2} />
           </Link>
         </Explain>
@@ -633,7 +633,7 @@ function Wrap() {
       <div className="grid gap-2.5 sm:grid-cols-3">
         {[
           { href: "/companies", label: "기관별 필기 구성 보기", Icon: ClipboardList },
-          { href: "/", label: "다가오는 필기 일정", Icon: CalendarDays },
+          { href: "/calendar", label: "다가오는 필기 일정", Icon: CalendarDays },
           { href: "/reviews", label: "필기 후기·체감 난이도", Icon: MessagesSquare },
         ].map((c) => (
           <Link key={c.href} href={c.href} className="group flex items-center gap-2 rounded-xl bg-brand-dark px-4 py-3.5 type-body-md font-semibold text-on-primary">

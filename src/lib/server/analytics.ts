@@ -108,7 +108,8 @@ export interface PageRow {
 async function labelPaths(paths: string[]): Promise<Map<string, string>> {
   const labels = new Map<string, string>();
   const STATIC: Record<string, string> = {
-    "/": "채용 캘린더 (홈)",
+    "/": "홈",
+    "/calendar": "채용 캘린더",
     "/companies": "기관 정보·경쟁률",
     "/reviews": "필기 후기 목록",
     "/board": "콩밭 목록",
@@ -199,7 +200,9 @@ export async function topPages(r: Range, limit = 20): Promise<PageRow[]> {
 }
 
 const SECTION_LABEL: Record<string, string> = {
-  "/": "채용 캘린더",
+  // 2026-10-18 전까지의 '/' 방문은 홈이 채용 캘린더였을 때예요
+  "/": "홈",
+  "/calendar": "채용 캘린더",
   "/companies": "기관 정보",
   "/reviews": "필기 후기",
   "/board": "콩밭",

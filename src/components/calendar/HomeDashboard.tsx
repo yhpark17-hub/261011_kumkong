@@ -104,7 +104,7 @@ export function HomeDashboard({ catalog, afterStatus }: { catalog: Catalog; afte
           )}
         </section>
 
-        <Sidebar catalog={catalog} today={today} favorites={favorites} onOpen={setOpenCompany} afterStatus={afterStatus} />
+        <Sidebar catalog={catalog} today={today} afterStatus={afterStatus} />
       </div>
 
       {dayModal && (

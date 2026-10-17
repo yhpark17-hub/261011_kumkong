@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: PageProps<"/reviews/[examId]"
     description,
     alternates: { canonical: `/reviews/${exam.id}` },
     robots: reviews === 0 ? { index: false, follow: true } : undefined,
-    openGraph: pageOpenGraph(`/reviews/${exam.id}`, { title, description }),
+    openGraph: pageOpenGraph(`/reviews/${exam.id}`, { title, description }, { fileImage: true }),
   };
 }
 

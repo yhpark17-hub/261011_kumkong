@@ -200,8 +200,8 @@ function unsolvedStats(exam: ExamInfo, rows: Row[]): UnsolvedStat[] {
       const totals = new Map<number, number>();
       let totalReports = 0;
       for (const r of parsed) {
-        const u = r.unsolved[section];
-        if (Number.isInteger(u) && u >= 0 && u < dist.length) dist[u]++;
+        const i = UNSOLVED_OPTIONS.findIndex((o) => o.value === r.unsolved[section]);
+        if (i >= 0) dist[i]++;
         const t = r.totals[section];
         if (Number.isInteger(t) && t > 0) {
           totals.set(t, (totals.get(t) ?? 0) + 1);
@@ -213,7 +213,7 @@ function unsolvedStats(exam: ExamInfo, rows: Row[]): UnsolvedStat[] {
       for (let i = 0, acc = 0; i < dist.length && n; i++) {
         acc += dist[i];
         if (acc >= n / 2) {
-          median = i;
+          median = UNSOLVED_OPTIONS[i].value;
           break;
         }
       }

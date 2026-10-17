@@ -15,7 +15,7 @@ export default function Error({ error, retry }: { error: Error & { digest?: stri
           <RotateCw className="h-4 w-4" strokeWidth={1.75} />
           다시 시도
         </button>
-        <Link href="/" className="btn btn-toggle">
+        <Link href="/calendar" className="btn btn-toggle">
           채용 달력으로
         </Link>
       </div>

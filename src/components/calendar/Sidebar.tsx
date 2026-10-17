@@ -2,28 +2,21 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { Activity, ArrowRight, BarChart3, Star } from "lucide-react";
-import { formatShort } from "@/lib/date";
+import { Activity, ArrowRight, BarChart3 } from "lucide-react";
 import { formatRatio } from "@/lib/format";
-import { EVENT_META } from "@/lib/meta";
-import { nextEvent, recruitmentPhase } from "@/lib/schedule";
+import { recruitmentPhase } from "@/lib/schedule";
 import { AD_SLOTS } from "@/lib/site";
 import type { Catalog } from "@/lib/types";
 import { AdSlot } from "../ads/AdSlot";
-import { DDayBadge } from "../client-ui";
-import { Card, CompanyAvatar, cn } from "../ui";
+import { Card, cn } from "../ui";
 
 export function Sidebar({
   catalog,
   today,
-  favorites,
-  onOpen,
   afterStatus,
 }: {
   catalog: Catalog;
   today: string | null;
-  favorites: Set<string>;
-  onOpen: (id: string) => void;
   /** '지금 채용 현황' 바로 아래에 넣을 칸 (서버에서 그린 최근 필기 체감 난이도) */
   afterStatus?: React.ReactNode;
 }) {
@@ -32,7 +25,6 @@ export function Sidebar({
       <AdSlot slot={AD_SLOTS.sidebar} variant="rectangle" />
       <PhaseSummary catalog={catalog} today={today} />
       {afterStatus}
-      <FavoritesPanel catalog={catalog} today={today} favorites={favorites} onOpen={onOpen} />
       <TopCompetition catalog={catalog} />
       <div className="lg:sticky lg:top-24">
         <AdSlot slot={AD_SLOTS.sidebarSticky} variant="skyscraper" className="hidden lg:block" />
@@ -96,67 +88,6 @@ function PhaseSummary({ catalog, today }: { catalog: Catalog; today: string | nu
         ))}
       </dl>
     </section>
-  );
-}
-
-function FavoritesPanel({
-  catalog,
-  today,
-  favorites,
-  onOpen,
-}: {
-  catalog: Catalog;
-  today: string | null;
-  favorites: Set<string>;
-  onOpen: (id: string) => void;
-}) {
-  const rows = useMemo(() => {
-    if (!today) return [];
-    const companyMap = new Map(catalog.companies.map((c) => [c.id, c]));
-    return catalog.recruitments
-      .filter((r) => favorites.has(r.companyId) && companyMap.has(r.companyId))
-      .map((r) => ({ r, company: companyMap.get(r.companyId)!, next: nextEvent(r, today) }))
-      .sort((a, b) => (a.next?.date ?? "9999").localeCompare(b.next?.date ?? "9999"));
-  }, [catalog, today, favorites]);
-
-  return (
-    <Card className="p-6">
-      <PanelTitle icon={Star}>관심기관</PanelTitle>
-      {rows.length === 0 ? (
-        <p className="card-cream p-4 type-caption text-ink-secondary">
-          달력에서 기관을 열고 <Star className="inline h-3.5 w-3.5 -translate-y-px fill-lemon text-lemon" />를 누르면
-          다음 일정을 여기에 모아 보여드려요.
-        </p>
-      ) : (
-        <ul className="-mx-2">
-          {rows.map(({ r, company, next }) => (
-            <li key={r.companyId}>
-              <button
-                type="button"
-                onClick={() => onOpen(company.id)}
-                className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left hover:bg-canvas-soft"
-              >
-                <CompanyAvatar company={company} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate type-body-md text-ink">{company.name}</p>
-                  <p className="truncate type-caption text-ink-mute">
-                    {next ? (
-                      <>
-                        <span className={EVENT_META[next.type].text}>{next.label ?? EVENT_META[next.type].label}</span>{" "}
-                        {formatShort(next.date)}
-                      </>
-                    ) : (
-                      "전형 종료"
-                    )}
-                  </p>
-                </div>
-                {next && <DDayBadge date={next.date} endDate={next.endDate} size="sm" />}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Card>
   );
 }
 

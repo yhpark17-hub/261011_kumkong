@@ -8,7 +8,8 @@ import {
   STYLE_OPTIONS,
   SUBJECT_SCALE,
   TIME_OPTIONS,
-  UNSOLVED_OPTIONS,
+  UNSOLVED_CHOICES,
+  unsolvedOption,
   type ExamInfo,
   type MyReview,
 } from "@/lib/review-meta";
@@ -126,7 +127,7 @@ export function ReviewForm({ exam, initial }: { exam: ExamInfo; initial: MyRevie
               <span key={s}>
                 {" "}
                 · {s === "필기" ? "" : `${s} `}못 푼 문항{" "}
-                <span className="text-ink">{UNSOLVED_OPTIONS.find((o) => o.value === unsolved[s])?.label}</span>
+                <span className="text-ink">{unsolvedOption(unsolved[s])?.label}</span>
               </span>
             ))}
         </p>
@@ -187,7 +188,7 @@ export function ReviewForm({ exam, initial }: { exam: ExamInfo; initial: MyRevie
                   <p className="mb-1.5 type-caption !font-normal text-ink-secondary">{s}</p>
                 )}
                 <div className="grid grid-cols-3 gap-1.5">
-                  {UNSOLVED_OPTIONS.map((o) => (
+                  {UNSOLVED_CHOICES.map((o) => (
                     <Pill
                       key={o.value}
                       name={`unsolved:${s}`}
@@ -200,6 +201,13 @@ export function ReviewForm({ exam, initial }: { exam: ExamInfo; initial: MyRevie
                     </Pill>
                   ))}
                 </div>
+                {/* 예전 '16개 이상'으로 답했던 후기를 고칠 때 — 새로 고르지 않으면 그 답을 그대로 둬요 */}
+                {unsolvedOption(unsolved[s])?.legacy && (
+                  <>
+                    <input type="hidden" name={`unsolved:${s}`} value={unsolved[s]} />
+                    <p className="mt-1.5 type-caption text-ink-mute">지난번 답: {unsolvedOption(unsolved[s])?.label} — 바꾸려면 위에서 골라 주세요.</p>
+                  </>
+                )}
                 <label className="mt-2 flex items-center gap-2 type-caption text-ink-mute">
                   총 문항 수를 안다면
                   <input
