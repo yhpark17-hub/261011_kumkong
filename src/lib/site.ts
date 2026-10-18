@@ -53,6 +53,9 @@ export function pageMetadata({ title, description, path, alternates }: { title: 
 /** Google AdSense 퍼블리셔 ID (예: ca-pub-1234567890123456). 비어 있으면 광고 대신 자리표시만 보입니다. */
 export const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT ?? "";
 
+/** 이 광고 자리가 실제로 켜져 있는지 (꺼져 있으면 자리를 비워 두지 않으려고) */
+export const adEnabled = (slot: string) => Boolean(ADSENSE_CLIENT && slot);
+
 /** 광고 단위 슬롯 ID — AdSense 콘솔에서 만든 광고 단위 ID로 교체하세요. */
 export const AD_SLOTS = {
   homeTop: process.env.NEXT_PUBLIC_AD_SLOT_HOME_TOP ?? "",

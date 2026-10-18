@@ -5,7 +5,7 @@ import { briefingOgImage } from "@/lib/server/briefing-og";
 import { isAdmin } from "@/lib/server/security";
 
 /**
- * 관리자 썸네일 미리보기 — 저장하기 전 값(?costume=&mood=&bubble=&caption=&topic=)으로 공유 썸네일을 그려 봐요.
+ * 관리자 썸네일 미리보기 — 저장하기 전 값(?scene=&costume=&kong=&mood=&bubble=&caption=&topic=)으로 공유 썸네일을 그려 봐요.
  * 운영자만, 어디에도 저장되지 않게 no-store.
  */
 export async function GET(req: Request, ctx: RouteContext<"/admin/news/issue/[id]/thumb">) {
@@ -15,6 +15,6 @@ export async function GET(req: Request, ctx: RouteContext<"/admin/news/issue/[id
   if (!issue) return new Response("브리핑을 찾을 수 없어요.", { status: 404 });
   const q = new URL(req.url).searchParams;
   const pick = (k: string) => q.get(k) ?? "";
-  const thumb = parseThumb({ ...issue.thumb, costume: pick("costume"), mood: pick("mood"), bubble: pick("bubble"), caption: pick("caption"), topic: pick("topic") });
+  const thumb = parseThumb({ ...issue.thumb, scene: pick("scene"), kong: pick("kong") === "1", costume: pick("costume"), mood: pick("mood"), bubble: pick("bubble"), caption: pick("caption"), topic: pick("topic") });
   return briefingOgImage(issue, { thumb, admin: true, headers: { "Cache-Control": "private, no-store" } });
 }

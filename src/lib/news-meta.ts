@@ -227,13 +227,56 @@ export const COSTUMES = [
 ] as const satisfies readonly { key: string; label: string; hint: string; match: RegExp | null }[];
 export type CostumeKey = (typeof COSTUMES)[number]["key"];
 export const isCostume = (v: unknown): v is CostumeKey => COSTUMES.some((c) => c.key === v);
-/** 제목·헤드라인으로 고르는 변장 — 앞 글(제목 앞부분)에서 먼저 찾고, 없으면 다음 글에서 */
+/** 글 안에서 가장 앞에 나온 낱말의 항목 (같은 자리면 목록 앞의 것) */
+function earliest<T extends { match: RegExp | null }>(list: readonly T[], text: string): T | undefined {
+  let best: T | undefined;
+  let at = Infinity;
+  for (const c of list) {
+    const i = c.match ? text.search(c.match) : -1;
+    if (i >= 0 && i < at) {
+      at = i;
+      best = c;
+    }
+  }
+  return best;
+}
+
+/** 제목·헤드라인으로 고르는 변장 — 앞 글(제목 앞부분)에서 먼저, 그 안에서는 가장 앞에 나온 낱말로 */
 export function autoCostume(texts: string | string[]): CostumeKey {
   for (const t of typeof texts === "string" ? [texts] : texts) {
-    const hit = COSTUMES.find((c) => c.match?.test(t));
+    const hit = earliest(COSTUMES, t);
     if (hit) return hit.key;
   }
   return "reporter";
+}
+
+/**
+ * 금콩 브리핑 썸네일의 뉴스 그림 — 그림은 lib/server/og-scenes.ts.
+ * 인물 발언(speech)만 콩이가 그 인물로 변장해 등장하고, 나머지는 주제 그림이 칸을 채워요.
+ */
+export const SCENES = [
+  { key: "speech", label: "인물 발언·연설 (콩이가 그 인물로 변장)", match: /트럼프|백악관|파월|대통령|총재 ?["'‘“]|장관|위원장|정상회담/ },
+  { key: "market", label: "증시 (차트 급락·반등)", match: /코스피|코스닥|나스닥|증시|주가|주식|다우|S&P|사이드카|서킷브레이커/ },
+  { key: "rate", label: "금리·통화정책 (중앙은행·%)", match: /금통위|기준금리|금리|연준|FOMC|통화정책|한국은행|한은/ },
+  { key: "fx", label: "환율 (원·달러 저울)", match: /환율|달러|원화|엔화|외환|위안/ },
+  { key: "oil", label: "유가·원자재 (드럼통·펌프)", match: /유가|원유|OPEC|배럴|원자재/ },
+  { key: "housing", label: "부동산 (아파트·가격표)", match: /집값|부동산|아파트|주택|전세|PF/ },
+  { key: "prices", label: "물가 (장바구니·가격표)", match: /물가|CPI|PPI|인플레|장바구니|소비자/ },
+  { key: "security", label: "보안·해킹 (방패·자물쇠)", match: /해킹|보안|유출|사이버|망분리|침해/ },
+  { key: "chip", label: "반도체·AI (칩·회로)", match: /반도체|엔비디아|하이닉스|삼성전자|AI|인공지능/ },
+  { key: "trade", label: "무역·관세 (컨테이너선)", match: /관세|무역|수출|수입|통상|공급망/ },
+  { key: "bond", label: "국채·안전자산 (우산·채권)", match: /국채|채권|안전자산|금값|금 ?가격/ },
+  { key: "news", label: "기본 (신문·돋보기)", match: null },
+] as const satisfies readonly { key: string; label: string; match: RegExp | null }[];
+export type SceneKey = (typeof SCENES)[number]["key"];
+export const isScene = (v: unknown): v is SceneKey => SCENES.some((c) => c.key === v);
+/** 제목·헤드라인으로 고르는 뉴스 그림 (변장과 같은 방식) */
+export function autoScene(texts: string[]): SceneKey {
+  for (const t of texts) {
+    const hit = earliest(SCENES, t);
+    if (hit) return hit.key;
+  }
+  return "news";
 }
 
 export type ThumbMood = "up" | "down" | "neutral";
@@ -253,11 +296,15 @@ export type CoverMode = "default" | "share" | "upload";
 export const THUMB_LIMITS = { bubble: 44, caption: 64, topic: 120 } as const;
 
 export interface IssueThumb {
-  /** 아침판 만화 변장 ("" = 자동) */
+  /** 아침판 뉴스 그림 ("" = 자동) */
+  scene: SceneKey | "";
+  /** 아침판 콩이 변장 — 인물 발언 그림에서 ("" = 자동) */
   costume: CostumeKey | "";
+  /** 인물 발언이 아닌 그림에도 작은 콩이를 넣을지 (기본은 빼요) */
+  kong: boolean;
   /** 콩이 표정 ("" = 자동) */
   mood: ThumbMood | "";
-  /** 말풍선 — 비우면 제목 앞부분. 실제 발언·기사 문장을 그대로 (지어내지 않기) */
+  /** 큰 글(제목 상자·인물 발언이면 말풍선) — 비우면 제목 앞부분. 발언은 기사에 실린 말 그대로 (지어내지 않기) */
   bubble: string;
   /** 아래 띠 한 줄 — 비우면 제목 뒷부분 */
   caption: string;
@@ -271,7 +318,7 @@ export interface IssueThumb {
   checked: boolean;
 }
 
-export const EMPTY_THUMB: IssueThumb = { costume: "", mood: "", bubble: "", caption: "", topic: "", shareUrl: "", cover: "default", coverUrl: "", checked: false };
+export const EMPTY_THUMB: IssueThumb = { scene: "", costume: "", kong: false, mood: "", bubble: "", caption: "", topic: "", shareUrl: "", cover: "default", coverUrl: "", checked: false };
 
 /** 올린 그림 주소 — 우리 파일 주소(/api/files/…)나 https 만 */
 const imageUrl = (v: unknown) => {
@@ -292,7 +339,9 @@ export function parseThumb(raw: unknown): IssueThumb {
   const cover = o.cover === "share" || o.cover === "upload" ? o.cover : "default";
   const coverUrl = imageUrl(o.coverUrl);
   return {
+    scene: isScene(o.scene) ? o.scene : "",
     costume: isCostume(o.costume) ? o.costume : "",
+    kong: o.kong === true,
     mood: o.mood === "up" || o.mood === "down" || o.mood === "neutral" ? o.mood : "",
     bubble: clip(o.bubble, THUMB_LIMITS.bubble),
     caption: clip(o.caption, THUMB_LIMITS.caption),

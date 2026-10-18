@@ -4,13 +4,14 @@ import { startTransition, useActionState, useEffect, useRef, useState } from "re
 import { AlertTriangle, Check, ImageUp, Loader2, X } from "lucide-react";
 import { saveIssueThumb, type ThumbFormState } from "@/app/admin/issue-actions";
 import { formatShort } from "@/lib/date";
-import { COSTUMES, THUMB_LIMITS, THUMB_MOODS, type CostumeKey, type CoverMode, type IssueEdition, type IssueThumb, type ThumbMood } from "@/lib/news-meta";
-import { bubbleFit, captionFit, topicFit } from "@/lib/og-text";
+import { COSTUMES, SCENES, THUMB_LIMITS, THUMB_MOODS, type CostumeKey, type CoverMode, type IssueEdition, type IssueThumb, type SceneKey, type ThumbMood } from "@/lib/news-meta";
+import { captionFit, headlineFit, speechFit, topicFit } from "@/lib/og-text";
 import { uploadFile } from "@/lib/upload-client";
 import { BriefingCover } from "../magazine/BriefingBrand";
 import { cn } from "../ui";
 
 export interface ThumbAuto {
+  scene: SceneKey;
   costume: CostumeKey;
   mood: ThumbMood;
   bubble: string;
@@ -98,7 +99,9 @@ export function ThumbForm({
   auto: ThumbAuto;
 }) {
   const [state, action, pending] = useActionState<ThumbFormState, FormData>(saveIssueThumb, { ok: false });
+  const [scene, setScene] = useState<SceneKey | "">(initial.scene);
   const [costume, setCostume] = useState<CostumeKey | "">(initial.costume);
+  const [kong, setKong] = useState(initial.kong);
   const [mood, setMood] = useState<ThumbMood | "">(initial.mood);
   const [bubble, setBubble] = useState(initial.bubble);
   const [caption, setCaption] = useState(initial.caption);
@@ -110,7 +113,7 @@ export function ThumbForm({
   const morning = edition === "morning";
 
   // 미리보기 주소 — 글자를 칠 때마다가 아니라 잠깐 멈추면 다시 그려요
-  const query = new URLSearchParams({ costume, mood, bubble, caption, topic }).toString();
+  const query = new URLSearchParams({ scene, costume, kong: kong ? "1" : "", mood, bubble, caption, topic }).toString();
   const [previewQuery, setPreviewQuery] = useState(query);
   useEffect(() => {
     const t = window.setTimeout(() => setPreviewQuery(query), 500);
@@ -121,12 +124,16 @@ export function ThumbForm({
   const [loadedSrc, setLoadedSrc] = useState(share);
   const loading = loadedSrc !== share;
 
+  const autoSceneLabel = SCENES.find((c) => c.key === auto.scene)?.label ?? "";
   const autoCostumeLabel = COSTUMES.find((c) => c.key === auto.costume)?.label ?? "";
+  const speech = (scene || auto.scene) === "speech";
   const autoMoodLabel = THUMB_MOODS.find((m) => m.key === auto.mood)?.label ?? "";
-  const bubbleNow = bubbleFit(bubble || auto.bubble);
+  const bubbleNow = speech ? speechFit(bubble || auto.bubble) : headlineFit(bubble || auto.bubble);
   const captionNow = captionFit(caption || auto.caption);
   const topicNow = topicFit(topic || auto.topic);
   const changed =
+    scene !== initial.scene ||
+    kong !== initial.kong ||
     costume !== initial.costume ||
     mood !== initial.mood ||
     bubble !== initial.bubble ||
@@ -186,10 +193,21 @@ export function ThumbForm({
         )}
         {morning ? (
           <fieldset className="space-y-3">
-            <legend className="type-caption font-semibold text-ink-secondary">시사 만화 — 콩이가 오늘 주제로 변장하고 한마디</legend>
+            <legend className="type-caption font-semibold text-ink-secondary">뉴스 그림 — 칸을 채우는 주제 그림 + 왼쪽 아래 제목</legend>
+            <label className="block">
+              <span className="mb-1 block type-caption text-ink-secondary">뉴스 그림</span>
+              <select name="scene" value={scene} onChange={(e) => setScene(e.target.value as SceneKey | "")} className="input w-full">
+                <option value="">자동 — {autoSceneLabel}</option>
+                {SCENES.map((c) => (
+                  <option key={c.key} value={c.key}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-1 block type-caption text-ink-secondary">변장</span>
+                <span className="mb-1 block type-caption text-ink-secondary">콩이 변장 {speech ? "(인물 발언)" : "(콩이를 넣을 때)"}</span>
                 <select name="costume" value={costume} onChange={(e) => setCostume(e.target.value as CostumeKey | "")} className="input w-full">
                   <option value="">자동 — {autoCostumeLabel}</option>
                   {COSTUMES.map((c) => (
@@ -212,15 +230,21 @@ export function ThumbForm({
             </div>
             <label className="block">
               <span className="mb-1 flex justify-between gap-3 type-caption text-ink-secondary">
-                <span>말풍선 — 비우면 제목 앞부분</span>
+                <span>{speech ? "말풍선 — 인물 발언" : "제목 상자 큰 글"} (비우면 제목 앞부분)</span>
                 <span className="tabular text-ink-mute">
                   {bubble.length}/{THUMB_LIMITS.bubble}
                 </span>
               </span>
               <input name="bubble" value={bubble} onChange={(e) => setBubble(e.target.value)} maxLength={THUMB_LIMITS.bubble} placeholder={auto.bubble} className="input w-full" />
               <p className="mt-1 type-micro text-ink-mute">인물 발언을 따라 할 때는 기사에 실린 말을 그대로(따옴표째) 써 주세요. 지어낸 말은 넣지 않아요.</p>
-              <FitNote fit={bubbleNow} what="말풍선이" />
+              <FitNote fit={bubbleNow} what={speech ? "말풍선이" : "제목이"} />
             </label>
+            {!speech && (
+              <label className="inline-flex items-center gap-2 type-caption text-ink">
+                <input type="checkbox" name="kong" checked={kong} onChange={(e) => setKong(e.target.checked)} className="h-4 w-4 accent-[var(--primary)]" />
+                그림 오른쪽 아래에 작은 콩이 넣기 (기본은 빼요 · 인물 발언 그림에는 늘 콩이가 나와요)
+              </label>
+            )}
             <label className="block">
               <span className="mb-1 flex justify-between gap-3 type-caption text-ink-secondary">
                 <span>아래 띠 — 무슨 일인지 사실 한 줄 (비우면 제목 뒷부분)</span>

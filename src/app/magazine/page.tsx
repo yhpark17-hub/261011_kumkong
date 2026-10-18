@@ -15,7 +15,8 @@ import { MAGAZINE_NAME, isBlogCategory, magazineHref } from "@/lib/magazine-meta
 import { EDITION_LABEL, EDITION_SCHEDULE, briefingArchiveHref, briefingMinutes, isDateKey, isNewsSection, type NewsView } from "@/lib/news-meta";
 import { arrangeLetter, getIssue, issueItems, issuesBetween, latestIssue, listIssues, type IssueSummary } from "@/lib/server/briefing";
 import { latestInSection, newsSectionCounts, popularNews } from "@/lib/server/news";
-import { AD_SLOTS, pageMetadata } from "@/lib/site";
+import { AD_SLOTS, adEnabled, pageMetadata } from "@/lib/site";
+import { cn } from "@/components/ui";
 
 export const metadata: Metadata = pageMetadata({
   title: `데일리 브리핑 — 오늘의 금융·경제·시사 뉴스와 용어·면접 질문 | ${MAGAZINE_NAME}`,
@@ -102,6 +103,7 @@ async function BriefingFront({ sp }: { sp: SP }) {
   const from = addDays(heroDate, -2);
   const to = addDays(heroDate, -1);
   const recent = await issuesBetween(from, to);
+  const sideAd = adEnabled(AD_SLOTS.sidebar);
 
   return (
     <div className="mt-8">
@@ -146,7 +148,8 @@ async function BriefingFront({ sp }: { sp: SP }) {
         </div>
       </section>
 
-      <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px]">
+      {/* 오른쪽 칸은 광고 자리뿐이라, 광고가 꺼져 있으면 칸을 두지 않고 위 상자들과 같은 폭으로 */}
+      <div className={cn("mt-12 grid gap-10", sideAd && "lg:grid-cols-[minmax(0,1fr)_300px]")}>
         <div className="min-w-0">
           <div className="flex flex-col gap-3 border-b border-hairline pb-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
@@ -191,11 +194,13 @@ async function BriefingFront({ sp }: { sp: SP }) {
           <ArchiveCallout total={all.total} className="mt-10" />
         </div>
 
-        <aside className="space-y-4">
-          <div className="lg:sticky lg:top-24">
-            <AdSlot slot={AD_SLOTS.sidebar} variant="rectangle" />
-          </div>
-        </aside>
+        {sideAd && (
+          <aside className="space-y-4">
+            <div className="lg:sticky lg:top-24">
+              <AdSlot slot={AD_SLOTS.sidebar} variant="rectangle" />
+            </div>
+          </aside>
+        )}
       </div>
     </div>
   );

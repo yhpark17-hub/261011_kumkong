@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useState } from "react";
-import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, CalendarDays, CalendarRange, ChevronLeft, ChevronRight } from "lucide-react";
 import { WEEKDAYS, dayOfWeek, formatShort, parseKey } from "@/lib/date";
 import { EVENT_FILTER_ORDER, EVENT_META } from "@/lib/meta";
 import type { EventType } from "@/lib/types";
@@ -31,8 +31,6 @@ export interface WeekDay {
 
 /** 넓은 화면 칸에 보여 줄 하루 일정 수 (나머지는 '더 보기' 창) */
 const DESKTOP_MAX = 4;
-/** 넓은 화면: 며칠 이어지는 일정 막대 줄 수 (넘치면 날짜 칸으로) */
-const SPAN_LANES = 4;
 /** 휴대폰에서 고른 날 아래에 바로 보여 줄 수 (나머지는 '더 보기' 창) */
 const MOBILE_MAX = 4;
 
@@ -57,7 +55,7 @@ function Row({ it }: { it: WeekItem }) {
         {(it.label || it.expected || it.start !== it.end) && (
           <span className="block truncate type-caption text-ink-mute">
             {it.label ?? EVENT_META[it.type].label}
-            {it.start !== it.end && ` · ${shortDate(it.start)}–${shortDate(it.end)}`}
+            {it.start !== it.end && ` · ${shortDate(it.start)}–${shortDate(it.end)} 기간 중`}
             {it.expected && " · 예상 일정"}
           </span>
         )}
@@ -88,44 +86,69 @@ function Cell({ it }: { it: WeekItem }) {
   );
 }
 
-interface Span {
-  it: WeekItem;
-  /** 이번 주 안 시작·끝 칸 (0~6) */
-  s: number;
-  e: number;
-  lane: number;
+/** 이번 주에 걸친 '기간 일정'(며칠 중 하루·며칠에 걸쳐 진행) — 시작이 빠른 순 */
+function periodsOf(days: WeekDay[]): WeekItem[] {
+  const seen = new Map<string, WeekItem>();
+  for (const d of days) for (const it of d.items) if (it.start !== it.end && !seen.has(it.id)) seen.set(it.id, it);
+  return [...seen.values()].sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : a.end < b.end ? -1 : 1));
 }
 
-/** 이번 주 안에서 이틀 넘게 이어지는 일정을 막대 줄에 나눠 담기 (먼저 시작·긴 것부터) */
-function layoutSpans(days: WeekDay[]): Span[] {
-  const seen = new Map<string, { it: WeekItem; s: number; e: number }>();
-  days.forEach((d, i) =>
-    d.items.forEach((it) => {
-      const x = seen.get(it.id);
-      if (x) x.e = i;
-      else seen.set(it.id, { it, s: i, e: i });
-    }),
+/** 'M.D(요일)' */
+const dayLabel = (key: string) => `${shortDate(key)}(${WEEKDAYS[dayOfWeek(key)]})`;
+
+/** 기간 일정 한 줄 — 로고 · 기관/전형 · 이번 주 요일 칸(걸친 날 색칠) · 기간 */
+function PeriodRow({ it, days, today }: { it: WeekItem; days: WeekDay[]; today: string }) {
+  const m = EVENT_META[it.type];
+  const before = it.start < days[0].date;
+  const after = it.end > days[6].date;
+  return (
+    <Link
+      href={`/companies/${it.companyId}`}
+      title={`${it.name} · ${it.label ?? m.label} · ${dayLabel(it.start)}~${dayLabel(it.end)} 기간 중${it.expected ? " (예상)" : ""}`}
+      className={cn(
+        "group flex items-center gap-3 rounded-lg bg-canvas px-3 py-2 shadow-level-1 transition-shadow hover:shadow-level-2",
+        it.expected && "outline outline-1 -outline-offset-1 outline-dashed outline-hairline-input",
+      )}
+    >
+      <CompanyAvatar company={{ id: it.companyId, shortName: it.short, avatar: it.avatar, logo: it.logo }} size="xs" />
+      <span className="min-w-0 flex-1 leading-tight">
+        <span className="block truncate type-caption font-semibold text-ink group-hover:underline">{it.name}</span>
+        <span className={cn("block truncate type-micro font-semibold", m.text)}>{it.label ?? m.label}</span>
+      </span>
+      {/* 이번 주 요일 칸: 기간에 든 날만 전형 색 — 위 달력 칸과 같은 순서 */}
+      <span className="hidden shrink-0 items-center gap-0.5 sm:flex" aria-hidden>
+        <span className={cn("w-2 text-center type-micro text-ink-mute", !before && "invisible")}>‹</span>
+        {days.map((d) => {
+          const on = d.date >= it.start && d.date <= it.end;
+          return (
+            <span
+              key={d.date}
+              className={cn(
+                "inline-flex h-[18px] w-[18px] items-center justify-center rounded-[5px] text-[10px] leading-none font-semibold",
+                on ? cn(m.soft, m.text) : "bg-canvas-soft text-ink-mute-2",
+                d.date === today && "ring-1 ring-primary",
+              )}
+            >
+              {WEEKDAYS[dayOfWeek(d.date)]}
+            </span>
+          );
+        })}
+        <span className={cn("w-2 text-center type-micro text-ink-mute", !after && "invisible")}>›</span>
+      </span>
+      <span className="w-[118px] shrink-0 text-right tabular type-caption text-ink-secondary">
+        {shortDate(it.start)}–{shortDate(it.end)}
+        <span className="block type-micro text-ink-mute">기간 중 진행</span>
+      </span>
+    </Link>
   );
-  const multi = [...seen.values()].filter((x) => x.e > x.s).sort((a, b) => a.s - b.s || b.e - b.s - (a.e - a.s));
-  const laneEnds: number[] = [];
-  const out: Span[] = [];
-  for (const x of multi) {
-    let lane = laneEnds.findIndex((end) => end < x.s);
-    if (lane < 0) {
-      if (laneEnds.length >= SPAN_LANES) continue;
-      lane = laneEnds.length;
-      laneEnds.push(x.e);
-    } else laneEnds[lane] = x.e;
-    out.push({ ...x, lane });
-  }
-  return out;
 }
 
 /**
  * 홈: 이번 주(일~토) 채용 일정
  * - 위: 전형 버튼(서류 마감·필기·면접 건수) — 누르면 그 전형만
  * - 휴대폰: 날짜 띠(전형 색 점) + 고른 날 일정 몇 줄, '더 보기'는 아래에서 올라오는 창
- * - 넓은 화면: 며칠 이어지는 면접 기간은 막대 한 줄로, 하루 일정은 로고와 함께 날짜 칸에
+ * - 넓은 화면: 날짜가 정해진 일정은 로고와 함께 날짜 칸에, 며칠 중 진행하는 '기간 일정'(면접 기간 등)은
+ *   달력 아래 따로 모아 '이 기간 안에 진행'으로 (날짜 칸 사이로 길게 걸치면 뜻을 알아보기 어려워서)
  */
 export function WeekCalendar({ weeks, today }: { weeks: WeekDay[][]; today: string }) {
   const [w, setW] = useState(0);
@@ -149,9 +172,8 @@ export function WeekCalendar({ weeks, today }: { weeks: WeekDay[][]; today: stri
   const count = (t: readonly EventType[]) => new Set(all.filter((it) => t.includes(it.type)).map((it) => it.id)).size;
   const typesOf = (d: WeekDay) => EVENT_FILTER_ORDER.filter((t) => d.items.some((it) => it.type === t)).slice(0, 3);
 
-  const spans = layoutSpans(days);
-  const lanes = spans.reduce((n, x) => Math.max(n, x.lane + 1), 0);
-  const inSpan = new Set(spans.map((x) => x.it.id));
+  const periods = periodsOf(days);
+  const fixed = (d: WeekDay) => d.items.filter((it) => it.start === it.end);
 
   return (
     <section aria-labelledby="week-title" className="card p-4 shadow-level-1 md:p-6">
@@ -255,110 +277,79 @@ export function WeekCalendar({ weeks, today }: { weeks: WeekDay[][]; today: stri
         )}
       </div>
 
-      {/* ---------------- 넓은 화면: 7칸 (머리 · 이어지는 일정 막대 · 하루 일정) ---------------- */}
-      <div
-        className="mt-4 hidden grid-cols-7 overflow-hidden rounded-xl border border-hairline md:grid"
-        style={{ gridTemplateRows: `auto repeat(${lanes}, auto) 1fr` }}
-      >
-        {/* 칸 바탕: 세로 줄 · 오늘 · 주말 */}
-        {days.map((d, i) => {
-          const dow = dayOfWeek(d.date);
-          return (
-            <div
-              key={`bg-${d.date}`}
-              aria-hidden
-              style={{ gridColumn: i + 1, gridRow: "1 / -1" }}
-              className={cn(
-                i < 6 && "border-r border-hairline",
-                d.date === today ? "bg-ev-written-soft/70" : dow === 0 || dow === 6 ? "bg-canvas-soft/70" : "bg-canvas",
-              )}
-            />
-          );
-        })}
-
-        {/* 날짜 머리 */}
+      {/* ---------------- 넓은 화면: 7칸 (머리 · 날짜가 정해진 일정) ---------------- */}
+      <div className="mt-4 hidden grid-cols-7 overflow-hidden rounded-xl border border-hairline md:grid">
         {days.map((d, i) => {
           const dow = dayOfWeek(d.date);
           const isToday = d.date === today;
+          const list = fixed(d);
+          const ongoing = periods.filter((it) => d.date >= it.start && d.date <= it.end).length;
           return (
             <div
-              key={`head-${d.date}`}
-              style={{ gridColumn: i + 1, gridRow: 1 }}
-              className={cn("relative flex items-center gap-1.5 border-b border-hairline px-2.5 py-2", d.date < today && "opacity-55")}
-            >
-              <span className={cn("type-caption font-semibold", dowTone(dow))}>{WEEKDAYS[dow]}</span>
-              <span
-                className={cn(
-                  "inline-flex h-7 min-w-7 items-center justify-center rounded-full px-1 tabular type-body-md font-bold",
-                  isToday ? "bg-primary text-on-primary" : dow === 0 ? "text-ruby" : "text-ink",
-                )}
-              >
-                {parseKey(d.date).d}
-              </span>
-              {isToday && <span className="type-micro font-semibold text-primary-text">오늘</span>}
-              {d.items.length > 0 && <span className="ml-auto tabular type-micro text-ink-mute">{d.items.length}건</span>}
-            </div>
-          );
-        })}
-
-        {/* 며칠 이어지는 일정 — 막대 한 줄 */}
-        {spans.map(({ it, s, e, lane }) => {
-          const m = EVENT_META[it.type];
-          const fromBefore = it.start < days[0].date;
-          const toAfter = it.end > days[6].date;
-          return (
-            <Link
-              key={`span-${it.id}`}
-              href={`/companies/${it.companyId}`}
-              title={`${it.name} · ${it.label ?? m.label} · ${shortDate(it.start)}–${shortDate(it.end)}${it.expected ? " (예상)" : ""}`}
-              style={{ gridColumn: `${s + 1} / ${e + 2}`, gridRow: lane + 2 }}
+              key={d.date}
               className={cn(
-                "relative mt-1.5 flex min-w-0 items-center gap-1.5 py-1 pr-2 pl-1.5 hover:brightness-95",
-                m.soft,
-                // 지난주부터 이어지면 왼쪽, 다음 주로 이어지면 오른쪽 끝을 칸 끝까지 (둥글리지 않음)
-                fromBefore ? "ml-0" : cn("ml-1.5 rounded-l-md border-l-[3px]", m.border),
-                toAfter ? "mr-0" : "mr-1.5 rounded-r-md",
-                it.expected && "outline outline-1 -outline-offset-1 outline-dashed outline-hairline-input",
+                "flex min-w-0 flex-col",
+                i < 6 && "border-r border-hairline",
+                isToday ? "bg-ev-written-soft/70" : dow === 0 || dow === 6 ? "bg-canvas-soft/70" : "bg-canvas",
               )}
             >
-              <CompanyAvatar company={{ id: it.companyId, shortName: it.short, avatar: it.avatar, logo: it.logo }} size="xs" />
-              <span className="truncate type-caption font-semibold text-ink">{it.name}</span>
-              <span className={cn("shrink-0 type-micro font-semibold", m.text)}>{it.label ?? m.label}</span>
-              <span className="ml-auto shrink-0 pl-2 tabular type-micro text-ink-mute">
-                {fromBefore && "← "}
-                {shortDate(it.start)}–{shortDate(it.end)}
-                {toAfter && " →"}
-              </span>
-            </Link>
-          );
-        })}
-
-        {/* 하루 일정 */}
-        {days.map((d, i) => {
-          const list = d.items.filter((it) => !inSpan.has(it.id));
-          return (
-            <div
-              key={`day-${d.date}`}
-              style={{ gridColumn: i + 1, gridRow: lanes + 2 }}
-              className={cn("relative flex min-h-[148px] min-w-0 flex-col gap-0.5 p-1.5", lanes > 0 && "pt-2", d.date < today && "opacity-55")}
-            >
-              {list.slice(0, DESKTOP_MAX).map((it) => (
-                <Cell key={it.id} it={it} />
-              ))}
-              {list.length > DESKTOP_MAX && (
-                <button
-                  type="button"
-                  onClick={() => setSheetDay(d.date)}
-                  className="mx-1.5 mt-0.5 rounded-md py-1 text-left type-micro font-semibold text-primary-text hover:bg-canvas hover:underline"
+              <div className={cn("flex items-center gap-1.5 border-b border-hairline px-2.5 py-2", d.date < today && "opacity-55")}>
+                <span className={cn("type-caption font-semibold", dowTone(dow))}>{WEEKDAYS[dow]}</span>
+                <span
+                  className={cn(
+                    "inline-flex h-7 min-w-7 items-center justify-center rounded-full px-1 tabular type-body-md font-bold",
+                    isToday ? "bg-primary text-on-primary" : dow === 0 ? "text-ruby" : "text-ink",
+                  )}
                 >
-                  +{list.length - DESKTOP_MAX}개 더 보기
-                </button>
-              )}
-              {d.items.length === 0 && <span className="m-auto type-micro text-ink-mute-2">일정 없음</span>}
+                  {parseKey(d.date).d}
+                </span>
+                {isToday && <span className="type-micro font-semibold text-primary-text">오늘</span>}
+                {list.length > 0 && <span className="ml-auto tabular type-micro text-ink-mute">{list.length}건</span>}
+              </div>
+              <div className={cn("flex min-h-[148px] flex-1 flex-col gap-0.5 p-1.5", d.date < today && "opacity-55")}>
+                {list.slice(0, DESKTOP_MAX).map((it) => (
+                  <Cell key={it.id} it={it} />
+                ))}
+                {list.length > DESKTOP_MAX && (
+                  <button
+                    type="button"
+                    onClick={() => setSheetDay(d.date)}
+                    className="mx-1.5 mt-0.5 rounded-md py-1 text-left type-micro font-semibold text-primary-text hover:bg-canvas hover:underline"
+                  >
+                    +{list.length - DESKTOP_MAX}개 더 보기
+                  </button>
+                )}
+                {list.length === 0 && !ongoing && <span className="m-auto type-micro text-ink-mute-2">일정 없음</span>}
+                {/* 이날 걸친 기간 일정 — 아래 '기간 일정' 칸과 같은 점선 모양 */}
+                {ongoing > 0 && (
+                  <span className="mx-1 mt-auto inline-flex items-center justify-center gap-1 rounded-md border border-dashed border-hairline-input py-1 type-micro text-ink-mute">
+                    <CalendarRange className="h-3 w-3" strokeWidth={1.75} />
+                    기간 일정 {ongoing}곳
+                  </span>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
+
+      {/* 기간 일정 — 며칠 중 진행 (면접 기간·온라인 검사 기간 등, 지원자마다 날짜가 다를 수 있음) */}
+      {periods.length > 0 && (
+        <div className="mt-3 hidden rounded-xl border border-dashed border-hairline-input bg-canvas-soft/60 p-3 md:block">
+          <p className="flex flex-wrap items-center gap-x-1.5 px-1 type-caption">
+            <CalendarRange className="h-4 w-4 text-ink-mute" strokeWidth={1.75} />
+            <span className="font-semibold text-ink">기간 일정 {periods.length}건</span>
+            <span className="text-ink-mute">· 이 기간 안에 진행돼요 (지원자마다 날짜가 다를 수 있어요)</span>
+          </p>
+          <ul className="mt-2 grid gap-2 xl:grid-cols-2">
+            {periods.map((it) => (
+              <li key={it.id} className="min-w-0">
+                <PeriodRow it={it} days={days} today={today} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <Link href="/calendar" className="btn btn-sm btn-toggle mt-3 w-full md:hidden">
         채용 캘린더 전체 보기

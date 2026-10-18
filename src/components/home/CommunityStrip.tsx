@@ -1,26 +1,29 @@
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowRight, BarChart3, MessagesSquare } from "lucide-react";
+import { ArrowRight, BarChart3, Lock, MessagesSquare } from "lucide-react";
+import { DifficultyTag } from "@/components/reviews/DifficultyMeter";
 import { AuthorLabel, CategoryTag } from "@/components/board/parts";
 import { BOARD_NAME, formatPostTime } from "@/lib/board-meta";
-import { addDays, formatShort, todayKST } from "@/lib/date";
+import { addDays, formatShort, parseKey, todayKST } from "@/lib/date";
+import { resultsPublicFrom } from "@/lib/review-meta";
 import { listPosts } from "@/lib/server/board";
-import { examCounts, listExams } from "@/lib/server/reviews";
+import { examSummaries, listExams } from "@/lib/server/reviews";
 import { Card, CompanyAvatar, cn } from "../ui";
 
 /**
  * 최근 필기 후기 (요청 시 렌더링) — 홈, 캘린더 옆 칸
- * 한눈에 '몇 명이 후기를 남겼는지'만: 로고 · 기관명 · 날짜 | 후기 수 (없으면 '후기 받는 중' — 0명을 내세우지 않음)
+ * 로고 · 기관명 · 날짜 | 체감 난이도(색) · 후기 수 (없으면 '후기 받는 중' — 0명을 내세우지 않음)
+ * 시험 후 3일은 후기를 남긴 사람에게만 난이도가 보이고, 나머지에겐 '🔒 공개일'로 궁금하게
  * limit: 보여 줄 시험 수, large: 홈처럼 넓은 칸 (다른 칸과 같은 제목 크기)
  */
 export async function RecentExamsPanel({ limit = 4, large = false }: { limit?: number; large?: boolean } = {}) {
   await connection();
   const today = todayKST();
-  const counts = await examCounts();
   // 최근 2주 시험 중 후기가 많은 곳 먼저 → 나머지는 최근 날짜 순 (모두 '후기 받는 중'만 보이지 않게)
   const since = addDays(today, -14);
   const past = listExams().filter((e) => !e.expected && e.date <= today);
-  const n = (id: string) => counts.get(id)?.n ?? 0;
+  const summaries = await examSummaries(past, today);
+  const n = (id: string) => summaries[id]?.n ?? 0;
   const exams = [
     ...past.filter((e) => e.date >= since && n(e.id) > 0).sort((a, b) => n(b.id) - n(a.id) || (a.date < b.date ? 1 : -1)),
     ...past.filter((e) => !(e.date >= since && n(e.id) > 0)),
@@ -37,13 +40,15 @@ export async function RecentExamsPanel({ limit = 4, large = false }: { limit?: n
           전체 <ArrowRight className="h-3 w-3" strokeWidth={1.75} />
         </Link>
       </div>
-      <p className="mt-0.5 type-caption text-ink-mute">시험별로 응시자가 남긴 후기 수</p>
+      <p className="mt-0.5 type-caption text-ink-mute">응시자들이 남긴 체감 난이도와 후기 수</p>
       {exams.length === 0 ? (
         <p className="py-4 type-body-md text-ink-mute">최근 치러진 필기가 없어요.</p>
       ) : (
         <ul className="-mx-2 mt-2 divide-y divide-hairline">
           {exams.map((e) => {
             const reviews = n(e.id);
+            const sum = summaries[e.id];
+            const pub = parseKey(resultsPublicFrom(e.date));
             return (
               <li key={e.id}>
                 <Link href={`/reviews/${e.id}`} className="group flex items-center gap-3 rounded-md px-2 py-2.5 hover:bg-canvas-soft">
@@ -55,9 +60,21 @@ export async function RecentExamsPanel({ limit = 4, large = false }: { limit?: n
                     </span>
                   </span>
                   {reviews > 0 ? (
-                    <span className="shrink-0 text-right">
-                      <span className="tabular type-heading-sm text-ink">{reviews}</span>
-                      <span className="ml-0.5 type-caption text-ink-mute">명</span>
+                    <span className="flex shrink-0 items-center gap-2.5">
+                      {sum?.avg != null ? (
+                        <DifficultyTag avg={sum.avg} />
+                      ) : (
+                        sum?.locked && (
+                          <span className="tag inline-flex shrink-0 items-center gap-1 bg-canvas-soft text-ink-mute" title="후기를 남기면 바로 볼 수 있어요">
+                            <Lock className="h-3 w-3" strokeWidth={2} />
+                            {pub.m}/{pub.d} 공개
+                          </span>
+                        )
+                      )}
+                      <span className="min-w-10 text-right">
+                        <span className="tabular type-heading-sm text-ink">{reviews}</span>
+                        <span className="ml-0.5 type-caption text-ink-mute">명</span>
+                      </span>
                     </span>
                   ) : (
                     <span className="shrink-0 type-caption text-ink-mute">후기 받는 중</span>

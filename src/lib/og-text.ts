@@ -55,19 +55,38 @@ export function fitText(text: string, sizes: number[], maxWidth: number, maxLine
   return { size, lines: wrapLines(text, size, maxWidth, maxLines).lines };
 }
 
-/** 금콩 브리핑 말풍선 (안쪽 폭 548) — 두 줄에 크게, 안 되면 세 줄로 */
-export function bubbleFit(text: string): { size: number; lines: string[]; overflow: boolean } {
-  if (!wrapLines(text, 50, 548, 2).overflow) return { ...fitText(text, [66, 58, 50], 548, 2), overflow: false };
-  const r = fitText(text, [50, 44, 40, 36], 548, 3);
-  return { ...r, overflow: wrapLines(text, 36, 548, 3).overflow };
+/** 정해진 칸에 맞추기 — 앞 단계(큰 글자·적은 줄)부터, 다 넘치면 마지막 단계에서 … 로 자르고 overflow */
+function fitSteps(text: string, width: number, steps: (readonly [readonly number[], number])[]): { size: number; lines: string[]; overflow: boolean } {
+  for (const [sizes, max] of steps)
+    for (const size of sizes) {
+      const r = wrapLines(text, size, width, max);
+      if (!r.overflow) return { size, lines: r.lines, overflow: false };
+    }
+  const [sizes, max] = steps[steps.length - 1];
+  const size = sizes[sizes.length - 1];
+  return { size, lines: wrapLines(text, size, width, max).lines, overflow: true };
 }
 
-/** 금콩 브리핑 아래 띠 (폭 600) — 한 줄에 크게, 길면 두 줄 */
-export function captionFit(text: string): { size: number; lines: string[]; overflow: boolean } {
-  if (!wrapLines(text, 30, 600, 1).overflow) return { size: 30, lines: [text], overflow: false };
-  const r = fitText(text, [27, 25, 23], 600, 2);
-  return { ...r, overflow: wrapLines(text, 23, 600, 2).overflow };
-}
+/** 금콩 브리핑 제목 상자 (안쪽 폭 560) — 두 줄에 크게, 길면 세 줄 */
+export const headlineFit = (text: string) =>
+  fitSteps(text, 560, [
+    [[52, 47, 43], 2],
+    [[40, 37], 3],
+  ]);
+
+/** 금콩 브리핑 인물 발언 말풍선 (안쪽 폭 500) */
+export const speechFit = (text: string) =>
+  fitSteps(text, 500, [
+    [[50, 45, 41], 2],
+    [[38, 35], 3],
+  ]);
+
+/** 제목 상자 아래 사실 한 줄 (폭 560) */
+export const captionFit = (text: string) =>
+  fitSteps(text, 560, [
+    [[26, 24], 1],
+    [[23, 21], 2],
+  ]);
 
 export const TOPIC_W = 640;
 /** 금콩 스터디 논술 주제 — 세 줄까지는 크게, 그래도 길면 네 줄로 작게. 그래도 넘치면 overflow (끝이 … 로 잘림) */

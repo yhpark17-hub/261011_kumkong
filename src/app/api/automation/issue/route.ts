@@ -22,9 +22,10 @@ import { db, dbConfigured } from "@/lib/server/db";
  *   - 점심 퀴즈: { question, options: ["O", "X"], answer, explain, basis } 3문제
  *     basis = 금콩 스터디 본문(숫자·용어·논술·면접 질문)에 실린 근거 문장 그대로. 아침판에만 있고 금콩 스터디에는 없는 내용은 거절
  * 공유 썸네일 (선택, 운영자가 발행 전에 확인·수정)
- *   - 아침판 thumb: { costume?, mood?: "up"|"down"|"neutral", bubble?, caption? }
- *     costume = uspresident|banker|president|oil|chip|security|builder|money|shopper|trader|reporter (그날 헤드라인 주인공·주제)
- *     bubble = 콩이가 따라 하는 한마디(44자 안) — 이 판 기사(제목·한 줄 요약·요약·포인트)에 실린 문장 그대로만. 없으면 빼고 warnings
+ *   - 아침판 thumb: { scene?, costume?, kong?, mood?: "up"|"down"|"neutral", bubble?, caption? }
+ *     scene = speech|market|rate|fx|oil|housing|prices|security|chip|trade|bond|news (그날 헤드라인 주제 그림 — 인물 발언이면 speech)
+ *     costume = uspresident|banker|president|… (speech 일 때 콩이가 변장할 인물), kong = 다른 그림에도 작은 콩이(true/false)
+ *     bubble = 큰 글(44자 안) — speech 면 기사에 실린 발언 그대로만(이 판 기사 본문에 없으면 빼고 warnings), 아니면 썸네일 제목
  *     caption = 무슨 일인지 사실 한 줄(64자 안)
  *   - 금콩 스터디 thumb: { topic? } — 논술 주제가 길 때 썸네일용으로 뜻이 바뀌지 않게 줄인 것(120자 안). 주제가 둘이면 더 중요한 하나만
  * 그날 그 판이 이미 있으면 아무것도 바꾸지 않고 skipped. 하나라도 틀리면 아무것도 저장하지 않고 errors.
@@ -142,11 +143,13 @@ export async function POST(req: Request) {
   const rawThumb = b.thumb && typeof b.thumb === "object" ? (b.thumb as Raw) : {};
   const thumb = parseThumb(
     edition === "morning"
-      ? { costume: rawThumb.costume, mood: rawThumb.mood, bubble: rawThumb.bubble, caption: rawThumb.caption }
+      ? { scene: rawThumb.scene, costume: rawThumb.costume, kong: rawThumb.kong, mood: rawThumb.mood, bubble: rawThumb.bubble, caption: rawThumb.caption }
       : { topic: rawThumb.topic },
   );
   if (rawThumb.costume && !thumb.costume) warnings.push("thumb.costume: 없는 변장이라 자동으로 골라요");
-  if (thumb.bubble && !corpus.includes(plain(thumb.bubble))) {
+  if (rawThumb.scene && !thumb.scene) warnings.push("thumb.scene: 없는 그림이라 자동으로 골라요");
+  // 인물 발언(말풍선)은 기사에 실린 말 그대로일 때만 — 지어낸 발언 방지
+  if (thumb.bubble && (!thumb.scene || thumb.scene === "speech") && !corpus.includes(plain(thumb.bubble))) {
     warnings.push("thumb.bubble: 이 판 기사에 그대로 실린 문장이 아니라 뺐어요 (지어낸 말 방지) — 제목으로 그려요");
     thumb.bubble = "";
   }

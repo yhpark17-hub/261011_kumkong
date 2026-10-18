@@ -20,7 +20,9 @@ import { formatPostDateTime } from "@/lib/board-meta";
 import { OVERALL_OPTIONS, TIME_OPTIONS } from "@/lib/review-meta";
 import { ADMIN_PAGE_SIZE, adminReviews, bannedSet, parseStatus, requireAdmin } from "@/lib/server/admin";
 import { addDays, formatShort, todayKST } from "@/lib/date";
-import { getExam, listExams } from "@/lib/server/reviews";
+import { examCounts, getExam, listExams } from "@/lib/server/reviews";
+import { DifficultyTag } from "@/components/reviews/DifficultyMeter";
+import { BarChart3 } from "lucide-react";
 
 export const metadata = { title: "필기 후기" };
 
@@ -42,7 +44,12 @@ async function Reviews({ sp }: { sp: SP }) {
   const exam = getExam(one(sp.exam))?.id ?? "";
   const text = one(sp.text) === "1";
   const page = Math.max(1, Number.parseInt(one(sp.page), 10) || 1);
-  const { rows, total } = await adminReviews({ status, q, exam, textOnly: text, page });
+  const [{ rows, total }, counts] = await Promise.all([adminReviews({ status, q, exam, textOnly: text, page }), examCounts()]);
+  // 시험별 결과 바로가기 — 응답이 들어온 시험, 최근 순
+  const resultExams = listExams()
+    .filter((e) => counts.has(e.id))
+    .sort((a, b) => (a.date < b.date ? 1 : -1))
+    .slice(0, 24);
   const banned = await bannedSet(rows.map((r) => r.ipHash));
   const examInfo = exam ? getExam(exam) : undefined;
   // 공유 썸네일 미리보기 — 고른 시험, 아니면 최근 열흘 ~ 사흘 뒤 시험
@@ -81,10 +88,35 @@ async function Reviews({ sp }: { sp: SP }) {
           <Link href={listHref("/admin/reviews", { status, q, text: text ? "1" : undefined })} className="link">
             해제
           </Link>
-          <Link href={`/reviews/${examInfo.id}`} className="link">
-            결과 페이지
+          <Link href={`/admin/reviews/${examInfo.id}`} className="link">
+            결과 보기
           </Link>
         </p>
+      )}
+
+      {!examInfo && resultExams.length > 0 && (
+        <AdminCard title="시험별 결과" aside={<span className="type-caption text-ink-mute">후기를 남기지 않아도 운영자는 전체 결과를 볼 수 있어요</span>}>
+          <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {resultExams.map((e) => {
+              const c = counts.get(e.id)!;
+              return (
+                <li key={e.id}>
+                  <Link href={`/admin/reviews/${e.id}`} className="flex items-center gap-2.5 rounded-lg border border-hairline px-3 py-2.5 hover:border-hairline-input hover:bg-canvas-soft">
+                    <BarChart3 className="h-4 w-4 shrink-0 text-ink-mute" strokeWidth={1.75} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate type-caption font-semibold text-ink">{e.companyName}</span>
+                      <span className="block truncate type-micro text-ink-mute">
+                        {formatShort(e.date)} · {e.label}
+                      </span>
+                    </span>
+                    <DifficultyTag avg={c.avg} />
+                    <span className="tabular type-caption font-semibold text-ink">{nf.format(c.n)}명</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </AdminCard>
       )}
 
       {shareExams.length > 0 && (

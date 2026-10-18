@@ -166,6 +166,8 @@ export async function saveIssueThumb(_prev: ThumbFormState, fd: FormData): Promi
   const id = Number(fd.get("id"));
   if (!Number.isInteger(id) || id <= 0) return { ok: false, error: "브리핑을 찾을 수 없어요." };
   const thumb = parseThumb({
+    scene: str(fd, "scene", 20),
+    kong: fd.get("kong") === "on",
     costume: str(fd, "costume", 20),
     mood: str(fd, "mood", 10),
     bubble: str(fd, "bubble", 200),
