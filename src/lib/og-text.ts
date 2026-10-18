@@ -19,7 +19,13 @@ const textWidth = (s: string, size: number) => [...s].reduce((w, ch) => w + char
  * 넘치면 마지막 줄 끝을 … 로.
  */
 export function wrapLines(text: string, size: number, maxWidth: number, maxLines: number): { lines: string[]; overflow: boolean } {
-  const words = text.trim().split(/\s+/);
+  // 한 글자 낱말(한·두·첫·왜·더…)은 뒤 낱말과 붙여서 — '최악의 한 / 주' 처럼 갈라지지 않게
+  const words: string[] = [];
+  for (const w of text.trim().split(/\s+/)) {
+    const prev = words.at(-1);
+    if (prev !== undefined && /^[가-힣]$/.test(prev)) words[words.length - 1] = `${prev} ${w}`;
+    else words.push(w);
+  }
   const lines: string[] = [];
   let cur = "";
   for (const w of words) {
