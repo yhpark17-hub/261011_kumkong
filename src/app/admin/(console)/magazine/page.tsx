@@ -6,7 +6,7 @@ import { ConfirmForm } from "@/components/admin/ModerationForm";
 import { AdminCard, AdminPageTitle, AdminPager, EmptyRow, RowButton, StatTile, listHref, nf } from "@/components/admin/parts";
 import { AdminSkeleton } from "@/components/admin/Skeleton";
 import { DbSection } from "@/components/db/DbSection";
-import { MagazineCategoryTag } from "@/components/magazine/parts";
+import { ArticleBadgeTag, MagazineCategoryTag } from "@/components/magazine/parts";
 import { cn } from "@/components/ui";
 import { formatPostDateTime } from "@/lib/board-meta";
 import { MAGAZINE_CATEGORIES, isMagazineCategory, type ArticleSummary } from "@/lib/magazine-meta";
@@ -137,6 +137,7 @@ function ArticleAdminRow({ a }: { a: ArticleSummary }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <MagazineCategoryTag category={a.category} />
+          <ArticleBadgeTag a={a} />
           {live && <span className="tag bg-ev-final-soft text-ev-final">공개</span>}
           {scheduled && <span className="tag bg-ev-written-soft text-primary-text">예약 {a.publishedAt ? formatPostDateTime(a.publishedAt) : ""}</span>}
           {a.status === 0 && <span className="tag bg-canvas-soft text-ink-secondary">임시저장</span>}
@@ -151,12 +152,12 @@ function ArticleAdminRow({ a }: { a: ArticleSummary }) {
         <Link href={`/admin/magazine/${a.id}`} className="mt-1.5 block truncate type-body-md font-semibold text-ink hover:underline">
           {a.title}
         </Link>
-        <p className="mt-0.5 flex flex-wrap items-center gap-x-3 type-micro text-ink-mute">
-          <span>{live && a.publishedAt ? `발행 ${formatPostDateTime(a.publishedAt)}` : `수정 ${formatPostDateTime(a.updatedAt)}`}</span>
-          <span className="inline-flex items-center gap-1 tabular">
-            <Eye className="h-3 w-3" strokeWidth={1.75} />
-            {nf.format(a.views)}
+        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 type-micro text-ink-mute">
+          <span className="inline-flex items-center gap-1 rounded-full bg-canvas-soft px-2 py-0.5 tabular type-caption font-semibold text-ink-secondary">
+            <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
+            조회 {nf.format(a.views)}
           </span>
+          <span>{live && a.publishedAt ? `발행 ${formatPostDateTime(a.publishedAt)}` : `수정 ${formatPostDateTime(a.updatedAt)}`}</span>
           <span className="inline-flex items-center gap-1 tabular">
             <Heart className="h-3 w-3" strokeWidth={1.75} />
             {nf.format(a.likes)}

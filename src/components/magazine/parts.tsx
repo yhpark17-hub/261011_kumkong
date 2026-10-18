@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import {
+  ARTICLE_BADGES,
   BLOG_CATEGORIES,
   CATEGORY_INFO,
   SECTION_INFO,
@@ -40,6 +41,13 @@ export const CATEGORY_ICON: Record<MagazineCategory, LucideIcon> = {
 
 export function MagazineCategoryTag({ category, className }: { category: MagazineCategory; className?: string }) {
   return <span className={cn("tag", CATEGORY_INFO[category].tone, className)}>{CATEGORY_INFO[category].label}</span>;
+}
+
+/** 운영자가 고른 강조 표시 (인기·NEW·추천·필독) — 없으면 아무것도 안 그림 */
+export function ArticleBadgeTag({ a, className }: { a: Pick<ArticleSummary, "badge">; className?: string }) {
+  if (!a.badge) return null;
+  const b = ARTICLE_BADGES[a.badge];
+  return <span className={cn("inline-flex shrink-0 items-center rounded-full px-2 py-0.5 type-micro font-bold", b.tone, className)}>{b.label}</span>;
 }
 
 export function ArticleMeta({ a, className, showViews = false }: { a: ArticleSummary; className?: string; showViews?: boolean }) {
@@ -87,7 +95,10 @@ export function ArticleCard({ a, priority = false, large = false }: { a: Article
         <ReadBadge id={a.id} className="absolute top-3 right-3" />
       </div>
       <div className={cn("flex flex-1 flex-col", large ? "p-6" : "p-5")}>
-        <MagazineCategoryTag category={a.category} className="self-start" />
+        <span className="flex items-center gap-1.5 self-start">
+          <MagazineCategoryTag category={a.category} />
+          <ArticleBadgeTag a={a} />
+        </span>
         <h3
           className={cn(
             "mt-3 line-clamp-2 text-ink [word-break:keep-all] group-hover:underline",
@@ -112,6 +123,7 @@ export function ArticleListRow({ a }: { a: ArticleSummary }) {
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-2">
           <MagazineCategoryTag category={a.category} />
+          <ArticleBadgeTag a={a} />
           <ReadBadge id={a.id} />
         </span>
         <span className="mt-2 block type-heading-sm text-ink [word-break:keep-all] group-hover:underline">{a.title}</span>
@@ -136,6 +148,7 @@ export function ArticleRow({ a, rank }: { a: ArticleSummary; rank?: number }) {
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-2">
           <MagazineCategoryTag category={a.category} />
+          <ArticleBadgeTag a={a} />
           <ReadBadge id={a.id} />
         </span>
         <span className="mt-1.5 line-clamp-2 type-body-md font-semibold text-ink group-hover:underline">{a.title}</span>

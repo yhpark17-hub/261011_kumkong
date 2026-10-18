@@ -11,7 +11,7 @@ const TABS = [
   { href: "/", label: "홈", Icon: House },
   { href: "/calendar", label: "캘린더", Icon: CalendarDays },
   { href: "/reviews", label: "필기 후기", Icon: BarChart3 },
-  { href: "/magazine", label: "브리핑", Icon: Newspaper },
+  { href: "/magazine", label: "시사 뉴스", Icon: Newspaper },
   { href: "/board", label: BOARD_NAME, Icon: MessagesSquare },
 ] as const;
 

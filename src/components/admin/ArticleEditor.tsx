@@ -29,12 +29,15 @@ import {
 import { deleteArticle, saveArticle, type ArticleFormState } from "@/app/admin/article-actions";
 import { Markdown } from "@/components/magazine/Markdown";
 import {
+  ARTICLE_BADGES,
   CATEGORY_INFO,
   MAGAZINE_CATEGORIES,
   TEMPLATES,
   computeReadMinutes,
+  isArticleBadge,
   isMagazineCategory,
   summaryLines,
+  type ArticleBadge,
   type MagazineCategory,
 } from "@/lib/magazine-meta";
 import { ARTICLE_FEATURES, ARTICLE_WIDGETS } from "@/lib/article-widgets";
@@ -51,6 +54,8 @@ export interface EditorInitial {
   tags: string;
   author: string;
   featured: boolean;
+  /** 강조 표시 ('' = 없음) */
+  badge: ArticleBadge | "";
   /** 서버에서 계산: 지금 상태에 맞는 발행 방식 */
   mode: "draft" | "now" | "schedule";
   /** datetime-local 값 (한국 시각) */
@@ -60,7 +65,7 @@ export interface EditorInitial {
   statusLabel: string;
 }
 
-type Fields = Pick<EditorInitial, "category" | "title" | "summary" | "coverUrl" | "body" | "tags" | "author" | "featured" | "mode" | "publishAt">;
+type Fields = Pick<EditorInitial, "category" | "title" | "summary" | "coverUrl" | "body" | "tags" | "author" | "featured" | "badge" | "mode" | "publishAt">;
 
 const pick = (i: EditorInitial): Fields => ({
   category: i.category,
@@ -71,6 +76,7 @@ const pick = (i: EditorInitial): Fields => ({
   tags: i.tags,
   author: i.author,
   featured: i.featured,
+  badge: i.badge,
   mode: i.mode,
   publishAt: i.publishAt,
 });
@@ -89,6 +95,7 @@ const fromForm = (fd: FormData): Fields => ({
   tags: String(fd.get("tags") ?? ""),
   author: String(fd.get("author") ?? ""),
   featured: fd.get("featured") === "on",
+  badge: isArticleBadge(fd.get("badge")) ? (fd.get("badge") as ArticleBadge) : "",
   mode: (String(fd.get("mode") ?? "draft") as Fields["mode"]),
   publishAt: String(fd.get("publishAt") ?? ""),
 });
@@ -603,6 +610,17 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
               <input type="checkbox" name="featured" checked={f.featured} onChange={(e) => set("featured", e.target.checked)} className="h-4 w-4 accent-[#533afd]" />
               에디터 추천 (매거진 첫 화면 상단에 크게)
             </label>
+            <div className="mt-3">
+              <p className="type-caption text-ink-secondary">강조 표시 (홈·블로그 목록에서 제목 앞에 색 표시)</p>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {([["", "없음", "bg-canvas-soft text-ink-secondary"], ...Object.entries(ARTICLE_BADGES).map(([k, v]) => [k, v.label, v.tone])] as [ArticleBadge | "", string, string][]).map(([key, label, tone]) => (
+                  <label key={key || "none"} className={cn("cursor-pointer rounded-full border-2 px-1 py-0.5", f.badge === key ? "border-brand-dark" : "border-transparent")}>
+                    <input type="radio" name="badge" value={key} checked={f.badge === key} onChange={() => set("badge", key)} className="sr-only" />
+                    <span className={cn("inline-block rounded-full px-2.5 py-0.5 type-caption font-semibold", tone)}>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
           </fieldset>
         </div>
 

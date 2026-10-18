@@ -5,89 +5,124 @@ import { KongMascot } from "@/components/magazine/KongMascot";
 import { ArticleRow } from "@/components/magazine/parts";
 import { formatDayHeading } from "@/lib/date";
 import { BLOG_CATEGORIES, SECTION_INFO } from "@/lib/magazine-meta";
-import { NEWS_SECTION_INFO, itemHref, letterHref } from "@/lib/news-meta";
+import { EDITION_LABEL, EDITION_SLOT, NEWS_SECTION_INFO, itemHref, letterHref, type BriefingIssue, type NewsItem } from "@/lib/news-meta";
 import { arrangeLetter, issueItems, latestIssue } from "@/lib/server/briefing";
 import { listArticles } from "@/lib/server/magazine";
+import { BriefingCarousel } from "./BriefingCarousel";
 
-/** 홈: 오늘의 레터(데일리 브리핑) + 금융 블로그 새 글 */
-export async function MagazineStrip() {
-  await connection();
-  const [issue, latest] = await Promise.all([latestIssue("morning"), listArticles({ categories: BLOG_CATEGORIES.map((c) => c.key), pageSize: 3 })]);
-  const top = issue ? arrangeLetter(await issueItems(issue.date, "morning")).top : [];
-  if (!issue && latest.items.length === 0) return null;
-
+/** 브리핑 한 장 — 머리(콩이·판 이름·날짜) + 제목 + 세 줄 */
+function Slide({ issue, rows }: { issue: BriefingIssue; rows: { n: NewsItem; tag: string; text: string }[] }) {
+  const noon = issue.edition === "noon";
+  const href = letterHref(issue.date, issue.edition);
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-      <section aria-label="오늘의 브리핑" className="flex flex-col rounded-xl bg-canvas-cream p-6">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 type-heading-md text-ink">
-            <KongMascot className="h-7 w-7" />
-            데일리 브리핑
-            {issue && <span className="type-caption font-normal text-ink-mute">{formatDayHeading(issue.date)} 금콩 브리핑</span>}
-          </h2>
-          <Link href={issue ? letterHref(issue.date, "morning") : "/magazine"} className="link inline-flex shrink-0 items-center gap-1 type-caption">
-            브리핑 읽기
-            <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.75} />
-          </Link>
-        </div>
-        {issue ? (
-          <>
-            <Link href={letterHref(issue.date, "morning")} className="mt-4 block type-heading-md text-ink [word-break:keep-all] hover:underline">
-              {issue.title}
-            </Link>
-            {top.length > 0 && (
-              <ol className="mt-3 space-y-2">
-                {top.map((n, i) => (
-                  <li key={n.id}>
-                    <Link href={itemHref(n)} className="group flex gap-2.5 rounded-lg bg-canvas px-3 py-2.5">
-                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-dark tabular type-micro font-bold text-on-primary">
-                        {i + 1}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate type-body-md font-semibold text-ink group-hover:underline">{n.title}</span>
-                        <span className="block truncate type-caption text-ink-mute">
-                          {NEWS_SECTION_INFO[n.section].label}
-                          {n.takeaway ? ` · ${n.takeaway}` : ""}
-                        </span>
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </>
-        ) : (
-          <p className="mt-4 type-body-md text-ink-mute">매일 아침 기사 브리핑, 점심에는 금콩 스터디로 찾아올게요.</p>
-        )}
-      </section>
-
-      <div className="rounded-xl border border-hairline p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="type-heading-md text-ink">{SECTION_INFO.blog.label}</h2>
-          <Link href={SECTION_INFO.blog.href} className="link inline-flex items-center gap-1 type-caption">
-            전체
-            <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.75} />
-          </Link>
-        </div>
-        {latest.items.length ? (
-          <div className="mt-1 divide-y divide-hairline">
-            {latest.items.map((a) => (
-              <ArticleRow key={a.id} a={a} />
-            ))}
-          </div>
-        ) : (
-          <p className="py-6 type-body-md text-ink-mute">필기·면접·금공 지식 글을 준비하고 있어요.</p>
-        )}
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="flex min-w-0 items-center gap-2 type-heading-md text-ink">
+          <KongMascot className="h-7 w-7" {...(noon ? { hold: "book" as const, glasses: true } : { hold: "news" as const })} />
+          {EDITION_LABEL[issue.edition]}
+          <span className="truncate type-caption font-normal text-ink-mute">
+            {formatDayHeading(issue.date)} {EDITION_SLOT[issue.edition]}
+          </span>
+        </h2>
+        <Link href={href} className="link inline-flex shrink-0 items-center gap-1 type-caption">
+          {noon ? "스터디 읽기" : "브리핑 읽기"}
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.75} />
+        </Link>
       </div>
+      <Link href={href} className="mt-4 block type-heading-md text-ink [word-break:keep-all] hover:underline">
+        {issue.title}
+      </Link>
+      {rows.length > 0 && (
+        <ol className="mt-3 space-y-2">
+          {rows.map(({ n, tag, text }, i) => (
+            <li key={n.id}>
+              <Link href={itemHref(n)} className="group flex gap-2.5 rounded-lg bg-canvas px-3 py-2.5">
+                <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-dark tabular type-micro font-bold text-on-primary">
+                  {i + 1}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate type-body-md font-semibold text-ink group-hover:underline">{text}</span>
+                  <span className="block truncate type-caption text-ink-mute">{tag}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ol>
+      )}
     </div>
   );
 }
 
-export function MagazineStripSkeleton() {
+/** 홈: 금콩 브리핑(아침판)·금콩 스터디(점심판) 최신 호를 번갈아 (요청 시 렌더링) */
+export async function BriefingStrip() {
+  await connection();
+  const [morning, noon] = await Promise.all([latestIssue("morning"), latestIssue("noon")]);
+  const slides = [];
+  if (morning) {
+    const top = arrangeLetter(await issueItems(morning.date, "morning")).top;
+    slides.push({
+      key: "morning",
+      label: EDITION_LABEL.morning,
+      content: <Slide issue={morning} rows={top.map((n) => ({ n, text: n.title, tag: `${NEWS_SECTION_INFO[n.section].label}${n.takeaway ? ` · ${n.takeaway}` : ""}` }))} />,
+    });
+  }
+  if (noon) {
+    const { terms, questions } = arrangeLetter(await issueItems(noon.date, "noon"));
+    const rows = [
+      ...terms.map((n) => ({ n, text: n.title, tag: "오늘의 용어" })),
+      ...questions.map((n) => ({ n, text: `Q. ${n.title}`, tag: "오늘의 면접 질문" })),
+    ].slice(0, 3);
+    slides.push({ key: "noon", label: EDITION_LABEL.noon, content: <Slide issue={noon} rows={rows} /> });
+  }
+  if (!slides.length) {
+    return (
+      <section aria-label="오늘의 브리핑" className="flex h-full flex-col rounded-xl bg-canvas-cream p-6">
+        <h2 className="flex items-center gap-2 type-heading-md text-ink">
+          <KongMascot className="h-7 w-7" />
+          데일리 브리핑
+        </h2>
+        <p className="mt-4 type-body-md text-ink-mute">매일 아침 기사 브리핑, 점심에는 금콩 스터디로 찾아올게요.</p>
+      </section>
+    );
+  }
+  return <BriefingCarousel slides={slides} />;
+}
+
+/** 홈: 금융 블로그 새 글 (강조 표시 포함) */
+export async function BlogStrip() {
+  await connection();
+  const latest = await listArticles({ categories: BLOG_CATEGORIES.map((c) => c.key), pageSize: 3 });
   return (
-    <div className="grid animate-pulse gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-      <div className="h-64 rounded-xl bg-canvas-soft" />
-      <div className="h-64 rounded-xl bg-canvas-soft" />
-    </div>
+    <section aria-label={SECTION_INFO.blog.label} className="flex h-full flex-col rounded-xl border border-hairline p-6">
+      <div className="flex items-center justify-between">
+        <h2 className="type-heading-md text-ink">{SECTION_INFO.blog.label}</h2>
+        <Link href={SECTION_INFO.blog.href} className="link inline-flex items-center gap-1 type-caption">
+          전체
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.75} />
+        </Link>
+      </div>
+      {latest.items.length ? (
+        <div className="mt-1 divide-y divide-hairline">
+          {latest.items.map((a) => (
+            <ArticleRow key={a.id} a={a} />
+          ))}
+        </div>
+      ) : (
+        <p className="py-6 type-body-md text-ink-mute">필기·면접·금공 지식 글을 준비하고 있어요.</p>
+      )}
+      {/* 글이 적어도 칸이 비어 보이지 않게 맨 아래 붙는 줄 */}
+      <div className="mt-auto pt-4">
+        <div className="flex items-center justify-between gap-3 rounded-lg bg-canvas-soft px-4 py-3">
+          <p className="min-w-0 type-caption text-ink-secondary [word-break:keep-all]">필기 준비법·면접 전략·금공 지식을 깊이 있게</p>
+          <Link href={SECTION_INFO.blog.href} className="btn btn-sm btn-toggle shrink-0 bg-canvas">
+            블로그 보기
+          </Link>
+        </div>
+      </div>
+    </section>
   );
+}
+
+export function StripSkeleton() {
+  return <div className="h-80 animate-pulse rounded-xl bg-canvas-soft" />;
 }

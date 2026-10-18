@@ -280,6 +280,8 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: "news", column: "takeaway", ddl: "ALTER TABLE news ADD COLUMN takeaway TEXT NOT NULL DEFAULT ''" },
   // 금콩 스터디 코너(숫자로 보는 오늘·논술 한 문단) — 2026-10 추가
   { table: "briefing_issues", column: "extras", ddl: "ALTER TABLE briefing_issues ADD COLUMN extras TEXT NOT NULL DEFAULT '{}'" },
+  // 블로그 글 강조 표시(인기·NEW·추천·필독) — 운영자가 고름, 2026-10 추가
+  { table: "articles", column: "badge", ddl: "ALTER TABLE articles ADD COLUMN badge TEXT NOT NULL DEFAULT ''" },
 ];
 
 async function migrate(c: Client) {

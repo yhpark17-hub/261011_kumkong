@@ -5,6 +5,7 @@ import { formatDayHeading } from "@/lib/date";
 import { isDateKey, isIssueEdition } from "@/lib/news-meta";
 import { getIssue, issueItems } from "@/lib/server/briefing";
 import { dbConfigured } from "@/lib/server/db";
+import { isAdmin } from "@/lib/server/security";
 import { C, OG_SIZE, fitText, kongSvg, ogFonts, svgUri, wrapLines, type OgKong } from "@/lib/server/og";
 
 /**
@@ -132,14 +133,17 @@ export default async function Image({ params }: { params: Promise<{ date: string
   const { date, edition } = await params;
   await connection(); // 발행 여부·제목이 바뀌면 바로 반영 (요청 때 그림)
   const fonts = await ogFonts();
-  const issue = isDateKey(date) && isIssueEdition(edition) && dbConfigured() ? await getIssue(date, edition).catch(() => null) : null;
-  if (!issue) return new ImageResponse(<Fallback />, { ...size, fonts });
+  // 운영자가 관리자 화면에서 볼 때는 발행 전 초안도 그려 보여 줘요 (그 그림은 어디에도 저장되지 않게 no-store)
+  const admin = dbConfigured() && (await isAdmin());
+  const headers = admin ? { "Cache-Control": "private, no-store" } : undefined;
+  const issue = isDateKey(date) && isIssueEdition(edition) && dbConfigured() ? await getIssue(date, edition, { admin }).catch(() => null) : null;
+  if (!issue) return new ImageResponse(<Fallback />, { ...size, fonts, headers });
 
   const noon = issue.edition === "noon";
   const [main, sub] = splitTitle(issue.title);
   const mood = noon ? "neutral" : moodOf(main);
   const topic = topicOf(main);
-  const items = noon ? await issueItems(issue.date, "noon").catch(() => []) : [];
+  const items = noon ? await issueItems(issue.date, "noon", { admin }).catch(() => []) : [];
   const terms = items.filter((n) => n.section === "term").map((n) => n.title);
   const question = items.find((n) => n.section === "question")?.title;
 
@@ -271,6 +275,6 @@ export default async function Image({ params }: { params: Promise<{ date: string
         {noon ? "점심에 보는 금융 공부 · 금콩" : "출근길 3분 금융 뉴스 · 금콩"}
       </Abs>
     </div>,
-    { ...size, fonts },
+    { ...size, fonts, headers },
   );
 }

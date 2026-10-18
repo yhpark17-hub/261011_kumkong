@@ -122,6 +122,18 @@ export const SECTION_INFO: Record<MagazineSection, { label: string; desc: string
 
 export const sectionOf = (category: MagazineCategory): MagazineSection => (category === "briefing" ? "briefing" : "blog");
 
+/** 글 강조 표시 — 운영자가 글마다 골라요 (홈·블로그 목록에서 제목 앞 색 표시) */
+export const ARTICLE_BADGES = {
+  hot: { label: "인기", tone: "bg-ruby text-on-primary" },
+  new: { label: "NEW", tone: "bg-ev-final text-on-primary" },
+  pick: { label: "추천", tone: "bg-primary text-on-primary" },
+  must: { label: "필독", tone: "bg-[#f07b12] text-on-primary" },
+} as const;
+
+export type ArticleBadge = keyof typeof ARTICLE_BADGES;
+
+export const isArticleBadge = (v: unknown): v is ArticleBadge => typeof v === "string" && v in ARTICLE_BADGES;
+
 export interface ArticleSummary {
   id: number;
   category: MagazineCategory;
@@ -132,6 +144,8 @@ export interface ArticleSummary {
   author: string;
   readMinutes: number;
   featured: boolean;
+  /** 강조 표시 (없으면 null) */
+  badge: ArticleBadge | null;
   status: number;
   /** 지금 공개 중 (발행 + 발행 시각 지남) */
   live: boolean;

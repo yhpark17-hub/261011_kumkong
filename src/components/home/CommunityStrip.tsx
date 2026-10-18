@@ -10,17 +10,20 @@ import { listPosts } from "@/lib/server/board";
 import { examCounts, listExams } from "@/lib/server/reviews";
 import { Card, CompanyAvatar } from "../ui";
 
-/** 홈 옆 칸: 최근 필기 체감 난이도 — '지금 채용 현황' 바로 아래 (요청 시 렌더링) */
-export async function RecentExamsPanel() {
+/**
+ * 최근 필기 체감 난이도 (요청 시 렌더링) — 캘린더 옆 칸, 홈
+ * limit: 보여 줄 시험 수 (홈에서는 옆 칸과 높이가 맞게 늘려요)
+ */
+export async function RecentExamsPanel({ limit = 4 }: { limit?: number } = {}) {
   await connection();
   const today = todayKST();
   const counts = await examCounts();
   const exams = listExams()
     .filter((e) => !e.expected && e.date <= today)
-    .slice(0, 4);
+    .slice(0, limit);
 
   return (
-    <Card className="p-6">
+    <Card className="h-full p-6">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="flex items-center gap-2 type-heading-sm text-ink">
           <BarChart3 className="h-4 w-4 text-ink-mute" strokeWidth={1.75} />
@@ -73,15 +76,15 @@ export function RecentExamsPanelSkeleton() {
 }
 
 /** 홈: 콩밭 새 글 (요청 시 렌더링) */
-export async function CommunityStrip() {
+export async function CommunityStrip({ limit = 6 }: { limit?: number } = {}) {
   await connection();
   const today = todayKST();
   const board = await listPosts({ page: 1 });
-  const posts = [...board.notices.slice(0, 1), ...board.posts].slice(0, 6);
+  const posts = [...board.notices.slice(0, 1), ...board.posts].slice(0, limit);
 
   return (
-    <div>
-      <Card className="p-6">
+    <div className="h-full">
+      <Card className="flex h-full flex-col p-6">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="flex items-center gap-2 type-heading-md text-ink">
             <MessagesSquare className="h-5 w-5 text-ink-mute" strokeWidth={1.5} />
@@ -100,10 +103,11 @@ export async function CommunityStrip() {
             </Link>
           </div>
         ) : (
-          <ul className="divide-y divide-hairline">
+          // 구분선이 카드 끝까지 닿게 (카드 안쪽 여백만큼 바깥으로 넓히고, 줄마다 여백을 다시 줌)
+          <ul className="-mx-6 divide-y divide-hairline border-t border-hairline">
             {posts.map((p) => (
               <li key={p.id}>
-                <Link href={`/board/${p.id}`} className="group flex items-center gap-2 py-3">
+                <Link href={`/board/${p.id}`} className="group flex items-center gap-2 px-6 py-3 hover:bg-canvas-soft">
                   {p.isNotice ? <span className="tag bg-brand-dark text-on-primary">공지</span> : <CategoryTag category={p.category} />}
                   <span className="min-w-0 flex-1 truncate type-body-md text-ink group-hover:underline">{p.title}</span>
                   {p.commentCount > 0 && <span className="tabular type-caption text-primary-text">[{p.commentCount}]</span>}
@@ -118,6 +122,17 @@ export async function CommunityStrip() {
               </li>
             ))}
           </ul>
+        )}
+        {posts.length > 0 && (
+          // 글이 적어도 칸이 비어 보이지 않게 맨 아래 붙는 줄
+          <div className="mt-auto pt-4">
+            <div className="flex items-center justify-between gap-3 rounded-lg bg-canvas-soft px-4 py-3">
+              <p className="min-w-0 type-caption text-ink-secondary [word-break:keep-all]">로그인 없이 익명으로 필기·면접 정보를 나눠요</p>
+              <Link href="/board/write" className="btn btn-sm btn-secondary shrink-0">
+                글쓰기
+              </Link>
+            </div>
+          </div>
         )}
       </Card>
     </div>

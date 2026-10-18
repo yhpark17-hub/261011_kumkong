@@ -19,7 +19,8 @@ import { cn } from "@/components/ui";
 import { formatPostDateTime } from "@/lib/board-meta";
 import { OVERALL_OPTIONS, TIME_OPTIONS } from "@/lib/review-meta";
 import { ADMIN_PAGE_SIZE, adminReviews, bannedSet, parseStatus, requireAdmin } from "@/lib/server/admin";
-import { getExam } from "@/lib/server/reviews";
+import { addDays, formatShort, todayKST } from "@/lib/date";
+import { getExam, listExams } from "@/lib/server/reviews";
 
 export const metadata = { title: "필기 후기" };
 
@@ -44,6 +45,14 @@ async function Reviews({ sp }: { sp: SP }) {
   const { rows, total } = await adminReviews({ status, q, exam, textOnly: text, page });
   const banned = await bannedSet(rows.map((r) => r.ipHash));
   const examInfo = exam ? getExam(exam) : undefined;
+  // 공유 썸네일 미리보기 — 고른 시험, 아니면 최근 열흘 ~ 사흘 뒤 시험
+  const today = todayKST();
+  const shareExams = examInfo
+    ? [examInfo]
+    : listExams()
+        .filter((e) => !e.expected && e.date >= addDays(today, -10) && e.date <= addDays(today, 3))
+        .sort((a, b) => (a.date < b.date ? 1 : -1))
+        .slice(0, 8);
 
   return (
     <>
@@ -76,6 +85,27 @@ async function Reviews({ sp }: { sp: SP }) {
             결과 페이지
           </Link>
         </p>
+      )}
+
+      {shareExams.length > 0 && (
+        <AdminCard title="카톡·SNS 공유 썸네일 미리보기" aside={<span className="type-caption text-ink-mute">링크를 공유하면 이 그림이 떠요 · 누르면 크게</span>}>
+          <ul className="no-scrollbar -mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
+            {shareExams.map((e) => {
+              const og = `/reviews/${e.id}/opengraph-image?v=${today}`;
+              return (
+                <li key={e.id} className="w-56 shrink-0">
+                  <a href={og} target="_blank" className="block overflow-hidden rounded-lg border border-hairline">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- 그때그때 그리는 공유 썸네일 */}
+                    <img src={og} alt={`${e.companyName} 필기 후기 공유 썸네일`} loading="lazy" className="aspect-[1200/630] w-full bg-canvas-soft object-cover" />
+                  </a>
+                  <p className="mt-1 truncate type-caption text-ink-secondary">
+                    {formatShort(e.date)} {e.companyName}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        </AdminCard>
       )}
 
       <AdminCard>

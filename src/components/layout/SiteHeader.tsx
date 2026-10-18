@@ -9,10 +9,11 @@ import { Logo, cn } from "../ui";
 
 const NAV = [
   { href: "/calendar", label: "채용 캘린더" },
-  { href: "/companies", label: "기관 정보·경쟁률" },
   { href: "/reviews", label: "필기 후기" },
+  // 데일리 브리핑(시사·금융 뉴스)과 금융 블로그 — 예전 이름 '매거진'
+  { href: "/magazine", label: "시사 뉴스" },
   { href: "/board", label: "콩밭" },
-  { href: "/magazine", label: "매거진" },
+  { href: "/companies", label: "기관 정보·경쟁률" },
 ] as const;
 
 /* 스크롤 위치: 메시 위에서는 투명, 내려가면 canvas 배경 (nav-bar-on-mesh) */

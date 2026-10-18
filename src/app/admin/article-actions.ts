@@ -9,6 +9,7 @@ import {
   isMagazineCategory,
   kstInputToMs,
   parseTags,
+  isArticleBadge,
 } from "@/lib/magazine-meta";
 import { db } from "@/lib/server/db";
 import { isAdmin } from "@/lib/server/security";
@@ -44,6 +45,8 @@ export async function saveArticle(_prev: ArticleFormState, fd: FormData): Promis
   const tags = parseTags(str(fd, "tags")).join(",");
   const author = str(fd, "author").slice(0, 30) || DEFAULT_AUTHOR;
   const featured = fd.get("featured") === "on" ? 1 : 0;
+  const badgeRaw = str(fd, "badge");
+  const badge = isArticleBadge(badgeRaw) ? badgeRaw : "";
   const mode = str(fd, "mode"); // draft | now | schedule
 
   if (!isMagazineCategory(category)) return { ok: false, error: "카테고리를 골라 주세요." };
@@ -78,17 +81,17 @@ export async function saveArticle(_prev: ArticleFormState, fd: FormData): Promis
   if (id) {
     await client.execute({
       sql: `UPDATE articles SET category = ?, title = ?, summary = ?, cover_url = ?, body = ?, tags = ?, author = ?,
-              read_minutes = ?, featured = ?, status = ?, published_at = ?, updated_at = ? WHERE id = ?`,
-      args: [category, title, summary, cover, body, tags, author, readMinutes, featured, status, publishedAt, now, id],
+              read_minutes = ?, featured = ?, badge = ?, status = ?, published_at = ?, updated_at = ? WHERE id = ?`,
+      args: [category, title, summary, cover, body, tags, author, readMinutes, featured, badge, status, publishedAt, now, id],
     });
     revalidateMagazine(id);
     return { ok: true, savedAt: now, status, publishedAt };
   }
 
   const res = await client.execute({
-    sql: `INSERT INTO articles (category, title, summary, cover_url, body, tags, author, read_minutes, featured, status, source, published_at, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', ?, ?, ?)`,
-    args: [category, title, summary, cover, body, tags, author, readMinutes, featured, status, publishedAt, now, now],
+    sql: `INSERT INTO articles (category, title, summary, cover_url, body, tags, author, read_minutes, featured, badge, status, source, published_at, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', ?, ?, ?)`,
+    args: [category, title, summary, cover, body, tags, author, readMinutes, featured, badge, status, publishedAt, now, now],
   });
   const newId = Number(res.lastInsertRowid);
   revalidateMagazine(newId);

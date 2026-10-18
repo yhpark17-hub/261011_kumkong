@@ -12,7 +12,7 @@ import {
 } from "@/lib/magazine-meta";
 import { Eyebrow, cn } from "../ui";
 import { ReadBadge, UnreadDot } from "./interactive";
-import { ArticleCover, ArticleMeta, MagazineCategoryTag, MagazineSectionTabs } from "./parts";
+import { ArticleBadgeTag, ArticleCover, ArticleMeta, MagazineCategoryTag, MagazineSectionTabs } from "./parts";
 
 /** 매거진 공통 머리: 이름 · 섹션 설명 · 검색 · 섹션 탭 */
 export function MagazineShell({ section, q = "", children }: { section: MagazineSection; q?: string; children: React.ReactNode }) {
@@ -158,7 +158,10 @@ export function FeatureCard({ a, wide = false }: { a: ArticleSummary; wide?: boo
     >
       <ArticleCover a={a} className={cn("aspect-[16/9] w-full", wide && "md:aspect-auto md:min-h-[300px] md:w-[52%] md:shrink-0")} iconSize="h-12 w-12" />
       <div className="flex flex-1 flex-col p-6">
-        <MagazineCategoryTag category={a.category} className="self-start" />
+        <span className="flex items-center gap-1.5 self-start">
+          <MagazineCategoryTag category={a.category} />
+          <ArticleBadgeTag a={a} />
+        </span>
         <h3 className="mt-3 type-heading-lg text-ink group-hover:underline">{a.title}</h3>
         {points.length > 0 && (
           <ul className="mt-3 space-y-1.5">

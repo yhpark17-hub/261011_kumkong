@@ -11,10 +11,10 @@ const ITEMS = [
   { href: "/board", label: BOARD_NAME, hint: "준비생 익명 게시판", Icon: MessagesSquare, tone: "bg-ev-posting-soft text-ev-posting" },
 ] as const;
 
-/** 홈: 섹션 바로가기 — 휴대폰에서도 첫 화면에 다 보이게 3칸 × 2줄 */
+/** 홈: 섹션 바로가기 — 휴대폰 첫 화면에 다 보이게 3칸 × 2줄 (PC 는 위 메뉴로 충분해서 숨김) */
 export function QuickMenu() {
   return (
-    <nav aria-label="바로가기" className="grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-6">
+    <nav aria-label="바로가기" className="grid grid-cols-3 gap-2 sm:gap-3 md:hidden">
       {ITEMS.map(({ href, label, hint, Icon, tone }) => (
         <Link
           key={href}
