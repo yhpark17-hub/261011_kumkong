@@ -77,6 +77,8 @@ export default async function Image({ params }: { params: Promise<{ examId: stri
   ].slice(0, 6);
   const widths = maskWidths(exam.id, rows.length);
 
+  // 기관 이름의 괄호 설명은 빼고 (예: '전국 농·축협 (6급 통합채용)' → '전국 농·축협')
+  const name = exam.companyName.replace(/\s*\([^)]*\)/g, "").trim() || exam.companyName;
   const logoH = logo?.wide ? 60 : 84;
   const logoW = logo ? Math.min(Math.round((logo.width / logo.height) * logoH), 280) : 0;
 
@@ -101,9 +103,9 @@ export default async function Image({ params }: { params: Promise<{ examId: stri
                 <img src={logo.src} width={logoW} height={logoH} alt="" />
               </div>
             )}
-            {!logo?.wide && <div style={{ display: "flex", fontSize: 50, fontWeight: 800, color: C.ink, letterSpacing: -1.5 }}>{clip(exam.companyName, 11)}</div>}
+            {!logo?.wide && <div style={{ display: "flex", fontSize: 50, fontWeight: 800, color: C.ink, letterSpacing: -1.5 }}>{clip(name, 11)}</div>}
           </div>
-          {logo?.wide && <div style={{ display: "flex", marginTop: 14, fontSize: 48, fontWeight: 800, color: C.ink, letterSpacing: -1.5 }}>{clip(exam.companyName, 13)}</div>}
+          {logo?.wide && <div style={{ display: "flex", marginTop: 14, fontSize: 48, fontWeight: 800, color: C.ink, letterSpacing: -1.5 }}>{clip(name, 13)}</div>}
           <div style={{ display: "flex", alignItems: "center", marginTop: 12 }}>
             <div style={{ display: "flex", fontSize: 30, fontWeight: 700, color: C.inkSoft }}>{examLine(exam.date)}</div>
             {daysLeft > 0 && (
@@ -185,7 +187,7 @@ export default async function Image({ params }: { params: Promise<{ examId: stri
           <div style={{ display: "flex", flexDirection: "column", flex: 1, marginTop: 14 }}>
             {rows.map((label, k) => (
               <div key={label} style={{ display: "flex", flex: 1, alignItems: "center", borderTop: k ? `2px solid ${C.line}` : "none" }}>
-                <div style={{ display: "flex", width: 196, fontSize: 21, fontWeight: 700, color: C.inkSoft }}>{clip(label, 11)}</div>
+                <div style={{ display: "flex", width: 236, fontSize: 20, fontWeight: 700, color: C.inkSoft }}>{clip(label, 14)}</div>
                 <div style={{ display: "flex", flex: 1, height: 16, borderRadius: 8, background: "#eeecf6" }}>
                   <div style={{ display: "flex", width: `${widths[k]}%`, height: 16, borderRadius: 8, background: "#cdc6f5" }} />
                 </div>
