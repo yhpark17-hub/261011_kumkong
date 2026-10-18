@@ -6,7 +6,7 @@ import { DbSection } from "@/components/db/DbSection";
 import { LetterScreen } from "@/components/magazine/LetterScreen";
 import { MagazineShell } from "@/components/magazine/sections";
 import { formatDayHeading } from "@/lib/date";
-import { EDITION_LABEL, isDateKey, isIssueEdition, letterHref } from "@/lib/news-meta";
+import { EDITION_LABEL, isDateKey, isIssueEdition, letterHref, shareImageUrl } from "@/lib/news-meta";
 import { adjacentIssues, arrangeLetter, getIssue, issueItems, recentIssues } from "@/lib/server/briefing";
 import { dbConfigured } from "@/lib/server/db";
 import { popularNews } from "@/lib/server/news";
@@ -24,7 +24,12 @@ export async function generateMetadata({ params }: PageProps<"/magazine/letter/[
     title: `${title} | 데일리 브리핑`,
     description,
     alternates: { canonical: letterHref(issue.date, issue.edition) },
-    openGraph: pageOpenGraph(letterHref(issue.date, issue.edition), { title, description, type: "article" }, { fileImage: true }),
+    // 공유 썸네일: 올린 그림 또는 그날 그린 그림 — 수정 시각(?v=)을 붙여 고치면 카톡도 새 그림을 가져가요
+    openGraph: pageOpenGraph(
+      letterHref(issue.date, issue.edition),
+      { title, description, type: "article", images: [{ url: shareImageUrl(issue), width: 1200, height: 630, alt: `${EDITION_LABEL[issue.edition]} ${formatDayHeading(issue.date)}` }] },
+      { fileImage: true },
+    ),
   };
 }
 

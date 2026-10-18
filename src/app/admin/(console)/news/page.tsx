@@ -11,7 +11,7 @@ import { DbSection } from "@/components/db/DbSection";
 import { NewsSectionTag, newsTitle } from "@/components/magazine/news";
 import { cn } from "@/components/ui";
 import { formatDayHeading, todayKST } from "@/lib/date";
-import { EDITION_LABEL, NEWS_SECTIONS, isDateKey, isNewsSection, kindOf, letterHref, newsHref, volLabel, type NewsItem } from "@/lib/news-meta";
+import { EDITION_LABEL, NEWS_SECTIONS, isDateKey, isNewsSection, kindOf, letterHref, newsHref, shareImageUrl, volLabel, type NewsItem } from "@/lib/news-meta";
 import { adminListIssues, type AdminIssueRow } from "@/lib/server/briefing";
 import { requireAdmin } from "@/lib/server/admin";
 import { adminListNews, newsAdminCounts, type AdminNewsFilter } from "@/lib/server/news";
@@ -197,7 +197,7 @@ function Row({ n }: { n: NewsItem }) {
 function IssueRow({ r }: { r: AdminIssueRow }) {
   const { issue } = r;
   // 카톡·SNS 공유 썸네일 — 운영자에게는 발행 전 초안도 그려 줘요 (고친 뒤 새로 그리게 수정 시각을 붙임)
-  const og = `${letterHref(issue.date, issue.edition)}/opengraph-image?v=${issue.updatedAt}`;
+  const og = shareImageUrl(issue);
   return (
     <li className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start">
       <a href={og} target="_blank" title="공유 썸네일 크게 보기" className="block w-full shrink-0 overflow-hidden rounded-lg border border-hairline sm:w-44">
@@ -208,6 +208,13 @@ function IssueRow({ r }: { r: AdminIssueRow }) {
         <div className="flex flex-wrap items-center gap-1.5">
           {issue.status === 1 ? <span className="tag bg-ev-final-soft text-ev-final">발행</span> : <span className="tag bg-ev-doc-soft text-ev-doc">발행 대기</span>}
           {issue.origin === "auto" && <span className="tag bg-canvas-cream text-lemon">자동</span>}
+          {issue.thumb.checked ? (
+            <span className="tag bg-ev-final-soft text-ev-final">썸네일 확인함</span>
+          ) : (
+            <Link href={`/admin/news/issue/${issue.id}#thumb`} className="tag bg-ev-doc-soft text-ev-doc hover:underline">
+              썸네일 확인 전
+            </Link>
+          )}
           <span className="tabular type-caption text-ink-mute">
             {formatDayHeading(issue.date)} {EDITION_LABEL[issue.edition]} · {volLabel(issue.vol)} · {issue.edition === "morning" ? "기사" : "용어·질문"} {r.items}건{r.drafts ? ` (초안 ${r.drafts})` : ""}
           </span>

@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { connection } from "next/server";
 import { addDays, todayKST } from "@/lib/date";
-import { isIssueEdition, isNewsSection, kindOf, parseExtras, parseQuiz } from "@/lib/news-meta";
+import { EMPTY_THUMB, isIssueEdition, isNewsSection, kindOf, parseExtras, parseQuiz, parseThumb } from "@/lib/news-meta";
 import { automationAuthorized, json, unauthorized } from "@/lib/server/automation";
 import { morningForAutomation } from "@/lib/server/briefing";
 import { db, dbConfigured } from "@/lib/server/db";
@@ -21,6 +21,12 @@ import { db, dbConfigured } from "@/lib/server/db";
  *   - 논술 한 문단: { topic, intro, body, conclusion, evidence: [근거 1~4개] }
  *   - 점심 퀴즈: { question, options: ["O", "X"], answer, explain, basis } 3문제
  *     basis = 금콩 스터디 본문(숫자·용어·논술·면접 질문)에 실린 근거 문장 그대로. 아침판에만 있고 금콩 스터디에는 없는 내용은 거절
+ * 공유 썸네일 (선택, 운영자가 발행 전에 확인·수정)
+ *   - 아침판 thumb: { costume?, mood?: "up"|"down"|"neutral", bubble?, caption? }
+ *     costume = uspresident|banker|president|oil|chip|security|builder|money|shopper|trader|reporter (그날 헤드라인 주인공·주제)
+ *     bubble = 콩이가 따라 하는 한마디(44자 안) — 이 판 기사(제목·한 줄 요약·요약·포인트)에 실린 문장 그대로만. 없으면 빼고 warnings
+ *     caption = 무슨 일인지 사실 한 줄(64자 안)
+ *   - 금콩 스터디 thumb: { topic? } — 논술 주제가 길 때 썸네일용으로 뜻이 바뀌지 않게 줄인 것(120자 안). 주제가 둘이면 더 중요한 하나만
  * 그날 그 판이 이미 있으면 아무것도 바꾸지 않고 skipped. 하나라도 틀리면 아무것도 저장하지 않고 errors.
  */
 
@@ -130,6 +136,21 @@ export async function POST(req: Request) {
         ].join(" "),
   );
   const where = edition === "noon" ? "금콩 스터디 본문(숫자·용어·논술·면접 질문)" : "오늘 기사(제목·한 줄 요약·요약·포인트)";
+
+  // 썸네일 — 틀려도 브리핑은 저장하고, 빼고 알려 줘요 (운영자가 발행 전에 확인)
+  const warnings: string[] = [];
+  const rawThumb = b.thumb && typeof b.thumb === "object" ? (b.thumb as Raw) : {};
+  const thumb = parseThumb(
+    edition === "morning"
+      ? { costume: rawThumb.costume, mood: rawThumb.mood, bubble: rawThumb.bubble, caption: rawThumb.caption }
+      : { topic: rawThumb.topic },
+  );
+  if (rawThumb.costume && !thumb.costume) warnings.push("thumb.costume: 없는 변장이라 자동으로 골라요");
+  if (thumb.bubble && !corpus.includes(plain(thumb.bubble))) {
+    warnings.push("thumb.bubble: 이 판 기사에 그대로 실린 문장이 아니라 뺐어요 (지어낸 말 방지) — 제목으로 그려요");
+    thumb.bubble = "";
+  }
+  const thumbJson = JSON.stringify({ ...EMPTY_THUMB, ...thumb, checked: false });
   rawQuiz.forEach((q, i) => {
     const basis = plain(s(q && typeof q === "object" ? (q as Raw).basis : "", 400));
     if (basis.length < 8) errors.push(`quiz[${i}]: basis(이 문제의 근거 문장 — ${where}에서 그대로 옮긴 문장)가 필요해요`);
@@ -175,8 +196,8 @@ export async function POST(req: Request) {
   const res = await client.batch(
     [
       {
-        sql: "INSERT INTO briefing_issues (issue_date, edition, title, lede, closing, quiz, extras, status, origin, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'auto', ?, ?)",
-        args: [date, edition, title, lede, closing, JSON.stringify(quiz), JSON.stringify(extras), now, now],
+        sql: "INSERT INTO briefing_issues (issue_date, edition, title, lede, closing, quiz, extras, thumb, status, origin, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'auto', ?, ?)",
+        args: [date, edition, title, lede, closing, JSON.stringify(quiz), JSON.stringify(extras), thumbJson, now, now],
       },
       ...ok.map((r) => ({
         sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, tier, position, takeaway, headline, status, origin, created_at, updated_at)
@@ -187,5 +208,5 @@ export async function POST(req: Request) {
     "write",
   );
   revalidatePath("/admin/news");
-  return json({ date, edition, ok: true, issueId: Number(res[0].lastInsertRowid), items: ok.length, quiz: quiz.length });
+  return json({ date, edition, ok: true, issueId: Number(res[0].lastInsertRowid), items: ok.length, quiz: quiz.length, ...(warnings.length ? { warnings } : {}) });
 }

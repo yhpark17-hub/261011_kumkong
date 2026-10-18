@@ -22,8 +22,8 @@ const STEPS = [
   { icon: BarChart3, title: "결과는 바로", desc: "후기를 남기면 다른 응시자들의 체감 결과를 그래프로 바로 볼 수 있어요." },
   {
     icon: Lock,
-    title: "응시자 우선 공개",
-    desc: `시험 후 ${PRIORITY_DAYS}일간 상세 결과는 응시자에게 먼저, 그 뒤엔 누구나 볼 수 있어요.`,
+    title: "응시자만 보는 상세 결과",
+    desc: `과목별 난이도·한 줄 후기는 후기를 남긴 응시자만. 전체 체감 난이도는 시험 ${PRIORITY_DAYS}일 뒤부터 누구나 볼 수 있어요.`,
   },
 ];
 
@@ -97,7 +97,7 @@ async function ExamLists() {
   const today = todayKST();
   const all = listExams();
   const done = all.filter((e) => !e.expected && e.date <= today);
-  // 응시자 우선 공개 기간인 시험은 후기를 남긴 방문자에게만 평균 난이도가 넘어가요
+  // 시험 직후 3일은 후기를 남긴 방문자에게만 평균 난이도가 넘어가요
   const [summaries, activity] = await Promise.all([examSummaries(done, today), examActivity()]);
   // 지난 시험: 최근 순, 참여가 있는 시험은 1년이 지나도 남김
   const past = done.filter((e) => diffDays(e.date, today) <= 365 || summaries[e.id]);

@@ -52,9 +52,9 @@ function scrollToForm() {
 /**
  * 후기 폼 앞에 '#월 #일 시험에 응시하셨나요?'를 한 번 묻습니다.
  * - 응시: 폼으로 안내 → 남기면 상세 결과가 바로 열림
- * - 미응시: 폼을 접고, 상세 결과는 공개일(시험 후 3일)에 열린다고 안내
- * 실제 응시자가 '결과만 빨리 보려고' 미응시를 누르면 오히려 3일을 기다려야 하므로
- * 정직하게 답하는 쪽이 가장 빠르도록 설계했습니다.
+ * - 미응시: 폼을 접고, 상세 결과는 응시자 후기로만 열린다고 안내 (요약 한 단어는 누구나)
+ * 상세 결과는 후기를 남겨야만 보이므로 창을 닫아도 뒤에서 결과를 볼 수는 없어요 —
+ * 응시자는 결과가 궁금해서라도 남기고, 미응시자는 요약이면 충분해 아무렇게나 답할 이유가 적어요.
  */
 export function AttendGate({
   examId,
@@ -69,7 +69,7 @@ export function AttendGate({
   /** 예: "10월 10일(토) 중소벤처기업진흥공단 필기시험" */
   question: string;
   hasVoted: boolean;
-  /** 응시자 우선 공개 기간인지 */
+  /** 요약(전체 체감 난이도)도 아직 잠긴 기간인지 */
   inWindow: boolean;
   publicFromLabel: string;
   /** 시험 직후 기간에만 팝업으로 묻습니다 */
@@ -91,12 +91,13 @@ export function AttendGate({
           응시하지 않은 시험으로 표시했어요
         </p>
         <p className="mt-2 type-body-md text-ink-secondary">
+          상세 결과는 후기를 남긴 응시자만 볼 수 있어요.{" "}
           {inWindow ? (
             <>
-              상세 결과는 <span className="text-ink">{publicFromLabel}</span>부터 누구나 볼 수 있어요.
+              전체 체감 난이도는 <span className="text-ink">{publicFromLabel}</span>부터 볼 수 있어요.
             </>
           ) : (
-            "응시자들이 남긴 결과를 확인해 보세요."
+            "전체 체감 난이도는 '응시자 체감 결과'에서 볼 수 있어요."
           )}
         </p>
         <button
@@ -162,7 +163,7 @@ function AttendDialog({
   // sticky 카드 안에 갇히지 않도록 body 로 띄웁니다
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center" role="dialog" aria-modal="true" aria-labelledby="attend-title">
-      <button type="button" aria-label="닫기" onClick={onClose} className="animate-fade-in absolute inset-0 bg-brand-dark/40" />
+      <button type="button" aria-label="닫기" onClick={onClose} className="animate-fade-in absolute inset-0 bg-brand-dark/55 backdrop-blur-sm" />
       <div className="animate-drawer-up relative w-full max-w-md rounded-t-xl bg-canvas p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-level-2 md:rounded-xl">
         <button
           type="button"
@@ -177,19 +178,22 @@ function AttendDialog({
           {question}에 응시하셨나요?
         </h2>
 
-        {inWindow && (
-          <p className="mt-4 flex gap-2 rounded-lg bg-canvas-soft p-3 type-caption text-ink-secondary">
-            <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-mute" strokeWidth={2} />
-            <span>
-              시험 후 3일간 상세 결과는 <span className="text-ink">후기를 남긴 응시자에게 먼저</span> 공개돼요. 응시하지
-              않았다면 <span className="text-ink">{publicFromLabel}</span>부터 누구나 볼 수 있어요.
-            </span>
-          </p>
-        )}
+        <p className="mt-4 flex gap-2 rounded-lg bg-canvas-soft p-3 type-caption text-ink-secondary">
+          <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-mute" strokeWidth={2} />
+          <span>
+            과목별 체감 난이도·못 푼 문항 수·한 줄 후기 같은 상세 결과는 <span className="text-ink">후기를 남긴 응시자만</span> 볼 수 있어요.
+            {inWindow && (
+              <>
+                {" "}
+                전체 체감 난이도는 <span className="text-ink">{publicFromLabel}</span>부터 누구나 볼 수 있어요.
+              </>
+            )}
+          </span>
+        </p>
 
         <div className="mt-5 space-y-2">
           <button ref={yesRef} type="button" onClick={() => onAnswer("yes")} className="btn btn-primary w-full">
-            네, 응시했어요 {inWindow ? "· 30초 후기 남기고 바로 보기" : "· 30초 후기 남기기"}
+            네, 응시했어요 · 30초 후기 남기고 결과 보기
           </button>
           <button type="button" onClick={() => onAnswer("no")} className="btn btn-toggle w-full">
             아니요, 응시하지 않았어요

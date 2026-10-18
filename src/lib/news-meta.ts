@@ -204,6 +204,124 @@ export function parseExtras(raw: unknown): IssueExtras {
   return { numbers, essay };
 }
 
+/* ------------------------------------------------------------------ */
+/* 썸네일 — 카톡·SNS 공유 그림(og:image)과 사이트 표지, 운영자가 미리 보고 고쳐요   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 금콩 브리핑(아침판) 만화에서 콩이가 하는 변장 — 그림은 lib/server/og.tsx.
+ * match 는 '자동'일 때 제목·헤드라인에서 찾는 말 (앞에 있는 것부터).
+ */
+export const COSTUMES = [
+  { key: "uspresident", label: "미국 대통령 (금발 앞머리·빨간 넥타이)", hint: "트럼프 대통령 발언·관세", match: /트럼프|백악관/ },
+  { key: "banker", label: "중앙은행 총재 (안경·의사봉)", hint: "금통위·연준·기준금리", match: /금통위|연준|FOMC|파월|기준금리|한국은행|한은|총재|금리 (인하|인상|동결)/ },
+  { key: "president", label: "정상·장관 연설 (정장·연단)", hint: "대통령·장관·당국 발표", match: /대통령|정상회담|장관|기재부|금융위|금감원장|당국|정부/ },
+  { key: "oil", label: "유가·원자재 (안전모·기름방울)", hint: "유가·OPEC·원자재", match: /유가|원유|OPEC|배럴|원자재|중동/ },
+  { key: "chip", label: "반도체·기술 (방진복·칩)", hint: "반도체·AI·빅테크", match: /반도체|엔비디아|하이닉스|삼성전자|AI|인공지능|빅테크/ },
+  { key: "security", label: "보안·수사 (모자·돋보기)", hint: "해킹·유출·금융사고·제재", match: /해킹|보안|유출|사이버|망분리|횡령|제재|검사|수사|사고/ },
+  { key: "builder", label: "부동산·건설 (안전모·집)", hint: "집값·대출 규제·PF", match: /집값|부동산|아파트|주택|전세|PF|건설/ },
+  { key: "money", label: "환율·외환 (초록 챙모자·지폐)", hint: "환율·달러·외환", match: /환율|달러|원화|엔화|외환|위안/ },
+  { key: "shopper", label: "물가·소비 (가격표)", hint: "물가·CPI·소비", match: /물가|CPI|PPI|인플레|소비|장바구니/ },
+  { key: "trader", label: "증권 트레이더 (헤드셋)", hint: "코스피·나스닥·증시", match: /코스피|코스닥|나스닥|증시|주가|주식|사이드카|서킷브레이커|S&P|다우/ },
+  { key: "reporter", label: "기자 (기본)", hint: "맞는 변장이 없을 때", match: null },
+] as const satisfies readonly { key: string; label: string; hint: string; match: RegExp | null }[];
+export type CostumeKey = (typeof COSTUMES)[number]["key"];
+export const isCostume = (v: unknown): v is CostumeKey => COSTUMES.some((c) => c.key === v);
+/** 제목·헤드라인으로 고르는 변장 — 앞 글(제목 앞부분)에서 먼저 찾고, 없으면 다음 글에서 */
+export function autoCostume(texts: string | string[]): CostumeKey {
+  for (const t of typeof texts === "string" ? [texts] : texts) {
+    const hit = COSTUMES.find((c) => c.match?.test(t));
+    if (hit) return hit.key;
+  }
+  return "reporter";
+}
+
+export type ThumbMood = "up" | "down" | "neutral";
+export const THUMB_MOODS: { key: ThumbMood | ""; label: string }[] = [
+  { key: "", label: "자동 (제목 분위기)" },
+  { key: "up", label: "신남 · 오름" },
+  { key: "down", label: "걱정 · 내림" },
+  { key: "neutral", label: "보통" },
+];
+const MOOD_DOWN = /급락|하락|폭락|최저|최악|적자|위기|쇼크|우려|침해|유출|해킹|둔화|감소|하향|경고|불안|사이드카|서킷브레이커|패닉/;
+const MOOD_UP = /반등|상승|급등|최고|회복|흑자|돌파|호조|증가|상향|개선|훈풍|귀환/;
+export const autoMood = (text: string): ThumbMood => (MOOD_DOWN.test(text) ? "down" : MOOD_UP.test(text) ? "up" : "neutral");
+
+/** 사이트 표지(시사 뉴스 첫 화면·목록 카드) — 기본 표지 / 공유 썸네일과 같은 그림 / 직접 올린 그림 */
+export type CoverMode = "default" | "share" | "upload";
+
+export const THUMB_LIMITS = { bubble: 44, caption: 64, topic: 120 } as const;
+
+export interface IssueThumb {
+  /** 아침판 만화 변장 ("" = 자동) */
+  costume: CostumeKey | "";
+  /** 콩이 표정 ("" = 자동) */
+  mood: ThumbMood | "";
+  /** 말풍선 — 비우면 제목 앞부분. 실제 발언·기사 문장을 그대로 (지어내지 않기) */
+  bubble: string;
+  /** 아래 띠 한 줄 — 비우면 제목 뒷부분 */
+  caption: string;
+  /** 금콩 스터디: 썸네일에 넣을 논술 주제 — 비우면 '논술 한 문단' 주제 */
+  topic: string;
+  /** 직접 올린 공유 썸네일 (있으면 그린 그림 대신 이것) */
+  shareUrl: string;
+  cover: CoverMode;
+  coverUrl: string;
+  /** 운영자가 썸네일을 확인했는지 */
+  checked: boolean;
+}
+
+export const EMPTY_THUMB: IssueThumb = { costume: "", mood: "", bubble: "", caption: "", topic: "", shareUrl: "", cover: "default", coverUrl: "", checked: false };
+
+/** 올린 그림 주소 — 우리 파일 주소(/api/files/…)나 https 만 */
+const imageUrl = (v: unknown) => {
+  const u = typeof v === "string" ? v.trim().slice(0, 500) : "";
+  return /^(https:\/\/[^\s"'<>]+|\/api\/files\/[^\s"'<>]+)$/.test(u) ? u : "";
+};
+
+export function parseThumb(raw: unknown): IssueThumb {
+  let v: unknown = raw;
+  if (typeof raw === "string") {
+    try {
+      v = JSON.parse(raw);
+    } catch {
+      v = {};
+    }
+  }
+  const o = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
+  const cover = o.cover === "share" || o.cover === "upload" ? o.cover : "default";
+  const coverUrl = imageUrl(o.coverUrl);
+  return {
+    costume: isCostume(o.costume) ? o.costume : "",
+    mood: o.mood === "up" || o.mood === "down" || o.mood === "neutral" ? o.mood : "",
+    bubble: clip(o.bubble, THUMB_LIMITS.bubble),
+    caption: clip(o.caption, THUMB_LIMITS.caption),
+    topic: clip(o.topic, THUMB_LIMITS.topic),
+    shareUrl: imageUrl(o.shareUrl),
+    cover: cover === "upload" && !coverUrl ? "default" : cover,
+    coverUrl,
+    checked: o.checked === true,
+  };
+}
+
+/**
+ * 썸네일에 넣을 논술 주제 — 운영자가 적은 것 > 논술 한 문단 주제.
+ * 주제가 둘(①…②…, 또는 ' / ' 로 나눔)이면 앞의 것(더 중요한 것을 앞에 쓰기로 함) 하나만.
+ */
+export function studyTopic(thumb: IssueThumb, extras: IssueExtras): string {
+  if (thumb.topic) return thumb.topic;
+  const t = extras.essay?.topic ?? "";
+  const circled = t.match(/①\s*(.+?)\s*②/);
+  if (circled) return circled[1].trim();
+  const parts = t.split(/\s+\/\s+|\s*;\s*/);
+  return (parts[0] ?? t).trim();
+}
+
+/** 공유 썸네일 주소 — 올린 그림이 있으면 그것, 아니면 그날 그린 그림 (고칠 때마다 주소가 바뀌어 카톡도 새로 가져가요) */
+export function shareImageUrl(issue: Pick<BriefingIssue, "date" | "edition" | "updatedAt" | "thumb">): string {
+  return issue.thumb.shareUrl || `/magazine/letter/${issue.date}/${issue.edition}/opengraph-image?v=${issue.updatedAt}`;
+}
+
 export interface BriefingIssue {
   id: number;
   /** 'YYYY-MM-DD' — 그날 그 판의 기사(news.edition_date·edition)를 묶음 */
@@ -221,6 +339,8 @@ export interface BriefingIssue {
   quiz: QuizItem[];
   /** 금콩 스터디 코너 (숫자로 보는 오늘·논술 한 문단) */
   extras: IssueExtras;
+  /** 공유 썸네일·사이트 표지 설정 */
+  thumb: IssueThumb;
   status: number;
   origin: string;
   publishedAt: number | null;

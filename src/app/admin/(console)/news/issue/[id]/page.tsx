@@ -4,15 +4,17 @@ import { Suspense } from "react";
 import { ArrowLeft, ExternalLink, PenLine } from "lucide-react";
 import { issueAction } from "@/app/admin/issue-actions";
 import { IssueForm } from "@/components/admin/IssueForm";
+import { ThumbForm } from "@/components/admin/ThumbForm";
 import { ConfirmForm } from "@/components/admin/ModerationForm";
 import { AdminCard, AdminPageTitle, EmptyRow } from "@/components/admin/parts";
 import { AdminSkeleton } from "@/components/admin/Skeleton";
 import { DbSection } from "@/components/db/DbSection";
 import { NewsSectionTag } from "@/components/magazine/news";
 import { formatDayHeading } from "@/lib/date";
-import { EDITION_LABEL, letterHref, volLabel, type NewsItem } from "@/lib/news-meta";
+import { EDITION_LABEL, EMPTY_THUMB, briefingMinutes, letterHref, studyTopic, volLabel, type NewsItem } from "@/lib/news-meta";
 import { requireAdmin } from "@/lib/server/admin";
 import { arrangeLetter, getIssueById, issueItems } from "@/lib/server/briefing";
+import { comicPlan, splitTitle } from "@/lib/server/briefing-og";
 
 export const metadata = { title: "브리핑 편집" };
 
@@ -30,7 +32,11 @@ async function EditIssue({ rawId }: { rawId: string }) {
   if (!Number.isInteger(id) || id <= 0) notFound();
   const issue = await getIssueById(id);
   if (!issue) notFound();
-  const content = arrangeLetter(await issueItems(issue.date, issue.edition, { admin: true }));
+  const items = await issueItems(issue.date, issue.edition, { admin: true });
+  const content = arrangeLetter(items);
+  // 썸네일 칸을 비워 두면 무엇으로 그려지는지 (관리자 화면에 '자동 — …'로 보여 줌)
+  const comicAuto = comicPlan(issue, EMPTY_THUMB, content.headline?.title ?? "").auto;
+  const thumbAuto = { ...comicAuto, topic: studyTopic(EMPTY_THUMB, issue.extras) || splitTitle(issue.title)[0] };
   const groups: { label: string; desc: string; list: NewsItem[] }[] =
     issue.edition === "morning"
       ? [
@@ -93,6 +99,19 @@ async function EditIssue({ rawId }: { rawId: string }) {
             extras: issue.extras,
           }}
         />
+      </AdminCard>
+
+      <AdminCard>
+        <h2 id="thumb" className="scroll-mt-24 type-heading-sm text-ink">
+          썸네일 · 채팅방 공유 그림과 사이트 표지
+        </h2>
+        <p className="mt-1 mb-5 type-caption text-ink-mute">
+          {issue.edition === "morning"
+            ? "금콩 브리핑은 콩이가 오늘 주제로 변장해 말풍선으로 한마디 하는 만화예요. 비워 두면 제목으로 자동으로 그려요."
+            : "금콩 스터디는 공책 템플릿에 오늘의 논술 주제만 바뀌어요. 길면 칸에 맞게 글자 크기를 줄여요."}{" "}
+          발행 전에 확인하고 &lsquo;썸네일 확인함&rsquo;을 눌러 두세요.
+        </p>
+        <ThumbForm id={issue.id} edition={issue.edition} date={issue.date} minutes={briefingMinutes(issue, items)} initial={issue.thumb} auto={thumbAuto} />
       </AdminCard>
 
       <AdminCard>

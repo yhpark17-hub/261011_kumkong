@@ -45,7 +45,7 @@ function agoLabel(min: number | null): string | null {
   return null;
 }
 
-/** "10/20" — 응시자 우선 공개가 끝나는 날 */
+/** "10/20" — 요약(전체 체감 난이도)이 누구에게나 열리는 날 */
 function publicDay(date: string): string {
   const { m, d } = parseKey(resultsPublicFrom(date));
   return `${m}/${d}`;
@@ -219,7 +219,7 @@ export function ExamBrowser({
           <h2 id="recent-title" className="type-heading-lg text-ink">
             최근 일주일 필기
           </h2>
-          <p className="mt-1 type-caption text-ink-mute">시험 본 곳이 있다면 30초 후기를 남겨 주세요. 시험 후 3일간은 남긴 사람에게 결과가 먼저 열려요.</p>
+          <p className="mt-1 type-caption text-ink-mute">시험 본 곳이 있다면 30초 후기를 남겨 주세요. 상세 결과는 후기를 남긴 응시자에게만 열려요.</p>
           <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {recent.map((e) => (
               <ExamCard key={e.id} exam={e} sum={summaries[e.id]} activity={activity[e.id]} today={today} />
@@ -455,7 +455,7 @@ function ExamCard({
           )}
         </span>
         <span className="inline-flex shrink-0 items-center gap-0.5 type-caption font-semibold text-primary-text">
-          {sum?.mine || (n > 0 && !sum?.locked) ? "결과 보기" : "후기 남기기"}
+          {sum?.mine ? "결과 보기" : "후기 남기기"}
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={1.75} />
         </span>
       </span>

@@ -150,7 +150,7 @@ export async function myReviewedExamIds(voter: string | null): Promise<Set<strin
 }
 
 /**
- * 목록·기관 화면용 시험별 요약 — 응시자 우선 공개 기간에는 후기를 남긴 사람에게만 평균 난이도를 보내요.
+ * 목록·기관 화면용 시험별 요약 — 시험 후 3일(요약도 잠긴 기간)에는 후기를 남긴 사람에게만 평균 난이도를 보내요.
  * 참여 수는 누구에게나 보여 줘요 (참여를 부르는 숫자). connection() 이후 호출.
  */
 export async function examSummaries(exams: ExamInfo[], today: string): Promise<Record<string, ExamSummary>> {

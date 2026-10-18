@@ -155,19 +155,19 @@ async function ExamLive({ exam, asVisitor }: { exam: ExamInfo; asVisitor: Promis
     myReview(exam.id, voter),
   ]);
 
-  // 응시자 우선 공개: 시험 후 3일간 상세 결과는 후기를 남긴 사람(과 운영자)에게만
+  // 상세 결과는 후기를 남긴 사람(과 운영자)에게만 — 요약(전체 체감 난이도)은 시험 후 3일이 지나면 누구나
   const publicFrom = resultsPublicFrom(exam.date);
   const inWindow = today < publicFrom;
-  const unlocked = admin || Boolean(mine) || !inWindow;
+  const unlocked = admin || Boolean(mine);
   const publicFromLabel = monthDay(publicFrom);
   const visibleComments = comments.filter((c) => c.status === 0).length;
 
   return (
     <>
-      {isStaff && inWindow && !mine && (
+      {isStaff && !mine && stats.count > 0 && (
         <p className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-canvas-soft px-4 py-3 type-caption text-ink-secondary">
           <ShieldCheck className="h-4 w-4 shrink-0 text-primary" strokeWidth={2} />
-          {preview ? "후기를 남기지 않은 방문자에게 보이는 화면이에요." : `운영자라서 잠금 없이 보여요. 후기를 남기지 않은 방문자에게는 ${publicFromLabel}까지 결과가 잠겨 있어요.`}
+          {preview ? "후기를 남기지 않은 방문자에게 보이는 화면이에요." : "운영자라서 잠금 없이 보여요. 후기를 남기지 않은 방문자에게는 상세 결과가 잠겨 있어요."}
           <Link href={preview ? `/reviews/${exam.id}` : `/reviews/${exam.id}?as=visitor`} className="link ml-auto font-semibold">
             {preview ? "운영자 화면으로" : "방문자 화면으로 보기"}
           </Link>
@@ -194,7 +194,7 @@ async function ExamLive({ exam, asVisitor }: { exam: ExamInfo; asVisitor: Promis
             <h2 className="type-heading-md text-ink">{mine ? "내 후기" : "30초 후기 남기기"}</h2>
             {!mine && (
               <p className="mt-1 mb-5 type-caption text-ink-mute">
-                필수 질문은 2개뿐이에요. {inWindow ? "남기면 상세 결과가 바로 열려요." : "남기면 결과에 바로 반영돼요."}
+                필수 질문은 2개뿐이에요. 남기면 응시자들의 상세 결과가 바로 열려요.
               </p>
             )}
             <div className={mine ? "mt-4" : undefined}>
@@ -216,12 +216,12 @@ async function ExamLive({ exam, asVisitor }: { exam: ExamInfo; asVisitor: Promis
           <Card className="p-6 md:p-8">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
               <h2 className="type-heading-md text-ink">응시자 체감 결과</h2>
-              {inWindow && <span className="tag bg-brand-dark text-on-primary">응시자 우선 공개 · {publicFromLabel}까지</span>}
+              {!unlocked && <span className="tag bg-brand-dark text-on-primary">후기 남긴 응시자만 보기</span>}
             </div>
             {unlocked ? (
               <ReviewResults stats={stats} />
             ) : (
-              <LockedResults count={stats.count} publicFromLabel={publicFromLabel} />
+              <LockedResults count={stats.count} overallAvg={inWindow ? null : stats.overallAvg} timeAvg={inWindow ? null : stats.timeAvg} publicFromLabel={inWindow ? publicFromLabel : null} />
             )}
           </Card>
 
@@ -236,8 +236,8 @@ async function ExamLive({ exam, asVisitor }: { exam: ExamInfo; asVisitor: Promis
               <p className="mt-4 flex items-start gap-2 rounded-lg bg-canvas-soft p-4 type-body-md text-ink-secondary">
                 <Lock className="mt-1 h-4 w-4 shrink-0 text-ink-mute" strokeWidth={2} />
                 <span>
-                  {visibleComments ? `한 줄 후기 ${visibleComments}개는` : "한 줄 후기는"}{" "}
-                  <span className="text-ink">{publicFromLabel}</span>부터 공개돼요. 응시자는 후기를 남기면 바로 볼 수 있어요.
+                  {visibleComments ? `한 줄 후기 ${visibleComments}개는` : "한 줄 후기는"} 후기를 남긴 응시자만 볼 수 있어요. 시험을 봤다면 30초 후기를 남기고
+                  바로 확인하세요.
                 </span>
               </p>
             ) : comments.length === 0 ? (

@@ -56,7 +56,7 @@ export default async function Image({ params }: { params: Promise<{ examId: stri
   const stats = dbConfigured() ? await reviewStats(exam).catch(() => null) : null;
   const n = stats?.count ?? 0;
   const isPublic = today >= resultsPublicFrom(exam.date);
-  // 응시자 우선 공개 기간(시험 후 3일)에는 썸네일에도 난이도를 싣지 않아요 — ??? 로 궁금하게
+  // 시험 후 3일(요약도 잠긴 기간)에는 썸네일에도 난이도를 싣지 않아요 — ??? 로 궁금하게
   const avg = n > 0 && isPublic ? (stats?.overallAvg ?? null) : null;
   const daysLeft = diffDays(today, exam.date);
   const logo = await companyLogo(exam.companyId);

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { isDateKey, isIssueEdition, parseExtras, parseQuiz, type IssueExtras, type QuizItem } from "@/lib/news-meta";
+import { isDateKey, isIssueEdition, parseExtras, parseQuiz, parseThumb, type IssueExtras, type QuizItem } from "@/lib/news-meta";
 import { db } from "@/lib/server/db";
 import { isAdmin } from "@/lib/server/security";
 
@@ -153,4 +153,34 @@ export async function issueAction(fd: FormData): Promise<void> {
     redirect("/admin/news");
   }
   revalidateBriefings();
+}
+
+export type ThumbFormState = { ok: boolean; error?: string; savedAt?: number };
+
+/**
+ * 썸네일 저장 — 만화 변장·표정·말풍선·아래 띠(아침판) / 논술 주제(금콩 스터디) / 올린 그림 / 사이트 표지 / 확인 표시.
+ * 저장하면 수정 시각이 바뀌어 공유 썸네일 주소(?v=)도 새로 바뀌어요 (카톡이 새 그림을 가져가게).
+ */
+export async function saveIssueThumb(_prev: ThumbFormState, fd: FormData): Promise<ThumbFormState> {
+  if (!(await isAdmin())) return { ok: false, error: "운영자 로그인이 필요해요." };
+  const id = Number(fd.get("id"));
+  if (!Number.isInteger(id) || id <= 0) return { ok: false, error: "브리핑을 찾을 수 없어요." };
+  const thumb = parseThumb({
+    costume: str(fd, "costume", 20),
+    mood: str(fd, "mood", 10),
+    bubble: str(fd, "bubble", 200),
+    caption: str(fd, "caption", 200),
+    topic: str(fd, "topic", 400),
+    shareUrl: str(fd, "shareUrl", 500),
+    cover: str(fd, "cover", 10),
+    coverUrl: str(fd, "coverUrl", 500),
+    checked: fd.get("checked") === "on",
+  });
+  if (str(fd, "cover", 10) === "upload" && !thumb.coverUrl) return { ok: false, error: "사이트 표지로 쓸 그림을 먼저 올려 주세요." };
+  const client = await db();
+  const res = await client.execute({ sql: "UPDATE briefing_issues SET thumb = ?, updated_at = ? WHERE id = ?", args: [JSON.stringify(thumb), Date.now(), id] });
+  if (!res.rowsAffected) return { ok: false, error: "브리핑을 찾을 수 없어요." };
+  revalidateBriefings();
+  revalidatePath(`/admin/news/issue/${id}`);
+  return { ok: true, savedAt: Date.now() };
 }

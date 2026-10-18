@@ -4,18 +4,20 @@ import { addDays } from "./date";
 import type { Category } from "./types";
 
 /**
- * 응시자 우선 공개: 시험일 포함 3일 동안 상세 결과는 후기를 남긴 사람에게만 보여 주고,
- * 그 뒤에는 누구나 볼 수 있게 엽니다. 결과만 보려고 허위로 참여할 이유를 줄이고,
- * 실제 응시자는 '바로 보려면 남기는' 쪽을 택하게 하려는 장치입니다.
+ * 후기를 남겨야 보이는 결과 (give-to-get)
+ * - 상세 결과(분포·과목별·못 푼 문항·시간·한 줄 후기)는 언제나 후기를 남긴 사람(과 운영자)에게만.
+ * - 누구나 보는 요약은 참여 수와 '전체 체감 난이도' 한 단어뿐 — 그마저 시험일 포함 3일 동안은 잠가 둬요.
+ * 응시하지 않은 사람은 요약이면 충분하니 아무렇게나 답할 이유가 적고,
+ * 응시자는 과목별로 남들과 비교해 보려면 후기를 남기게 돼요.
  */
 export const PRIORITY_DAYS = 3;
 
-/** 상세 결과가 모두에게 공개되는 날 (YYYY-MM-DD, 이 날 0시부터) */
+/** 요약(전체 체감 난이도)이 모두에게 공개되는 날 (YYYY-MM-DD, 이 날 0시부터) */
 export function resultsPublicFrom(examDate: string): string {
   return addDays(examDate, PRIORITY_DAYS);
 }
 
-/** 응시자 우선 공개 기간인지 (시험일 ~ 공개일 전날) — 이 동안 후기를 안 남긴 사람에겐 난이도도 숨겨요 */
+/** 요약도 잠긴 기간인지 (시험일 ~ 공개일 전날) — 이 동안 후기를 안 남긴 사람에겐 난이도 한 단어도 숨겨요 */
 export function inPriorityWindow(examDate: string, today: string): boolean {
   return examDate <= today && today < resultsPublicFrom(examDate);
 }
@@ -27,7 +29,7 @@ export function inPriorityWindow(examDate: string, today: string): boolean {
 export interface ExamSummary {
   n: number;
   avg: number | null;
-  /** 응시자 우선 공개 기간이라 이 방문자에겐 난이도를 숨김 */
+  /** 시험 직후 3일이라 이 방문자에겐 난이도 한 단어도 숨김 */
   locked: boolean;
   /** 이 방문자가 후기를 남긴 시험 */
   mine: boolean;

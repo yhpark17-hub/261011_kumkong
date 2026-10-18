@@ -13,6 +13,7 @@ import {
   itemHref,
   kindOf,
   letterHref,
+  shareImageUrl,
   volLabel,
   type BriefingIssue,
   type NewsItem,
@@ -330,6 +331,16 @@ export function EditionBadge({ edition, className }: { edition: BriefingIssue["e
   );
 }
 
+/** 브리핑 표지 — 운영자가 고른 것: 기본 표지 / 공유 썸네일과 같은 그림 / 직접 올린 그림 */
+function IssueCover({ issue, minutes, size, className }: { issue: BriefingIssue; minutes: number; size?: "sm"; className?: string }) {
+  const t = issue.thumb;
+  const src = t.cover === "share" ? shareImageUrl(issue) : t.cover === "upload" && t.coverUrl ? t.coverUrl : null;
+  if (src)
+    // eslint-disable-next-line @next/next/no-img-element -- 그날 그린 썸네일·운영자가 올린 그림
+    return <img src={src} alt="" loading="lazy" decoding="async" className={cn("bg-canvas-soft object-cover", className)} />;
+  return <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`약 ${minutes}분`} size={size} className={className} />;
+}
+
 /** 브리핑 한 호 카드 — 카드(크게) / 목록(글만, 왼쪽 판 색 줄 + 판 이름표로 구분) */
 export function IssueCard({ issue, top, count, minutes, view }: { issue: BriefingIssue; top: NewsItem[]; count: number; minutes: number; view: NewsView }) {
   const morning = issue.edition === "morning";
@@ -353,7 +364,7 @@ export function IssueCard({ issue, top, count, minutes, view }: { issue: Briefin
   }
   return (
     <Link href={letterHref(issue.date, issue.edition)} className="group flex flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
-      <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`약 ${minutes}분`} size="sm" className="aspect-[16/9] w-full" />
+      <IssueCover issue={issue} minutes={minutes} size="sm" className="aspect-[16/9] w-full" />
       <span className="flex flex-1 flex-col p-5">
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 type-caption text-ink-mute">
           <EditionBadge edition={issue.edition} />
@@ -390,7 +401,7 @@ export function BriefingHeroCard({ issue, minutes }: { issue: BriefingIssue; min
       href={letterHref(issue.date, issue.edition)}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-level-1 transition-shadow hover:shadow-level-2"
     >
-      <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`약 ${minutes}분`} className="aspect-[16/9] w-full" />
+      <IssueCover issue={issue} minutes={minutes} className="aspect-[16/9] w-full" />
       <span className={cn("h-1.5 w-full", EDITION_TONE[issue.edition].bar)} aria-hidden />
       <span className="flex flex-1 flex-col p-5 md:p-6">
         <span className="flex flex-wrap items-center gap-2 type-caption">

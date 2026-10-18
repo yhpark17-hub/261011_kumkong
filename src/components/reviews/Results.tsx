@@ -1,4 +1,4 @@
-import { CalendarCheck, Clock, Gauge, Lock, Users } from "lucide-react";
+import { Clock, Gauge, Lock, Users } from "lucide-react";
 import {
   OVERALL_OPTIONS,
   STYLE_OPTIONS,
@@ -265,16 +265,36 @@ export function ReviewResults({ stats }: { stats: ReviewStats }) {
 const PLACEHOLDER_BARS = [62, 38, 81, 24, 55, 70, 33];
 
 /**
- * 응시자 우선 공개 기간에 후기를 남기지 않은 사람에게 보여 주는 요약.
- * 상세 수치는 서버에서 아예 보내지 않습니다.
+ * 후기를 남기지 않은 사람에게 보여 주는 요약 — 참여 수와 전체 체감 난이도·시간 한 단어만.
+ * 시험 후 3일 동안은 그 한 단어도 잠가요 (overallAvg·timeAvg 를 null 로 넘김). 상세 수치는 서버에서 아예 보내지 않습니다.
  */
-export function LockedResults({ count, publicFromLabel }: { count: number; publicFromLabel: string }) {
+export function LockedResults({
+  count,
+  overallAvg,
+  timeAvg,
+  publicFromLabel,
+}: {
+  count: number;
+  overallAvg: number | null;
+  timeAvg: number | null;
+  /** 요약이 아직 잠긴 기간이면 공개일 (예: 10월 20일(화)) */
+  publicFromLabel: string | null;
+}) {
+  const locked = Boolean(publicFromLabel);
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-2 md:gap-3">
         <Stat icon={Users} label="참여" value={`${count}명`} />
-        <Stat icon={Lock} label="체감 난이도" value={count ? "잠김" : "-"} sub={count ? "후기 남기면 공개" : undefined} />
-        <Stat icon={CalendarCheck} label="전체 공개" value={publicFromLabel} />
+        {locked || !count ? (
+          <Stat icon={Lock} label="체감 난이도" value={count ? "잠김" : "-"} sub={count ? `${publicFromLabel} 공개` : undefined} />
+        ) : (
+          <Stat icon={Gauge} label="체감 난이도" value={difficultyWord(overallAvg)} />
+        )}
+        {locked || !count ? (
+          <Stat icon={Lock} label="시간" value={count ? "잠김" : "-"} />
+        ) : (
+          <Stat icon={Clock} label="시간" value={timeWord(timeAvg)} />
+        )}
       </div>
       <div className="relative overflow-hidden rounded-lg border border-hairline">
         <div aria-hidden className="space-y-3 p-6 blur-[3px] select-none">
@@ -287,17 +307,16 @@ export function LockedResults({ count, publicFromLabel }: { count: number; publi
             </div>
           ))}
         </div>
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-canvas/75 p-6 text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-canvas/80 p-6 text-center">
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-dark text-on-primary">
             <Lock className="h-4 w-4" strokeWidth={2} />
           </span>
-          <p className="mt-3 type-heading-sm text-ink">시험 후 3일간은 응시자에게 먼저 공개돼요</p>
+          <p className="mt-3 type-heading-sm text-ink">상세 결과는 후기를 남긴 응시자만 볼 수 있어요</p>
           <p className="mt-2 max-w-sm type-body-md text-ink-secondary">
-            과목별 난이도·못 푼 문항 수·시간 여유·한 줄 후기는 30초 후기를 남기면 바로 볼 수 있어요. 응시하지 않았다면{" "}
-            <span className="text-ink">{publicFromLabel}</span>부터 누구나 볼 수 있어요.
+            전체 난이도 분포·과목별 체감 난이도·못 푼 문항 수·시간 여유·한 줄 후기를 30초 후기를 남기면 바로 볼 수 있어요.
           </p>
           <a href="#review-form" className="btn btn-primary btn-sm mt-4">
-            응시했어요 · 후기 남기기
+            응시했어요 · 후기 남기고 보기
           </a>
         </div>
       </div>
