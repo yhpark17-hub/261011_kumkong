@@ -151,17 +151,31 @@ export async function adjacentArticles(
 }
 
 /** 함께 읽을 글: 같은 카테고리 최신 → 모자라면 전체 인기 글 */
+/** 함께 읽을 글 — 태그가 겹치는 글(블로그) → 같은 카테고리 → 많이 읽은 글 순으로 채워요 */
 export async function relatedArticles(a: ArticleSummary, limit = 3): Promise<ArticleSummary[]> {
-  const same = await listArticles({ category: a.category, pageSize: limit, excludeIds: [a.id] });
-  if (same.items.length >= limit) return same.items;
   const client = await db();
-  const exclude = [a.id, ...same.items.map((x) => x.id)];
+  const picked: ArticleSummary[] = [];
+  const tags = a.category === "briefing" ? [] : a.tags.slice(0, 6);
+  if (tags.length) {
+    const res = await client.execute({
+      sql: `SELECT ${SUMMARY_COLS} FROM articles WHERE ${PUBLIC} AND category != 'briefing' AND id != ?
+            AND (${tags.map(() => "(',' || REPLACE(tags, ', ', ',') || ',') LIKE ?").join(" OR ")})
+            ORDER BY published_at DESC LIMIT ?`,
+      args: [Date.now(), a.id, ...tags.map((t) => `%,${t},%`), limit],
+    });
+    picked.push(...res.rows.map(toSummary));
+  }
+  if (picked.length >= limit) return picked;
+  const same = await listArticles({ category: a.category, pageSize: limit - picked.length, excludeIds: [a.id, ...picked.map((x) => x.id)] });
+  picked.push(...same.items);
+  if (picked.length >= limit) return picked;
+  const exclude = [a.id, ...picked.map((x) => x.id)];
   const more = await client.execute({
     sql: `SELECT ${SUMMARY_COLS} FROM articles WHERE ${PUBLIC} AND category != 'briefing' AND id NOT IN (${exclude.map(() => "?").join(",")})
           ORDER BY likes * 3 + views DESC LIMIT ?`,
-    args: [Date.now(), ...exclude, limit - same.items.length],
+    args: [Date.now(), ...exclude, limit - picked.length],
   });
-  return [...same.items, ...more.rows.map(toSummary)];
+  return [...picked, ...more.rows.map(toSummary)];
 }
 
 /** 많이 읽은 글 (최근 30일 발행 중) */

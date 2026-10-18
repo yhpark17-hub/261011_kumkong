@@ -549,6 +549,16 @@
     opacity: 1;
   }
 }
+/* 인터랙티브 가이드 '다음 장' 화살표 — 넘길 수 있다는 걸 살짝 알려 줘요 */
+@keyframes kk-nudge-x {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+}
 @keyframes kk-pulse-ring {
   0% {
     box-shadow: 0 0 0 0 color-mix(in srgb, var(--ruby) 45%, transparent);

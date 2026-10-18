@@ -1,53 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardList, MessagesSquare, MousePointerClick, Plus, RotateCcw } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, CalendarDays, ChevronDown, ChevronRight, ClipboardList, MessagesSquare, Plus, RotateCcw } from "lucide-react";
 import { cn, CompanyAvatar } from "../../ui";
 import { KongMascot } from "../KongMascot";
+import { Explain, GuideShell, KongSays, TryHint, anim, type GuideChapter } from "./GuideShell";
 
 /**
  * 금공 필기 입문 — 한 화면에 개념 하나, 눌러 보면서 익히는 인터랙티브 (숫자 통계 없이 개념만)
- * 위 번호 탭이나 본문의 ‹ › 화살표로 넘기고, 장마다 작동 방식이 달라요.
+ * 위 번호 탭, 본문 옆 화살표, 장 끝 '다음 장' 버튼으로 넘기고, 장마다 작동 방식이 달라요. (틀은 GuideShell)
  */
-
-const anim = "transition-all duration-300 ease-out motion-reduce:transition-none";
-
-/** 눌러 보라는 작은 안내 */
-function TryHint({ children }: { children: ReactNode }) {
-  return (
-    <p className="inline-flex items-center gap-1.5 rounded-full bg-canvas px-3 py-1 type-caption font-semibold text-primary-text shadow-level-1">
-      <MousePointerClick className="h-3.5 w-3.5" strokeWidth={2} />
-      {children}
-    </p>
-  );
-}
-
-type Look = "pencil" | "book" | "suit";
-
-/** 콩이 한마디 */
-function KongSays({ children, look = "pencil" }: { children: ReactNode; look?: Look }) {
-  return (
-    <div className="flex items-end gap-2">
-      <KongMascot
-        className="h-12 w-12 shrink-0"
-        {...(look === "suit" ? { suit: true, wave: true } : look === "book" ? { hold: "book" as const, glasses: true } : { hold: "pencil" as const, glasses: true })}
-      />
-      <p className="relative rounded-2xl rounded-bl-sm border-2 border-brand-dark bg-canvas px-3.5 py-2 type-body-md font-semibold text-ink [word-break:keep-all]">{children}</p>
-    </div>
-  );
-}
-
-/** 설명 칸 (선택한 것) */
-function Explain({ eyebrow, title, children }: { eyebrow?: string; title: ReactNode; children: ReactNode }) {
-  return (
-    <div className="rounded-2xl bg-canvas px-5 py-5 shadow-level-1" aria-live="polite">
-      {eyebrow && <p className="type-micro-cap text-primary-text">{eyebrow}</p>}
-      <p className={cn("type-heading-md text-ink [word-break:keep-all]", eyebrow && "mt-1")}>{title}</p>
-      <div className="mt-2 type-body-lg leading-relaxed text-ink-secondary [word-break:keep-all]">{children}</div>
-    </div>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /* 1. 필기는 채용의 어디쯤?                                               */
@@ -651,18 +614,7 @@ function Wrap() {
 /* 전체 — 장 단위로 넘겨 보기                                              */
 /* ------------------------------------------------------------------ */
 
-interface Chapter {
-  short: string;
-  title: string;
-  lead?: string;
-  /** 장 머리(서브헤드 아래) 콩이 한마디 — 없으면 안 보임 */
-  kong?: string;
-  look?: Look;
-  bg: string;
-  body: ReactNode;
-}
-
-const CHAPTERS: Chapter[] = [
+const CHAPTERS: GuideChapter[] = [
   {
     short: "채용 흐름",
     title: "필기는 채용의 어디쯤일까요?",
@@ -720,149 +672,16 @@ const CHAPTERS: Chapter[] = [
   },
 ];
 
-/** 본문 좌우 넘기기 화살표 — 반투명이라 뒤 내용이 비쳐 보여요 */
-function ArrowBtn({ dir, disabled, onClick, label }: { dir: "prev" | "next"; disabled: boolean; onClick: () => void; label: string }) {
-  const Icon = dir === "prev" ? ChevronLeft : ChevronRight;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-      title={label}
-      className={cn(
-        "pointer-events-auto inline-flex items-center justify-center border border-brand-dark/10 bg-canvas/45 text-brand-dark/55 backdrop-blur-[2px] transition-all",
-        "hover:border-brand-dark/25 hover:bg-canvas/90 hover:text-brand-dark hover:shadow-level-2",
-        // 휴대폰: 화면 가장자리에 붙은 반원 손잡이(글자와 안 겹치게) / 넓은 화면: 본문 양옆 여백의 동그란 버튼
-        "h-12 w-7",
-        dir === "prev" ? "rounded-r-full border-l-0" : "rounded-l-full border-r-0",
-        "sm:h-12 sm:w-12 sm:rounded-full sm:border md:h-14 md:w-14",
-        "disabled:invisible",
-      )}
-    >
-      <Icon className="h-5 w-5 sm:h-7 sm:w-7" strokeWidth={2} />
-    </button>
-  );
-}
-
 export function WrittenExamGuide({ title }: { title: string }) {
-  const [ch, setCh] = useState(0);
-  const top = useRef<HTMLDivElement>(null);
-  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
-  // 휴대폰에서 지금 장 탭이 목차 줄 밖에 있으면 보이게 옆으로 밀기
-  useEffect(() => {
-    const t = tabs.current[ch];
-    const bar = t?.parentElement;
-    if (!t || !bar) return;
-    bar.scrollTo({ left: t.offsetLeft - bar.clientWidth / 2 + t.clientWidth / 2, behavior: "smooth" });
-  }, [ch]);
-  const go = (i: number) => {
-    if (i < 0 || i >= CHAPTERS.length) return;
-    setCh(i);
-    // 장을 바꾸면 장 머리로
-    const el = top.current;
-    if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-  const c = CHAPTERS[ch];
-  const prevLabel = ch > 0 ? `이전 장 · ${CHAPTERS[ch - 1].short}` : "이전 장 없음";
-  const nextLabel = ch < CHAPTERS.length - 1 ? `다음 장 · ${CHAPTERS[ch + 1].short}` : "마지막 장";
-
   return (
-    <div id="article-body" className="theme-light bg-canvas text-ink">
-      {/* 표지 */}
-      <section className="relative overflow-hidden bg-linear-to-b from-[#ece9ff] to-canvas">
-        <span aria-hidden className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#ffd9ae]/60 blur-3xl" />
-        <span aria-hidden className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-[#bfe9cf]/60 blur-3xl" />
-        <div className="relative mx-auto flex max-w-[960px] flex-col items-center gap-6 px-5 pt-10 pb-8 text-center md:flex-row md:gap-10 md:px-8 md:pt-14 md:text-left">
-          <KongMascot hold="pencil" glasses className="h-24 w-24 shrink-0 md:h-32 md:w-32" />
-          <div>
-            <p className="type-micro-cap text-primary-text">금콩 인터랙티브 · 필기 입문</p>
-            <h1 className="mt-2 type-heading-lg font-bold text-ink [word-break:keep-all] md:type-display-md">금공 필기, 처음이라면 여기서 시작해요</h1>
-            <p className="mt-2 type-body-lg text-ink-secondary [word-break:keep-all]">한 장씩 눌러 보면서 필기의 기본 개념을 익혀요.</p>
-          </div>
-        </div>
-        <h2 className="sr-only">{title}</h2>
-      </section>
-
-      {/* 장 고르기 */}
-      <div ref={top} className="sticky top-[61px] z-20 border-y border-hairline bg-canvas/95 backdrop-blur md:top-[65px]">
-        <div className="mx-auto max-w-[960px] px-3 md:px-8">
-          <div role="tablist" aria-label="필기 입문 목차" className="no-scrollbar flex gap-1.5 overflow-x-auto py-2.5">
-            {CHAPTERS.map((x, i) => (
-              <button
-                key={x.short}
-                ref={(el) => {
-                  tabs.current[i] = el;
-                }}
-                type="button"
-                role="tab"
-                aria-selected={ch === i}
-                onClick={() => go(i)}
-                className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 type-caption font-semibold whitespace-nowrap",
-                  anim,
-                  ch === i ? "bg-brand-dark text-on-primary" : i < ch ? "bg-ev-written-soft text-primary-text" : "text-ink-secondary hover:bg-canvas-soft",
-                )}
-              >
-                <span className={cn("inline-flex h-5 w-5 items-center justify-center rounded-full tabular text-[11px]", ch === i ? "bg-on-primary text-brand-dark" : i < ch ? "bg-primary text-on-primary" : "bg-canvas-soft")}>
-                  {i < ch ? <Check className="h-3 w-3" strokeWidth={3} /> : i + 1}
-                </span>
-                {x.short}
-              </button>
-            ))}
-          </div>
-          <div aria-hidden className="h-1 overflow-hidden rounded-full bg-canvas-soft">
-            <div className={cn("h-full rounded-full bg-primary", anim)} style={{ width: `${((ch + 1) / CHAPTERS.length) * 100}%` }} />
-          </div>
-        </div>
-      </div>
-
-      {/* 지금 장 */}
-      <section role="tabpanel" aria-label={c.title} className={cn("relative min-h-[70svh]", c.bg)}>
-        {/* 본문 좌우 화살표 — 화면 세로 가운데에 붙어 따라오고, 내용을 가리지 않게 반투명 */}
-        <div aria-hidden={false} className="pointer-events-none absolute inset-0 z-10">
-          <div className="sticky top-[50svh] flex -translate-y-1/2 justify-between sm:px-2 md:px-3">
-            <ArrowBtn dir="prev" disabled={ch === 0} onClick={() => go(ch - 1)} label={prevLabel} />
-            <ArrowBtn dir="next" disabled={ch === CHAPTERS.length - 1} onClick={() => go(ch + 1)} label={nextLabel} />
-          </div>
-        </div>
-
-        <div key={ch} className="mx-auto max-w-[1040px] px-5 py-8 motion-safe:animate-[kk-fade-in_.35s_ease-out] sm:px-14 md:px-20 md:py-12">
-          <ChapterContent i={ch} />
-        </div>
-      </section>
-
-      {/* 검색엔진용 — 지금 장이 아닌 장의 글도 HTML 에 (화면에는 안 보이고, 장을 고르면 위에서 새로 열려요) */}
-      {CHAPTERS.map((x, i) =>
-        i === ch ? null : (
-          <section key={x.short} hidden>
-            <ChapterContent i={i} />
-          </section>
-        ),
-      )}
-    </div>
-  );
-}
-
-/** 한 장의 머리(번호·제목·서브헤드·콩이)와 본문 */
-function ChapterContent({ i }: { i: number }) {
-  const c = CHAPTERS[i];
-  return (
-    <>
-      <p className="type-micro-cap text-primary-text">
-        {String(i + 1).padStart(2, "0")} · {c.short}
-        <span className="ml-2 tabular text-ink-mute">
-          {i + 1}/{CHAPTERS.length}
-        </span>
-      </p>
-      <h2 className="mt-1 type-heading-lg font-bold text-ink [word-break:keep-all] md:type-display-md">{c.title}</h2>
-      {c.lead && <p className="mt-2 type-body-lg text-ink-secondary [word-break:keep-all]">{c.lead}</p>}
-      {c.kong && (
-        <div className="mt-5">
-          <KongSays look={c.look}>{c.kong}</KongSays>
-        </div>
-      )}
-      <div className="mt-7">{c.body}</div>
-    </>
+    <GuideShell
+      chapters={CHAPTERS}
+      eyebrow="금콩 인터랙티브 · 필기 입문"
+      heading="금공 필기, 처음이라면 여기서 시작해요"
+      sub="한 장씩 눌러 보면서 필기의 기본 개념을 익혀요."
+      mascot={<KongMascot hold="pencil" glasses className="h-24 w-24 shrink-0 md:h-32 md:w-32" />}
+      srTitle={title}
+      tabsLabel="필기 입문 목차"
+    />
   );
 }

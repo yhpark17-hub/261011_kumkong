@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronRight, MessagesSquar
 import { AdSlot } from "@/components/ads/AdSlot";
 import { DbSection } from "@/components/db/DbSection";
 import { Markdown, extractHeadings } from "@/components/magazine/Markdown";
+import { ArticleLinks } from "@/components/magazine/ArticleLinks";
 import { ArticleFeature } from "@/components/magazine/features";
 import { articleWidgets } from "@/components/magazine/widgets";
 import {
@@ -31,6 +32,7 @@ import {
   type ArticleSummary,
 } from "@/lib/magazine-meta";
 import { dbConfigured } from "@/lib/server/db";
+import { companiesInArticle } from "@/lib/server/article-links";
 import { adjacentArticles, getArticle, relatedArticles } from "@/lib/server/magazine";
 import { isAdmin } from "@/lib/server/security";
 import { articleFeatureIn } from "@/lib/article-widgets";
@@ -112,9 +114,13 @@ async function ArticleView({ rawId }: { rawId: string }) {
   if (!a) notFound();
 
   const isPublic = a.live;
-  const [adjacent, related] = isPublic
-    ? await Promise.all([adjacentArticles(a), relatedArticles(a, 3)])
-    : [{ prev: null, next: null }, [] as ArticleSummary[]];
+  // 함께 읽을 글은 운영자 미리보기에서도 (공개 글만 나와요)
+  const [adjacent, related] = await Promise.all([
+    isPublic ? adjacentArticles(a) : { prev: null, next: null },
+    isPublic || admin ? relatedArticles(a, 3) : ([] as ArticleSummary[]),
+  ]);
+  // 글에 나온 기관 → 기관 정보·필기 후기·실시간 톡 (브리핑은 기관이 여럿이라 빼요)
+  const places = a.category === "briefing" ? [] : companiesInArticle(a);
 
   const headings = extractHeadings(a.body);
   const toc = headings.filter((h) => h.level === 2).length >= 3 || headings.length >= 5 ? headings : [];
@@ -187,6 +193,7 @@ async function ArticleView({ rawId }: { rawId: string }) {
         <ArticleFeature name={feature} title={a.title} />
         <div className={CONTAINER}>
           <div className="mx-auto max-w-[720px]">
+            <ArticleLinks items={places} className="mb-10" />
             <div className="rounded-xl border border-hairline px-5 py-7 text-center">
               <p className="type-heading-sm text-ink">이 글이 도움이 됐나요?</p>
               <p className="mt-1 type-caption text-ink-mute">반응이 많은 주제를 더 자주, 더 깊게 다룰게요.</p>
@@ -335,6 +342,8 @@ async function ArticleView({ rawId }: { rawId: string }) {
               ))}
             </ul>
           )}
+
+          <ArticleLinks items={places} className="mt-12" />
 
           <div className="mt-12 rounded-xl border border-hairline px-5 py-7 text-center">
             <p className="type-heading-sm text-ink">이 글이 도움이 됐나요?</p>

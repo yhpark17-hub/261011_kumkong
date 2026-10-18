@@ -20,6 +20,7 @@ export const isArticleWidget = (v: string): v is ArticleWidgetKey => v in ARTICL
 /** 글 전체를 인터랙티브 가이드로 바꾸는 블록 — 본문 맨 위 한 줄 */
 export const ARTICLE_FEATURES = {
   "feature:written-exam": { label: "인터랙티브 가이드 — 금공 필기 입문", hint: "글 전체가 눌러 보며 배우는 7장짜리 가이드로 바뀌어요 (본문 맨 위 한 줄)" },
+  "feature:kdb-written": { label: "인터랙티브 가이드 — 산은 경영 필기", hint: "글 전체가 범위·시간·컷을 눌러 보는 8장짜리 산은 필기 가이드로 바뀌어요 (본문 맨 위 한 줄)" },
 } as const;
 
 export type ArticleFeatureKey = keyof typeof ARTICLE_FEATURES;
