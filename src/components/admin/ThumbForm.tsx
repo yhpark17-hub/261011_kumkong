@@ -101,7 +101,7 @@ export function ThumbForm({
   const [state, action, pending] = useActionState<ThumbFormState, FormData>(saveIssueThumb, { ok: false });
   const [scene, setScene] = useState<SceneKey | "">(initial.scene);
   const [costume, setCostume] = useState<CostumeKey | "">(initial.costume);
-  const [kong, setKong] = useState(initial.kong);
+  const [kong, setKong] = useState<IssueThumb["kong"]>(initial.kong);
   const [mood, setMood] = useState<ThumbMood | "">(initial.mood);
   const [bubble, setBubble] = useState(initial.bubble);
   const [caption, setCaption] = useState(initial.caption);
@@ -113,7 +113,7 @@ export function ThumbForm({
   const morning = edition === "morning";
 
   // 미리보기 주소 — 글자를 칠 때마다가 아니라 잠깐 멈추면 다시 그려요
-  const query = new URLSearchParams({ scene, costume, kong: kong ? "1" : "", mood, bubble, caption, topic }).toString();
+  const query = new URLSearchParams({ scene, costume, kong, mood, bubble, caption, topic }).toString();
   const [previewQuery, setPreviewQuery] = useState(query);
   useEffect(() => {
     const t = window.setTimeout(() => setPreviewQuery(query), 500);
@@ -240,9 +240,13 @@ export function ThumbForm({
               <FitNote fit={bubbleNow} what={speech ? "말풍선이" : "제목이"} />
             </label>
             {!speech && (
-              <label className="inline-flex items-center gap-2 type-caption text-ink">
-                <input type="checkbox" name="kong" checked={kong} onChange={(e) => setKong(e.target.checked)} className="h-4 w-4 accent-[var(--primary)]" />
-                그림 오른쪽 아래에 작은 콩이 넣기 (기본은 빼요 · 인물 발언 그림에는 늘 콩이가 나와요)
+              <label className="block">
+                <span className="mb-1 block type-caption text-ink-secondary">콩이 등장</span>
+                <select name="kong" value={kong} onChange={(e) => setKong(e.target.value as IssueThumb["kong"])} className="input w-full">
+                  <option value="auto">자동 — 분위기가 뚜렷한 날(오름·내림) 왼쪽에서 반응</option>
+                  <option value="on">넣기 — 왼쪽에서 뉴스에 반응하는 콩이</option>
+                  <option value="off">빼기 — 그림과 제목만</option>
+                </select>
               </label>
             )}
             <label className="block">

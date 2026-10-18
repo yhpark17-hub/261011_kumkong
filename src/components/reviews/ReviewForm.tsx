@@ -15,7 +15,7 @@ import {
 } from "@/lib/review-meta";
 import { cn } from "../ui";
 
-const LIMIT = { oneLiner: 60, detail: 800 };
+const LIMIT = { oneLiner: 100, detail: 800 };
 
 /** 라디오를 알약 버튼처럼 보여 주는 선택지 */
 function Pill({
@@ -322,13 +322,15 @@ export function ReviewForm({ exam, initial }: { exam: ExamInfo; initial: MyRevie
               {oneLiner.length}/{LIMIT.oneLiner}
             </span>
           </span>
-          <input
+          {/* 100자까지라 두 줄 칸으로 — 줄바꿈은 띄어쓰기로 바꿔 한 문단으로 */}
+          <textarea
             name="oneLiner"
             value={oneLiner}
-            onChange={(e) => setOneLiner(e.target.value)}
+            onChange={(e) => setOneLiner(e.target.value.replace(/\r?\n/g, " "))}
             maxLength={LIMIT.oneLiner}
+            rows={2}
             placeholder="예: 수리가 생각보다 오래 걸렸어요"
-            className="input mt-2 w-full"
+            className="input mt-2 w-full resize-none leading-relaxed"
           />
         </label>
         {!detailOpen ? (

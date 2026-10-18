@@ -9,10 +9,13 @@ import { uploadFile } from "@/lib/upload-client";
 export function AttachmentPicker({
   initial = [],
   onBusyChange,
+  max = MAX_ATTACHMENTS,
 }: {
   initial?: Attachment[];
   /** 올리는 중에는 등록 버튼을 잠그도록 */
   onBusyChange?: (busy: boolean) => void;
+  /** 최대 첨부 수 (기본 10) */
+  max?: number;
 }) {
   const [items, setItems] = useState<Attachment[]>(initial);
   const [uploading, setUploading] = useState(0);
@@ -22,9 +25,9 @@ export function AttachmentPicker({
   async function onPick(files: FileList | null) {
     if (!files?.length) return;
     setError(null);
-    const room = MAX_ATTACHMENTS - items.length;
+    const room = max - items.length;
     const picked = [...files].slice(0, room);
-    if (files.length > room) setError(`첨부는 ${MAX_ATTACHMENTS}개까지예요.`);
+    if (files.length > room) setError(`첨부는 ${max}개까지예요.`);
     setUploading((n) => n + picked.length);
     onBusyChange?.(true);
     for (const f of picked) {
@@ -56,14 +59,14 @@ export function AttachmentPicker({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          disabled={uploading > 0 || items.length >= MAX_ATTACHMENTS}
+          disabled={uploading > 0 || items.length >= max}
           className="btn btn-sm btn-toggle disabled:opacity-50"
         >
           <ImagePlus className="h-4 w-4" strokeWidth={1.75} />
           사진·파일 첨부
         </button>
         <span className="type-micro text-ink-mute">
-          사진·PDF·한글·오피스 문서 · 파일당 4MB · 최대 {MAX_ATTACHMENTS}개 ({items.length}/{MAX_ATTACHMENTS})
+          사진·PDF·한글·오피스 문서 · 파일당 4MB · 최대 {max}개 ({items.length}/{max})
         </span>
         {uploading > 0 && (
           <span className="inline-flex items-center gap-1 type-caption text-primary-text">

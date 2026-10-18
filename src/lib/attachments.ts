@@ -13,6 +13,8 @@ export type UploadPurpose = "board" | "magazine";
 /** Vercel 요청 본문 한도(4.5MB) 안에서 — 사진은 올리기 전에 브라우저에서 줄입니다 */
 export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 export const MAX_ATTACHMENTS = 10;
+/** 의견 보내기에 함께 보낼 수 있는 수 */
+export const MAX_FEEDBACK_ATTACHMENTS = 5;
 
 /** 허용 확장자 → MIME. 실행 파일·웹 문서(svg/html/js 등)는 받지 않습니다 */
 export const ALLOWED_TYPES: Record<string, { mime: string; kind: Attachment["kind"] }> = {

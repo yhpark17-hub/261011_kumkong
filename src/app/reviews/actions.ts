@@ -63,7 +63,7 @@ export async function submitReview(_prev: ReviewActionState, fd: FormData): Prom
     }
   }
 
-  const oneLiner = str(fd, "oneLiner").slice(0, LIMITS.oneLiner) || null;
+  const oneLiner = str(fd, "oneLiner").replace(/\s+/g, " ").slice(0, LIMITS.oneLiner) || null;
   const detail = str(fd, "detail").slice(0, LIMITS.detail) || null;
   const text = `${oneLiner ?? ""}\n${detail ?? ""}`;
   if (containsBanned(text)) return { ok: false, error: "사용할 수 없는 표현이 들어 있어요." };

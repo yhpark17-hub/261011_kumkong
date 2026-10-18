@@ -4,6 +4,7 @@ import { handleFeedback } from "@/app/admin/actions";
 import { formatPostDateTime } from "@/lib/board-meta";
 import { getCompany } from "@/lib/data";
 import { FEEDBACK_KINDS, type FeedbackItem, type FeedbackKind } from "@/lib/feedback-meta";
+import { PostAttachments } from "../board/parts";
 import { cn } from "../ui";
 
 const KIND_TONE: Record<FeedbackKind, string> = {
@@ -57,6 +58,11 @@ export function FeedbackInbox({ items, done = false }: { items: FeedbackItem[]; 
               )}
             </div>
             <p className="mt-2 type-body-md whitespace-pre-wrap text-ink [overflow-wrap:anywhere]">{f.body}</p>
+            {f.attachments.length > 0 && (
+              <div className="mt-3">
+                <PostAttachments items={f.attachments} />
+              </div>
+            )}
             {(f.sourceUrl || f.contact) && (
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 type-caption">
                 {f.sourceUrl && (

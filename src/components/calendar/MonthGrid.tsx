@@ -112,6 +112,9 @@ function DayCell({
       className={cn(
         "relative min-h-[76px] min-w-0 cursor-pointer border-r border-hairline p-0.5 last:border-r-0 md:min-h-32 md:cursor-default md:p-2",
         !inMonth && "bg-canvas-soft",
+        // 지난 날: 회색 바탕 + 옅은 빗금 — 오늘·앞으로의 날과 한눈에 구분
+        isPast && inMonth && "bg-canvas-soft bg-[repeating-linear-gradient(135deg,transparent_0_7px,var(--hairline)_7px_8px)]",
+        isToday && "bg-ev-written-soft/60 shadow-[inset_0_0_0_2px_var(--primary)]",
         selected && "max-md:bg-ev-written-soft",
       )}
     >
@@ -125,7 +128,7 @@ function DayCell({
           }}
           className={cn(
             "flex h-6 min-w-6 items-center justify-center rounded-full px-1 type-caption",
-            isToday ? "bg-primary text-on-primary" : red ? "text-ruby" : dow === 6 ? "text-primary-text" : "text-ink",
+            isToday ? "bg-primary text-on-primary" : isPast ? "text-ink-mute" : red ? "text-ruby" : dow === 6 ? "text-primary-text" : "text-ink",
             !inMonth && !isToday && "opacity-40",
             events.length > 0 && !isToday && "md:hover:bg-canvas-soft",
           )}
@@ -141,7 +144,7 @@ function DayCell({
       </div>
 
       {/* 데스크톱: 일정 칩 (hairline tag · rounded xs) */}
-      <div className={cn("mt-1 hidden flex-col gap-1 md:flex", isPast && "opacity-55")}>
+      <div className={cn("mt-1 hidden flex-col gap-1 md:flex", isPast && "opacity-45 saturate-50")}>
         {events.slice(0, MAX_CHIPS).map((ev) => (
           <EventChip key={ev.id} ev={ev} onClick={() => onOpenCompany(ev.company.id)} />
         ))}
@@ -161,7 +164,7 @@ function DayCell({
 
       {/* 휴대폰: 기관 약칭을 전형 색으로 — 그날 어디가 무슨 일정인지 바로 */}
       {events.length > 0 && (
-        <div className={cn("mt-0.5 flex flex-col gap-px md:hidden", isPast && "opacity-55")}>
+        <div className={cn("mt-0.5 flex flex-col gap-px md:hidden", isPast && "opacity-45 saturate-50")}>
           {events.slice(0, MOBILE_MAX).map((ev) => {
             const m = EVENT_META[ev.type];
             const expected = ev.recruitment.status === "expected";

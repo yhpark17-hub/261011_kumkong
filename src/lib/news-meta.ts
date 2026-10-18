@@ -300,8 +300,8 @@ export interface IssueThumb {
   scene: SceneKey | "";
   /** 아침판 콩이 변장 — 인물 발언 그림에서 ("" = 자동) */
   costume: CostumeKey | "";
-  /** 인물 발언이 아닌 그림에도 작은 콩이를 넣을지 (기본은 빼요) */
-  kong: boolean;
+  /** 콩이 — auto: 인물 발언이거나 분위기가 뚜렷한 날 반응하며 등장 / on: 늘 / off: 빼기 */
+  kong: "auto" | "on" | "off";
   /** 콩이 표정 ("" = 자동) */
   mood: ThumbMood | "";
   /** 큰 글(제목 상자·인물 발언이면 말풍선) — 비우면 제목 앞부분. 발언은 기사에 실린 말 그대로 (지어내지 않기) */
@@ -318,7 +318,7 @@ export interface IssueThumb {
   checked: boolean;
 }
 
-export const EMPTY_THUMB: IssueThumb = { scene: "", costume: "", kong: false, mood: "", bubble: "", caption: "", topic: "", shareUrl: "", cover: "default", coverUrl: "", checked: false };
+export const EMPTY_THUMB: IssueThumb = { scene: "", costume: "", kong: "auto", mood: "", bubble: "", caption: "", topic: "", shareUrl: "", cover: "default", coverUrl: "", checked: false };
 
 /** 올린 그림 주소 — 우리 파일 주소(/api/files/…)나 https 만 */
 const imageUrl = (v: unknown) => {
@@ -341,7 +341,7 @@ export function parseThumb(raw: unknown): IssueThumb {
   return {
     scene: isScene(o.scene) ? o.scene : "",
     costume: isCostume(o.costume) ? o.costume : "",
-    kong: o.kong === true,
+    kong: o.kong === true || o.kong === "on" ? "on" : o.kong === "off" ? "off" : "auto",
     mood: o.mood === "up" || o.mood === "down" || o.mood === "neutral" ? o.mood : "",
     bubble: clip(o.bubble, THUMB_LIMITS.bubble),
     caption: clip(o.caption, THUMB_LIMITS.caption),
@@ -366,10 +366,22 @@ export function studyTopic(thumb: IssueThumb, extras: IssueExtras): string {
   return (parts[0] ?? t).trim();
 }
 
+/** 썸네일 그림 디자인 판 — 그리는 방식을 바꾸면 올려서, 이미 공유된 주소도 새 그림으로 가져가게 */
+export const OG_DESIGN = 3;
+
+/** 썸네일 버전 — 썸네일·제목을 고치거나 디자인 판이 바뀌면 달라져요 */
+export const thumbVersion = (issue: Pick<BriefingIssue, "updatedAt">) => `${issue.updatedAt.toString(36)}${OG_DESIGN}`;
+
 /** 공유 썸네일 주소 — 올린 그림이 있으면 그것, 아니면 그날 그린 그림 (고칠 때마다 주소가 바뀌어 카톡도 새로 가져가요) */
 export function shareImageUrl(issue: Pick<BriefingIssue, "date" | "edition" | "updatedAt" | "thumb">): string {
-  return issue.thumb.shareUrl || `/magazine/letter/${issue.date}/${issue.edition}/opengraph-image?v=${issue.updatedAt}`;
+  return issue.thumb.shareUrl || `/magazine/letter/${issue.date}/${issue.edition}/opengraph-image?v=${thumbVersion(issue)}`;
 }
+
+/**
+ * 공유용 브리핑 주소 — 썸네일 버전(?s=)을 붙여요.
+ * 카톡은 한 번 읽은 주소의 미리보기를 한동안 그대로 쓰기 때문에, 썸네일이 바뀌면 주소도 바뀌어야 새 그림이 떠요.
+ */
+export const letterShareHref = (issue: Pick<BriefingIssue, "date" | "edition" | "updatedAt">) => `${letterHref(issue.date, issue.edition)}?s=${thumbVersion(issue)}`;
 
 export interface BriefingIssue {
   id: number;

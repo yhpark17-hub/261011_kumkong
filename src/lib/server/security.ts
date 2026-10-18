@@ -177,7 +177,7 @@ export const LIMITS = {
   adminBody: 20000,
   comment: 500,
   nickname: 12,
-  oneLiner: 60,
+  oneLiner: 100,
   detail: 800,
 } as const;
 

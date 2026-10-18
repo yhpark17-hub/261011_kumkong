@@ -22,6 +22,14 @@ export function Logo({ className = "h-8 w-8" }: { className?: string }) {
         fill="url(#kk-bean)"
       />
       <path d="M19 10.6c-1.3.6-1.6 2.2-2 3.5" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      {/* 콩이 얼굴 — 볼 · 눈 · 웃는 입 */}
+      <ellipse cx="12.1" cy="21.4" rx="1.3" ry=".8" fill="#ff7a8a" opacity=".6" />
+      <ellipse cx="20.3" cy="18.2" rx="1.3" ry=".8" fill="#ff7a8a" opacity=".6" />
+      <circle cx="13.7" cy="18.9" r="1.15" fill="#1c1e54" />
+      <circle cx="18.5" cy="16.9" r="1.15" fill="#1c1e54" />
+      <circle cx="14" cy="18.5" r=".35" fill="#ffffff" />
+      <circle cx="18.8" cy="16.5" r=".35" fill="#ffffff" />
+      <path d="M15.3 21.1c.9.8 2.2.6 2.9-.3" stroke="#1c1e54" strokeWidth=".9" strokeLinecap="round" fill="none" />
     </svg>
   );
 }

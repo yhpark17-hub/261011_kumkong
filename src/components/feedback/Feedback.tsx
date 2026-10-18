@@ -4,7 +4,9 @@ import { useActionState, useEffect, useRef, useState, useSyncExternalStore } fro
 import { createPortal } from "react-dom";
 import { CheckCircle2, MessageSquarePlus, X } from "lucide-react";
 import { submitFeedback, type FeedbackState } from "@/app/feedback/actions";
+import { MAX_FEEDBACK_ATTACHMENTS } from "@/lib/attachments";
 import { FEEDBACK_KINDS, FEEDBACK_LIMITS, type FeedbackKind } from "@/lib/feedback-meta";
+import { AttachmentPicker } from "../board/AttachmentPicker";
 import { cn } from "../ui";
 
 /* ------------------------------------------------------------------ */
@@ -97,6 +99,7 @@ function FeedbackDialog({ target, onClose }: { target: FeedbackTarget; onClose: 
   }, { ok: false });
   const [topic, setTopic] = useState<string | null>(null);
   const [body, setBody] = useState("");
+  const [uploading, setUploading] = useState(false);
   // 어느 화면에서 보냈는지 함께 기록 (팝업은 클릭 뒤에만 그려지므로 window 사용 가능)
   const [page] = useState(() => `${window.location.pathname}${window.location.search}`.slice(0, 200));
   const bodyRef = useRef<HTMLTextAreaElement>(null);
@@ -234,6 +237,11 @@ function FeedbackDialog({ target, onClose }: { target: FeedbackTarget; onClose: 
                 </p>
               )}
 
+              <div>
+                <span className="mb-1.5 block type-caption text-ink-secondary">사진·파일 (선택) — 화면 캡처가 있으면 이해가 빨라요</span>
+                <AttachmentPicker max={MAX_FEEDBACK_ATTACHMENTS} onBusyChange={setUploading} />
+              </div>
+
               {meta.askSource && (
                 <label className="block">
                   <span className="mb-1 block type-caption text-ink-secondary">근거 링크 (선택)</span>
@@ -274,11 +282,13 @@ function FeedbackDialog({ target, onClose }: { target: FeedbackTarget; onClose: 
               </button>
               <button
                 type="submit"
-                disabled={pending || body.trim().length < FEEDBACK_LIMITS.minBody}
+                disabled={pending || uploading || body.trim().length < FEEDBACK_LIMITS.minBody}
                 className="btn btn-primary flex-1 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {pending
                   ? "보내는 중…"
+                  : uploading
+                    ? "사진 올리는 중…"
                   : body.trim().length < FEEDBACK_LIMITS.minBody
                     ? `${FEEDBACK_LIMITS.minBody}자 이상 적어 주세요`
                     : "운영자에게 보내기"}

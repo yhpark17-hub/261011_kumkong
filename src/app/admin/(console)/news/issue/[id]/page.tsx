@@ -11,7 +11,8 @@ import { AdminSkeleton } from "@/components/admin/Skeleton";
 import { DbSection } from "@/components/db/DbSection";
 import { NewsSectionTag } from "@/components/magazine/news";
 import { formatDayHeading } from "@/lib/date";
-import { EDITION_LABEL, EMPTY_THUMB, briefingMinutes, letterHref, studyTopic, volLabel, type NewsItem } from "@/lib/news-meta";
+import { EDITION_LABEL, EMPTY_THUMB, briefingMinutes, letterHref, letterShareHref, studyTopic, volLabel, type NewsItem } from "@/lib/news-meta";
+import { SITE } from "@/lib/site";
 import { requireAdmin } from "@/lib/server/admin";
 import { arrangeLetter, getIssueById, issueItems } from "@/lib/server/briefing";
 import { comicPlan, splitTitle } from "@/lib/server/briefing-og";
@@ -112,6 +113,24 @@ async function EditIssue({ rawId }: { rawId: string }) {
           발행 전에 확인하고 &lsquo;썸네일 확인함&rsquo;을 눌러 두세요.
         </p>
         <ThumbForm id={issue.id} edition={issue.edition} date={issue.date} minutes={briefingMinutes(issue, items)} initial={issue.thumb} auto={thumbAuto} />
+        {/* 카톡은 한 번 읽은 주소의 미리보기를 한동안 그대로 써요 — 버전이 붙은 주소로 보내면 새 그림이 떠요 */}
+        <div className="mt-5 space-y-1.5 rounded-lg bg-canvas-soft p-3 type-caption text-ink-secondary">
+          <p>
+            <span className="font-semibold text-ink">카톡 공유용 주소</span> — 썸네일을 저장할 때마다 끝의 번호가 바뀌어, 이 주소로 보내면 카톡도 새 썸네일을 가져가요.
+            브리핑 화면의 주소창·공유 버튼도 이 주소를 써요.
+          </p>
+          <a href={letterShareHref(issue)} target="_blank" className="link block break-all tabular">
+            {SITE.url}
+            {letterShareHref(issue)}
+          </a>
+          <p className="text-ink-mute">
+            예전에 이미 보낸 주소의 미리보기는 카카오가 한동안 기억해요. 바로 바꾸려면{" "}
+            <a href="https://developers.kakao.com/tool/debugger/sharing" target="_blank" rel="noopener noreferrer" className="link">
+              카카오 공유 디버거
+            </a>
+            에 그 주소를 넣고 &lsquo;캐시 초기화&rsquo;를 눌러 주세요 (카카오 계정 로그인 필요).
+          </p>
+        </div>
       </AdminCard>
 
       <AdminCard>

@@ -2,7 +2,7 @@ import "server-only";
 import { ImageResponse } from "next/og";
 import type { CSSProperties, ReactNode } from "react";
 import { formatDayHeading } from "@/lib/date";
-import { autoCostume, autoMood, autoScene, studyTopic, type BriefingIssue, type IssueThumb } from "@/lib/news-meta";
+import { autoCostume, autoMood, autoScene, studyTopic, type BriefingIssue, type CostumeKey, type IssueThumb, type SceneKey } from "@/lib/news-meta";
 import { arrangeLetter, issueItems } from "./briefing";
 import { TOPIC_W, captionFit, headlineFit, speechFit, topicFit } from "../og-text";
 import { C, COSTUME_LOOK, OG_SIZE, kongSvg, ogFonts, svgUri, type OgKong } from "./og";
@@ -21,9 +21,14 @@ export function splitTitle(title: string): [string, string] {
   return i < 0 ? [title, ""] : [title.slice(0, i).trim(), title.slice(i + 3).trim()];
 }
 
-/** 말풍선 꼬리 (오른쪽 콩이 쪽으로) */
+/** 말풍선 꼬리 (오른쪽 콩이 쪽으로) — 테두리 없는 흰 말풍선에 맞게 */
 const TAIL = svgUri(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="80" viewBox="0 0 96 80"><path d="M2 6 L90 58 L2 72" fill="#fff" stroke="${C.ink}" stroke-width="6" stroke-linejoin="round"/></svg>`,
+  `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="64" viewBox="0 0 80 64"><path d="M0 4 L76 46 L0 58 Z" fill="#ffffff"/></svg>`,
+);
+
+/** 이름표 속 작은 금콩 로고 (사이트 왼쪽 위 로고와 같은 얼굴) */
+const LOGO = svgUri(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="34" height="34"><defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5e9d4"/><stop offset="1" stop-color="#ffa26b"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="#1c1e54"/><path d="M20.6 7.4c3.7 1.6 5 6.5 3 10.9-1.4 3.1-4.7 4.7-6.5 6.4-1.7 1.6-4.5 1.9-6.5.2-2.4-2-2.3-5.2-.6-7.3 1.3-1.6 3.3-2 4.1-3.9.9-2 .9-4.7 2.9-6 1-.7 2.3-.8 3.6-.3z" fill="url(#b)"/><circle cx="13.7" cy="18.9" r="1.15" fill="#1c1e54"/><circle cx="18.5" cy="16.9" r="1.15" fill="#1c1e54"/><path d="M15.3 21.1c.9.8 2.2.6 2.9-.3" stroke="#1c1e54" stroke-width=".9" stroke-linecap="round" fill="none"/></svg>`,
 );
 
 /** 연단 마이크 (가로 위치 · 색 · 기울기) */
@@ -72,23 +77,61 @@ export function FallbackImage() {
 }
 
 /* ------------------------------------------------------------------ */
-/* 금콩 브리핑 — 뉴스 그림 + 제목 상자                                    */
+/* 금콩 브리핑 — 뉴스 그림(꽉 채움) + 이름표 + 제목 카드                    */
 /* ------------------------------------------------------------------ */
 
 /** 썸네일에 들어갈 값 (운영자가 고친 값 > 자동) — 관리자 화면에서 '자동이면 무엇인지' 보여 줄 때도 씀 */
 export function comicPlan(issue: Pick<BriefingIssue, "title">, thumb: IssueThumb, headline = "") {
   const [main, sub] = splitTitle(issue.title);
   const texts = [main, sub, headline];
-  const auto = { scene: autoScene(texts), costume: autoCostume(texts), mood: autoMood(main), bubble: main, caption: sub };
-  return {
-    scene: thumb.scene || auto.scene,
-    costume: thumb.costume || auto.costume,
-    kong: thumb.kong,
-    mood: thumb.mood || auto.mood,
-    bubble: thumb.bubble || main,
-    caption: thumb.caption || sub,
-    auto,
-  };
+  const autoSceneKey = autoScene(texts);
+  const scene = thumb.scene || autoSceneKey;
+  // 변장 자동: 인물 발언이면 제목 속 인물로, 아니면 그림 주제에 맞는 옷 (유가면 안전모, 금리면 총재…)
+  const auto = { scene: autoSceneKey, costume: scene === "speech" ? autoCostume(texts) : SCENE_COSTUME[scene], mood: autoMood(main), bubble: main, caption: sub };
+  const mood = thumb.mood || auto.mood;
+  // 콩이: 정해진 규칙이 아니라 그때그때 — 자동이면 인물 발언이거나 분위기가 뚜렷한 날(오름·내림)에 반응하며 등장
+  const kong = thumb.kong === "on" ? true : thumb.kong === "off" ? false : scene === "speech" || mood !== "neutral";
+  return { scene, costume: thumb.costume || auto.costume, kong, mood, bubble: thumb.bubble || main, caption: thumb.caption || sub, auto };
+}
+
+const ACCENT = { up: "#12b981", down: "#ff3d68", neutral: "#533afd" } as const;
+
+/** 그림 주제별 콩이 옷 (변장을 고르지 않았을 때) */
+const SCENE_COSTUME: Record<SceneKey, CostumeKey> = {
+  speech: "president",
+  market: "trader",
+  rate: "banker",
+  fx: "money",
+  oil: "oil",
+  housing: "builder",
+  prices: "shopper",
+  security: "security",
+  chip: "chip",
+  trade: "reporter",
+  bond: "money",
+  news: "reporter",
+};
+
+/** 왼쪽 위 이름표 — 작은 금콩 로고 + 판 이름 + 날짜 */
+function BrandPill({ date, label, slot }: { date: string; label: string; slot: string }) {
+  return (
+    <Abs
+      style={{
+        left: 52,
+        top: 48,
+        alignItems: "center",
+        padding: "8px 20px 8px 10px",
+        borderRadius: 999,
+        background: "rgba(255,255,255,0.94)",
+        boxShadow: "0 8px 24px rgba(12,16,48,0.18)",
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={LOGO} width={34} height={34} alt="" style={{ marginRight: 10 }} />
+      <div style={{ display: "flex", fontSize: 24, fontWeight: 800, color: C.ink, letterSpacing: -0.5 }}>{label}</div>
+      <div style={{ display: "flex", marginLeft: 10, fontSize: 22, fontWeight: 600, color: C.inkSoft, letterSpacing: -0.3 }}>{`${formatDayHeading(date)} ${slot}`}</div>
+    </Abs>
+  );
 }
 
 function MorningThumb({ issue, plan }: { issue: BriefingIssue; plan: ReturnType<typeof comicPlan> }) {
@@ -98,76 +141,66 @@ function MorningThumb({ issue, plan }: { issue: BriefingIssue; plan: ReturnType<
   if (mood === "up" && !look.hold) look.wave = true;
   const cap = caption ? captionFit(caption) : null;
   const head = speech ? speechFit(bubble) : headlineFit(bubble);
+  const accent = ACCENT[mood];
 
   return (
-    <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", background: C.cream, fontFamily: "Pretendard" }}>
-      {/* 뉴스 그림 — 칸 전체 */}
-      <Abs style={{ left: 28, top: 28, width: 1144, height: 574, borderRadius: 20, overflow: "hidden" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- 썸네일 그림(서버 렌더) */}
-        <img src={svgUri(sceneSvg(scene, mood))} width={1144} height={574} alt="" />
-      </Abs>
+    <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", fontFamily: "Pretendard" }}>
+      {/* 뉴스 그림 — 화면 전체 */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- 썸네일 그림(서버 렌더) */}
+      <img src={svgUri(sceneSvg(scene, mood))} width={1200} height={630} alt="" style={{ position: "absolute", left: 0, top: 0 }} />
 
-      {/* 인물 발언: 변장한 콩이가 연단에서 */}
-      {speech && (
+      {speech ? (
         <>
+          {/* 인물 발언: 변장한 콩이가 연단에서 */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={svgUri(kongSvg(look))} width={480} height={480} alt="" style={{ position: "absolute", left: 650, top: 50 }} />
+          <img src={svgUri(kongSvg(look))} width={500} height={500} alt="" style={{ position: "absolute", left: 680, top: 54 }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={PODIUM} width={360} height={210} alt="" style={{ position: "absolute", left: 714, top: 404 }} />
+          <img src={PODIUM} width={360} height={210} alt="" style={{ position: "absolute", left: 750, top: 424 }} />
         </>
-      )}
-      {/* 다른 그림에도 콩이를 넣기로 하면 오른쪽 아래에 작게 */}
-      {!speech && plan.kong && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={svgUri(kongSvg(look))} width={210} height={210} alt="" style={{ position: "absolute", left: 950, top: 394 }} />
+      ) : (
+        plan.kong && (
+          // 다른 그림에서는 왼쪽 빈자리에서 뉴스에 반응하는 콩이
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={svgUri(kongSvg(look))} width={270} height={270} alt="" style={{ position: "absolute", left: 96, top: 112 }} />
+        )
       )}
 
-      {/* 칸 테두리 (그림 위에) */}
-      <Abs style={{ left: 28, top: 28, width: 1144, height: 574, borderRadius: 20, border: `6px solid ${C.ink}` }} />
-
-      {/* 칸 이름 (노란 상자) */}
-      <Abs
-        style={{
-          left: 56,
-          top: 52,
-          padding: "6px 16px",
-          background: C.yellow,
-          border: `4px solid ${C.ink}`,
-          fontSize: 25,
-          fontWeight: 800,
-          color: C.ink,
-          transform: "rotate(-2deg)",
-          letterSpacing: -0.5,
-        }}
-      >
-        {`금콩 브리핑 · ${formatDayHeading(issue.date)} 아침판`}
-      </Abs>
+      <BrandPill date={issue.date} label="금콩 브리핑" slot="아침판" />
 
       {speech ? (
         <>
           {/* 말풍선 — 기사에 실린 발언 그대로 */}
-          <Abs style={{ left: 56, top: 126, width: 580, minHeight: 190, padding: "26px 34px", background: C.white, border: `6px solid ${C.ink}`, borderRadius: 36, alignItems: "center" }}>
-            <Lines lines={head.lines} style={{ fontSize: head.size, fontWeight: 800, color: C.ink, lineHeight: 1.22, letterSpacing: -1.2 }} />
+          <Abs
+            style={{
+              left: 52,
+              top: 128,
+              width: 590,
+              minHeight: 190,
+              padding: "28px 36px",
+              background: C.white,
+              borderRadius: 36,
+              alignItems: "center",
+              boxShadow: "0 18px 40px rgba(12,16,48,0.28)",
+            }}
+          >
+            <Lines lines={head.lines} style={{ fontSize: head.size, fontWeight: 800, color: "#13163f", lineHeight: 1.22, letterSpacing: -1.2 }} />
           </Abs>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={TAIL} width={96} height={80} alt="" style={{ position: "absolute", left: 626, top: 230 }} />
+          <img src={TAIL} width={80} height={64} alt="" style={{ position: "absolute", left: 630, top: 236 }} />
           {cap && (
-            <Abs style={{ left: 56, bottom: 56, maxWidth: 620, padding: "12px 22px", background: C.ink, borderRadius: 12 }}>
+            <Abs style={{ left: 52, bottom: 52, maxWidth: 640, padding: "12px 22px", background: "rgba(12,16,48,0.72)", borderRadius: 14 }}>
               <Lines lines={cap.lines} style={{ fontSize: cap.size, fontWeight: 700, color: C.white, letterSpacing: -0.5, lineHeight: 1.3 }} />
             </Abs>
           )}
         </>
       ) : (
-        // 제목 상자 — 왼쪽 아래
-        <Abs style={{ left: 52, bottom: 52, width: 624, flexDirection: "column", background: C.white, border: `5px solid ${C.ink}`, borderRadius: 18, overflow: "hidden" }}>
-          <div style={{ display: "flex", padding: "18px 26px 16px" }}>
-            <Lines lines={head.lines} style={{ fontSize: head.size, fontWeight: 800, color: C.ink, lineHeight: 1.2, letterSpacing: -1.4 }} />
+        // 제목 카드 — 왼쪽 아래 (분위기 색 띠)
+        <Abs style={{ left: 52, bottom: 52, width: 640, background: C.white, borderRadius: 28, overflow: "hidden", boxShadow: "0 22px 48px rgba(12,16,48,0.3)" }}>
+          <div style={{ display: "flex", width: 10, background: accent }} />
+          <div style={{ display: "flex", flexDirection: "column", padding: "22px 30px 22px 26px" }}>
+            <Lines lines={head.lines} style={{ fontSize: head.size, fontWeight: 800, color: "#13163f", lineHeight: 1.18, letterSpacing: -1.6 }} />
+            {cap && <Lines lines={cap.lines} style={{ marginTop: 10, fontSize: cap.size, fontWeight: 600, color: "#5b6080", letterSpacing: -0.4, lineHeight: 1.3 }} />}
           </div>
-          {cap && (
-            <div style={{ display: "flex", padding: "10px 26px 12px", background: C.ink }}>
-              <Lines lines={cap.lines} style={{ fontSize: cap.size, fontWeight: 700, color: C.white, letterSpacing: -0.4, lineHeight: 1.3 }} />
-            </div>
-          )}
         </Abs>
       )}
     </div>

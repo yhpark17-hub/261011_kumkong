@@ -1,5 +1,6 @@
 import "server-only";
 import type { Row } from "@libsql/client";
+import { parseAttachments } from "../attachments";
 import { isFeedbackKind, type FeedbackItem } from "../feedback-meta";
 import { db } from "./db";
 
@@ -17,6 +18,7 @@ function toItem(r: Row): FeedbackItem {
     body: String(r.body),
     sourceUrl: (r.source_url as string | null) ?? null,
     contact: (r.contact as string | null) ?? null,
+    attachments: parseAttachments(r.attachments),
     status: Number(r.status),
     createdAt: Number(r.created_at),
     handledAt: r.handled_at == null ? null : Number(r.handled_at),

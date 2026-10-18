@@ -1,5 +1,6 @@
 "use server";
 
+import { MAX_FEEDBACK_ATTACHMENTS, parseAttachments } from "@/lib/attachments";
 import { getCompany } from "@/lib/data";
 import { FEEDBACK_KINDS, FEEDBACK_LIMITS, isFeedbackKind } from "@/lib/feedback-meta";
 import { db, dbConfigured } from "@/lib/server/db";
@@ -41,6 +42,8 @@ export async function submitFeedback(_prev: FeedbackState, fd: FormData): Promis
   }
 
   const contact = str(fd, "contact").slice(0, FEEDBACK_LIMITS.contact) || null;
+  // 사진·파일 — 우리 저장소에 올라간 것만 (주소 검사)
+  const attachments = parseAttachments(String(fd.get("attachments") ?? "[]")).slice(0, MAX_FEEDBACK_ATTACHMENTS);
   const pageRaw = str(fd, "page");
   // 사이트 안 경로만 (운영자 화면에서 링크로 보여 주므로 //다른주소 형태는 버림)
   const page = /^\/(?!\/)/.test(pageRaw) ? pageRaw.slice(0, 200) : null;
@@ -54,9 +57,9 @@ export async function submitFeedback(_prev: FeedbackState, fd: FormData): Promis
     }
     const client = await db();
     await client.execute({
-      sql: `INSERT INTO feedback (kind, topic, company_id, company_name, page, body, source_url, contact, ip_hash, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      args: [kind, topic, company?.id ?? null, companyName, page, body, sourceUrl, contact, who.hash, Date.now()],
+      sql: `INSERT INTO feedback (kind, topic, company_id, company_name, page, body, source_url, contact, attachments, ip_hash, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [kind, topic, company?.id ?? null, companyName, page, body, sourceUrl, contact, JSON.stringify(attachments), who.hash, Date.now()],
     });
   } catch (err) {
     console.error("[feedback] 저장 실패", err);

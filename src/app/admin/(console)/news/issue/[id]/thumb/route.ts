@@ -15,6 +15,6 @@ export async function GET(req: Request, ctx: RouteContext<"/admin/news/issue/[id
   if (!issue) return new Response("브리핑을 찾을 수 없어요.", { status: 404 });
   const q = new URL(req.url).searchParams;
   const pick = (k: string) => q.get(k) ?? "";
-  const thumb = parseThumb({ ...issue.thumb, scene: pick("scene"), kong: pick("kong") === "1", costume: pick("costume"), mood: pick("mood"), bubble: pick("bubble"), caption: pick("caption"), topic: pick("topic") });
+  const thumb = parseThumb({ ...issue.thumb, scene: pick("scene"), kong: pick("kong"), costume: pick("costume"), mood: pick("mood"), bubble: pick("bubble"), caption: pick("caption"), topic: pick("topic") });
   return briefingOgImage(issue, { thumb, admin: true, headers: { "Cache-Control": "private, no-store" } });
 }

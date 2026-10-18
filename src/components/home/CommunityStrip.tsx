@@ -1,19 +1,18 @@
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowRight, BarChart3, Lock, MessagesSquare } from "lucide-react";
+import { ArrowRight, BarChart3, MessagesSquare } from "lucide-react";
 import { DifficultyTag } from "@/components/reviews/DifficultyMeter";
 import { AuthorLabel, CategoryTag } from "@/components/board/parts";
 import { BOARD_NAME, formatPostTime } from "@/lib/board-meta";
-import { addDays, formatShort, parseKey, todayKST } from "@/lib/date";
-import { resultsPublicFrom } from "@/lib/review-meta";
+import { addDays, formatShort, todayKST } from "@/lib/date";
 import { listPosts } from "@/lib/server/board";
-import { examSummaries, listExams } from "@/lib/server/reviews";
+import { examCounts, listExams } from "@/lib/server/reviews";
 import { Card, CompanyAvatar, cn } from "../ui";
 
 /**
  * 최근 필기 후기 (요청 시 렌더링) — 홈, 캘린더 옆 칸
  * 로고 · 기관명 · 날짜 | 체감 난이도(색) · 후기 수 (없으면 '후기 받는 중' — 0명을 내세우지 않음)
- * 시험 후 3일은 후기를 남긴 사람에게만 난이도가 보이고, 나머지에겐 '🔒 공개일'로 궁금하게
+ * 홈 칸에서는 시험 직후에도 난이도 한 단어를 보여 줘요 — '어렵다던데?' 하고 눌러 보게 (상세 결과는 시험 페이지에서 후기를 남겨야)
  * limit: 보여 줄 시험 수, large: 홈처럼 넓은 칸 (다른 칸과 같은 제목 크기)
  */
 export async function RecentExamsPanel({ limit = 4, large = false }: { limit?: number; large?: boolean } = {}) {
@@ -22,8 +21,8 @@ export async function RecentExamsPanel({ limit = 4, large = false }: { limit?: n
   // 최근 2주 시험 중 후기가 많은 곳 먼저 → 나머지는 최근 날짜 순 (모두 '후기 받는 중'만 보이지 않게)
   const since = addDays(today, -14);
   const past = listExams().filter((e) => !e.expected && e.date <= today);
-  const summaries = await examSummaries(past, today);
-  const n = (id: string) => summaries[id]?.n ?? 0;
+  const counts = await examCounts();
+  const n = (id: string) => counts.get(id)?.n ?? 0;
   const exams = [
     ...past.filter((e) => e.date >= since && n(e.id) > 0).sort((a, b) => n(b.id) - n(a.id) || (a.date < b.date ? 1 : -1)),
     ...past.filter((e) => !(e.date >= since && n(e.id) > 0)),
@@ -47,8 +46,7 @@ export async function RecentExamsPanel({ limit = 4, large = false }: { limit?: n
         <ul className="-mx-2 mt-2 divide-y divide-hairline">
           {exams.map((e) => {
             const reviews = n(e.id);
-            const sum = summaries[e.id];
-            const pub = parseKey(resultsPublicFrom(e.date));
+            const avg = counts.get(e.id)?.avg;
             return (
               <li key={e.id}>
                 <Link href={`/reviews/${e.id}`} className="group flex items-center gap-3 rounded-md px-2 py-2.5 hover:bg-canvas-soft">
@@ -61,16 +59,7 @@ export async function RecentExamsPanel({ limit = 4, large = false }: { limit?: n
                   </span>
                   {reviews > 0 ? (
                     <span className="flex shrink-0 items-center gap-2.5">
-                      {sum?.avg != null ? (
-                        <DifficultyTag avg={sum.avg} />
-                      ) : (
-                        sum?.locked && (
-                          <span className="tag inline-flex shrink-0 items-center gap-1 bg-canvas-soft text-ink-mute" title="후기를 남기면 바로 볼 수 있어요">
-                            <Lock className="h-3 w-3" strokeWidth={2} />
-                            {pub.m}/{pub.d} 공개
-                          </span>
-                        )
-                      )}
+                      {avg != null && <DifficultyTag avg={avg} />}
                       <span className="min-w-10 text-right">
                         <span className="tabular type-heading-sm text-ink">{reviews}</span>
                         <span className="ml-0.5 type-caption text-ink-mute">명</span>

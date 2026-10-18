@@ -1,3 +1,4 @@
+import type { Attachment } from "./attachments";
 /** 제보·의견 보내기 공통 정보 — 서버·클라이언트 모두에서 사용 */
 
 export type FeedbackKind = "correction" | "posting" | "site";
@@ -52,6 +53,8 @@ export interface FeedbackItem {
   body: string;
   sourceUrl: string | null;
   contact: string | null;
+  /** 함께 보낸 사진·파일 */
+  attachments: Attachment[];
   status: number;
   createdAt: number;
   handledAt: number | null;

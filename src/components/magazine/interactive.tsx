@@ -282,6 +282,22 @@ export function NewsViewRecorder({ id }: { id: number }) {
   return null;
 }
 
+/**
+ * 주소창을 썸네일 버전(?s=)이 붙은 공유 주소로 맞춰요 — 주소창에서 복사해 카톡에 보내도 새 미리보기가 뜨게.
+ * (카톡은 한 번 읽은 주소의 미리보기를 한동안 그대로 써요) 화면은 다시 그리지 않아요.
+ */
+export function ShareUrlSync({ path }: { path: string }) {
+  useEffect(() => {
+    const want = new URL(path, location.origin);
+    const now = new URL(location.href);
+    const s = want.searchParams.get("s");
+    if (!s || now.pathname !== want.pathname || now.searchParams.get("s") === s) return;
+    now.searchParams.set("s", s);
+    history.replaceState(history.state, "", `${now.pathname}${now.search}${now.hash}`);
+  }, [path]);
+  return null;
+}
+
 /** 공유 (모바일은 공유 시트, PC 는 링크 복사) */
 export function ShareButton({ title, path, className }: { title: string; path: string; className?: string }) {
   const [copied, setCopied] = useState(false);

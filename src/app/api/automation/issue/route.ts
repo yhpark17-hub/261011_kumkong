@@ -24,7 +24,7 @@ import { db, dbConfigured } from "@/lib/server/db";
  * 공유 썸네일 (선택, 운영자가 발행 전에 확인·수정)
  *   - 아침판 thumb: { scene?, costume?, kong?, mood?: "up"|"down"|"neutral", bubble?, caption? }
  *     scene = speech|market|rate|fx|oil|housing|prices|security|chip|trade|bond|news (그날 헤드라인 주제 그림 — 인물 발언이면 speech)
- *     costume = uspresident|banker|president|… (speech 일 때 콩이가 변장할 인물), kong = 다른 그림에도 작은 콩이(true/false)
+ *     costume = uspresident|banker|president|… (콩이가 변장할 인물·역할), kong = "auto"(분위기가 뚜렷한 날만) | "on" | "off"
  *     bubble = 큰 글(44자 안) — speech 면 기사에 실린 발언 그대로만(이 판 기사 본문에 없으면 빼고 warnings), 아니면 썸네일 제목
  *     caption = 무슨 일인지 사실 한 줄(64자 안)
  *   - 금콩 스터디 thumb: { topic? } — 논술 주제가 길 때 썸네일용으로 뜻이 바뀌지 않게 줄인 것(120자 안). 주제가 둘이면 더 중요한 하나만

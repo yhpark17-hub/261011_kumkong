@@ -8,6 +8,7 @@ import {
   NEWS_SECTION_INFO,
   briefingMinutes,
   letterHref,
+  letterShareHref,
   newsHref,
   volLabel,
   type BriefingIssue,
@@ -20,7 +21,7 @@ import { Masthead } from "./BriefingBrand";
 import { BriefingQuiz } from "./BriefingQuiz";
 import { Markdown } from "./Markdown";
 import { ReadingProgress } from "./KongMascot";
-import { ShareButton, SourceLink } from "./interactive";
+import { ShareButton, ShareUrlSync, SourceLink } from "./interactive";
 import { NEWS_ICON } from "./news-icons";
 
 const anchor = (n: NewsItem) => `item-${n.id}`;
@@ -530,6 +531,8 @@ export function Letter({
 
   return (
     <article className="theme-light overflow-hidden rounded-3xl bg-canvas-cream">
+      {/* 주소창도 썸네일 버전이 붙은 공유 주소로 (복사해 카톡에 보내도 새 미리보기) */}
+      {issue.live && <ShareUrlSync path={letterShareHref(issue)} />}
       {/* 머리 — 로고·호수·날짜 */}
       <header className="relative px-6 pt-8 pb-8 text-center md:px-10 md:pt-10">
         <p className="type-caption font-semibold text-lemon">{BRIEFING_TAGLINE[issue.edition]}</p>
@@ -577,7 +580,7 @@ export function Letter({
                 <FeedbackButton kind="site" className="btn btn-sm btn-primary">
                   의견 보내기
                 </FeedbackButton>
-                <ShareButton title={`${EDITION_LABEL[issue.edition]} ${formatDayHeading(issue.date)}`} path={letterHref(issue.date, issue.edition)} />
+                <ShareButton title={`${EDITION_LABEL[issue.edition]} ${formatDayHeading(issue.date)}`} path={letterShareHref(issue)} />
               </div>
             </div>
             <p className="mt-4 flex gap-2 border-t border-hairline pt-4 type-caption leading-relaxed text-ink-secondary [word-break:keep-all]">
