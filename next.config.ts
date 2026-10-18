@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   // 공유 썸네일(opengraph-image)이 그릴 때 읽는 글꼴·기관 로고를 서버 함수에 함께 담아요
   outputFileTracingIncludes: {
     "/reviews/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Regular,Bold,ExtraBold}.otf", "./public/logos/**/*.png"],
-    "/magazine/letter/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Regular,Bold,ExtraBold}.otf"],
+    "/magazine/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Regular,Bold,ExtraBold}.otf", "./public/logos/**/*.png"],
   },
   // 필기 가이드는 매거진으로 옮김 — 예전 링크·검색 결과가 끊기지 않게
   redirects() {

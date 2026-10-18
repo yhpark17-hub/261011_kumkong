@@ -140,6 +140,8 @@ export interface ArticleSummary {
   title: string;
   summary: string;
   coverUrl: string | null;
+  /** 표지를 올리지 않았을 때 그려 쓰는 썸네일 설정 (빈 값 = 자동) */
+  thumb: ArticleThumb;
   tags: string[];
   author: string;
   readMinutes: number;
@@ -163,6 +165,69 @@ export interface ArticleDetail extends ArticleSummary {
 export const ARTICLE_STATUS = { draft: 0, published: 1 } as const;
 
 export const articleHref = (id: number) => `/magazine/${id}`;
+
+/* ------------------------------------------------------------------ */
+/* 글 썸네일 — 표지를 올리지 않은 글은 주제 그림 + 제목으로 그려요           */
+/* ------------------------------------------------------------------ */
+
+/** 썸네일 그림 (기관 글이면 그 기관 본사 건물 + 로고 간판) */
+export const ARTICLE_SCENES = [
+  { key: "company", label: "기관 본사 건물 + 로고" },
+  { key: "exam", label: "필기 시험지 · 시계" },
+  { key: "interview", label: "면접장" },
+  { key: "knowledge", label: "금융 지식 (책 · 차트)" },
+  { key: "starter", label: "출발선 · 로드맵" },
+  { key: "insider", label: "사원증 · 사무실" },
+] as const;
+
+export type ArticleSceneKey = (typeof ARTICLE_SCENES)[number]["key"];
+
+export const isArticleScene = (v: unknown): v is ArticleSceneKey => typeof v === "string" && ARTICLE_SCENES.some((x) => x.key === v);
+
+export interface ArticleThumb {
+  /** '' = 자동 (기관이 나온 글이면 기관 건물, 아니면 카테고리 그림) */
+  scene: ArticleSceneKey | "";
+  /** 간판에 넣을 기관 id ('' = 태그·제목에서 자동) */
+  company: string;
+  /** 왼쪽 위 이름표 옆 말 ('' = 자동, 예: '산은 필기') */
+  kicker: string;
+  /** 큰 제목 ('' = 글 제목) */
+  headline: string;
+  /** 제목 아래 한 줄 ('' = 제목의 '—' 뒤 또는 요약 첫 줄) */
+  sub: string;
+}
+
+export const EMPTY_ARTICLE_THUMB: ArticleThumb = { scene: "", company: "", kicker: "", headline: "", sub: "" };
+
+export const ARTICLE_THUMB_LIMITS = { kicker: 16, headline: 60, sub: 60 } as const;
+
+export function parseArticleThumb(raw: unknown): ArticleThumb {
+  let o: Record<string, unknown> = {};
+  try {
+    o = typeof raw === "string" && raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+  } catch {
+    o = {};
+  }
+  const text = (v: unknown, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+  return {
+    scene: isArticleScene(o.scene) ? o.scene : "",
+    company: typeof o.company === "string" && /^[a-z0-9-]{1,40}$/.test(o.company) ? o.company : "",
+    kicker: text(o.kicker, ARTICLE_THUMB_LIMITS.kicker),
+    headline: text(o.headline, ARTICLE_THUMB_LIMITS.headline),
+    sub: text(o.sub, ARTICLE_THUMB_LIMITS.sub),
+  };
+}
+
+/** 저장용 — 다 비었으면 '' */
+export function serializeArticleThumb(t: ArticleThumb): string {
+  return Object.values(t).some(Boolean) ? JSON.stringify(t) : "";
+}
+
+/** 그려 쓰는 썸네일 주소 — 고치면(수정 시각) 주소가 바뀌어 카톡·브라우저가 새 그림을 받아요 */
+export const articleThumbUrl = (a: Pick<ArticleSummary, "id" | "updatedAt">) => `/magazine/${a.id}/thumb?v=${a.updatedAt.toString(36)}`;
+
+/** 카드·공유에 쓰는 그림 — 올린 표지가 있으면 그것, 없으면 그린 썸네일 */
+export const articleImageUrl = (a: Pick<ArticleSummary, "id" | "updatedAt" | "coverUrl">) => a.coverUrl || articleThumbUrl(a);
 
 /**
  * 매거진 목록 주소

@@ -24,6 +24,8 @@ import {
   MAGAZINE_NAME,
   SECTION_INFO,
   articleHref,
+  articleImageUrl,
+  articleThumbUrl,
   formatArticleDate,
   kstDateKey,
   magazineHref,
@@ -36,7 +38,7 @@ import { companiesInArticle } from "@/lib/server/article-links";
 import { adjacentArticles, getArticle, relatedArticles } from "@/lib/server/magazine";
 import { isAdmin } from "@/lib/server/security";
 import { articleFeatureIn } from "@/lib/article-widgets";
-import { AD_SLOTS, OG_IMAGE, SITE, pageOpenGraph } from "@/lib/site";
+import { AD_SLOTS, SITE, pageOpenGraph } from "@/lib/site";
 
 function parseId(raw: string): number | null {
   const n = Number(raw);
@@ -62,7 +64,8 @@ export async function generateMetadata({ params }: PageProps<"/magazine/[id]">):
       modifiedTime: new Date(a.updatedAt).toISOString(),
       section: CATEGORY_INFO[a.category].label,
       tags: a.tags,
-      images: a.coverUrl ? [{ url: a.coverUrl }] : [OG_IMAGE],
+      // 올린 표지가 없으면 그린 썸네일 (주소에 수정 시각이 붙어 고치면 카톡도 새 그림)
+      images: [a.coverUrl ? { url: a.coverUrl } : { url: articleThumbUrl(a), width: 1200, height: 630, alt: a.title }],
     }),
   };
 }
@@ -140,7 +143,7 @@ async function ArticleView({ rawId }: { rawId: string }) {
     publisher: { "@type": "Organization", name: SITE.name, url: SITE.url },
     mainEntityOfPage: `${SITE.url}${articleHref(a.id)}`,
     // 표지가 사이트 안 파일(/covers/…)이어도 전체 주소로
-    image: a.coverUrl ? [new URL(a.coverUrl, SITE.url).href] : undefined,
+    image: [new URL(articleImageUrl(a), SITE.url).href],
     articleSection: CATEGORY_INFO[a.category].label,
     keywords: a.tags.join(", ") || undefined,
   };

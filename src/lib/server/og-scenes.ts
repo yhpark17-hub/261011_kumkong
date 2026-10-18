@@ -14,7 +14,7 @@ export const SCENE_H = 630;
 type Stop = [number, string, number?];
 
 /** 그라데이션 · 흐림 정의 모음 (장면마다 따로 — id 는 장면 안에서만 쓰여요) */
-class Defs {
+export class Defs {
   private items: string[] = [];
   lin(id: string, stops: Stop[], x1 = 0, y1 = 0, x2 = 0, y2 = 1): string {
     this.items.push(
@@ -38,13 +38,13 @@ class Defs {
 }
 
 /** 바닥 그림자 */
-const shadow = (cx: number, cy: number, rx: number, ry: number, filter: string, op = 0.22) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0b1030" opacity="${op}" filter="${filter}"/>`;
+export const shadow = (cx: number, cy: number, rx: number, ry: number, filter: string, op = 0.22) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0b1030" opacity="${op}" filter="${filter}"/>`;
 /** 빛 번짐 */
-const blob = (cx: number, cy: number, r: number, color: string, filter: string, op = 0.55) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" opacity="${op}" filter="${filter}"/>`;
-const bg = (fill: string) => `<rect width="${SCENE_W}" height="${SCENE_H}" fill="${fill}"/>`;
+export const blob = (cx: number, cy: number, r: number, color: string, filter: string, op = 0.55) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" opacity="${op}" filter="${filter}"/>`;
+export const bg = (fill: string) => `<rect width="${SCENE_W}" height="${SCENE_H}" fill="${fill}"/>`;
 
 /** 동그란 화살표 배지 (오름 초록 / 내림 빨강) */
-function arrowBadge(d: Defs, cx: number, cy: number, r: number, up: boolean, id: string): string {
+export function arrowBadge(d: Defs, cx: number, cy: number, r: number, up: boolean, id: string): string {
   const fill = up ? d.lin(`${id}g`, [[0, "#3ef0a8"], [1, "#0fb377"]]) : d.lin(`${id}g`, [[0, "#ff8aa0"], [1, "#e8335a"]]);
   const k = r / 46;
   const arrow = up
@@ -60,7 +60,7 @@ function arrowBadge(d: Defs, cx: number, cy: number, r: number, up: boolean, id:
 }
 
 /** 동전 ($ · ₩) — 금속 느낌 */
-function coin(d: Defs, cx: number, cy: number, r: number, kind: "won" | "dollar", id: string): string {
+export function coin(d: Defs, cx: number, cy: number, r: number, kind: "won" | "dollar", id: string): string {
   const face = kind === "dollar" ? d.rad(`${id}f`, [[0, "#c8f7dc"], [0.7, "#5fd394"], [1, "#279e62"]], 0.35, 0.3, 0.8) : d.rad(`${id}f`, [[0, "#fff3b8"], [0.7, "#ffc93d"], [1, "#e09a00"]], 0.35, 0.3, 0.8);
   const ink = kind === "dollar" ? "#17643d" : "#9a5d00";
   const k = r / 70;

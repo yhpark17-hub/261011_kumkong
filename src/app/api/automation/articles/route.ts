@@ -1,12 +1,13 @@
 import { revalidatePath } from "next/cache";
 import { automationAuthorized, json, unauthorized } from "@/lib/server/automation";
 import { db, dbConfigured } from "@/lib/server/db";
-import { computeReadMinutes, isMagazineCategory, kstDateKey, parseTags } from "@/lib/magazine-meta";
+import { computeReadMinutes, isMagazineCategory, kstDateKey, parseArticleThumb, parseTags, serializeArticleThumb } from "@/lib/magazine-meta";
 
 /**
  * 매거진 초안 올리기 (데일리 브리핑 등) — 항상 '임시저장 · 자동 초안'으로만 들어가고,
  * 운영자가 확인·수정한 뒤 발행해야 공개됩니다. 같은 날·같은 판(edition)의 자동 초안은 하나만.
- * body: { category, title, summary, body, tags?, edition?: "morning" | "noon" }
+ * body: { category, title, summary, body, tags?, edition?: "morning" | "noon", thumb?: { scene?, company?, kicker?, headline?, sub? } }
+ * 썸네일은 비워도 자동으로 그려져요 (기관이 나온 글은 그 기관 건물·로고) — thumb 로 문구를 다듬을 수 있어요.
  */
 export async function POST(req: Request) {
   if (!automationAuthorized(req)) return unauthorized();
@@ -17,6 +18,7 @@ export async function POST(req: Request) {
   const summary = typeof b?.summary === "string" ? b.summary.trim().slice(0, 600) : "";
   const body = typeof b?.body === "string" ? b.body.replace(/\r\n?/g, "\n").trim().slice(0, 60000) : "";
   const tags = typeof b?.tags === "string" ? parseTags(b.tags).join(",") : Array.isArray(b?.tags) ? parseTags(b.tags.join(",")).join(",") : "";
+  const thumb = serializeArticleThumb(parseArticleThumb(b?.thumb && typeof b.thumb === "object" ? JSON.stringify(b.thumb) : ""));
   if (!isMagazineCategory(category) || title.length < 2 || body.length < 20) {
     return json({ error: "category·title·body 를 확인해 주세요" }, 400);
   }
@@ -29,9 +31,9 @@ export async function POST(req: Request) {
   if (!claim.rowsAffected) return json({ skipped: true, reason: "오늘 같은 판의 자동 초안이 이미 있어요" });
 
   const res = await client.execute({
-    sql: `INSERT INTO articles (category, title, summary, body, tags, author, read_minutes, status, featured, source, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, '금콩 에디터', ?, 0, 0, 'auto', ?, ?)`,
-    args: [category, title, summary, body, tags, computeReadMinutes(body), now, now],
+    sql: `INSERT INTO articles (category, title, summary, thumb, body, tags, author, read_minutes, status, featured, source, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, '금콩 에디터', ?, 0, 0, 'auto', ?, ?)`,
+    args: [category, title, summary, thumb, body, tags, computeReadMinutes(body), now, now],
   });
   const id = Number(res.lastInsertRowid);
   await client.execute({ sql: "UPDATE kv SET value = ? WHERE key = ?", args: [String(id), key] });

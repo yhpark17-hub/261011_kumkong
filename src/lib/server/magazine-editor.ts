@@ -1,6 +1,11 @@
 import "server-only";
 import type { EditorInitial } from "@/components/admin/ArticleEditor";
-import { DEFAULT_AUTHOR, TEMPLATES, msToKstInput, type ArticleDetail } from "../magazine-meta";
+import { COMPANIES } from "../data";
+import { DEFAULT_AUTHOR, EMPTY_ARTICLE_THUMB, TEMPLATES, msToKstInput, type ArticleDetail } from "../magazine-meta";
+import { articleThumbPlan } from "./article-thumb";
+
+/** 간판 기관 고르기 목록 (가나다순) */
+const companyOptions = () => COMPANIES.map((c) => ({ id: c.id, name: c.name })).sort((a, b) => a.name.localeCompare(b.name, "ko"));
 
 /** 운영자 편집기 초기값 — 서버에서 지금 시각 기준으로 상태를 계산 (requireAdmin 이후 호출) */
 
@@ -9,6 +14,12 @@ function tomorrowMorning(now: number): string {
   const kst = new Date(now + 9 * 3600_000);
   const at = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate() + 1, 7 - 9, 0);
   return msToKstInput(at);
+}
+
+/** 썸네일을 비워 두면 어떤 그림·기관이 들어가는지 */
+function autoInfo(a: ArticleDetail): EditorInitial["thumbAuto"] {
+  const { scene, company, companyName, kicker } = articleThumbPlan(a, EMPTY_ARTICLE_THUMB).auto;
+  return { scene, company, companyName, kicker };
 }
 
 export function editorFromArticle(a: ArticleDetail, now = Date.now()): EditorInitial {
@@ -29,6 +40,13 @@ export function editorFromArticle(a: ArticleDetail, now = Date.now()): EditorIni
     updatedAt: a.updatedAt,
     source: a.source,
     statusLabel: a.status === 0 ? "임시저장" : scheduled ? "예약 발행" : "공개 중",
+    thumbScene: a.thumb.scene,
+    thumbCompany: a.thumb.company,
+    thumbKicker: a.thumb.kicker,
+    thumbHeadline: a.thumb.headline,
+    thumbSub: a.thumb.sub,
+    thumbAuto: autoInfo(a),
+    companies: companyOptions(),
   };
 }
 
@@ -51,5 +69,12 @@ export function editorForNew(templateKey: string | null, now = Date.now()): Edit
     updatedAt: null,
     source: "admin",
     statusLabel: "새 글",
+    thumbScene: "",
+    thumbCompany: "",
+    thumbKicker: "",
+    thumbHeadline: "",
+    thumbSub: "",
+    thumbAuto: null,
+    companies: companyOptions(),
   };
 }

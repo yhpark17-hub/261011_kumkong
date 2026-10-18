@@ -17,6 +17,7 @@ import {
   CATEGORY_INFO,
   SECTION_INFO,
   articleHref,
+  articleImageUrl,
   formatArticleDate,
   magazineHref,
   summaryLines,
@@ -62,18 +63,11 @@ export function ArticleMeta({ a, className }: { a: ArticleSummary; className?: s
 }
 
 /** 표지 — 이미지가 없으면 카테고리 색 그라디언트 + 아이콘 (너비·비율은 className 으로) */
-export function ArticleCover({ a, className, iconSize = "h-8 w-8" }: { a: ArticleSummary; className?: string; iconSize?: string }) {
-  const Icon = CATEGORY_ICON[a.category];
-  if (a.coverUrl) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element -- 운영자가 올린 표지 (Blob 주소)
-      <img src={a.coverUrl} alt="" loading="lazy" decoding="async" className={cn("bg-canvas-soft object-cover", className)} />
-    );
-  }
+export function ArticleCover({ a, className }: { a: ArticleSummary; className?: string }) {
+  // 올린 표지가 없으면 주제 그림 + 제목으로 그린 썸네일 (기관 글은 그 기관 건물·로고) — 정사각 칸에서는 그림 쪽(오른쪽)이 보이게
   return (
-    <div className={cn("flex items-center justify-center bg-linear-to-br to-canvas", CATEGORY_INFO[a.category].cover, className)}>
-      <Icon className={cn("text-ink-mute-2", iconSize)} strokeWidth={1.25} />
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element -- 운영자가 올린 표지(Blob) 또는 그때그때 그린 썸네일
+    <img src={articleImageUrl(a)} alt="" loading="lazy" decoding="async" className={cn("bg-canvas-soft object-cover", !a.coverUrl && "object-[80%_50%]", className)} />
   );
 }
 
@@ -83,7 +77,7 @@ export function ArticleCard({ a, priority = false, large = false }: { a: Article
   return (
     <Link href={articleHref(a.id)} className="group flex flex-col overflow-hidden rounded-xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
       <div className="relative">
-        <ArticleCover a={a} className="aspect-[16/9] w-full" iconSize={large ? "h-10 w-10" : undefined} />
+        <ArticleCover a={a} className="aspect-[16/9] w-full" />
         <ReadBadge id={a.id} className="absolute top-3 right-3" />
       </div>
       <div className={cn("flex flex-1 flex-col", large ? "p-6" : "p-5")}>
@@ -146,7 +140,7 @@ export function ArticleRow({ a, rank }: { a: ArticleSummary; rank?: number }) {
         <span className="mt-1.5 line-clamp-2 type-body-md font-semibold text-ink group-hover:underline">{a.title}</span>
         <ArticleMeta a={a} className="mt-1" />
       </span>
-      <ArticleCover a={a} className="aspect-square w-20 shrink-0 rounded-lg" iconSize="h-6 w-6" />
+      <ArticleCover a={a} className="aspect-square w-20 shrink-0 rounded-lg" />
     </Link>
   );
 }

@@ -8,6 +8,7 @@ import {
   type ArticleSummary,
   type MagazineCategory,
   isArticleBadge,
+  parseArticleThumb,
 } from "../magazine-meta";
 import { db } from "./db";
 
@@ -17,7 +18,7 @@ import { db } from "./db";
  */
 
 const SUMMARY_COLS =
-  "id, category, title, summary, cover_url, tags, author, read_minutes, featured, badge, status, source, published_at, updated_at, views, likes";
+  "id, category, title, summary, cover_url, thumb, tags, author, read_minutes, featured, badge, status, source, published_at, updated_at, views, likes";
 
 // 숨긴 카테고리(합격 수기·웹툰 등)는 공개 목록에서 뺌 — 키는 코드 상수라 SQL 에 바로 넣어도 안전
 const VISIBLE_IN = VISIBLE_CATEGORIES.map((c) => `'${c.key}'`).join(", ");
@@ -31,6 +32,7 @@ function toSummary(r: Row): ArticleSummary {
     title: String(r.title),
     summary: String(r.summary ?? ""),
     coverUrl: (r.cover_url as string | null) || null,
+    thumb: parseArticleThumb(r.thumb),
     tags: String(r.tags ?? "")
       .split(",")
       .map((t) => t.trim())

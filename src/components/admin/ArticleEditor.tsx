@@ -43,6 +43,7 @@ import {
 import { ARTICLE_FEATURES, ARTICLE_WIDGETS } from "@/lib/article-widgets";
 import { uploadFile } from "@/lib/upload-client";
 import { cn } from "../ui";
+import { ArticleThumbFields, type ThumbAutoInfo, type ThumbValues } from "./ArticleThumbFields";
 
 export interface EditorInitial {
   id: number | null;
@@ -63,9 +64,22 @@ export interface EditorInitial {
   updatedAt: number | null;
   source: string;
   statusLabel: string;
+  /** 썸네일 설정 (빈 값 = 자동) */
+  thumbScene: ThumbValues["thumbScene"];
+  thumbCompany: string;
+  thumbKicker: string;
+  thumbHeadline: string;
+  thumbSub: string;
+  /** 자동이면 어떤 그림·기관인지 (새 글은 null) */
+  thumbAuto: ThumbAutoInfo | null;
+  /** 간판 기관 고르기 목록 */
+  companies: { id: string; name: string }[];
 }
 
-type Fields = Pick<EditorInitial, "category" | "title" | "summary" | "coverUrl" | "body" | "tags" | "author" | "featured" | "badge" | "mode" | "publishAt">;
+type Fields = Pick<
+  EditorInitial,
+  "category" | "title" | "summary" | "coverUrl" | "body" | "tags" | "author" | "featured" | "badge" | "mode" | "publishAt" | keyof ThumbValues
+>;
 
 const pick = (i: EditorInitial): Fields => ({
   category: i.category,
@@ -79,6 +93,11 @@ const pick = (i: EditorInitial): Fields => ({
   badge: i.badge,
   mode: i.mode,
   publishAt: i.publishAt,
+  thumbScene: i.thumbScene,
+  thumbCompany: i.thumbCompany,
+  thumbKicker: i.thumbKicker,
+  thumbHeadline: i.thumbHeadline,
+  thumbSub: i.thumbSub,
 });
 
 /** 예약 시각은 예약 발행일 때만 비교 */
@@ -98,6 +117,11 @@ const fromForm = (fd: FormData): Fields => ({
   badge: isArticleBadge(fd.get("badge")) ? (fd.get("badge") as ArticleBadge) : "",
   mode: (String(fd.get("mode") ?? "draft") as Fields["mode"]),
   publishAt: String(fd.get("publishAt") ?? ""),
+  thumbScene: String(fd.get("thumbScene") ?? "") as Fields["thumbScene"],
+  thumbCompany: String(fd.get("thumbCompany") ?? ""),
+  thumbKicker: String(fd.get("thumbKicker") ?? ""),
+  thumbHeadline: String(fd.get("thumbHeadline") ?? ""),
+  thumbSub: String(fd.get("thumbSub") ?? ""),
 });
 
 /* 이 브라우저에 작성 중인 내용 임시 보관 (저장 전 창을 닫아도 복구) */
@@ -421,7 +445,7 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
 
           {/* 표지 */}
           <div>
-            <span className="mb-1 block type-caption text-ink-secondary">표지 이미지 (선택 · 없으면 카테고리 색으로 표시)</span>
+            <span className="mb-1 block type-caption text-ink-secondary">표지 이미지 (선택 · 없으면 아래 썸네일 그림을 써요)</span>
             <input type="hidden" name="coverUrl" value={f.coverUrl} />
             <input ref={coverInput} type="file" accept=".jpg,.jpeg,.png,.webp,.gif" className="hidden" onChange={(e) => uploadImages(e.target.files, "cover")} />
             {f.coverUrl ? (
@@ -441,6 +465,17 @@ export function ArticleEditor({ initial }: { initial: EditorInitial }) {
             )}
             {uploadError && errorAt === "cover" && <p className="mt-2 type-caption text-ev-doc">{uploadError}</p>}
           </div>
+
+          {/* 썸네일 (표지를 올리지 않으면 이 그림) */}
+          <ArticleThumbFields
+            id={initial.id}
+            v={f}
+            onChange={(k, v) => setF((prev) => ({ ...prev, [k]: v }))}
+            auto={initial.thumbAuto}
+            companies={initial.companies}
+            hasCover={Boolean(f.coverUrl)}
+            draft={{ title: f.title, summary: f.summary, tags: f.tags, category: f.category }}
+          />
 
           {/* 본문 */}
           <div>

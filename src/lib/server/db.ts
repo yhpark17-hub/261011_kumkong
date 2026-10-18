@@ -302,6 +302,8 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: "briefing_issues", column: "extras", ddl: "ALTER TABLE briefing_issues ADD COLUMN extras TEXT NOT NULL DEFAULT '{}'" },
   // 블로그 글 강조 표시(인기·NEW·추천·필독) — 운영자가 고름, 2026-10 추가
   { table: "articles", column: "badge", ddl: "ALTER TABLE articles ADD COLUMN badge TEXT NOT NULL DEFAULT ''" },
+  // 글 썸네일 설정 (그림·기관·제목 — 비면 자동) — 2026-10 추가
+  { table: "articles", column: "thumb", ddl: "ALTER TABLE articles ADD COLUMN thumb TEXT NOT NULL DEFAULT ''" },
   // 실시간 톡을 기관별 방으로 (필기 후기·기관 정보 페이지가 같은 방) — 2026-10 추가
   { table: "exam_talk", column: "company_id", ddl: "ALTER TABLE exam_talk ADD COLUMN company_id TEXT NOT NULL DEFAULT ''" },
   // 데일리 브리핑 추천 수 — 2026-10 추가
