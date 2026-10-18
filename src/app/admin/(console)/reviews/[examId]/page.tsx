@@ -30,7 +30,7 @@ async function Result({ examId }: { examId: string }) {
   await requireAdmin();
   const exam = getExam(examId);
   if (!exam) notFound();
-  const [stats, comments, talk] = await Promise.all([reviewStats(exam), reviewComments(exam.id, true), listTalk(exam.id, { admin: true })]);
+  const [stats, comments, talk] = await Promise.all([reviewStats(exam), reviewComments(exam.id, true), listTalk(exam.companyId, { admin: true })]);
 
   return (
     <>
@@ -65,7 +65,7 @@ async function Result({ examId }: { examId: string }) {
       </AdminCard>
 
       {/* 실시간 응시자 톡 — 숨긴 글도 흐리게, 글마다 숨김·삭제 */}
-      {!exam.expected && <ExamTalk examId={exam.id} initial={talk} live={false} admin />}
+      {!exam.expected && <ExamTalk room={exam.companyId} roomName={exam.companyName} examId={exam.id} initial={talk} live={false} admin />}
 
       <AdminCard title={`한 줄 후기 ${comments.length}`} aside={<span className="type-caption text-ink-mute">숨긴 후기도 함께 보여요 (흐리게)</span>}>
         {comments.length === 0 ? (

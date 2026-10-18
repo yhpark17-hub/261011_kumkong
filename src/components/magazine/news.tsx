@@ -22,6 +22,7 @@ import {
 } from "@/lib/news-meta";
 import { cn } from "../ui";
 import { BriefingCover } from "./BriefingBrand";
+import { ViewsLikes } from "./Stats";
 import { MoreChips } from "./interactive";
 import { NEWS_ICON } from "./news-icons";
 
@@ -332,19 +333,19 @@ export function EditionBadge({ edition, className }: { edition: BriefingIssue["e
 }
 
 /** 브리핑 표지 — 운영자가 고른 것: 기본 표지 / 공유 썸네일과 같은 그림 / 직접 올린 그림 */
-function IssueCover({ issue, minutes, size, className }: { issue: BriefingIssue; minutes: number; size?: "sm"; className?: string }) {
+function IssueCover({ issue, size, className }: { issue: BriefingIssue; size?: "sm"; className?: string }) {
   const t = issue.thumb;
   const src = t.cover === "share" ? shareImageUrl(issue) : t.cover === "upload" && t.coverUrl ? t.coverUrl : null;
   if (src)
     // eslint-disable-next-line @next/next/no-img-element -- 그날 그린 썸네일·운영자가 올린 그림
     return <img src={src} alt="" loading="lazy" decoding="async" className={cn("bg-canvas-soft object-cover", className)} />;
-  return <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`약 ${minutes}분`} size={size} className={className} />;
+  return <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`조회 ${issue.views.toLocaleString()}`} noteIcon="eye" size={size} className={className} />;
 }
 
 /** 브리핑 한 호 카드 — 카드(크게) / 목록(글만, 왼쪽 판 색 줄 + 판 이름표로 구분) */
-export function IssueCard({ issue, top, count, minutes, view }: { issue: BriefingIssue; top: NewsItem[]; count: number; minutes: number; view: NewsView }) {
+export function IssueCard({ issue, top, count, view }: { issue: BriefingIssue; top: NewsItem[]; count: number; view: NewsView }) {
   const morning = issue.edition === "morning";
-  const what = morning ? `기사 ${count}건 · 약 ${minutes}분` : `약 ${minutes}분`;
+
   if (view === "list") {
     return (
       <Link href={letterHref(issue.date, issue.edition)} className="group flex items-stretch gap-4 py-5">
@@ -353,8 +354,10 @@ export function IssueCard({ issue, top, count, minutes, view }: { issue: Briefin
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1 type-caption text-ink-mute">
             <EditionBadge edition={issue.edition} />
             <span>
-              {EDITION_SLOT[issue.edition]} · {volLabel(issue.vol)} · {what}
+              {EDITION_SLOT[issue.edition]} · {volLabel(issue.vol)}
+              {morning && ` · 기사 ${count}건`}
             </span>
+            <ViewsLikes views={issue.views} likes={issue.likes} />
           </span>
           <span className="mt-1.5 block type-heading-sm text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
           {issue.lede && <span className="mt-1 line-clamp-1 type-body-md text-ink-secondary">{issue.lede}</span>}
@@ -364,7 +367,7 @@ export function IssueCard({ issue, top, count, minutes, view }: { issue: Briefin
   }
   return (
     <Link href={letterHref(issue.date, issue.edition)} className="group flex flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
-      <IssueCover issue={issue} minutes={minutes} size="sm" className="aspect-[16/9] w-full" />
+      <IssueCover issue={issue} size="sm" className="aspect-[16/9] w-full" />
       <span className="flex flex-1 flex-col p-5">
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 type-caption text-ink-mute">
           <EditionBadge edition={issue.edition} />
@@ -395,13 +398,13 @@ export function IssueCard({ issue, top, count, minutes, view }: { issue: Briefin
 }
 
 /** 첫 화면 맨 위 — 오늘의 브리핑 한 편 (위 썸네일 · 아래 헤드라인), 누르면 브리핑으로 */
-export function BriefingHeroCard({ issue, minutes }: { issue: BriefingIssue; minutes: number }) {
+export function BriefingHeroCard({ issue }: { issue: BriefingIssue }) {
   return (
     <Link
       href={letterHref(issue.date, issue.edition)}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-level-1 transition-shadow hover:shadow-level-2"
     >
-      <IssueCover issue={issue} minutes={minutes} className="aspect-[16/9] w-full" />
+      <IssueCover issue={issue} className="aspect-[16/9] w-full" />
       <span className={cn("h-1.5 w-full", EDITION_TONE[issue.edition].bar)} aria-hidden />
       <span className="flex flex-1 flex-col p-5 md:p-6">
         <span className="flex flex-wrap items-center gap-2 type-caption">

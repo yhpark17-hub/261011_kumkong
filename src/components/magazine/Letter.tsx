@@ -21,7 +21,7 @@ import { Masthead } from "./BriefingBrand";
 import { BriefingQuiz } from "./BriefingQuiz";
 import { Markdown } from "./Markdown";
 import { ReadingProgress } from "./KongMascot";
-import { ShareButton, ShareUrlSync, SourceLink } from "./interactive";
+import { IssueLikeButton, ShareButton, ShareUrlSync, SourceLink } from "./interactive";
 import { NEWS_ICON } from "./news-icons";
 
 const anchor = (n: NewsItem) => `item-${n.id}`;
@@ -576,7 +576,8 @@ export function Letter({
                 <p className="type-heading-sm text-ink">오늘 브리핑은 어땠나요?</p>
                 <p className="mt-0.5 type-caption text-ink-mute">좋았던 점, 아쉬운 점을 알려 주시면 다음 브리핑에 반영할게요.</p>
               </div>
-              <div className="flex shrink-0 gap-2">
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <IssueLikeButton id={issue.id} initialLikes={issue.likes} disabled={!issue.live} />
                 <FeedbackButton kind="site" className="btn btn-sm btn-primary">
                   의견 보내기
                 </FeedbackButton>

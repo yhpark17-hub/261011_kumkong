@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   BookOpen,
   BriefcaseBusiness,
-  Clock,
   Compass,
   Landmark,
   MessagesSquare,
@@ -26,6 +25,7 @@ import {
   type MagazineSection,
 } from "@/lib/magazine-meta";
 import { cn } from "../ui";
+import { ViewsLikes } from "./Stats";
 import { ReadBadge } from "./interactive";
 
 export const CATEGORY_ICON: Record<MagazineCategory, LucideIcon> = {
@@ -50,21 +50,13 @@ export function ArticleBadgeTag({ a, className }: { a: Pick<ArticleSummary, "bad
   return <span className={cn("inline-flex shrink-0 items-center rounded-full px-2 py-0.5 type-micro font-bold", b.tone, className)}>{b.label}</span>;
 }
 
-export function ArticleMeta({ a, className, showViews = false }: { a: ArticleSummary; className?: string; showViews?: boolean }) {
+/** 날짜 · 조회 · 추천 (읽는 시간 대신 — 많이 읽힌 글이 눈에 띄게) */
+export function ArticleMeta({ a, className }: { a: ArticleSummary; className?: string }) {
   return (
     <span className={cn("flex flex-wrap items-center gap-x-2 gap-y-1 type-caption text-ink-mute", className)}>
       {a.publishedAt != null && <span className="tabular">{formatArticleDate(a.publishedAt)}</span>}
       <span aria-hidden>·</span>
-      <span className="inline-flex items-center gap-1">
-        <Clock className="h-3 w-3" strokeWidth={1.75} />
-        {a.readMinutes}분
-      </span>
-      {showViews && (
-        <>
-          <span aria-hidden>·</span>
-          <span className="tabular">조회 {a.views.toLocaleString()}</span>
-        </>
-      )}
+      <ViewsLikes views={a.views} likes={a.likes} />
     </span>
   );
 }
@@ -132,7 +124,7 @@ export function ArticleListRow({ a }: { a: ArticleSummary }) {
       </span>
       <span className="hidden w-24 shrink-0 flex-col items-end gap-1 pt-1 text-right type-caption text-ink-mute sm:flex">
         {a.publishedAt != null && <span className="tabular">{formatArticleDate(a.publishedAt)}</span>}
-        <span>{a.readMinutes}분 분량</span>
+        <ViewsLikes views={a.views} likes={a.likes} />
       </span>
     </Link>
   );

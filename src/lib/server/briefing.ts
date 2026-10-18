@@ -10,7 +10,7 @@ import { COLS, PUBLIC, toItem } from "./news";
  */
 
 const ISSUE_PUBLIC = "status = 1 AND published_at <= ?";
-const ISSUE_COLS = "id, issue_date, edition, vol, title, lede, closing, quiz, extras, thumb, status, origin, published_at, updated_at, views";
+const ISSUE_COLS = "id, issue_date, edition, vol, title, lede, closing, quiz, extras, thumb, status, origin, published_at, updated_at, views, likes";
 
 function toIssue(r: Row): BriefingIssue {
   const publishedAt = r.published_at == null ? null : Number(r.published_at);
@@ -30,6 +30,7 @@ function toIssue(r: Row): BriefingIssue {
     publishedAt,
     updatedAt: Number(r.updated_at),
     views: Number(r.views ?? 0),
+    likes: Number(r.likes ?? 0),
     live: Number(r.status) === 1 && publishedAt != null && publishedAt <= Date.now(),
   };
 }

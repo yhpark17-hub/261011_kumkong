@@ -190,6 +190,13 @@ CREATE TABLE IF NOT EXISTS article_likes (
   PRIMARY KEY (article_id, voter)
 );
 
+-- 데일리 브리핑 추천 (같은 사람은 호마다 한 번)
+CREATE TABLE IF NOT EXISTS issue_likes (
+  issue_id INTEGER NOT NULL,
+  voter TEXT NOT NULL,
+  PRIMARY KEY (issue_id, voter)
+);
+
 -- 자동 점검(클라우드 에이전트)이 올린 제안 — 운영자가 승인·거절해야 사이트에 반영
 -- status: 0 = 검토 대기, 1 = 승인(반영 대기), 2 = 반영 완료, 3 = 거절, 4 = 반영 실패
 CREATE TABLE IF NOT EXISTS proposals (
@@ -295,6 +302,10 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: "briefing_issues", column: "extras", ddl: "ALTER TABLE briefing_issues ADD COLUMN extras TEXT NOT NULL DEFAULT '{}'" },
   // 블로그 글 강조 표시(인기·NEW·추천·필독) — 운영자가 고름, 2026-10 추가
   { table: "articles", column: "badge", ddl: "ALTER TABLE articles ADD COLUMN badge TEXT NOT NULL DEFAULT ''" },
+  // 실시간 톡을 기관별 방으로 (필기 후기·기관 정보 페이지가 같은 방) — 2026-10 추가
+  { table: "exam_talk", column: "company_id", ddl: "ALTER TABLE exam_talk ADD COLUMN company_id TEXT NOT NULL DEFAULT ''" },
+  // 데일리 브리핑 추천 수 — 2026-10 추가
+  { table: "briefing_issues", column: "likes", ddl: "ALTER TABLE briefing_issues ADD COLUMN likes INTEGER NOT NULL DEFAULT 0" },
   // 실시간 톡 운영자 글 표시 — 2026-10 추가
   { table: "exam_talk", column: "is_admin", ddl: "ALTER TABLE exam_talk ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0" },
   // 의견 보내기 첨부(사진·파일) — 2026-10 추가
@@ -310,7 +321,14 @@ async function migrate(c: Client) {
     if (!info.rows.some((r) => r.name === m.column)) await c.execute(m.ddl);
   }
   await upgradeIssues(c);
+  await talkRooms(c);
   await seedMagazine(c);
+}
+
+/** 실시간 톡 기관 방: 예전 글(시험 id = 기관id-YYYY-MM-DD)에 기관 id 채우기 + 방별 색인 */
+async function talkRooms(c: Client) {
+  await c.execute("UPDATE exam_talk SET company_id = substr(exam_id, 1, length(exam_id) - 11) WHERE company_id = '' AND exam_id GLOB '*-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'");
+  await c.execute("CREATE INDEX IF NOT EXISTS idx_exam_talk_room ON exam_talk (company_id, id)");
 }
 
 /**

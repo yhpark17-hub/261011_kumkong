@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowRight, Clock3 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { KongMascot } from "@/components/magazine/KongMascot";
 import { ArticleRow } from "@/components/magazine/parts";
+import { ViewsLikes } from "@/components/magazine/Stats";
 import { formatDayHeading } from "@/lib/date";
 import { BLOG_CATEGORIES, SECTION_INFO } from "@/lib/magazine-meta";
-import { EDITION_LABEL, EDITION_SLOT, NEWS_SECTION_INFO, briefingMinutes, itemHref, letterHref, type BriefingIssue, type NewsItem } from "@/lib/news-meta";
+import { EDITION_LABEL, EDITION_SLOT, NEWS_SECTION_INFO, itemHref, letterHref, type BriefingIssue, type NewsItem } from "@/lib/news-meta";
 import { arrangeLetter, issueItems, latestIssue } from "@/lib/server/briefing";
 import { listArticles } from "@/lib/server/magazine";
 import { popularNews } from "@/lib/server/news";
@@ -13,7 +14,7 @@ import { cn } from "../ui";
 import { BriefingCarousel, type BriefingSlide } from "./BriefingCarousel";
 
 /** 브리핑 한 장 — 머리(콩이·판 이름·아침판/점심판 꼬리표·날짜) + 제목 + 세 줄. 아침판은 크림·갈색, 점심판은 보라 */
-function Slide({ issue, rows, minutes }: { issue: BriefingIssue; rows: { n: NewsItem; tag: string; badge?: string; text: string }[]; minutes: number }) {
+function Slide({ issue, rows }: { issue: BriefingIssue; rows: { n: NewsItem; tag: string; badge?: string; text: string }[] }) {
   const noon = issue.edition === "noon";
   const href = letterHref(issue.date, issue.edition);
   return (
@@ -59,10 +60,11 @@ function Slide({ issue, rows, minutes }: { issue: BriefingIssue; rows: { n: News
           ))}
         </ol>
       )}
-      {/* 바닥: 읽는 시간·퀴즈 + 읽으러 가기 (옆 칸보다 짧은 날에도 빈 곳 없이 아래에 붙음) */}
+      {/* 바닥: 조회·추천·퀴즈 + 읽으러 가기 (옆 칸보다 짧은 날에도 빈 곳 없이 아래에 붙음) */}
       <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-        <span className="inline-flex items-center gap-1.5 type-caption text-ink-mute">
-          <Clock3 className="h-3.5 w-3.5" strokeWidth={1.75} />약 {minutes}분{issue.quiz.length > 0 && ` · ${noon ? "O/X 퀴즈" : "퀴즈"} ${issue.quiz.length}문제`}
+        <span className="inline-flex items-center gap-2 type-caption text-ink-mute">
+          <ViewsLikes views={issue.views} likes={issue.likes} />
+          {issue.quiz.length > 0 && <span>· {noon ? "O/X 퀴즈" : "퀴즈"} {issue.quiz.length}문제</span>}
         </span>
         <Link href={href} className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-dark px-3.5 py-1.5 type-caption font-semibold text-on-primary hover:opacity-90">
           {noon ? "스터디 읽기" : "브리핑 읽기"}
@@ -88,7 +90,6 @@ export async function BriefingStrip() {
       content: (
         <Slide
           issue={morning}
-          minutes={briefingMinutes(morning, items)}
           rows={top.map((n) => ({ n, text: n.title, tag: `${NEWS_SECTION_INFO[n.section].label}${n.takeaway ? ` · ${n.takeaway}` : ""}` }))}
         />
       ),
@@ -101,7 +102,7 @@ export async function BriefingStrip() {
       ...terms.map((n) => ({ n, text: n.title, tag: "오늘의 용어", badge: "용어" })),
       ...questions.map((n) => ({ n, text: `Q. ${n.title}`, tag: "오늘의 면접 질문", badge: "면접" })),
     ].slice(0, 3);
-    slides.push({ key: "noon", label: EDITION_LABEL.noon, sub: "점심 공부", content: <Slide issue={noon} rows={rows} minutes={briefingMinutes(noon, noonItems)} /> });
+    slides.push({ key: "noon", label: EDITION_LABEL.noon, sub: "점심 공부", content: <Slide issue={noon} rows={rows} /> });
   }
   if (!slides.length) {
     return (

@@ -19,6 +19,7 @@ import { FeedbackButton } from "@/components/feedback/Feedback";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { FavoriteButton } from "@/components/client-ui";
 import { CompanyCommunity, CompanyCommunitySkeleton } from "@/components/company/CompanyCommunity";
+import { CompanyTalk } from "@/components/company/CompanyTalk";
 import { DbSection } from "@/components/db/DbSection";
 import { RecruitTimeline } from "@/components/company/RecruitTimeline";
 import {
@@ -201,6 +202,15 @@ function CompanyContent({ id }: { id: string }) {
             <DbSection silent>
               <Suspense fallback={<CompanyCommunitySkeleton />}>
                 <CompanyCommunity companyId={company.id} companyName={company.name} />
+              </Suspense>
+            </DbSection>
+          </div>
+
+          {/* 실시간 톡방 — 필기 후기 페이지의 응시자 톡과 같은 방 */}
+          <div id="talk" className="scroll-mt-24">
+            <DbSection silent>
+              <Suspense fallback={<div className="h-[520px] animate-pulse rounded-lg bg-canvas-soft" />}>
+                <CompanyTalk companyId={company.id} companyName={company.name} />
               </Suspense>
             </DbSection>
           </div>

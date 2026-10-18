@@ -29,6 +29,19 @@ export async function recordArticleView(id: number): Promise<void> {
   if (await rateLimit(`aview:${id}`, who.hash, 1800)) await incrementArticleViews(id);
 }
 
+/** 데일리 브리핑 추천 — 같은 사람(IP)은 호마다 한 번 */
+export async function likeIssue(id: number): Promise<{ likes: number; already: boolean }> {
+  if (!Number.isInteger(id)) return { likes: 0, already: false };
+  const client = await db();
+  const who = await requester();
+  const exists = await client.execute({ sql: "SELECT likes FROM briefing_issues WHERE id = ? AND status = 1 AND published_at <= ?", args: [id, Date.now()] });
+  if (!exists.rows.length) return { likes: 0, already: false };
+  const ins = await client.execute({ sql: "INSERT OR IGNORE INTO issue_likes (issue_id, voter) VALUES (?, ?)", args: [id, who.hash] });
+  if (ins.rowsAffected) await client.execute({ sql: "UPDATE briefing_issues SET likes = likes + 1 WHERE id = ?", args: [id] });
+  const row = (await client.execute({ sql: "SELECT likes FROM briefing_issues WHERE id = ?", args: [id] })).rows[0];
+  return { likes: Number(row?.likes ?? 0), already: !ins.rowsAffected };
+}
+
 /** 레터 조회수 — 같은 IP 는 호마다 30분에 한 번, 운영자는 세지 않음 */
 export async function recordIssueView(id: number): Promise<void> {
   if (!Number.isInteger(id) || (await isAdmin())) return;

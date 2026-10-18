@@ -11,7 +11,7 @@ import { AdminSkeleton } from "@/components/admin/Skeleton";
 import { DbSection } from "@/components/db/DbSection";
 import { NewsSectionTag } from "@/components/magazine/news";
 import { formatDayHeading } from "@/lib/date";
-import { EDITION_LABEL, EMPTY_THUMB, briefingMinutes, letterHref, letterShareHref, studyTopic, volLabel, type NewsItem } from "@/lib/news-meta";
+import { EDITION_LABEL, EMPTY_THUMB, letterHref, letterShareHref, studyTopic, volLabel, type NewsItem } from "@/lib/news-meta";
 import { SITE } from "@/lib/site";
 import { requireAdmin } from "@/lib/server/admin";
 import { arrangeLetter, getIssueById, issueItems } from "@/lib/server/briefing";
@@ -112,7 +112,7 @@ async function EditIssue({ rawId }: { rawId: string }) {
             : "금콩 스터디는 공책 템플릿에 오늘의 논술 주제만 바뀌어요. 길면 칸에 맞게 글자 크기를 줄여요."}{" "}
           발행 전에 확인하고 &lsquo;썸네일 확인함&rsquo;을 눌러 두세요.
         </p>
-        <ThumbForm id={issue.id} edition={issue.edition} date={issue.date} minutes={briefingMinutes(issue, items)} initial={issue.thumb} auto={thumbAuto} />
+        <ThumbForm id={issue.id} edition={issue.edition} date={issue.date} views={issue.views} initial={issue.thumb} auto={thumbAuto} />
         {/* 카톡은 한 번 읽은 주소의 미리보기를 한동안 그대로 써요 — 버전이 붙은 주소로 보내면 새 그림이 떠요 */}
         <div className="mt-5 space-y-1.5 rounded-lg bg-canvas-soft p-3 type-caption text-ink-secondary">
           <p>

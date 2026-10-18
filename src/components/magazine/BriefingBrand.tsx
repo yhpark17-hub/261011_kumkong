@@ -1,5 +1,5 @@
 import { Jua } from "next/font/google";
-import { Clock3, Soup, Sunrise } from "lucide-react";
+import { Clock3, Eye, Soup, Sunrise } from "lucide-react";
 import type { IssueEdition } from "@/lib/news-meta";
 import { cn } from "../ui";
 import { KongMascot } from "./KongMascot";
@@ -67,14 +67,17 @@ export function BriefingCover({
   edition,
   date,
   note,
+  noteIcon = "clock",
   size = "md",
   className,
 }: {
   edition: IssueEdition;
   /** 'M.D (요일)' 처럼 보여 줄 날짜 */
   date: string;
-  /** 오른쪽 아래 작은 글씨 — 예상 소요 시간 (예: 약 5분) */
+  /** 오른쪽 아래 작은 글씨 — 조회수 (예: 조회 120) 또는 예상 소요 시간 */
   note?: string;
+  /** 작은 글씨 앞 아이콘 — 조회수면 eye */
+  noteIcon?: "clock" | "eye";
   size?: "md" | "sm";
   className?: string;
 }) {
@@ -108,7 +111,11 @@ export function BriefingCover({
             size === "sm" ? "text-[11px]" : "text-[12px] md:right-5 md:bottom-4",
           )}
         >
-          <Clock3 className={size === "sm" ? "h-3 w-3" : "h-3.5 w-3.5"} strokeWidth={2.2} />
+          {noteIcon === "eye" ? (
+            <Eye className={size === "sm" ? "h-3 w-3" : "h-3.5 w-3.5"} strokeWidth={2.2} />
+          ) : (
+            <Clock3 className={size === "sm" ? "h-3 w-3" : "h-3.5 w-3.5"} strokeWidth={2.2} />
+          )}
           {note}
         </span>
       )}

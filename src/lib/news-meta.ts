@@ -407,6 +407,8 @@ export interface BriefingIssue {
   publishedAt: number | null;
   updatedAt: number;
   views: number;
+  /** 추천 수 */
+  likes: number;
   live: boolean;
 }
 

@@ -1,42 +1,55 @@
 import "server-only";
 import type { Row } from "@libsql/client";
 import { TALK_ADMIN_NAME, TALK_PAGE, talkName, type TalkItem } from "../talk-meta";
+import { parseKey } from "../date";
 import { STATUS, db } from "./db";
+import { examsForCompany, getExam } from "./reviews";
 import { AUTO_HIDE_REPORTS } from "./security";
 
-function toItem(r: Row, examId: string, voter: string | null, reviewers: Set<string>, admin: boolean): TalkItem {
+/** 시험 꼬리표 — '10.17 필기시험' */
+function examTag(examId: string): string {
+  const e = examId ? getExam(examId) : undefined;
+  if (!e) return "";
+  const { m, d } = parseKey(e.date);
+  return `${m}.${d} ${e.label}`;
+}
+
+function toItem(r: Row, room: string, voter: string | null, reviewers: Set<string>, admin: boolean): TalkItem {
   const v = String(r.voter);
   const isAdmin = Number(r.is_admin) === 1;
   const status = Number(r.status);
   const reports = Number(r.reports);
   const hidden = status === STATUS.hidden ? (reports >= AUTO_HIDE_REPORTS ? "reports" : "admin") : undefined;
+  const examId = String(r.exam_id ?? "");
   return {
     id: Number(r.id),
-    ...(isAdmin ? { name: TALK_ADMIN_NAME, tone: "#533afd" } : talkName(v, examId)),
+    ...(isAdmin ? { name: TALK_ADMIN_NAME, tone: "#533afd" } : talkName(v, room)),
     // 가린 글: 방문자에게는 내용을 보내지 않아요 (운영자만 원문)
     body: hidden && !admin ? "" : String(r.body),
     createdAt: Number(r.created_at),
     mine: voter != null && v === voter,
     reviewed: !isAdmin && reviewers.has(v),
     admin: isAdmin,
+    examId,
+    tag: examTag(examId),
     ...(hidden ? { hidden } : {}),
     ...(admin ? { status, reports } : {}),
   };
 }
 
 /**
- * 시험 톡 목록 — 오래된 것부터 (채팅처럼 아래가 최신).
+ * 기관 톡방 목록 — 오래된 것부터 (채팅처럼 아래가 최신). 필기 후기 페이지·기관 정보 페이지가 같은 방이에요.
  * after: 그 id 다음 새 글만 / before: 그 id 앞의 옛 글 (더 보기) / 둘 다 없으면 최근 TALK_PAGE 개.
  * 가린 글은 자리만 (운영자는 원문까지), 삭제한 글은 빠져요.
  */
 export async function listTalk(
-  examId: string,
+  room: string,
   { voter = null, admin = false, after, before }: { voter?: string | null; admin?: boolean; after?: number; before?: number } = {},
 ): Promise<{ items: TalkItem[]; more: boolean }> {
   const client = await db();
   // 가린 글도 자리는 남겨요 (방문자에겐 '가려진 메시지') — 삭제한 글만 빠져요
-  const where = [`exam_id = ?`, `status != ${STATUS.deleted}`];
-  const args: (string | number)[] = [examId];
+  const where = [`company_id = ?`, `status != ${STATUS.deleted}`];
+  const args: (string | number)[] = [room];
   if (after) {
     where.push("id > ?");
     args.push(after);
@@ -47,48 +60,50 @@ export async function listTalk(
   }
   const newest = !after;
   const res = await client.execute({
-    sql: `SELECT id, voter, body, status, reports, is_admin, created_at FROM exam_talk WHERE ${where.join(" AND ")}
+    sql: `SELECT id, exam_id, voter, body, status, reports, is_admin, created_at FROM exam_talk WHERE ${where.join(" AND ")}
           ORDER BY id ${newest ? "DESC" : "ASC"} LIMIT ?`,
     args: [...args, TALK_PAGE + 1],
   });
   const rows = res.rows.slice(0, TALK_PAGE);
   if (newest) rows.reverse();
-  // 이 시험에 후기를 남긴 사람 (✓응시 표시)
+  // 이 기관 필기에 후기를 남긴 사람 (✓응시 표시)
   const voters = [...new Set(rows.map((r) => String(r.voter)))];
+  const exams = examsForCompany(room).map((e) => e.id);
   const reviewers = new Set<string>();
-  if (voters.length) {
+  if (voters.length && exams.length) {
     const rv = await client.execute({
-      sql: `SELECT DISTINCT voter FROM exam_reviews WHERE exam_id = ? AND status != ${STATUS.deleted} AND voter IN (${voters.map(() => "?").join(",")})`,
-      args: [examId, ...voters],
+      sql: `SELECT DISTINCT voter FROM exam_reviews WHERE status != ${STATUS.deleted} AND exam_id IN (${exams.map(() => "?").join(",")}) AND voter IN (${voters.map(() => "?").join(",")})`,
+      args: [...exams, ...voters],
     });
     for (const r of rv.rows) reviewers.add(String(r.voter));
   }
-  return { items: rows.map((r) => toItem(r, examId, voter, reviewers, admin)), more: res.rows.length > TALK_PAGE };
+  return { items: rows.map((r) => toItem(r, room, voter, reviewers, admin)), more: res.rows.length > TALK_PAGE };
 }
 
-/** 보이는 톡 수 */
-export async function talkCount(examId: string): Promise<number> {
+/** 기관 톡방의 보이는 글 수 */
+export async function talkCount(room: string): Promise<number> {
   const client = await db();
-  const res = await client.execute({ sql: `SELECT COUNT(*) AS n FROM exam_talk WHERE exam_id = ? AND status = ${STATUS.visible}`, args: [examId] });
+  const res = await client.execute({ sql: `SELECT COUNT(*) AS n FROM exam_talk WHERE company_id = ? AND status = ${STATUS.visible}`, args: [room] });
   return Number(res.rows[0]?.n ?? 0);
 }
 
-export async function addTalk(examId: string, voter: string, ipHash: string, body: string, asAdmin = false): Promise<number> {
+/** 글 올리기 — room: 기관 id, examId: 시험 페이지에서 썼으면 그 시험 ('' = 기관 정보 페이지) */
+export async function addTalk(room: string, examId: string, voter: string, ipHash: string, body: string, asAdmin = false): Promise<number> {
   const client = await db();
   const res = await client.execute({
-    sql: "INSERT INTO exam_talk (exam_id, voter, body, ip_hash, is_admin, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-    args: [examId, voter, body, ipHash, asAdmin ? 1 : 0, Date.now()],
+    sql: "INSERT INTO exam_talk (company_id, exam_id, voter, body, ip_hash, is_admin, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    args: [room, examId, voter, body, ipHash, asAdmin ? 1 : 0, Date.now()],
   });
   return Number(res.lastInsertRowid);
 }
 
 /** 운영자: 톡 가리기·다시 보이기·삭제 (다시 보이면 쌓인 신고도 지워요) */
-export async function moderateTalk(examId: string, id: number, op: "hide" | "show" | "delete"): Promise<boolean> {
+export async function moderateTalk(room: string, id: number, op: "hide" | "show" | "delete"): Promise<boolean> {
   const client = await db();
   const status = op === "hide" ? STATUS.hidden : op === "show" ? STATUS.visible : STATUS.deleted;
   const res = await client.execute({
-    sql: `UPDATE exam_talk SET status = ?${op === "show" ? ", reports = 0" : ""} WHERE id = ? AND exam_id = ?`,
-    args: [status, id, examId],
+    sql: `UPDATE exam_talk SET status = ?${op === "show" ? ", reports = 0" : ""} WHERE id = ? AND company_id = ?`,
+    args: [status, id, room],
   });
   if (op === "show") await client.execute({ sql: "DELETE FROM reports WHERE target_type = 'talk' AND target_id = ?", args: [id] });
   return res.rowsAffected > 0;
@@ -96,7 +111,10 @@ export async function moderateTalk(examId: string, id: number, op: "hide" | "sho
 
 export interface AdminTalkRow {
   id: number;
+  room: string;
   examId: string;
+  /** 시험 꼬리표 ('' = 기관 정보 페이지에서 쓴 글) */
+  tag: string;
   name: string;
   body: string;
   admin: boolean;
@@ -109,11 +127,11 @@ export interface AdminTalkRow {
 /** 운영자 화면: 모든 시험의 톡 (최근 순) — 상태·시험·검색어로 거르기 */
 export async function adminTalk({
   status = "all",
-  exam = "",
+  room = "",
   q = "",
   page = 1,
   size = 50,
-}: { status?: "all" | "visible" | "hidden" | "deleted"; exam?: string; q?: string; page?: number; size?: number }): Promise<{ rows: AdminTalkRow[]; total: number }> {
+}: { status?: "all" | "visible" | "hidden" | "deleted"; room?: string; q?: string; page?: number; size?: number }): Promise<{ rows: AdminTalkRow[]; total: number }> {
   const client = await db();
   const where: string[] = [];
   const args: (string | number)[] = [];
@@ -121,9 +139,9 @@ export async function adminTalk({
   else if (status === "hidden") where.push(`status = ${STATUS.hidden}`);
   else if (status === "deleted") where.push(`status = ${STATUS.deleted}`);
   else where.push(`status != ${STATUS.deleted}`);
-  if (exam) {
-    where.push("exam_id = ?");
-    args.push(exam);
+  if (room) {
+    where.push("company_id = ?");
+    args.push(room);
   }
   if (q) {
     where.push("body LIKE ?");
@@ -131,14 +149,16 @@ export async function adminTalk({
   }
   const w = where.join(" AND ");
   const [rows, count] = await Promise.all([
-    client.execute({ sql: `SELECT id, exam_id, voter, body, is_admin, status, reports, ip_hash, created_at FROM exam_talk WHERE ${w} ORDER BY id DESC LIMIT ? OFFSET ?`, args: [...args, size, (page - 1) * size] }),
+    client.execute({ sql: `SELECT id, company_id, exam_id, voter, body, is_admin, status, reports, ip_hash, created_at FROM exam_talk WHERE ${w} ORDER BY id DESC LIMIT ? OFFSET ?`, args: [...args, size, (page - 1) * size] }),
     client.execute({ sql: `SELECT COUNT(*) AS n FROM exam_talk WHERE ${w}`, args }),
   ]);
   return {
     rows: rows.rows.map((r) => ({
       id: Number(r.id),
+      room: String(r.company_id),
       examId: String(r.exam_id),
-      name: Number(r.is_admin) === 1 ? TALK_ADMIN_NAME : talkName(String(r.voter), String(r.exam_id)).name,
+      tag: examTag(String(r.exam_id)),
+      name: Number(r.is_admin) === 1 ? TALK_ADMIN_NAME : talkName(String(r.voter), String(r.company_id)).name,
       body: String(r.body),
       admin: Number(r.is_admin) === 1,
       status: Number(r.status),
@@ -153,9 +173,10 @@ export async function adminTalk({
 /** 운영자 화면: 신고가 들어온 톡 */
 export async function reportedTalk() {
   const client = await db();
-  const res = await client.execute(`SELECT id, exam_id, body, reports, status, created_at FROM exam_talk WHERE reports > 0 AND status != ${STATUS.deleted} ORDER BY reports DESC, id DESC LIMIT 50`);
+  const res = await client.execute(`SELECT id, company_id, exam_id, body, reports, status, created_at FROM exam_talk WHERE reports > 0 AND status != ${STATUS.deleted} ORDER BY reports DESC, id DESC LIMIT 50`);
   return res.rows.map((r) => ({
     id: Number(r.id),
+    room: String(r.company_id),
     examId: String(r.exam_id),
     body: String(r.body),
     reports: Number(r.reports),

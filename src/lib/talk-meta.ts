@@ -22,6 +22,10 @@ export interface TalkItem {
   reviewed: boolean;
   /** 운영자가 쓴 글 ('금콩 운영자' 표시) */
   admin: boolean;
+  /** 어느 시험 페이지에서 쓴 글인지 ('' = 기관 정보 페이지) */
+  examId: string;
+  /** 시험 꼬리표 (예: '10.17 필기시험') — 기관 정보 페이지에서 쓴 글은 '' */
+  tag: string;
   /** 가려진 글 — 방문자에게는 내용 없이 이유만 (admin: 운영자가 가림 · reports: 신고가 쌓여 가려짐) */
   hidden?: "admin" | "reports";
   /** 운영자에게만: 상태(0 보임 · 1 가림) · 신고 수 */
@@ -44,10 +48,10 @@ const COLORS = [
   { word: "갈색", tone: "#9b6829" },
 ] as const;
 
-/** 브라우저 토큰 → 익명 이름 (시험마다 달라서 다른 시험 톡과 이어 볼 수 없게) */
-export function talkName(voter: string, examId: string): { name: string; tone: string } {
+/** 브라우저 토큰 → 익명 이름 (기관 방마다 달라서 다른 기관 톡과 이어 볼 수 없게) */
+export function talkName(voter: string, room: string): { name: string; tone: string } {
   let h = 2166136261;
-  for (const ch of `${examId}:${voter}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+  for (const ch of `${room}:${voter}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
   const c = COLORS[h % COLORS.length];
   return { name: `${c.word}콩 #${String((h >>> 8) % 100).padStart(2, "0")}`, tone: c.tone };
 }

@@ -129,15 +129,16 @@ function ExamContent({ examId, asVisitor }: { examId: string; asVisitor: Promise
   );
 }
 
-/** 실시간 응시자 톡 — 시험 며칠 전부터 열려요 (예상 일정은 제외) */
+/** 실시간 응시자 톡 — 시험 며칠 전부터 열려요 (예상 일정은 제외). 기관 정보 페이지의 톡과 같은 방 */
 async function TalkSection({ exam, admin }: { exam: ExamInfo; admin: boolean }) {
   const today = todayKST();
   if (exam.expected || today < addDays(exam.date, -TALK_OPEN_BEFORE_DAYS)) return null;
   const voter = await voterToken(false);
-  const initial = await listTalk(exam.id, { voter, admin });
+  // 기관 톡방 (기관 정보 페이지와 같은 방)
+  const initial = await listTalk(exam.companyId, { voter, admin });
   // 시험 당일 ~ 이틀 뒤까지는 LIVE (자주 새로고침)
   const live = exam.date <= today && diffDays(exam.date, today) <= 2;
-  return <ExamTalk examId={exam.id} initial={initial} live={live} admin={admin} />;
+  return <ExamTalk room={exam.companyId} roomName={exam.companyName} examId={exam.id} initial={initial} live={live} admin={admin} />;
 }
 
 async function ExamLive({ exam, asVisitor }: { exam: ExamInfo; asVisitor: Promise<boolean> }) {

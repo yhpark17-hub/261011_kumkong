@@ -13,6 +13,7 @@ import {
 import { Eyebrow, cn } from "../ui";
 import { ReadBadge, UnreadDot } from "./interactive";
 import { ArticleBadgeTag, ArticleCover, ArticleMeta, MagazineCategoryTag, MagazineSectionTabs } from "./parts";
+import { ViewsLikes } from "./Stats";
 
 /** 매거진 공통 머리: 이름 · 섹션 설명 · 검색 · 섹션 탭 */
 export function MagazineShell({ section, q = "", children }: { section: MagazineSection; q?: string; children: React.ReactNode }) {
@@ -93,7 +94,7 @@ export function BriefingHero({ a }: { a: ArticleSummary }) {
         </ol>
       )}
       <span className="relative mt-auto flex items-center justify-between gap-3 pt-8">
-        <span className="type-caption text-on-primary/70">{a.readMinutes}분이면 다 읽어요</span>
+        <ViewsLikes views={a.views} likes={a.likes} className="type-caption text-on-primary/75" />
         <span className="inline-flex items-center gap-1.5 rounded-full bg-on-primary px-4 py-2 type-button-sm text-brand-dark transition-transform group-hover:translate-x-0.5">
           브리핑 읽기
           <ArrowRight className="h-4 w-4" strokeWidth={2} />

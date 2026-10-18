@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { Bookmark, BookmarkCheck, Check, ChevronDown, Heart, Link2, Share2 } from "lucide-react";
-import { likeArticle, recordArticleView, recordIssueView, recordNewsView } from "@/app/magazine/actions";
+import { likeArticle, likeIssue, recordArticleView, recordIssueView, recordNewsView } from "@/app/magazine/actions";
 import {
   getRead,
   getSaved,
@@ -280,6 +280,32 @@ export function NewsViewRecorder({ id }: { id: number }) {
     recordNewsView(id).catch(() => {});
   }, [id]);
   return null;
+}
+
+/** 데일리 브리핑 추천 — 같은 사람은 호마다 한 번 (발행 전 미리보기에서는 누를 수 없음) */
+export function IssueLikeButton({ id, initialLikes, disabled = false }: { id: number; initialLikes: number; disabled?: boolean }) {
+  const [likes, setLikes] = useState(initialLikes);
+  const [liked, setLiked] = useState(false);
+  const [pending, start] = useTransition();
+  return (
+    <button
+      type="button"
+      disabled={pending || disabled}
+      aria-pressed={liked}
+      onClick={() => {
+        if (liked) return;
+        start(async () => {
+          const res = await likeIssue(id);
+          setLikes(res.likes || likes);
+          setLiked(true);
+        });
+      }}
+      className={cn("btn btn-sm btn-toggle", liked && "!border-ruby/40 !bg-ruby/10 !text-ruby")}
+    >
+      <Heart className={cn("h-4 w-4", liked && "fill-current")} strokeWidth={1.75} />
+      추천 <span className="tabular">{likes}</span>
+    </button>
+  );
 }
 
 /**

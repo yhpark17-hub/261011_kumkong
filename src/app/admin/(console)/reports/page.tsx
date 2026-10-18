@@ -8,6 +8,7 @@ import { DbSection } from "@/components/db/DbSection";
 import { formatPostDateTime } from "@/lib/board-meta";
 import { requireAdmin } from "@/lib/server/admin";
 import { reportedItems } from "@/lib/server/board";
+import { getCompany } from "@/lib/data";
 import { getExam, reportedReviews } from "@/lib/server/reviews";
 import { reportedTalk } from "@/lib/server/talk";
 
@@ -112,13 +113,14 @@ async function Reports() {
           <ul className="divide-y divide-hairline">
             {talk.map((t) => {
               const exam = getExam(t.examId);
+              const company = getCompany(t.room);
               return (
                 <li key={t.id} className="py-3">
                   <p className="type-body-md whitespace-pre-wrap text-ink [overflow-wrap:anywhere]">{t.body}</p>
                   <div className="mt-1 flex flex-wrap items-center gap-3 type-caption text-ink-mute">
                     <span>{formatPostDateTime(t.createdAt)}</span>
-                    <Link href={`/admin/reviews/${t.examId}`} className="link">
-                      {exam ? `${exam.companyName} ${exam.label}` : "시험"} 톡
+                    <Link href={`/admin/talk?room=${t.room}`} className="link">
+                      {company?.name ?? "기관"} 톡방{exam ? ` · ${exam.label}` : ""}
                     </Link>
                     <StatusTag status={t.status} />
                     <span className="tag bg-ev-doc-soft text-ev-doc">신고 {t.reports}</span>

@@ -87,14 +87,15 @@ export function ThumbForm({
   id,
   edition,
   date,
-  minutes,
+  views,
   initial,
   auto,
 }: {
   id: number;
   edition: IssueEdition;
   date: string;
-  minutes: number;
+  /** 사이트 표지 미리보기의 조회수 */
+  views: number;
   initial: IssueThumb;
   auto: ThumbAuto;
 }) {
@@ -175,7 +176,7 @@ export function ThumbForm({
           <p className="mb-1.5 type-caption font-semibold text-ink-secondary">시사 뉴스 화면 표지 (첫 화면·목록 카드)</p>
           <div className="overflow-hidden rounded-lg border border-hairline">
             {cover === "default" || (cover === "upload" && !coverUrl) ? (
-              <BriefingCover edition={edition} date={formatShort(date)} note={`약 ${minutes}분`} className="aspect-[16/9] w-full" />
+              <BriefingCover edition={edition} date={formatShort(date)} note={`조회 ${views.toLocaleString()}`} noteIcon="eye" className="aspect-[16/9] w-full" />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element -- 미리보기
               <img src={cover === "share" ? share : coverUrl} alt="사이트 표지 미리보기" className="aspect-[16/9] w-full bg-canvas-soft object-cover" />

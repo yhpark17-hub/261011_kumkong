@@ -12,7 +12,7 @@ import { ArchiveCallout, BriefingHeroCard, FeatureItemCard, IssueCard, NewsCateg
 import { EmptyLine, MagazineShell } from "@/components/magazine/sections";
 import { addDays, formatDayHeading, todayKST } from "@/lib/date";
 import { MAGAZINE_NAME, isBlogCategory, magazineHref } from "@/lib/magazine-meta";
-import { EDITION_LABEL, EDITION_SCHEDULE, briefingArchiveHref, briefingMinutes, isDateKey, isNewsSection, type NewsView } from "@/lib/news-meta";
+import { EDITION_LABEL, EDITION_SCHEDULE, briefingArchiveHref, isDateKey, isNewsSection, type NewsView } from "@/lib/news-meta";
 import { arrangeLetter, getIssue, issueItems, issuesBetween, latestIssue, listIssues, type IssueSummary } from "@/lib/server/briefing";
 import { latestInSection, newsSectionCounts, popularNews } from "@/lib/server/news";
 import { AD_SLOTS, adEnabled, pageMetadata } from "@/lib/site";
@@ -92,10 +92,7 @@ async function BriefingFront({ sp }: { sp: SP }) {
   // 오늘 브리핑이 아직 없으면(이른 아침) 가장 최근 브리핑을 위에
   const heroDate = latest?.date ?? today;
   const [morningIssue, noonIssue] = latest ? await Promise.all([getIssue(heroDate, "morning"), getIssue(heroDate, "noon")]) : [null, null];
-  const [morningItems, noonItems] = await Promise.all([
-    morningIssue ? issueItems(heroDate, "morning") : Promise.resolve([]),
-    noonIssue ? issueItems(heroDate, "noon") : Promise.resolve([]),
-  ]);
+  const noonItems = noonIssue ? await issueItems(heroDate, "noon") : [];
   const noon = arrangeLetter(noonItems);
   const [term, question] = await Promise.all([noon.terms[0] ?? latestInSection("term"), noon.questions[0] ?? latestInSection("question")]);
 
@@ -122,12 +119,12 @@ async function BriefingFront({ sp }: { sp: SP }) {
               slides={[
                 {
                   edition: "morning",
-                  card: morningIssue ? <BriefingHeroCard issue={morningIssue} minutes={briefingMinutes(morningIssue, morningItems)} /> : null,
+                  card: morningIssue ? <BriefingHeroCard issue={morningIssue} /> : null,
                   hint: `${EDITION_LABEL.morning}은 ${EDITION_SCHEDULE[0].time}에 올라와요`,
                 },
                 {
                   edition: "noon",
-                  card: noonIssue ? <BriefingHeroCard issue={noonIssue} minutes={briefingMinutes(noonIssue, noonItems)} /> : null,
+                  card: noonIssue ? <BriefingHeroCard issue={noonIssue} /> : null,
                   hint: `${EDITION_LABEL.noon}는 ${EDITION_SCHEDULE[1].time}에 올라와요`,
                 },
               ]}
@@ -175,14 +172,14 @@ async function BriefingFront({ sp }: { sp: SP }) {
                 {view === "card" ? (
                   <div className="mt-4 grid gap-6 sm:grid-cols-2">
                     {g.rows.map((r) => (
-                      <IssueCard key={r.issue.id} issue={r.issue} top={r.top} count={r.count} minutes={r.minutes} view="card" />
+                      <IssueCard key={r.issue.id} issue={r.issue} top={r.top} count={r.count} view="card" />
                     ))}
                   </div>
                 ) : (
                   <ul className="mt-1 divide-y divide-hairline border-t border-hairline">
                     {g.rows.map((r) => (
                       <li key={r.issue.id}>
-                        <IssueCard issue={r.issue} top={r.top} count={r.count} minutes={r.minutes} view="list" />
+                        <IssueCard issue={r.issue} top={r.top} count={r.count} view="list" />
                       </li>
                     ))}
                   </ul>

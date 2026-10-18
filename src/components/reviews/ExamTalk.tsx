@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, EyeOff, Loader2, MessagesSquare, Send, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { ArrowDown, EyeOff, Link2, Loader2, MessagesSquare, Send, ShieldCheck } from "lucide-react";
 import { TALK_HIDDEN_TEXT, TALK_LIMITS, TALK_POLL_MS, type TalkItem } from "@/lib/talk-meta";
 import { ReportButton } from "../board/interactive";
 import { cn } from "../ui";
@@ -18,18 +19,26 @@ function timeLabel(at: number, now: number): string {
 }
 
 /**
- * 시험별 실시간 응시자 톡 — 익명으로 바로바로 이야기 나누는 칸. 글은 시간이 지나도 지워지지 않아요.
+ * 기관별 실시간 톡방 — 익명으로 바로바로 이야기 나누는 칸. 글은 시간이 지나도 지워지지 않아요.
+ * 필기 후기 페이지(examId 있음)와 기관 정보 페이지가 같은 방이고, 시험 페이지에서 쓴 글엔 시험 꼬리표가 붙어요.
  * 몇 초마다 최근 목록을 서버와 맞춰요 (새 글 · 운영자가 가린 글 · 지운 글이 바로 반영). 탭이 보일 때만.
  * 위로 올려 읽는 중이면 화면을 움직이지 않고 '새 이야기 N개' 버튼만 띄워요.
  * admin: 운영자 — 글마다 가리기·다시 보이기·삭제, '금콩 운영자'로 쓰기
  */
 export function ExamTalk({
-  examId,
+  room,
+  roomName,
+  examId = "",
   initial,
   live,
   admin = false,
 }: {
-  examId: string;
+  /** 기관 id (톡방) */
+  room: string;
+  /** 기관 이름 */
+  roomName: string;
+  /** 시험 페이지에서 열었으면 그 시험 — 이 시험 글엔 꼬리표를 생략하고, 새 글에 이 시험 꼬리표를 달아요 */
+  examId?: string;
   initial: { items: TalkItem[]; more: boolean };
   /** 시험 당일·직후 — LIVE 표시 */
   live: boolean;
@@ -67,7 +76,7 @@ export function ExamTalk({
   /** 최근 목록을 서버와 맞추기 — 더 보기로 불러온 옛 글은 그대로 두고, 최근 부분만 서버 것으로 바꿔요 */
   const sync = useCallback(async () => {
     try {
-      const res = await fetch(`/api/reviews/${examId}/talk`, { cache: "no-store" });
+      const res = await fetch(`/api/talk/${room}`, { cache: "no-store" });
       if (!res.ok) return;
       const data = (await res.json()) as { items: TalkItem[] };
       const fresh = data.items ?? [];
@@ -82,7 +91,7 @@ export function ExamTalk({
     } catch {
       /* 다음 차례에 다시 */
     }
-  }, [examId, toBottom]);
+  }, [room, toBottom]);
 
   // 몇 초마다 맞추기 — 탭이 보일 때만
   useEffect(() => {
@@ -106,7 +115,7 @@ export function ExamTalk({
     const el = box.current;
     const before = el ? el.scrollHeight - el.scrollTop : 0;
     try {
-      const res = await fetch(`/api/reviews/${examId}/talk?before=${first}`, { cache: "no-store" });
+      const res = await fetch(`/api/talk/${room}?before=${first}`, { cache: "no-store" });
       const data = (await res.json()) as { items: TalkItem[]; more: boolean };
       setItems((prev) => [...(data.items ?? []), ...prev]);
       setMore(Boolean(data.more));
@@ -125,10 +134,10 @@ export function ExamTalk({
     setSending(true);
     setError(null);
     try {
-      const res = await fetch(`/api/reviews/${examId}/talk`, {
+      const res = await fetch(`/api/talk/${room}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ body, asAdmin: admin && asAdmin }),
+        body: JSON.stringify({ body, examId, asAdmin: admin && asAdmin }),
       });
       const data = (await res.json().catch(() => ({}))) as { item?: TalkItem | null; error?: string };
       if (!res.ok || !data.item) {
@@ -152,7 +161,7 @@ export function ExamTalk({
     if (op === "delete" && !window.confirm("이 메시지를 삭제할까요? 톡에서 완전히 빠져요.")) return;
     setBusyId(id);
     try {
-      const res = await fetch(`/api/reviews/${examId}/talk`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, op }) });
+      const res = await fetch(`/api/talk/${room}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, op }) });
       if (!res.ok) {
         setError(((await res.json().catch(() => ({}))) as { error?: string }).error ?? "처리하지 못했어요.");
         return;
@@ -170,11 +179,11 @@ export function ExamTalk({
   const visibleCount = items.filter((x) => !x.hidden).length;
 
   return (
-    <section aria-labelledby={`talk-title-${examId}`} className="card overflow-hidden shadow-level-1">
+    <section aria-labelledby={`talk-title-${room}`} className="card overflow-hidden shadow-level-1">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-hairline px-5 py-4 md:px-6">
         <MessagesSquare className="h-5 w-5 text-primary" strokeWidth={1.75} />
-        <h2 id={`talk-title-${examId}`} className="type-heading-md text-ink">
-          실시간 응시자 톡
+        <h2 id={`talk-title-${room}`} className="type-heading-md text-ink">
+          {examId ? "실시간 응시자 톡" : `${roomName} 실시간 톡`}
         </h2>
         {live && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-ruby px-2 py-0.5 type-micro font-semibold text-on-primary">
@@ -186,7 +195,21 @@ export function ExamTalk({
         <p className="w-full type-caption text-ink-mute">
           {admin
             ? "운영자 화면이에요 — 글마다 가리기(방문자에겐 '운영자에 의해 가려진 메시지')·삭제할 수 있어요."
-            : "익명으로 자유롭게 이야기해요. 후기를 남긴 사람은 이름 옆에 ✓응시 표시가 붙어요."}
+            : "익명으로 자유롭게 이야기해요. 이 기관 필기에 후기를 남긴 사람은 ✓응시 표시가 붙어요."}
+        </p>
+        {/* 두 페이지가 같은 방이라는 안내 */}
+        <p className="flex w-full items-center gap-1 type-micro text-ink-mute">
+          <Link2 className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
+          {examId ? (
+            <>
+              <Link href={`/companies/${room}#talk`} className="link">
+                {roomName} 기관 정보
+              </Link>
+              의 톡과 같은 방이에요.
+            </>
+          ) : (
+            "필기 후기 페이지의 응시자 톡과 같은 방이에요. 시험 페이지에서 쓴 글엔 시험 꼬리표가 붙어요."
+          )}
         </p>
       </div>
 
@@ -231,6 +254,10 @@ export function ExamTalk({
                         )}
                         <span className="font-semibold text-ink-secondary">{m.mine && !m.admin ? `${m.name} (나)` : m.name}</span>
                         {m.reviewed && <span className="rounded-full bg-ev-final-soft px-1.5 py-px font-semibold text-ev-final">✓응시</span>}
+                        {/* 어디서 쓴 글인지 — 지금 보는 시험 글은 생략 */}
+                        {m.examId !== examId && (
+                          <span className="rounded-full bg-canvas-soft px-1.5 py-px text-ink-secondary">{m.tag || "기관 정보"}</span>
+                        )}
                         {now != null && <span className="tabular">{timeLabel(m.createdAt, now)}</span>}
                         {admin && m.hidden && <span className="rounded-full bg-canvas-soft px-1.5 py-px font-semibold text-ink-secondary">가림</span>}
                         {admin && (m.reports ?? 0) > 0 && <span className="rounded-full bg-ev-doc-soft px-1.5 py-px font-semibold text-ev-doc">신고 {m.reports}</span>}

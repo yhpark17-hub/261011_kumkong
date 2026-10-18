@@ -256,11 +256,12 @@ async function ArticleView({ rawId }: { rawId: string }) {
                 <p className="type-body-md font-semibold text-ink">{a.author}</p>
                 <p className="flex flex-wrap gap-x-2 type-caption text-ink-mute">
                   {a.publishedAt && <span className="tabular">{formatArticleDate(a.publishedAt)}</span>}
-                  <span>· {a.readMinutes}분 분량</span>
+
                   {a.updatedAt - (a.publishedAt ?? 0) > 3600_000 && a.publishedAt && (
                     <span>· 수정 {formatArticleDate(a.updatedAt)}</span>
                   )}
-                  {a.views > 0 && <span className="tabular">· 조회 {a.views.toLocaleString()}</span>}
+                  <span className="tabular">· 조회 {a.views.toLocaleString()}</span>
+                  <span className="tabular">· 추천 {a.likes.toLocaleString()}</span>
                 </p>
               </div>
             </div>

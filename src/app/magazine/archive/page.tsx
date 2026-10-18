@@ -29,6 +29,7 @@ import {
 import { getIssue, listIssues, type IssueSummary } from "@/lib/server/briefing";
 import { adjacentNewsDates, firstNewsDate, listNews, newsSectionCounts, popularNews } from "@/lib/server/news";
 import { AD_SLOTS, pageMetadata } from "@/lib/site";
+import { ViewsLikes } from "@/components/magazine/Stats";
 
 export const metadata: Metadata = pageMetadata({
   title: `지난 브리핑 — 데일리 브리핑을 기간별로 | ${MAGAZINE_NAME}`,
@@ -260,7 +261,7 @@ async function Archive({ sp }: { sp: SP }) {
 
 /** 지난 브리핑 한 줄 — 판·호수·날짜·제목·여는 글·핵심 3가지(또는 용어·질문) */
 function IssueRow({ row }: { row: IssueSummary }) {
-  const { issue, top, count, minutes } = row;
+  const { issue, top, count } = row;
   const morning = issue.edition === "morning";
   return (
     <Link href={letterHref(issue.date, issue.edition)} className="group block rounded-2xl border border-hairline bg-canvas p-5 transition-shadow hover:shadow-level-2 md:p-6">
@@ -272,7 +273,9 @@ function IssueRow({ row }: { row: IssueSummary }) {
         <span aria-hidden>·</span>
         <span className="tabular">{formatDayHeading(issue.date)}</span>
         <span aria-hidden>·</span>
-        <span>{morning ? `기사 ${count}건 · 약 ${minutes}분` : `약 ${minutes}분`}</span>
+        {morning && <span>기사 {count}건</span>}
+        {morning && <span aria-hidden>·</span>}
+        <ViewsLikes views={issue.views} likes={issue.likes} />
       </span>
       <span className="mt-2 block type-heading-md text-ink [word-break:keep-all] group-hover:underline">{issue.title}</span>
       {issue.lede && <span className="mt-1.5 line-clamp-2 type-body-md text-ink-secondary">{issue.lede}</span>}
