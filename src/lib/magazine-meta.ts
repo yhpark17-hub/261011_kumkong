@@ -223,8 +223,12 @@ export function serializeArticleThumb(t: ArticleThumb): string {
   return Object.values(t).some(Boolean) ? JSON.stringify(t) : "";
 }
 
-/** 그려 쓰는 썸네일 주소 — 고치면(수정 시각) 주소가 바뀌어 카톡·브라우저가 새 그림을 받아요 */
-export const articleThumbUrl = (a: Pick<ArticleSummary, "id" | "updatedAt">) => `/magazine/${a.id}/thumb?v=${a.updatedAt.toString(36)}`;
+/**
+ * 그려 쓰는 썸네일 주소 — 고치면(수정 시각) 주소가 바뀌어 카톡·브라우저가 새 그림을 받아요.
+ * scale 2 = 2400×1260 (고해상도 화면·공유 미리보기에서 선명하게)
+ */
+export const articleThumbUrl = (a: Pick<ArticleSummary, "id" | "updatedAt">, scale: 1 | 2 = 1) =>
+  `/magazine/${a.id}/thumb?v=${a.updatedAt.toString(36)}${scale === 2 ? "&s=2" : ""}`;
 
 /** 카드·공유에 쓰는 그림 — 올린 표지가 있으면 그것, 없으면 그린 썸네일 */
 export const articleImageUrl = (a: Pick<ArticleSummary, "id" | "updatedAt" | "coverUrl">) => a.coverUrl || articleThumbUrl(a);

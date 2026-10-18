@@ -17,7 +17,7 @@ import {
   CATEGORY_INFO,
   SECTION_INFO,
   articleHref,
-  articleImageUrl,
+  articleThumbUrl,
   formatArticleDate,
   magazineHref,
   summaryLines,
@@ -63,11 +63,27 @@ export function ArticleMeta({ a, className }: { a: ArticleSummary; className?: s
 }
 
 /** 표지 — 이미지가 없으면 카테고리 색 그라디언트 + 아이콘 (너비·비율은 className 으로) */
-export function ArticleCover({ a, className }: { a: ArticleSummary; className?: string }) {
-  // 올린 표지가 없으면 주제 그림 + 제목으로 그린 썸네일 (기관 글은 그 기관 건물·로고) — 정사각 칸에서는 그림 쪽(오른쪽)이 보이게
+/**
+ * 카드 표지 — 올린 표지가 없으면 주제 그림 + 제목으로 그린 썸네일 (기관 글은 그 기관 건물·로고).
+ * 그린 썸네일은 1배·2배 두 가지 — 화면 크기·선명도에 맞는 쪽을 브라우저가 골라요 (sizes = 화면에 보이는 폭).
+ * 정사각 칸에서는 그림 쪽(오른쪽)이 보이게.
+ */
+export function ArticleCover({ a, className, sizes = "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" }: { a: ArticleSummary; className?: string; sizes?: string }) {
+  if (a.coverUrl) {
+    // eslint-disable-next-line @next/next/no-img-element -- 운영자가 올린 표지 (Blob 주소)
+    return <img src={a.coverUrl} alt="" loading="lazy" decoding="async" className={cn("bg-canvas-soft object-cover", className)} />;
+  }
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- 운영자가 올린 표지(Blob) 또는 그때그때 그린 썸네일
-    <img src={articleImageUrl(a)} alt="" loading="lazy" decoding="async" className={cn("bg-canvas-soft object-cover", !a.coverUrl && "object-[80%_50%]", className)} />
+    // eslint-disable-next-line @next/next/no-img-element -- 그때그때 그리는 썸네일
+    <img
+      src={articleThumbUrl(a)}
+      srcSet={`${articleThumbUrl(a)} 1200w, ${articleThumbUrl(a, 2)} 2400w`}
+      sizes={sizes}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      className={cn("bg-canvas-soft object-cover object-[80%_50%]", className)}
+    />
   );
 }
 
@@ -140,7 +156,7 @@ export function ArticleRow({ a, rank }: { a: ArticleSummary; rank?: number }) {
         <span className="mt-1.5 line-clamp-2 type-body-md font-semibold text-ink group-hover:underline">{a.title}</span>
         <ArticleMeta a={a} className="mt-1" />
       </span>
-      <ArticleCover a={a} className="aspect-square w-20 shrink-0 rounded-lg" />
+      <ArticleCover a={a} className="aspect-square w-20 shrink-0 rounded-lg" sizes="80px" />
     </Link>
   );
 }

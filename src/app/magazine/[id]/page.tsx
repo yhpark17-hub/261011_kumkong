@@ -65,7 +65,7 @@ export async function generateMetadata({ params }: PageProps<"/magazine/[id]">):
       section: CATEGORY_INFO[a.category].label,
       tags: a.tags,
       // 올린 표지가 없으면 그린 썸네일 (주소에 수정 시각이 붙어 고치면 카톡도 새 그림)
-      images: [a.coverUrl ? { url: a.coverUrl } : { url: articleThumbUrl(a), width: 1200, height: 630, alt: a.title }],
+      images: [a.coverUrl ? { url: a.coverUrl } : { url: articleThumbUrl(a, 2), width: 2400, height: 1260, alt: a.title }],
     }),
   };
 }

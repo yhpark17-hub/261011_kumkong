@@ -102,11 +102,24 @@ function ArticleThumbView({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }
   );
 }
 
-/** 글 한 편의 썸네일 — thumb 를 주면 저장된 값 대신 그걸로 (관리자 미리보기) */
-export async function articleOgImage(a: ArticleSummary, { thumb = a.thumb, headers }: { thumb?: ArticleThumb; headers?: HeadersInit } = {}) {
+/** 썸네일 배율 — 1 = 1200×630, 2 = 2400×1260 (고해상도 화면·큰 카드에서 선명하게) */
+export type ThumbScale = 1 | 2;
+
+/**
+ * 글 한 편의 썸네일 — thumb 를 주면 저장된 값 대신 그걸로 (관리자 미리보기).
+ * scale 2 는 같은 그림을 두 배 크기로 그려요 (모두 도형·글자라 확대해도 깨지지 않아요).
+ */
+export async function articleOgImage(a: ArticleSummary, { thumb = a.thumb, headers, scale = 1 }: { thumb?: ArticleThumb; headers?: HeadersInit; scale?: ThumbScale } = {}) {
   const plan = articleThumbPlan(a, thumb);
   const [fonts, logo] = await Promise.all([ogFonts(), plan.scene === "company" && plan.company ? companyLogo(plan.company.id) : Promise.resolve(null)]);
-  return new ImageResponse(<ArticleThumbView plan={plan} logo={logo} />, { ...OG_SIZE, fonts, headers });
+  const view = <ArticleThumbView plan={plan} logo={logo} />;
+  if (scale === 1) return new ImageResponse(view, { ...OG_SIZE, fonts, headers });
+  return new ImageResponse(
+    <div style={{ display: "flex", width: OG_SIZE.width * scale, height: OG_SIZE.height * scale }}>
+      <div style={{ display: "flex", width: OG_SIZE.width, height: OG_SIZE.height, flexShrink: 0, transform: `scale(${scale})`, transformOrigin: "top left" }}>{view}</div>
+    </div>,
+    { width: OG_SIZE.width * scale, height: OG_SIZE.height * scale, fonts, headers },
+  );
 }
 
 export async function fallbackArticleImage(headers?: HeadersInit) {
