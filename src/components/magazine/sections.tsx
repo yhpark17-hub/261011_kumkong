@@ -164,7 +164,7 @@ export function FeatureCard({ a, wide = false }: { a: ArticleSummary; wide?: boo
         wide && "md:flex-row",
       )}
     >
-      <ArticleCover a={a} className={cn("aspect-[16/9] w-full", wide && "md:aspect-auto md:min-h-[300px] md:w-[52%] md:shrink-0")} sizes={wide ? "(min-width: 768px) 640px, 100vw" : undefined} />
+      <ArticleCover a={a} className={cn("aspect-[16/9] w-full", wide && "md:aspect-auto md:min-h-[300px] md:w-[52%] md:shrink-0")} sizes={wide ? "(min-width: 1280px) 600px, (min-width: 768px) 50vw, 100vw" : undefined} />
       <div className="flex flex-1 flex-col p-6">
         <span className="flex items-center gap-1.5 self-start">
           <MagazineCategoryTag category={a.category} />

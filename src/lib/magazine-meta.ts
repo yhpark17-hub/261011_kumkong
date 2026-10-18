@@ -224,11 +224,19 @@ export function serializeArticleThumb(t: ArticleThumb): string {
 }
 
 /**
- * 그려 쓰는 썸네일 주소 — 고치면(수정 시각) 주소가 바뀌어 카톡·브라우저가 새 그림을 받아요.
- * scale 2 = 2400×1260 (고해상도 화면·공유 미리보기에서 선명하게)
+ * 썸네일 배율 — 1 = 1200×630. 카드에 보이는 크기에 가깝게 그린 그림을 골라 쓰면
+ * 브라우저가 크게 줄이지 않아도 돼서 글자·선이 또렷해요 (0.5 = 600폭 … 2 = 2400폭, 공유 미리보기는 2)
  */
-export const articleThumbUrl = (a: Pick<ArticleSummary, "id" | "updatedAt">, scale: 1 | 2 = 1) =>
-  `/magazine/${a.id}/thumb?v=${a.updatedAt.toString(36)}${scale === 2 ? "&s=2" : ""}`;
+export const THUMB_SCALES = [0.5, 0.75, 1, 1.5, 2] as const;
+export type ThumbScale = (typeof THUMB_SCALES)[number];
+export const isThumbScale = (v: number): v is ThumbScale => (THUMB_SCALES as readonly number[]).includes(v);
+
+/** 그려 쓰는 썸네일 주소 — 고치면(수정 시각) 주소가 바뀌어 카톡·브라우저가 새 그림을 받아요 */
+export const articleThumbUrl = (a: Pick<ArticleSummary, "id" | "updatedAt">, scale: ThumbScale = 1) =>
+  `/magazine/${a.id}/thumb?v=${a.updatedAt.toString(36)}${scale === 1 ? "" : `&s=${scale}`}`;
+
+/** 카드용 srcset — 600·900·1200·1800·2400 폭 */
+export const articleThumbSrcSet = (a: Pick<ArticleSummary, "id" | "updatedAt">) => THUMB_SCALES.map((s) => `${articleThumbUrl(a, s)} ${1200 * s}w`).join(", ");
 
 /** 카드·공유에 쓰는 그림 — 올린 표지가 있으면 그것, 없으면 그린 썸네일 */
 export const articleImageUrl = (a: Pick<ArticleSummary, "id" | "updatedAt" | "coverUrl">) => a.coverUrl || articleThumbUrl(a);

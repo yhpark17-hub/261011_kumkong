@@ -131,7 +131,7 @@ function company(prop: ScenePropKey): string {
   const front = d.lin("tf", [[0, "#6f90ff"], [0.5, "#4565e2"], [1, "#2b3b9c"]]);
   const side = d.lin("ts", [[0, "#3a4cab"], [1, "#1c2569"]]);
   const glass = d.lin("gl", [[0, "#ffffff", 0.34], [1, "#ffffff", 0]], 0, 0, 1, 1);
-  const back = d.lin("bk", [[0, "#dde5fb"], [1, "#c5d0f0"]]);
+  const back = d.lin("bk", [[0, "#d3ddf9"], [1, "#b4c2ec"]]);
   const ground = d.lin("gd", [[0, "#e4e9f8"], [1, "#cdd6ef"]]);
   const lobby = d.lin("lb", [[0, "#cfeaff"], [1, "#86bdf2"]]);
 
@@ -141,16 +141,16 @@ function company(prop: ScenePropKey): string {
   const BASE = 560;
   let grid = "";
   for (let y = 182; y <= 452; y += 24) {
-    grid += `<path d="M${X0 + 10} ${y}H${X1 - 10}" stroke="#ffffff" stroke-opacity=".16" stroke-width="2"/>`;
-    grid += `<path d="M${X1} ${y + (y - TOP) * 0.03}L1062 ${y + 14 + (y - TOP) * 0.03}" stroke="#ffffff" stroke-opacity=".07" stroke-width="2"/>`;
+    grid += `<path d="M${X0 + 10} ${y}H${X1 - 10}" stroke="#ffffff" stroke-opacity=".24" stroke-width="2"/>`;
+    grid += `<path d="M${X1} ${y + (y - TOP) * 0.03}L1062 ${y + 14 + (y - TOP) * 0.03}" stroke="#ffffff" stroke-opacity=".12" stroke-width="2"/>`;
   }
-  for (const x of [842, 884, 926, 970]) grid += `<path d="M${x} 176V460" stroke="#ffffff" stroke-opacity=".11" stroke-width="2"/>`;
+  for (const x of [842, 884, 926, 970]) grid += `<path d="M${x} 176V460" stroke="#ffffff" stroke-opacity=".18" stroke-width="2"/>`;
   // 뒤 건물 창 점
   let backWin = "";
   for (let r = 0; r < 9; r++)
     for (let c = 0; c < 3; c++) {
-      backWin += `<rect x="${704 + c * 30}" y="${262 + r * 30}" width="16" height="12" rx="3" fill="#ffffff" opacity=".55"/>`;
-      backWin += `<rect x="${1088 + c * 28}" y="${214 + r * 34}" width="14" height="12" rx="3" fill="#ffffff" opacity=".5"/>`;
+      backWin += `<rect x="${704 + c * 30}" y="${262 + r * 30}" width="16" height="12" rx="3" fill="#ffffff" opacity=".8"/>`;
+      backWin += `<rect x="${1088 + c * 28}" y="${214 + r * 34}" width="14" height="12" rx="3" fill="#ffffff" opacity=".75"/>`;
     }
 
   const props: Record<ScenePropKey, string> = {
@@ -163,7 +163,7 @@ function company(prop: ScenePropKey): string {
     "" +
     bg(sky) +
     blob(1010, 60, 210, "#a9c1ff", soft, 0.6) +
-    blob(600, 540, 220, "#d8cdff", soft, 0.45) +
+    blob(600, 540, 200, "#d8cdff", soft, 0.28) +
     clouds(0.8) +
     // 뒤 건물들
     `<rect x="688" y="244" width="112" height="320" rx="6" fill="${back}"/>` +
@@ -178,6 +178,9 @@ function company(prop: ScenePropKey): string {
     `<rect x="${X0}" y="${TOP}" width="${X1 - X0}" height="${BASE - TOP}" fill="${front}"/>` +
     `<rect x="${X0}" y="${TOP}" width="${X1 - X0}" height="14" fill="#8ea8ff"/>` +
     `<path d="M${X1} ${TOP}L1062 ${TOP + 18}V${TOP + 32}L${X1} ${TOP + 14}Z" fill="#5b6fd0"/>` +
+    // 모서리 빛 — 앞면 왼쪽·위, 앞면과 옆면 사이
+    `<path d="M${X0 + 1.5} ${TOP + 14}V${BASE}" stroke="#b9c9ff" stroke-width="3"/>` +
+    `<path d="M${X1} ${TOP}V${BASE}" stroke="#1a2266" stroke-width="2.5"/>` +
     // 간판 받침
     `<rect x="${SIGN.x - 8}" y="${SIGN.y - 8}" width="${SIGN.w + 16}" height="${SIGN.h + 16}" rx="20" fill="#18206a" opacity=".35"/>` +
     grid +
@@ -223,7 +226,7 @@ function exam(): string {
     "" +
     bg(sky) +
     blob(1020, 90, 220, "#b9a8ff", soft, 0.55) +
-    blob(560, 560, 200, "#ffd3dc", soft, 0.5) +
+    blob(560, 560, 180, "#ffd3dc", soft, 0.32) +
     // 답안지
     `<g transform="rotate(6 920 320)">` +
     shadow(930, 560, 190, 16, sh, 0.22) +
@@ -284,7 +287,7 @@ function interview(): string {
     "" +
     bg(sky) +
     blob(1000, 110, 220, "#ffc9a8", soft, 0.55) +
-    blob(600, 540, 200, "#d8cdff", soft, 0.45) +
+    blob(600, 540, 180, "#d8cdff", soft, 0.28) +
     // 벽 창
     `<rect x="720" y="56" width="420" height="120" rx="18" fill="#ffffff" opacity=".55"/>` +
     `<path d="M860 56V176M1000 56V176" stroke="#ffe3d0" stroke-width="6"/>` +
@@ -324,7 +327,7 @@ function knowledge(): string {
     "" +
     bg(sky) +
     blob(1010, 100, 220, "#9ee8c0", soft, 0.55) +
-    blob(580, 560, 200, "#ffe08a", soft, 0.45) +
+    blob(580, 560, 180, "#ffe08a", soft, 0.3) +
     shadow(940, 556, 210, 16, sh, 0.28) +
     book(790, 486, 312, 62, b1) +
     `<g transform="rotate(-3 930 452)">${book(812, 424, 276, 58, b2)}</g>` +
@@ -391,7 +394,7 @@ function insider(): string {
     "" +
     bg(sky) +
     blob(1000, 110, 220, "#b9c8ff", soft, 0.55) +
-    blob(600, 560, 200, "#ffd3dc", soft, 0.45) +
+    blob(600, 560, 180, "#ffd3dc", soft, 0.3) +
     `<rect x="0" y="470" width="${SCENE_W}" height="${SCENE_H - 470}" fill="${desk}"/>` +
     shadow(920, 474, 240, 14, sh, 0.25) +
     // 노트북

@@ -1,7 +1,7 @@
 import "server-only";
 import { ImageResponse } from "next/og";
 import type { CSSProperties, ReactNode } from "react";
-import type { ArticleSummary, ArticleThumb } from "@/lib/magazine-meta";
+import type { ArticleSummary, ArticleThumb, ThumbScale } from "@/lib/magazine-meta";
 import { captionFit, headlineFit } from "../og-text";
 import { SIGN, articleSceneSvg } from "./article-scenes";
 import { articleThumbPlan, type ArticleThumbPlan } from "./article-thumb";
@@ -44,7 +44,8 @@ const SIGN_BOX: CSSProperties = {
   justifyContent: "center",
   background: C.white,
   borderRadius: 16,
-  boxShadow: "0 10px 24px rgba(10,16,60,0.35)",
+  border: "1.5px solid rgba(255,255,255,0.9)",
+  boxShadow: "0 6px 14px rgba(10,16,60,0.32)",
 };
 
 /** 본사 건물 간판 — 로고 + 기관 이름 (글자형 로고면 로고만) */
@@ -82,7 +83,7 @@ function ArticleThumbView({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }
       {plan.scene === "company" && plan.company && <CompanySign name={plan.company.name} logo={logo} />}
 
       {/* 왼쪽 위 이름표 — 금콩 블로그 · 주제 */}
-      <Abs style={{ left: 52, top: 48, alignItems: "center", padding: "8px 20px 8px 10px", borderRadius: 999, background: "rgba(255,255,255,0.95)", boxShadow: "0 8px 24px rgba(12,16,48,0.16)" }}>
+      <Abs style={{ left: 52, top: 48, alignItems: "center", padding: "8px 20px 8px 10px", borderRadius: 999, background: C.white, border: "1.5px solid rgba(28,30,84,0.08)", boxShadow: "0 4px 12px rgba(12,16,48,0.14)" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={LOGO} width={34} height={34} alt="" style={{ marginRight: 10 }} />
         <div style={{ display: "flex", fontSize: 24, fontWeight: 800, color: C.ink, letterSpacing: -0.5 }}>금콩 블로그</div>
@@ -91,7 +92,7 @@ function ArticleThumbView({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }
       </Abs>
 
       {/* 제목 카드 — 왼쪽 아래 */}
-      <Abs style={{ left: 52, bottom: 52, width: 640, background: C.white, borderRadius: 28, overflow: "hidden", boxShadow: "0 22px 48px rgba(12,16,48,0.26)" }}>
+      <Abs style={{ left: 52, bottom: 52, width: 640, background: C.white, borderRadius: 28, overflow: "hidden", border: "1.5px solid rgba(28,30,84,0.08)", boxShadow: "0 12px 28px rgba(12,16,48,0.2)" }}>
         <div style={{ display: "flex", width: 10, background: C.primary }} />
         <div style={{ display: "flex", flexDirection: "column", padding: "22px 30px 24px 26px" }}>
           <Lines lines={head.lines} style={{ fontSize: head.size, fontWeight: 800, color: "#13163f", lineHeight: 1.18, letterSpacing: -1.6 }} />
@@ -102,12 +103,9 @@ function ArticleThumbView({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }
   );
 }
 
-/** 썸네일 배율 — 1 = 1200×630, 2 = 2400×1260 (고해상도 화면·큰 카드에서 선명하게) */
-export type ThumbScale = 1 | 2;
-
 /**
  * 글 한 편의 썸네일 — thumb 를 주면 저장된 값 대신 그걸로 (관리자 미리보기).
- * scale 2 는 같은 그림을 두 배 크기로 그려요 (모두 도형·글자라 확대해도 깨지지 않아요).
+ * scale 은 같은 그림을 그 배율 크기로 그려요 (모두 도형·글자라 크기를 바꿔도 깨지지 않고, 그 크기에서 바로 그려 또렷해요).
  */
 export async function articleOgImage(a: ArticleSummary, { thumb = a.thumb, headers, scale = 1 }: { thumb?: ArticleThumb; headers?: HeadersInit; scale?: ThumbScale } = {}) {
   const plan = articleThumbPlan(a, thumb);
@@ -118,7 +116,7 @@ export async function articleOgImage(a: ArticleSummary, { thumb = a.thumb, heade
     <div style={{ display: "flex", width: OG_SIZE.width * scale, height: OG_SIZE.height * scale }}>
       <div style={{ display: "flex", width: OG_SIZE.width, height: OG_SIZE.height, flexShrink: 0, transform: `scale(${scale})`, transformOrigin: "top left" }}>{view}</div>
     </div>,
-    { width: OG_SIZE.width * scale, height: OG_SIZE.height * scale, fonts, headers },
+    { width: Math.round(OG_SIZE.width * scale), height: Math.round(OG_SIZE.height * scale), fonts, headers },
   );
 }
 

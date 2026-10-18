@@ -17,6 +17,7 @@ import {
   CATEGORY_INFO,
   SECTION_INFO,
   articleHref,
+  articleThumbSrcSet,
   articleThumbUrl,
   formatArticleDate,
   magazineHref,
@@ -65,7 +66,7 @@ export function ArticleMeta({ a, className }: { a: ArticleSummary; className?: s
 /** 표지 — 이미지가 없으면 카테고리 색 그라디언트 + 아이콘 (너비·비율은 className 으로) */
 /**
  * 카드 표지 — 올린 표지가 없으면 주제 그림 + 제목으로 그린 썸네일 (기관 글은 그 기관 건물·로고).
- * 그린 썸네일은 1배·2배 두 가지 — 화면 크기·선명도에 맞는 쪽을 브라우저가 골라요 (sizes = 화면에 보이는 폭).
+ * 그린 썸네일은 600~2400폭 다섯 가지 — 화면에 보이는 크기·선명도에 가장 가까운 걸 브라우저가 골라요 (sizes = 화면에 보이는 폭).
  * 정사각 칸에서는 그림 쪽(오른쪽)이 보이게.
  */
 export function ArticleCover({ a, className, sizes = "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" }: { a: ArticleSummary; className?: string; sizes?: string }) {
@@ -77,7 +78,7 @@ export function ArticleCover({ a, className, sizes = "(min-width: 1024px) 400px,
     // eslint-disable-next-line @next/next/no-img-element -- 그때그때 그리는 썸네일
     <img
       src={articleThumbUrl(a)}
-      srcSet={`${articleThumbUrl(a)} 1200w, ${articleThumbUrl(a, 2)} 2400w`}
+      srcSet={articleThumbSrcSet(a)}
       sizes={sizes}
       alt=""
       loading="lazy"

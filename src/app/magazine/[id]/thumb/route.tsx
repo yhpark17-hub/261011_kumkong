@@ -1,5 +1,5 @@
 import { connection } from "next/server";
-import { isMagazineCategory, parseArticleThumb } from "@/lib/magazine-meta";
+import { isMagazineCategory, isThumbScale, parseArticleThumb } from "@/lib/magazine-meta";
 import { articleOgImage, fallbackArticleImage } from "@/lib/server/article-og";
 import { dbConfigured } from "@/lib/server/db";
 import { getArticle } from "@/lib/server/magazine";
@@ -22,8 +22,9 @@ export async function GET(req: Request, ctx: RouteContext<"/magazine/[id]/thumb"
   if (!a) return fallbackArticleImage(headers);
 
   const q = new URL(req.url).searchParams;
-  // ?s=2 — 두 배 해상도 (고해상도 화면의 큰 카드·공유 미리보기용)
-  const scale = q.get("s") === "2" ? 2 : 1;
+  // ?s= — 배율 (카드 크기에 맞춘 0.5·0.75 … 공유 미리보기용 2)
+  const s = Number(q.get("s") ?? 1);
+  const scale = isThumbScale(s) ? s : 1;
   if (admin && q.get("preview") === "1") {
     // 저장 전 값 — 제목·요약·태그·카테고리도 편집 중인 값으로
     const category = q.get("category");
