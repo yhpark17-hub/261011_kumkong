@@ -14,7 +14,7 @@ export function ModerationBar({
   returnTo,
   className,
 }: {
-  type: "post" | "comment" | "review";
+  type: "post" | "comment" | "review" | "talk";
   id: number;
   status: number;
   isNotice?: boolean;

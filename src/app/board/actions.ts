@@ -227,7 +227,7 @@ export async function likePost(postId: number): Promise<{ likes: number; already
   return { likes: Number(row?.likes ?? 0), already: !ins.rowsAffected };
 }
 
-const REPORT_TABLE = { post: "posts", comment: "comments", review: "exam_reviews" } as const;
+const REPORT_TABLE = { post: "posts", comment: "comments", review: "exam_reviews", talk: "exam_talk" } as const;
 export type ReportTarget = keyof typeof REPORT_TABLE;
 
 export async function reportItem(type: ReportTarget, id: number, reason: string): Promise<{ ok: boolean; already: boolean }> {

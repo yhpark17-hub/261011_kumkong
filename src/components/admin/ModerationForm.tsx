@@ -99,7 +99,7 @@ export function ModerationForm({
   toolbar,
   children,
 }: {
-  type: "post" | "comment" | "review";
+  type: "post" | "comment" | "review" | "talk";
   /** 목록 위 일괄 조치 버튼들 */
   toolbar: ReactNode;
   children: ReactNode;

@@ -94,6 +94,19 @@ CREATE TABLE IF NOT EXISTS exam_reviews (
 CREATE INDEX IF NOT EXISTS idx_reviews_exam ON exam_reviews (exam_id, status);
 
 -- 기관 정보 제보 · 공고 제보 · 사이트 의견 (운영자만 열람)
+-- 시험별 실시간 응시자 톡 (익명 · 브라우저 토큰으로 이름·내 글 표시)
+CREATE TABLE IF NOT EXISTS exam_talk (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  exam_id TEXT NOT NULL,
+  voter TEXT NOT NULL,
+  body TEXT NOT NULL,
+  ip_hash TEXT NOT NULL,
+  reports INTEGER NOT NULL DEFAULT 0,
+  status INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_exam_talk ON exam_talk (exam_id, id);
+
 CREATE TABLE IF NOT EXISTS feedback (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   kind TEXT NOT NULL,

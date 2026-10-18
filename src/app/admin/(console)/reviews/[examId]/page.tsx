@@ -5,6 +5,7 @@ import { ArrowLeft, ExternalLink, ListChecks } from "lucide-react";
 import { AdminCard, AdminPageTitle, EmptyRow, StatusTag, listHref } from "@/components/admin/parts";
 import { AdminSkeleton } from "@/components/admin/Skeleton";
 import { DbSection } from "@/components/db/DbSection";
+import { ExamTalk } from "@/components/reviews/ExamTalk";
 import { ReviewResults } from "@/components/reviews/Results";
 import { Chip, cn } from "@/components/ui";
 import { formatPostDateTime } from "@/lib/board-meta";
@@ -12,6 +13,7 @@ import { formatLong } from "@/lib/date";
 import { OVERALL_OPTIONS } from "@/lib/review-meta";
 import { requireAdmin } from "@/lib/server/admin";
 import { getExam, reviewComments, reviewStats } from "@/lib/server/reviews";
+import { listTalk } from "@/lib/server/talk";
 
 export const metadata = { title: "필기 후기 결과" };
 
@@ -28,7 +30,7 @@ async function Result({ examId }: { examId: string }) {
   await requireAdmin();
   const exam = getExam(examId);
   if (!exam) notFound();
-  const [stats, comments] = await Promise.all([reviewStats(exam), reviewComments(exam.id, true)]);
+  const [stats, comments, talk] = await Promise.all([reviewStats(exam), reviewComments(exam.id, true), listTalk(exam.id, { admin: true })]);
 
   return (
     <>
@@ -61,6 +63,9 @@ async function Result({ examId }: { examId: string }) {
       <AdminCard title="응시자 체감 결과">
         {stats.count === 0 ? <EmptyRow>아직 들어온 응답이 없어요.</EmptyRow> : <ReviewResults stats={stats} />}
       </AdminCard>
+
+      {/* 실시간 응시자 톡 — 숨긴 글도 흐리게, 글마다 숨김·삭제 */}
+      {!exam.expected && <ExamTalk examId={exam.id} initial={talk} live={false} admin />}
 
       <AdminCard title={`한 줄 후기 ${comments.length}`} aside={<span className="type-caption text-ink-mute">숨긴 후기도 함께 보여요 (흐리게)</span>}>
         {comments.length === 0 ? (

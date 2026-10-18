@@ -9,6 +9,7 @@ import { formatPostDateTime } from "@/lib/board-meta";
 import { requireAdmin } from "@/lib/server/admin";
 import { reportedItems } from "@/lib/server/board";
 import { getExam, reportedReviews } from "@/lib/server/reviews";
+import { reportedTalk } from "@/lib/server/talk";
 
 export const metadata = { title: "신고" };
 
@@ -24,8 +25,8 @@ export default function ReportsPage() {
 
 async function Reports() {
   await requireAdmin();
-  const [reported, reviews] = await Promise.all([reportedItems(), reportedReviews()]);
-  const total = reported.posts.length + reported.comments.length + reviews.length;
+  const [reported, reviews, talk] = await Promise.all([reportedItems(), reportedReviews(), reportedTalk()]);
+  const total = reported.posts.length + reported.comments.length + reviews.length + talk.length;
 
   return (
     <>
@@ -99,6 +100,30 @@ async function Reports() {
                     <span className="tag bg-ev-doc-soft text-ev-doc">신고 {r.reports}</span>
                   </div>
                   <ModerationBar type="review" id={r.id} status={r.status} reports={r.reports} compact className="mt-2" />
+                </li>
+              );
+            })}
+          </ul>
+        </AdminCard>
+      )}
+
+      {talk.length > 0 && (
+        <AdminCard title={`신고된 실시간 톡 ${talk.length}`}>
+          <ul className="divide-y divide-hairline">
+            {talk.map((t) => {
+              const exam = getExam(t.examId);
+              return (
+                <li key={t.id} className="py-3">
+                  <p className="type-body-md whitespace-pre-wrap text-ink [overflow-wrap:anywhere]">{t.body}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-3 type-caption text-ink-mute">
+                    <span>{formatPostDateTime(t.createdAt)}</span>
+                    <Link href={`/admin/reviews/${t.examId}`} className="link">
+                      {exam ? `${exam.companyName} ${exam.label}` : "시험"} 톡
+                    </Link>
+                    <StatusTag status={t.status} />
+                    <span className="tag bg-ev-doc-soft text-ev-doc">신고 {t.reports}</span>
+                  </div>
+                  <ModerationBar type="talk" id={t.id} status={t.status} reports={t.reports} compact className="mt-2" />
                 </li>
               );
             })}

@@ -9,14 +9,17 @@ import { ModerationBar } from "@/components/board/ModerationBar";
 import { ReportButton } from "@/components/board/interactive";
 import { AttendGate } from "@/components/reviews/AttendGate";
 import { DbSection } from "@/components/db/DbSection";
+import { ExamTalk } from "@/components/reviews/ExamTalk";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { LockedResults, ReviewResults } from "@/components/reviews/Results";
 import { Card, Chip, CompanyAvatar, Eyebrow, cn } from "@/components/ui";
 import { formatPostDateTime } from "@/lib/board-meta";
-import { ddayLabel, diffDays, formatLong, parseKey, todayKST, weekdayLabel } from "@/lib/date";
+import { addDays, ddayLabel, diffDays, formatLong, parseKey, todayKST, weekdayLabel } from "@/lib/date";
 import { OVERALL_OPTIONS, resultsPublicFrom, type ExamInfo } from "@/lib/review-meta";
 import { dbConfigured } from "@/lib/server/db";
 import { examReviewCount, getExam, listExams, myReview, reviewComments, reviewStats } from "@/lib/server/reviews";
+import { listTalk } from "@/lib/server/talk";
+import { TALK_OPEN_BEFORE_DAYS } from "@/lib/talk-meta";
 import { isAdmin, voterToken } from "@/lib/server/security";
 import { AD_SLOTS, pageOpenGraph } from "@/lib/site";
 
@@ -126,6 +129,17 @@ function ExamContent({ examId, asVisitor }: { examId: string; asVisitor: Promise
   );
 }
 
+/** 실시간 응시자 톡 — 시험 며칠 전부터 열려요 (예상 일정은 제외) */
+async function TalkSection({ exam, admin }: { exam: ExamInfo; admin: boolean }) {
+  const today = todayKST();
+  if (exam.expected || today < addDays(exam.date, -TALK_OPEN_BEFORE_DAYS)) return null;
+  const voter = await voterToken(false);
+  const initial = await listTalk(exam.id, { voter, admin });
+  // 시험 당일 ~ 이틀 뒤까지는 LIVE (자주 새로고침)
+  const live = exam.date <= today && diffDays(exam.date, today) <= 2;
+  return <ExamTalk examId={exam.id} initial={initial} live={live} admin={admin} />;
+}
+
 async function ExamLive({ exam, asVisitor }: { exam: ExamInfo; asVisitor: Promise<boolean> }) {
   await connection();
   const today = todayKST();
@@ -133,16 +147,22 @@ async function ExamLive({ exam, asVisitor }: { exam: ExamInfo; asVisitor: Promis
   if (exam.date > today || exam.expected) {
     const d = diffDays(today, exam.date);
     return (
-      <Card className="flex flex-col items-center p-10 text-center">
-        {d >= 0 && <span className="tag bg-ev-written-soft type-caption !px-3 text-ev-written">{ddayLabel(d)}</span>}
-        <p className="mt-4 type-heading-sm text-ink">시험이 끝나면 후기 투표가 열려요</p>
-        <p className="mt-2 max-w-md type-body-md text-ink-mute">
-          {formatLong(exam.date)} 시험이 끝난 뒤 이 페이지에서 체감 난이도와 과목별 후기를 남기고 결과를 볼 수 있어요.
-        </p>
-        <Link href={`/companies/${exam.companyId}`} className="btn btn-secondary btn-sm mt-6">
-          {exam.companyName} 필기 정보 보기
-        </Link>
-      </Card>
+      <>
+        <Card className="flex flex-col items-center p-10 text-center">
+          {d >= 0 && <span className="tag bg-ev-written-soft type-caption !px-3 text-ev-written">{ddayLabel(d)}</span>}
+          <p className="mt-4 type-heading-sm text-ink">시험이 끝나면 후기 투표가 열려요</p>
+          <p className="mt-2 max-w-md type-body-md text-ink-mute">
+            {formatLong(exam.date)} 시험이 끝난 뒤 이 페이지에서 체감 난이도와 과목별 후기를 남기고 결과를 볼 수 있어요.
+          </p>
+          <Link href={`/companies/${exam.companyId}`} className="btn btn-secondary btn-sm mt-6">
+            {exam.companyName} 필기 정보 보기
+          </Link>
+        </Card>
+        {/* 시험 전에도 같이 준비하는 이야기 */}
+        <div className="mt-6">
+          <TalkSection exam={exam} admin={await isAdmin()} />
+        </div>
+      </>
     );
   }
 
@@ -224,6 +244,8 @@ async function ExamLive({ exam, asVisitor }: { exam: ExamInfo; asVisitor: Promis
               <LockedResults count={stats.count} overallAvg={inWindow ? null : stats.overallAvg} timeAvg={inWindow ? null : stats.timeAvg} publicFromLabel={inWindow ? publicFromLabel : null} />
             )}
           </Card>
+
+          <TalkSection exam={exam} admin={admin} />
 
           <AdSlot slot={AD_SLOTS.inArticle} variant="inarticle" />
 

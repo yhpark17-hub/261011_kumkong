@@ -57,7 +57,7 @@ export async function handleFeedback(fd: FormData): Promise<void> {
   refresh();
 }
 
-const TABLES = { post: "posts", comment: "comments", review: "exam_reviews" } as const;
+const TABLES = { post: "posts", comment: "comments", review: "exam_reviews", talk: "exam_talk" } as const;
 type Target = keyof typeof TABLES;
 type Op = "hide" | "show" | "delete" | "pin" | "unpin" | "clearReports" | "purge" | "ban";
 const OPS = new Set<Op>(["hide", "show", "delete", "pin", "unpin", "clearReports", "purge", "ban"]);
@@ -119,7 +119,9 @@ async function applyModeration(client: Client, type: Target, op: Op, id: number)
           ? "SELECT ip_hash, title AS sample FROM posts WHERE id = ?"
           : type === "comment"
             ? "SELECT ip_hash, body AS sample FROM comments WHERE id = ?"
-            : "SELECT ip_hash, COALESCE(one_liner, detail, '') AS sample FROM exam_reviews WHERE id = ?",
+            : type === "talk"
+              ? "SELECT ip_hash, body AS sample FROM exam_talk WHERE id = ?"
+              : "SELECT ip_hash, COALESCE(one_liner, detail, '') AS sample FROM exam_reviews WHERE id = ?",
       args: [id],
     });
     const row = res.rows[0];
