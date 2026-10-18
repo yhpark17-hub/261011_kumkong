@@ -9,22 +9,31 @@ import { EDITION_LABEL, EDITION_SLOT, NEWS_SECTION_INFO, itemHref, letterHref, t
 import { arrangeLetter, issueItems, latestIssue } from "@/lib/server/briefing";
 import { listArticles } from "@/lib/server/magazine";
 import { popularNews } from "@/lib/server/news";
-import { BriefingCarousel } from "./BriefingCarousel";
+import { cn } from "../ui";
+import { BriefingCarousel, type BriefingSlide } from "./BriefingCarousel";
 
-/** 브리핑 한 장 — 머리(콩이·판 이름·날짜) + 제목 + 세 줄 */
-function Slide({ issue, rows }: { issue: BriefingIssue; rows: { n: NewsItem; tag: string; text: string }[] }) {
+/** 브리핑 한 장 — 머리(콩이·판 이름·아침판/점심판 꼬리표·날짜) + 제목 + 세 줄. 아침판은 크림·갈색, 점심판은 보라 */
+function Slide({ issue, rows }: { issue: BriefingIssue; rows: { n: NewsItem; tag: string; badge?: string; text: string }[] }) {
   const noon = issue.edition === "noon";
   const href = letterHref(issue.date, issue.edition);
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="flex min-w-0 items-center gap-2 type-heading-md text-ink">
-          <KongMascot className="h-7 w-7" {...(noon ? { hold: "book" as const, glasses: true } : { hold: "news" as const })} />
-          {EDITION_LABEL[issue.edition]}
-          <span className="truncate type-caption font-normal text-ink-mute">
-            {formatDayHeading(issue.date)} {EDITION_SLOT[issue.edition]}
-          </span>
-        </h2>
+        <div className="flex min-w-0 items-center gap-2.5">
+          <KongMascot className="h-9 w-9 shrink-0" {...(noon ? { hold: "book" as const, glasses: true } : { hold: "news" as const })} />
+          <div className="min-w-0">
+            <h2 className="flex items-center gap-1.5 type-heading-sm text-ink">
+              {EDITION_LABEL[issue.edition]}
+              {/* 갈색(lemon)은 어두운 화면에서 밝아지므로 글자는 바탕색(canvas)으로 */}
+              <span className={cn("rounded-full px-2 py-0.5 type-micro font-bold", noon ? "bg-primary text-on-primary" : "bg-lemon text-canvas")}>
+                {EDITION_SLOT[issue.edition]}
+              </span>
+            </h2>
+            <p className="truncate type-caption text-ink-mute">
+              {formatDayHeading(issue.date)} · {noon ? "용어·면접 공부" : "오늘의 기사"}
+            </p>
+          </div>
+        </div>
         <Link href={href} className="link inline-flex shrink-0 items-center gap-1 type-caption">
           {noon ? "스터디 읽기" : "브리핑 읽기"}
           <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -35,12 +44,16 @@ function Slide({ issue, rows }: { issue: BriefingIssue; rows: { n: NewsItem; tag
       </Link>
       {rows.length > 0 && (
         <ol className="mt-3 space-y-2">
-          {rows.map(({ n, tag, text }, i) => (
+          {rows.map(({ n, tag, badge, text }, i) => (
             <li key={n.id}>
-              <Link href={itemHref(n)} className="group flex gap-2.5 rounded-lg bg-canvas px-3 py-2.5">
-                <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-dark tabular type-micro font-bold text-on-primary">
-                  {i + 1}
-                </span>
+              <Link href={itemHref(n)} className="group flex items-start gap-2.5 rounded-lg bg-canvas px-3 py-2.5">
+                {badge ? (
+                  <span className="mt-0.5 inline-flex h-5 shrink-0 items-center rounded-md bg-primary px-1.5 type-micro font-bold text-on-primary">{badge}</span>
+                ) : (
+                  <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-lemon tabular type-micro font-bold text-canvas">
+                    {i + 1}
+                  </span>
+                )}
                 <span className="min-w-0">
                   <span className="block truncate type-body-md font-semibold text-ink group-hover:underline">{text}</span>
                   <span className="block truncate type-caption text-ink-mute">{tag}</span>
@@ -58,22 +71,23 @@ function Slide({ issue, rows }: { issue: BriefingIssue; rows: { n: NewsItem; tag
 export async function BriefingStrip() {
   await connection();
   const [morning, noon] = await Promise.all([latestIssue("morning"), latestIssue("noon")]);
-  const slides = [];
+  const slides: BriefingSlide[] = [];
   if (morning) {
     const top = arrangeLetter(await issueItems(morning.date, "morning")).top;
     slides.push({
       key: "morning",
       label: EDITION_LABEL.morning,
+      sub: "아침 기사",
       content: <Slide issue={morning} rows={top.map((n) => ({ n, text: n.title, tag: `${NEWS_SECTION_INFO[n.section].label}${n.takeaway ? ` · ${n.takeaway}` : ""}` }))} />,
     });
   }
   if (noon) {
     const { terms, questions } = arrangeLetter(await issueItems(noon.date, "noon"));
     const rows = [
-      ...terms.map((n) => ({ n, text: n.title, tag: "오늘의 용어" })),
-      ...questions.map((n) => ({ n, text: `Q. ${n.title}`, tag: "오늘의 면접 질문" })),
+      ...terms.map((n) => ({ n, text: n.title, tag: "오늘의 용어", badge: "용어" })),
+      ...questions.map((n) => ({ n, text: `Q. ${n.title}`, tag: "오늘의 면접 질문", badge: "면접" })),
     ].slice(0, 3);
-    slides.push({ key: "noon", label: EDITION_LABEL.noon, content: <Slide issue={noon} rows={rows} /> });
+    slides.push({ key: "noon", label: EDITION_LABEL.noon, sub: "점심 공부", content: <Slide issue={noon} rows={rows} /> });
   }
   if (!slides.length) {
     return (

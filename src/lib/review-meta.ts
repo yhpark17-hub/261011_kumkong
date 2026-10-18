@@ -15,6 +15,24 @@ export function resultsPublicFrom(examDate: string): string {
   return addDays(examDate, PRIORITY_DAYS);
 }
 
+/** 응시자 우선 공개 기간인지 (시험일 ~ 공개일 전날) — 이 동안 후기를 안 남긴 사람에겐 난이도도 숨겨요 */
+export function inPriorityWindow(examDate: string, today: string): boolean {
+  return examDate <= today && today < resultsPublicFrom(examDate);
+}
+
+/**
+ * 목록·기관 화면에 넘기는 시험별 요약.
+ * avg 가 null 이면 '아직 후기 없음' 또는 '잠김'(locked) — 잠긴 시험은 서버에서 평균을 아예 보내지 않아요.
+ */
+export interface ExamSummary {
+  n: number;
+  avg: number | null;
+  /** 응시자 우선 공개 기간이라 이 방문자에겐 난이도를 숨김 */
+  locked: boolean;
+  /** 이 방문자가 후기를 남긴 시험 */
+  mine: boolean;
+}
+
 export interface UnsolvedOption {
   /** DB 저장값 */
   value: number;

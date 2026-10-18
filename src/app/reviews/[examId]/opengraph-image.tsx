@@ -55,12 +55,13 @@ export default async function Image({ params }: { params: Promise<{ examId: stri
   const today = todayKST();
   const stats = dbConfigured() ? await reviewStats(exam).catch(() => null) : null;
   const n = stats?.count ?? 0;
-  const avg = n > 0 ? (stats?.overallAvg ?? null) : null;
+  const isPublic = today >= resultsPublicFrom(exam.date);
+  // 응시자 우선 공개 기간(시험 후 3일)에는 썸네일에도 난이도를 싣지 않아요 — ??? 로 궁금하게
+  const avg = n > 0 && isPublic ? (stats?.overallAvg ?? null) : null;
   const daysLeft = diffDays(today, exam.date);
   const logo = await companyLogo(exam.companyId);
 
   // 결과가 공개된 뒤 응답이 충분하면 한 가지만 살짝 (나머지는 잠금)
-  const isPublic = today >= resultsPublicFrom(exam.date);
   const dist = stats?.overall ?? [];
   const hardPct = n ? Math.round(((dist[3] ?? 0) + (dist[4] ?? 0)) / n * 100) : 0;
   const peek = isPublic && n >= 3 && hardPct >= 50 ? `응시자 ${hardPct}%가 '어렵다'` : null;

@@ -55,7 +55,7 @@ export function EventTag({
   );
 }
 
-const AVATAR_PX = { sm: 32, md: 40, lg: 64 } as const;
+const AVATAR_PX = { xs: 24, sm: 32, md: 40, lg: 64 } as const;
 
 /**
  * 기관 아바타 — 로고가 있으면 흰 타일 위에 로고, 없으면 약칭 글자.
@@ -66,14 +66,16 @@ export function CompanyAvatar({
   size = "md",
 }: {
   company: Pick<Company, "id" | "shortName" | "avatar" | "logo">;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
 }) {
   const dims =
-    size === "sm"
-      ? "h-8 w-8 type-micro-cap rounded-md"
-      : size === "lg"
-        ? "h-16 w-16 type-body-lg !font-normal rounded-lg"
-        : "h-10 w-10 type-caption rounded-md";
+    size === "xs"
+      ? "h-6 w-6 text-[9px] leading-none font-bold rounded"
+      : size === "sm"
+        ? "h-8 w-8 type-micro-cap rounded-md"
+        : size === "lg"
+          ? "h-16 w-16 type-body-lg !font-normal rounded-lg"
+          : "h-10 w-10 type-caption rounded-md";
   if (company.logo) {
     const px = AVATAR_PX[size];
     return (
@@ -81,7 +83,7 @@ export function CompanyAvatar({
         className={cn(
           "inline-flex shrink-0 items-center justify-center overflow-hidden border border-hairline bg-[#ffffff]",
           dims,
-          size === "lg" ? "p-2" : "p-1",
+          size === "lg" ? "p-2" : size === "xs" ? "p-0.5" : "p-1",
         )}
         aria-hidden
       >

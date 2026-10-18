@@ -268,20 +268,12 @@ const PLACEHOLDER_BARS = [62, 38, 81, 24, 55, 70, 33];
  * 응시자 우선 공개 기간에 후기를 남기지 않은 사람에게 보여 주는 요약.
  * 상세 수치는 서버에서 아예 보내지 않습니다.
  */
-export function LockedResults({
-  count,
-  overallAvg,
-  publicFromLabel,
-}: {
-  count: number;
-  overallAvg: number | null;
-  publicFromLabel: string;
-}) {
+export function LockedResults({ count, publicFromLabel }: { count: number; publicFromLabel: string }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-2 md:gap-3">
         <Stat icon={Users} label="참여" value={`${count}명`} />
-        <Stat icon={Gauge} label="체감 난이도" value={count ? difficultyWord(overallAvg) : "-"} />
+        <Stat icon={Lock} label="체감 난이도" value={count ? "잠김" : "-"} sub={count ? "후기 남기면 공개" : undefined} />
         <Stat icon={CalendarCheck} label="전체 공개" value={publicFromLabel} />
       </div>
       <div className="relative overflow-hidden rounded-lg border border-hairline">

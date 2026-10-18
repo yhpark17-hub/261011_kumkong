@@ -7,7 +7,7 @@ import { DbSection } from "@/components/db/DbSection";
 import { Eyebrow } from "@/components/ui";
 import { diffDays, todayKST } from "@/lib/date";
 import { PRIORITY_DAYS, type ExamInfo } from "@/lib/review-meta";
-import { examActivity, examCounts, listExams } from "@/lib/server/reviews";
+import { examActivity, examSummaries, listExams } from "@/lib/server/reviews";
 import { pageMetadata } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
@@ -95,17 +95,19 @@ function toCard(e: ExamInfo): ExamCardData {
 async function ExamLists() {
   await connection();
   const today = todayKST();
-  const [counts, activity] = await Promise.all([examCounts(), examActivity()]);
   const all = listExams();
+  const done = all.filter((e) => !e.expected && e.date <= today);
+  // 응시자 우선 공개 기간인 시험은 후기를 남긴 방문자에게만 평균 난이도가 넘어가요
+  const [summaries, activity] = await Promise.all([examSummaries(done, today), examActivity()]);
   // 지난 시험: 최근 순, 참여가 있는 시험은 1년이 지나도 남김
-  const past = all.filter((e) => !e.expected && e.date <= today && (diffDays(e.date, today) <= 365 || counts.has(e.id)));
+  const past = done.filter((e) => diffDays(e.date, today) <= 365 || summaries[e.id]);
   const upcoming = all.filter((e) => e.date > today).sort((a, b) => (a.date < b.date ? -1 : 1));
 
   return (
     <ExamBrowser
       past={past.map(toCard)}
       upcoming={upcoming.map(toCard)}
-      counts={Object.fromEntries(counts)}
+      summaries={summaries}
       activity={activity}
       today={today}
     />

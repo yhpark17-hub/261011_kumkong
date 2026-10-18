@@ -5,13 +5,16 @@ import type { Company } from "../types";
 import {
   TOTAL_MIN_REPORTS,
   UNSOLVED_OPTIONS,
+  inPriorityWindow,
   type ExamInfo,
+  type ExamSummary,
   type MyReview,
   type ReviewComment,
   type ReviewStats,
   type UnsolvedStat,
 } from "../review-meta";
 import { STATUS, db } from "./db";
+import { voterToken } from "./security";
 
 /* ------------------------------------------------------------------ */
 /* 시험 목록 — 채용 데이터의 필기 일정에서 자동 생성                       */
@@ -136,6 +139,31 @@ export async function examCounts(): Promise<Map<string, { n: number; avg: number
     args: [STATUS.visible],
   });
   return new Map(res.rows.map((r) => [String(r.exam_id), { n: Number(r.n), avg: Number(r.avg) }]));
+}
+
+/** 이 방문자(쿠키)가 후기를 남긴 시험 id */
+export async function myReviewedExamIds(voter: string | null): Promise<Set<string>> {
+  if (!voter) return new Set();
+  const client = await db();
+  const res = await client.execute({ sql: "SELECT exam_id FROM exam_reviews WHERE voter = ? AND status != 2", args: [voter] });
+  return new Set(res.rows.map((r) => String(r.exam_id)));
+}
+
+/**
+ * 목록·기관 화면용 시험별 요약 — 응시자 우선 공개 기간에는 후기를 남긴 사람에게만 평균 난이도를 보내요.
+ * 참여 수는 누구에게나 보여 줘요 (참여를 부르는 숫자). connection() 이후 호출.
+ */
+export async function examSummaries(exams: ExamInfo[], today: string): Promise<Record<string, ExamSummary>> {
+  const [counts, mine] = await Promise.all([examCounts(), voterToken(false).then(myReviewedExamIds)]);
+  const out: Record<string, ExamSummary> = {};
+  for (const e of exams) {
+    const c = counts.get(e.id);
+    const isMine = mine.has(e.id);
+    const locked = !isMine && inPriorityWindow(e.date, today);
+    if (!c && !isMine) continue;
+    out[e.id] = { n: c?.n ?? 0, avg: c && !locked ? c.avg : null, locked, mine: isMine };
+  }
+  return out;
 }
 
 /** 한 시험의 보이는 후기 수 (검색 노출 여부 판단용) */

@@ -500,6 +500,16 @@
   }
 }
 
+/* 홈 브리핑 탭: 자동 넘김까지 남은 시간 막대 */
+@keyframes kk-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 /* 아래에서 올라오는 목록 창 (Sheet) */
 @keyframes kk-sheet-up {
   from {

@@ -23,6 +23,8 @@ function buildWeeks(today: string): WeekDay[][] {
         avatar: e.company.avatar,
         type: e.type,
         label: e.label,
+        start: e.date,
+        end,
         expected: e.recruitment.status === "expected",
       });
     }

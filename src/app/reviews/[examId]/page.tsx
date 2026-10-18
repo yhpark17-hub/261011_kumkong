@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { ArrowLeft, CalendarClock, Lock, MessageSquareText } from "lucide-react";
+import { ArrowLeft, CalendarClock, Lock, MessageSquareText, ShieldCheck } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { ModerationBar } from "@/components/board/ModerationBar";
 import { ReportButton } from "@/components/board/interactive";
@@ -47,7 +47,9 @@ export async function generateMetadata({ params }: PageProps<"/reviews/[examId]"
   };
 }
 
-export default function ExamReviewPage({ params }: PageProps<"/reviews/[examId]">) {
+export default function ExamReviewPage({ params, searchParams }: PageProps<"/reviews/[examId]">) {
+  // 운영자가 ?as=visitor 로 열면 후기를 안 남긴 방문자 화면을 그대로 보여 줘요 (잠금 확인용)
+  const asVisitor = searchParams.then((s) => s.as === "visitor");
   return (
     <div className="mx-auto max-w-[1200px] px-4 pt-4 pb-12 md:px-6 md:pt-12">
       <Link href="/reviews" className="link inline-flex items-center gap-1 type-caption">
@@ -56,14 +58,14 @@ export default function ExamReviewPage({ params }: PageProps<"/reviews/[examId]"
       </Link>
       <Suspense fallback={<div className="mt-6 h-[480px] animate-pulse rounded-lg bg-canvas-soft" />}>
         {params.then(({ examId }) => (
-          <ExamContent examId={examId} />
+          <ExamContent examId={examId} asVisitor={asVisitor} />
         ))}
       </Suspense>
     </div>
   );
 }
 
-function ExamContent({ examId }: { examId: string }) {
+function ExamContent({ examId, asVisitor }: { examId: string; asVisitor: Promise<boolean> }) {
   const exam = getExam(examId);
   if (!exam) notFound();
   const sameDay = listExams().filter((e) => e.date === exam.date && e.id !== exam.id && !e.expected);
@@ -97,7 +99,7 @@ function ExamContent({ examId }: { examId: string }) {
       <div className="mt-6 md:mt-10">
         <DbSection noticeTitle="필기 후기 투표를 준비하고 있어요">
           <Suspense fallback={<div className="h-[480px] animate-pulse rounded-lg bg-canvas-soft" />}>
-            <ExamLive exam={exam} />
+            <ExamLive exam={exam} asVisitor={asVisitor} />
           </Suspense>
         </DbSection>
       </div>
@@ -124,7 +126,7 @@ function ExamContent({ examId }: { examId: string }) {
   );
 }
 
-async function ExamLive({ exam }: { exam: ExamInfo }) {
+async function ExamLive({ exam, asVisitor }: { exam: ExamInfo; asVisitor: Promise<boolean> }) {
   await connection();
   const today = todayKST();
 
@@ -144,7 +146,9 @@ async function ExamLive({ exam }: { exam: ExamInfo }) {
     );
   }
 
-  const [admin, voter] = await Promise.all([isAdmin(), voterToken(false)]);
+  const [isStaff, voter, preview] = await Promise.all([isAdmin(), voterToken(false), asVisitor]);
+  // 방문자 화면 미리보기 중이면 운영자 권한(잠금 해제·숨긴 후기·관리 버튼)을 끄고 그려요
+  const admin = isStaff && !preview;
   const [stats, comments, mine] = await Promise.all([
     reviewStats(exam),
     reviewComments(exam.id, admin),
@@ -160,6 +164,15 @@ async function ExamLive({ exam }: { exam: ExamInfo }) {
 
   return (
     <>
+      {isStaff && inWindow && !mine && (
+        <p className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-canvas-soft px-4 py-3 type-caption text-ink-secondary">
+          <ShieldCheck className="h-4 w-4 shrink-0 text-primary" strokeWidth={2} />
+          {preview ? "후기를 남기지 않은 방문자에게 보이는 화면이에요." : `운영자라서 잠금 없이 보여요. 후기를 남기지 않은 방문자에게는 ${publicFromLabel}까지 결과가 잠겨 있어요.`}
+          <Link href={preview ? `/reviews/${exam.id}` : `/reviews/${exam.id}?as=visitor`} className="link ml-auto font-semibold">
+            {preview ? "운영자 화면으로" : "방문자 화면으로 보기"}
+          </Link>
+        </p>
+      )}
       {exam.date === today && (
         <p className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-ruby/40 bg-ev-doc-soft px-4 py-3 type-body-md text-ink">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-ruby px-2.5 py-0.5 type-caption font-semibold text-on-primary">
@@ -208,7 +221,7 @@ async function ExamLive({ exam }: { exam: ExamInfo }) {
             {unlocked ? (
               <ReviewResults stats={stats} />
             ) : (
-              <LockedResults count={stats.count} overallAvg={stats.overallAvg} publicFromLabel={publicFromLabel} />
+              <LockedResults count={stats.count} publicFromLabel={publicFromLabel} />
             )}
           </Card>
 
