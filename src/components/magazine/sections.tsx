@@ -17,19 +17,26 @@ import { ArticleBadgeTag, ArticleCover, ArticleMeta, MagazineCategoryTag, Magazi
 /** 매거진 공통 머리: 이름 · 섹션 설명 · 검색 · 섹션 탭 */
 export function MagazineShell({ section, q = "", children }: { section: MagazineSection; q?: string; children: React.ReactNode }) {
   return (
-    <div className="mx-auto max-w-[1200px] px-4 pt-8 pb-16 md:px-6 md:pt-12">
-      <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-        <div>
-          <Eyebrow>{MAGAZINE_NAME}</Eyebrow>
-          <h1 className="mt-3 type-display-md text-ink md:type-display-lg">{SECTION_INFO[section].label}</h1>
-          <p className="mt-3 max-w-2xl type-body-lg text-ink-secondary">{SECTION_INFO[section].desc}</p>
+    <div className="mx-auto max-w-[1200px] px-4 pt-4 pb-16 md:px-6 md:pt-12">
+      <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between md:gap-5">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <Eyebrow className="max-md:hidden">{MAGAZINE_NAME}</Eyebrow>
+            <h1 className="type-heading-lg text-ink md:mt-3 md:type-display-lg">{SECTION_INFO[section].label}</h1>
+            <p className="mt-3 max-w-2xl type-body-lg text-ink-secondary max-md:hidden">{SECTION_INFO[section].desc}</p>
+          </div>
+          {/* 휴대폰: 검색창은 돋보기를 눌러야 열려요 (아래 체크박스로 열고 닫음) */}
+          <label htmlFor="mag-search-open" className="btn btn-icon btn-toggle shrink-0 cursor-pointer md:hidden" aria-label="매거진 검색 열기">
+            <Search className="h-5 w-5" strokeWidth={1.75} />
+          </label>
         </div>
-        <form action="/magazine/blog" role="search" className="relative w-full md:w-72">
+        <input id="mag-search-open" type="checkbox" className="peer sr-only" defaultChecked={Boolean(q)} tabIndex={-1} aria-hidden />
+        <form action="/magazine/blog" role="search" className="relative hidden w-full peer-checked:block md:block md:w-72">
           <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-ink-mute" strokeWidth={1.75} />
           <input name="q" defaultValue={q} placeholder="매거진 검색 (예: NCS, 기준금리)" className="input w-full pl-9" maxLength={40} aria-label="매거진 검색" />
         </form>
       </header>
-      <div className="mt-6">
+      <div className="mt-3 md:mt-6">
         <MagazineSectionTabs active={section} />
       </div>
       {children}

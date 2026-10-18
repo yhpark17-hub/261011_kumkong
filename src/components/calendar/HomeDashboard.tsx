@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { buildEvents } from "@/lib/catalog-client";
-import { formatDayHeading, shiftMonth, ymOf, type YearMonth } from "@/lib/date";
+import { addDays, formatDayHeading, shiftMonth, ymOf, type YearMonth } from "@/lib/date";
 import { useFavorites, useTodayKey } from "@/lib/hooks";
 import { AD_SLOTS } from "@/lib/site";
 import type { Catalog } from "@/lib/types";
@@ -13,6 +13,7 @@ import { EventRow } from "./EventRow";
 import { DEFAULT_FILTERS, applyFilters, groupByDay, type Filters } from "./filters";
 import { MonthGrid } from "./MonthGrid";
 import { Sidebar } from "./Sidebar";
+import { DayView } from "./DayView";
 import { CalendarHeader, FilterBar, type View } from "./Toolbar";
 import { UrgentStrip } from "./UrgentStrip";
 
@@ -70,6 +71,13 @@ export function HomeDashboard({ catalog, afterStatus }: { catalog: Catalog; afte
               setSelectedDay(null);
             }}
             listCount={upcomingCount}
+            day={activeDay}
+            onShiftDay={(d) => {
+              if (!activeDay) return;
+              const next = addDays(activeDay, d);
+              setSelectedDay(next);
+              setYmOverride(ymOf(next));
+            }}
           />
           <FilterBar filters={filters} onChange={setFilters} favoriteCount={favorites.size} />
 
@@ -99,6 +107,19 @@ export function HomeDashboard({ catalog, afterStatus }: { catalog: Catalog; afte
                 </div>
               )}
             </>
+          ) : view === "day" ? (
+            activeDay && (
+              <DayView
+                day={activeDay}
+                today={today}
+                byDay={byDay}
+                onSelect={(d) => {
+                  setSelectedDay(d);
+                  setYmOverride(ymOf(d));
+                }}
+                onOpenCompany={setOpenCompany}
+              />
+            )
           ) : (
             <AgendaList today={today} events={filtered} onOpen={setOpenCompany} />
           )}

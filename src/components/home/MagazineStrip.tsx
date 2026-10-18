@@ -6,8 +6,10 @@ import { ArticleRow } from "@/components/magazine/parts";
 import { formatDayHeading } from "@/lib/date";
 import { BLOG_CATEGORIES, SECTION_INFO } from "@/lib/magazine-meta";
 import { EDITION_LABEL, EDITION_SLOT, NEWS_SECTION_INFO, itemHref, letterHref, type BriefingIssue, type NewsItem } from "@/lib/news-meta";
+import { BriefingQuiz } from "@/components/magazine/BriefingQuiz";
 import { arrangeLetter, issueItems, latestIssue } from "@/lib/server/briefing";
 import { listArticles } from "@/lib/server/magazine";
+import { popularNews } from "@/lib/server/news";
 import { BriefingCarousel } from "./BriefingCarousel";
 
 /** 브리핑 한 장 — 머리(콩이·판 이름·날짜) + 제목 + 세 줄 */
@@ -119,6 +121,57 @@ export async function BlogStrip() {
           </Link>
         </div>
       </div>
+    </section>
+  );
+}
+
+/** 홈: 오늘의 퀴즈 — 최신 아침판 퀴즈 첫 문제 (토스피드 '오늘의 퀴즈' 참고, DESIGN-MOBILE.md) */
+export async function TodayQuiz() {
+  await connection();
+  const issue = (await latestIssue("morning")) ?? (await latestIssue("noon"));
+  if (!issue || !issue.quiz.length) return null;
+  const rest = issue.quiz.length - 1;
+  return (
+    <BriefingQuiz
+      quiz={issue.quiz.slice(0, 1)}
+      title="오늘의 퀴즈"
+      subtitle={`${formatDayHeading(issue.date)} ${EDITION_LABEL[issue.edition]}에서 한 문제`}
+      more={{ href: `${letterHref(issue.date, issue.edition)}#${issue.edition === "noon" ? "noon-quiz" : "briefing-quiz"}`, label: rest > 0 ? `브리핑 읽고 나머지 ${rest}문제도 풀기` : "오늘 브리핑 읽으러 가기" }}
+    />
+  );
+}
+
+/** 홈: 많이 본 브리핑 기사 1~5위 (조회가 아직 없으면 '새 브리핑 기사' — 없는 인기를 꾸미지 않음) */
+export async function PopularBriefing() {
+  await connection();
+  const items = await popularNews(7, 5);
+  if (!items.length) return null;
+  const ranked = items.some((n) => n.views > 0);
+  return (
+    <section aria-labelledby="popular-title" className="flex h-full flex-col rounded-xl border border-hairline p-6">
+      <div className="flex items-center justify-between">
+        <h2 id="popular-title" className="type-heading-md text-ink">
+          {ranked ? "많이 본 브리핑 기사" : "새 브리핑 기사"}
+        </h2>
+        <Link href="/magazine" className="link inline-flex items-center gap-1 type-caption">
+          전체
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.75} />
+        </Link>
+      </div>
+      <p className="mt-0.5 type-caption text-ink-mute">최근 7일{ranked ? " · 조회 많은 순" : ""}</p>
+      <ol className="mt-2 divide-y divide-hairline">
+        {items.map((n, i) => (
+          <li key={n.id}>
+            <Link href={itemHref(n)} className="group flex items-start gap-3 py-3">
+              <span className="w-5 shrink-0 text-center tabular type-heading-sm text-primary-text">{i + 1}</span>
+              <span className="min-w-0">
+                <span className="line-clamp-2 type-body-md font-semibold text-ink [word-break:keep-all] group-hover:underline">{n.title}</span>
+                <span className="mt-0.5 block truncate type-caption text-ink-mute">{NEWS_SECTION_INFO[n.section].label}</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }

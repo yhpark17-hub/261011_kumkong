@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { DbSection } from "@/components/db/DbSection";
 import { CommunityStrip, CommunityStripSkeleton, RecentExamsPanel, RecentExamsPanelSkeleton } from "@/components/home/CommunityStrip";
-import { BlogStrip, BriefingStrip, StripSkeleton } from "@/components/home/MagazineStrip";
+import { BlogStrip, BriefingStrip, PopularBriefing, StripSkeleton, TodayQuiz } from "@/components/home/MagazineStrip";
 import { NewPostingsTicker, NewPostingsTickerSkeleton } from "@/components/home/NewPostingsTicker";
 import { QuickMenu } from "@/components/home/QuickMenu";
 import { WeeklySchedule, WeeklyScheduleSkeleton } from "@/components/home/WeeklySchedule";
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 /**
  * 홈 — 금콩의 섹션 입구가 모인 첫 화면 (전체 달력은 /calendar)
- * 휴대폰: 바로가기 → 이번 주 일정 → 브리핑 → 블로그 → 필기 체감 난이도 → 콩밭
+ * 휴대폰: 바로가기 → 이번 주 일정 → 브리핑 → 필기 체감 난이도 → 오늘의 퀴즈 → 많이 본 브리핑 → 블로그 → 콩밭
  * PC: 바로가기는 위 메뉴로 충분해서 숨기고, 두 칸씩 높이를 맞춰 배치
  */
 export default function Home() {
@@ -27,10 +27,10 @@ export default function Home() {
         <NewPostingsTicker />
       </Suspense>
 
-      <div className="mx-auto max-w-[1200px] px-4 pt-6 pb-6 md:px-6 md:pt-12 md:pb-8">
-        <Eyebrow>2026 하반기 금융권 채용</Eyebrow>
-        <h1 className="mt-2 type-heading-lg text-ink [word-break:keep-all] md:mt-3 md:type-display-lg">금융공기업·공공기관 채용 준비</h1>
-        <p className="mt-2 max-w-2xl type-body-md text-ink-secondary [word-break:keep-all] md:mt-4 md:type-body-lg">
+      <div className="mx-auto max-w-[1200px] px-4 pt-4 pb-4 md:px-6 md:pt-12 md:pb-8">
+        <Eyebrow className="max-md:hidden">2026 하반기 금융권 채용</Eyebrow>
+        <h1 className="type-heading-lg text-ink [word-break:keep-all] md:mt-3 md:type-display-lg">금융공기업·공공기관 채용 준비</h1>
+        <p className="mt-4 max-w-2xl type-body-lg text-ink-secondary [word-break:keep-all] max-md:hidden">
           채용 일정부터 필기 후기, 데일리 브리핑까지 한곳에서 확인하세요.
         </p>
       </div>
@@ -49,7 +49,19 @@ export default function Home() {
               <BriefingStrip />
             </Suspense>
             <Suspense fallback={<RecentExamsPanelSkeleton />}>
-              <RecentExamsPanel limit={6} />
+              <RecentExamsPanel limit={6} large />
+            </Suspense>
+          </div>
+        </DbSection>
+
+        {/* 매일 들어올 이유: 오늘의 퀴즈 한 문제 + 많이 본 브리핑 (DESIGN-MOBILE.md 6) */}
+        <DbSection silent>
+          <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
+            <Suspense fallback={<StripSkeleton />}>
+              <TodayQuiz />
+            </Suspense>
+            <Suspense fallback={<StripSkeleton />}>
+              <PopularBriefing />
             </Suspense>
           </div>
         </DbSection>

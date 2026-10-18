@@ -1,18 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { WEEKDAYS, dayOfWeek, formatShort, parseKey } from "@/lib/date";
 import { EVENT_FILTER_ORDER, EVENT_META } from "@/lib/meta";
 import type { EventType } from "@/lib/types";
-import { EventTag, cn } from "../ui";
+import { Sheet } from "../Sheet";
+import { CompanyAvatar, EventTag, cn } from "../ui";
 
 export interface WeekItem {
   id: string;
   companyId: string;
   name: string;
   short: string;
+  logo?: string;
+  avatar?: string;
   type: EventType;
   label?: string;
   expected: boolean;
@@ -23,95 +26,144 @@ export interface WeekDay {
   items: WeekItem[];
 }
 
-/** 넓은 화면 칸에 이름까지 보여 줄 일정 수 / 휴대폰 칸에 약칭으로 보여 줄 수 */
+/** 넓은 화면 칸에 이름까지 보여 줄 일정 수 */
 const DESKTOP_MAX = 5;
+/** 휴대폰에서 고른 날 아래에 바로 보여 줄 수 (나머지는 '더 보기' 창) */
 const MOBILE_MAX = 4;
-/** 휴대폰에서 고른 날 아래 목록에 보여 줄 수 (나머지는 캘린더에서) */
-const LIST_MAX = 6;
+
+/** 일정 한 줄 — 로고 · 기관 이름(· 회차) · 전형 꼬리표 */
+function Row({ it }: { it: WeekItem }) {
+  return (
+    <Link href={`/companies/${it.companyId}`} className="flex items-center gap-3 py-2.5">
+      <CompanyAvatar company={{ id: it.companyId, shortName: it.short, avatar: it.avatar, logo: it.logo }} size="sm" />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate type-body-md font-semibold text-ink">{it.name}</span>
+        {(it.label || it.expected) && (
+          <span className="block truncate type-caption text-ink-mute">
+            {it.label ?? EVENT_META[it.type].label}
+            {it.expected && " · 예상 일정"}
+          </span>
+        )}
+      </span>
+      <EventTag type={it.type} size="sm" className="shrink-0" />
+    </Link>
+  );
+}
 
 /**
- * 홈: 이번 주(일~토) 채용 일정 — 날짜 칸마다 기관 이름을 전형 색으로, 화살표로 다음 주
- * 휴대폰에서는 칸에 약칭만 넣고, 날짜를 누르면 아래에 그날 일정 전체가 나와요.
+ * 홈: 이번 주(일~토) 채용 일정
+ * - 휴대폰: 날짜 띠(전형 색 점) + 고른 날 일정 몇 줄, '더 보기'는 아래에서 올라오는 창
+ * - 넓은 화면: 7칸 달력에 기관 이름, '+N개 더 보기'도 같은 창으로 (캘린더 페이지로 넘어가지 않게)
  */
 export function WeekCalendar({ weeks, today }: { weeks: WeekDay[][]; today: string }) {
   const [w, setW] = useState(0);
-  const days = weeks[w];
-  const inWeek = days.some((d) => d.date === today);
   const [picked, setPicked] = useState<string | null>(null);
+  const [sheetDay, setSheetDay] = useState<string | null>(null);
+  const closeSheet = useCallback(() => setSheetDay(null), []);
+
+  const days = weeks[w];
+  const allDays = weeks.flat();
+  const inWeek = days.some((d) => d.date === today);
   const active = picked && days.some((d) => d.date === picked) ? picked : inWeek ? today : (days.find((d) => d.items.length)?.date ?? days[0].date);
   const activeDay = days.find((d) => d.date === active)!;
+  const sheetIdx = sheetDay ? allDays.findIndex((d) => d.date === sheetDay) : -1;
+  const sheet = sheetIdx >= 0 ? allDays[sheetIdx] : null;
+
   const all = days.flatMap((d) => d.items);
-  const count = (t: EventType | EventType[]) => new Set(all.filter((it) => [t].flat().includes(it.type)).map((it) => it.id)).size;
+  const count = (t: EventType[]) => new Set(all.filter((it) => t.includes(it.type)).map((it) => it.id)).size;
+  const typesOf = (d: WeekDay) => EVENT_FILTER_ORDER.filter((t) => d.items.some((it) => it.type === t)).slice(0, 3);
 
   return (
     <section aria-labelledby="week-title" className="card p-4 shadow-level-1 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <h2 id="week-title" className="flex items-center gap-2 type-heading-md text-ink">
           <CalendarDays className="h-5 w-5 text-primary" strokeWidth={1.75} />
-          <h2 id="week-title" className="type-heading-md text-ink">
-            {w === 0 ? "이번 주" : "다음 주"} 채용 일정
-          </h2>
-          <span className="tabular type-caption text-ink-mute">
-            {formatShort(days[0].date)} – {formatShort(days[6].date)}
-          </span>
-        </div>
+          {w === 0 ? "이번 주" : "다음 주"} 채용 일정
+        </h2>
         <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setW(0)}
-            disabled={w === 0}
-            aria-label="이번 주 보기"
-            className="btn btn-icon btn-toggle !h-8 !w-8 disabled:opacity-35"
-          >
+          <button type="button" onClick={() => setW(0)} disabled={w === 0} aria-label="이번 주 보기" className="btn btn-icon btn-toggle !h-8 !w-8 disabled:opacity-35">
             <ChevronLeft className="h-4 w-4" strokeWidth={2} />
           </button>
-          <button
-            type="button"
-            onClick={() => setW(1)}
-            disabled={w === weeks.length - 1}
-            aria-label="다음 주 보기"
-            className="btn btn-icon btn-toggle !h-8 !w-8 disabled:opacity-35"
-          >
+          <button type="button" onClick={() => setW(1)} disabled={w === weeks.length - 1} aria-label="다음 주 보기" className="btn btn-icon btn-toggle !h-8 !w-8 disabled:opacity-35">
             <ChevronRight className="h-4 w-4" strokeWidth={2} />
           </button>
-          <Link href="/calendar" className="link ml-1 inline-flex items-center gap-1 type-caption">
+          <Link href="/calendar" className="link ml-1 hidden items-center gap-1 type-caption md:inline-flex">
             캘린더 전체
             <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.75} />
           </Link>
         </div>
       </div>
-
       <p className="mt-1 type-caption text-ink-mute">
-        서류 마감 <b className="tabular text-ink">{count("doc")}</b> · 필기 <b className="tabular text-ink">{count("written")}</b> · 면접{" "}
-        <b className="tabular text-ink">{count(["interview1", "interview2"])}</b> · 최종 발표 <b className="tabular text-ink">{count("final")}</b>
+        <span className="tabular">
+          {formatShort(days[0].date)} – {formatShort(days[6].date)}
+        </span>{" "}
+        · 서류 마감 <b className="tabular text-ink">{count(["doc"])}</b> · 필기 <b className="tabular text-ink">{count(["written"])}</b> · 면접{" "}
+        <b className="tabular text-ink">{count(["interview1", "interview2"])}</b>
       </p>
 
-      {/* 7일 칸 — 휴대폰은 화면 끝까지 넓혀 약칭이 들어갈 자리 확보 */}
-      <div className="mt-4 grid grid-cols-7 overflow-hidden rounded-lg border border-hairline max-md:-mx-4 max-md:rounded-none max-md:border-x-0">
+      {/* ---------------- 휴대폰: 날짜 띠 + 고른 날 목록 ---------------- */}
+      <div className="mt-3 grid grid-cols-7 gap-1 md:hidden" role="tablist" aria-label="날짜 고르기">
+        {days.map((d) => {
+          const dow = dayOfWeek(d.date);
+          const on = d.date === active;
+          return (
+            <button
+              key={d.date}
+              type="button"
+              role="tab"
+              aria-selected={on}
+              aria-label={`${formatShort(d.date)} 일정 ${d.items.length}건`}
+              onClick={() => setPicked(d.date)}
+              className={cn(
+                "flex flex-col items-center gap-1 rounded-xl py-2 transition-colors",
+                on ? "bg-brand-dark text-on-primary" : d.date === today ? "bg-ev-written-soft text-ink" : "bg-canvas-soft text-ink",
+                d.date < today && !on && "opacity-55",
+              )}
+            >
+              <span className={cn("type-micro", !on && (dow === 0 ? "text-ruby" : dow === 6 ? "text-primary-text" : "text-ink-mute"))}>{WEEKDAYS[dow]}</span>
+              <span className="tabular text-[17px] leading-none font-bold">{parseKey(d.date).d}</span>
+              <span className="flex h-1.5 gap-0.5">
+                {typesOf(d).map((t) => (
+                  <span key={t} className={cn("h-1.5 w-1.5 rounded-full", EVENT_META[t].dot, on && "ring-1 ring-on-primary/70")} />
+                ))}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 md:hidden">
+        <p className="type-caption font-semibold text-ink-secondary">
+          {formatShort(activeDay.date)}
+          {activeDay.date === today && " · 오늘"} · 일정 {activeDay.items.length}건
+        </p>
+        {activeDay.items.length === 0 ? (
+          <p className="py-4 type-body-md text-ink-mute">이 날은 일정이 없어요.</p>
+        ) : (
+          <ul className="divide-y divide-hairline">
+            {activeDay.items.slice(0, MOBILE_MAX).map((it) => (
+              <li key={it.id}>
+                <Row it={it} />
+              </li>
+            ))}
+          </ul>
+        )}
+        {activeDay.items.length > MOBILE_MAX && (
+          <button type="button" onClick={() => setSheetDay(activeDay.date)} className="btn btn-toggle mt-1 w-full">
+            더 보기 · {activeDay.items.length - MOBILE_MAX}건 더
+          </button>
+        )}
+      </div>
+
+      {/* ---------------- 넓은 화면: 7칸 ---------------- */}
+      <div className="mt-4 hidden grid-cols-7 overflow-hidden rounded-lg border border-hairline md:grid">
         {days.map((d) => {
           const dow = dayOfWeek(d.date);
           const isToday = d.date === today;
-          const isPast = d.date < today;
-          const on = d.date === active;
           return (
-            // 휴대폰: 칸 아무 데나 눌러 그날 고르기 (키보드는 날짜 버튼으로)
-            <div
-              key={d.date}
-              onClick={() => setPicked(d.date)}
-              className={cn(
-                "flex min-h-[104px] min-w-0 cursor-pointer flex-col border-r border-hairline p-0.5 last:border-r-0 md:min-h-[176px] md:cursor-default md:p-2",
-                on && "max-md:bg-ev-written-soft",
-                isToday && "md:bg-ev-written-soft/60",
-              )}
-            >
-              <button
-                type="button"
-                onClick={() => setPicked(d.date)}
-                aria-pressed={on}
-                aria-label={`${formatShort(d.date)} 일정 ${d.items.length}건`}
-                className="flex items-center justify-center gap-1 py-1 md:pointer-events-none md:justify-start"
-              >
-                <span className={cn("type-micro md:type-caption", dow === 0 ? "text-ruby" : dow === 6 ? "text-primary-text" : "text-ink-mute")}>{WEEKDAYS[dow]}</span>
+            <div key={d.date} className={cn("flex min-h-[176px] min-w-0 flex-col border-r border-hairline p-2 last:border-r-0", isToday && "bg-ev-written-soft/60")}>
+              <span className="flex items-center gap-1 py-1">
+                <span className={cn("type-caption", dow === 0 ? "text-ruby" : dow === 6 ? "text-primary-text" : "text-ink-mute")}>{WEEKDAYS[dow]}</span>
                 <span
                   className={cn(
                     "inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1 tabular type-caption font-semibold",
@@ -120,10 +172,8 @@ export function WeekCalendar({ weeks, today }: { weeks: WeekDay[][]; today: stri
                 >
                   {parseKey(d.date).d}
                 </span>
-              </button>
-
-              {/* 넓은 화면: 전형 + 기관 이름 */}
-              <span className={cn("mt-1 hidden flex-col gap-1 md:flex", isPast && "opacity-55")}>
+              </span>
+              <span className={cn("mt-1 flex flex-col gap-1", d.date < today && "opacity-55")}>
                 {d.items.slice(0, DESKTOP_MAX).map((it) => {
                   const m = EVENT_META[it.type];
                   return (
@@ -143,68 +193,19 @@ export function WeekCalendar({ weeks, today }: { weeks: WeekDay[][]; today: stri
                   );
                 })}
                 {d.items.length > DESKTOP_MAX && (
-                  <Link href="/calendar" className="px-1 type-micro font-semibold text-primary-text hover:underline">
+                  <button type="button" onClick={() => setSheetDay(d.date)} className="px-1 text-left type-micro font-semibold text-primary-text hover:underline">
                     +{d.items.length - DESKTOP_MAX}개 더 보기
-                  </Link>
+                  </button>
                 )}
                 {d.items.length === 0 && <span className="px-1 type-micro text-ink-mute-2">일정 없음</span>}
-              </span>
-
-              {/* 휴대폰: 약칭만 */}
-              <span className={cn("mt-0.5 flex flex-col gap-px md:hidden", isPast && "opacity-55")}>
-                {d.items.slice(0, MOBILE_MAX).map((it) => {
-                  const m = EVENT_META[it.type];
-                  return (
-                    <span
-                      key={it.id}
-                      className={cn(
-                        "block truncate rounded-[3px] border-l-2 pr-0.5 pl-[3px] text-[10px] leading-[15px] tracking-[-0.02em] text-ink",
-                        m.border,
-                        it.expected ? "bg-canvas outline outline-1 -outline-offset-1 outline-dashed outline-hairline-input" : m.soft,
-                      )}
-                    >
-                      {it.short}
-                    </span>
-                  );
-                })}
-                {d.items.length > MOBILE_MAX && <span className="text-center tabular text-[10px] leading-3 font-semibold text-primary-text">+{d.items.length - MOBILE_MAX}</span>}
               </span>
             </div>
           );
         })}
       </div>
 
-      {/* 휴대폰: 고른 날 일정 전체 */}
-      <div className="mt-3 md:hidden">
-        <p className="type-caption font-semibold text-ink-secondary">
-          {formatShort(activeDay.date)} 일정 {activeDay.items.length}건
-        </p>
-        {activeDay.items.length === 0 ? (
-          <p className="mt-1 type-caption text-ink-mute">이 날은 일정이 없어요.</p>
-        ) : (
-          <ul className="mt-1 divide-y divide-hairline">
-            {activeDay.items.slice(0, LIST_MAX).map((it) => (
-              <li key={it.id}>
-                <Link href={`/companies/${it.companyId}`} className="flex items-center gap-2 py-2">
-                  <span className="min-w-0 flex-1 truncate type-body-md text-ink">
-                    {it.name}
-                    {it.expected && <span className="ml-1 type-caption text-ink-mute">(예상)</span>}
-                  </span>
-                  <EventTag type={it.type} label={it.label} size="sm" className="shrink-0" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-        {activeDay.items.length > LIST_MAX && (
-          <Link href="/calendar" className="btn btn-sm btn-toggle mt-2 w-full">
-            {activeDay.items.length - LIST_MAX}건 더 — 캘린더에서 보기
-          </Link>
-        )}
-      </div>
-
-      {/* 색 안내 */}
-      <p className="mt-3 flex flex-wrap gap-x-3 gap-y-1 type-micro text-ink-mute">
+      {/* 색 안내 (넓은 화면) */}
+      <p className="mt-3 hidden flex-wrap gap-x-3 gap-y-1 type-micro text-ink-mute md:flex">
         {EVENT_FILTER_ORDER.map((t) => (
           <span key={t} className="inline-flex items-center gap-1">
             <span className={cn("h-2 w-2 rounded-full", EVENT_META[t].dot)} />
@@ -212,6 +213,47 @@ export function WeekCalendar({ weeks, today }: { weeks: WeekDay[][]; today: stri
           </span>
         ))}
       </p>
+
+      <Link href="/calendar" className="btn btn-sm btn-toggle mt-3 w-full md:hidden">
+        채용 캘린더 전체 보기
+      </Link>
+
+      {/* 그날 일정 전체 — 아래에서 올라오는 창, 안에서 앞뒤 날로 넘기기 */}
+      <Sheet
+        open={!!sheet}
+        onClose={closeSheet}
+        title={sheet ? `${formatShort(sheet.date)} 일정 ${sheet.items.length}건` : ""}
+        aside={
+          sheet && (
+            <span className="flex gap-1">
+              <button type="button" onClick={() => setSheetDay(allDays[sheetIdx - 1]?.date ?? sheetDay)} disabled={sheetIdx <= 0} aria-label="전날" className="btn btn-icon btn-toggle !h-8 !w-8 disabled:opacity-35">
+                <ChevronLeft className="h-4 w-4" strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setSheetDay(allDays[sheetIdx + 1]?.date ?? sheetDay)}
+                disabled={sheetIdx >= allDays.length - 1}
+                aria-label="다음 날"
+                className="btn btn-icon btn-toggle !h-8 !w-8 disabled:opacity-35"
+              >
+                <ChevronRight className="h-4 w-4" strokeWidth={2} />
+              </button>
+            </span>
+          )
+        }
+      >
+        {sheet && sheet.items.length === 0 ? (
+          <p className="py-6 text-center type-body-md text-ink-mute">이 날은 일정이 없어요.</p>
+        ) : (
+          <ul className="divide-y divide-hairline">
+            {sheet?.items.map((it) => (
+              <li key={it.id}>
+                <Row it={it} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Sheet>
     </section>
   );
 }

@@ -8,13 +8,13 @@ import { formatShort, todayKST } from "@/lib/date";
 import { difficultyWord } from "@/lib/review-meta";
 import { listPosts } from "@/lib/server/board";
 import { examCounts, listExams } from "@/lib/server/reviews";
-import { Card, CompanyAvatar } from "../ui";
+import { Card, CompanyAvatar, cn } from "../ui";
 
 /**
  * 최근 필기 체감 난이도 (요청 시 렌더링) — 캘린더 옆 칸, 홈
  * limit: 보여 줄 시험 수 (홈에서는 옆 칸과 높이가 맞게 늘려요)
  */
-export async function RecentExamsPanel({ limit = 4 }: { limit?: number } = {}) {
+export async function RecentExamsPanel({ limit = 4, large = false }: { limit?: number; /** 홈처럼 넓은 칸 — 다른 칸과 같은 제목 크기 */ large?: boolean } = {}) {
   await connection();
   const today = todayKST();
   const counts = await examCounts();
@@ -25,8 +25,8 @@ export async function RecentExamsPanel({ limit = 4 }: { limit?: number } = {}) {
   return (
     <Card className="h-full p-6">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="flex items-center gap-2 type-heading-sm text-ink">
-          <BarChart3 className="h-4 w-4 text-ink-mute" strokeWidth={1.75} />
+        <h2 className={cn("flex items-center gap-2 text-ink", large ? "type-heading-md" : "type-heading-sm")}>
+          <BarChart3 className={cn("text-ink-mute", large ? "h-5 w-5" : "h-4 w-4")} strokeWidth={1.75} />
           최근 필기 체감 난이도
         </h2>
         <Link href="/reviews" className="link inline-flex items-center gap-1 type-caption">

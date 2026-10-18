@@ -14,10 +14,10 @@ export const metadata: Metadata = pageMetadata({
 
 export default function CompaniesPage() {
   return (
-    <div className="mx-auto max-w-[1200px] px-4 pt-8 pb-12 md:px-6 md:pt-12">
-      <Eyebrow>기관 비교</Eyebrow>
-      <h1 className="mt-3 type-display-md text-ink md:type-display-lg lg:type-display-xl">기관 정보·경쟁률 비교</h1>
-      <p className="mt-4 max-w-2xl type-body-lg text-ink-secondary">
+    <div className="mx-auto max-w-[1200px] px-4 pt-4 pb-12 md:px-6 md:pt-12">
+      <Eyebrow className="max-md:hidden">기관 비교</Eyebrow>
+      <h1 className="type-heading-lg text-ink md:mt-3 md:type-display-lg lg:type-display-xl">기관 정보·경쟁률 비교</h1>
+      <p className="mt-4 max-w-2xl type-body-lg text-ink-secondary max-md:hidden">
         블라인드 여부, 필기 유형, 전공 시험, 최근 경쟁률을 한눈에 비교하고 지원 전략을 세워 보세요.
       </p>
       <AdSlot slot={AD_SLOTS.homeTop} variant="leaderboard" className="mt-8" />

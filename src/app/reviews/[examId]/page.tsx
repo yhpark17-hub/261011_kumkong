@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: PageProps<"/reviews/[examId]"
 
 export default function ExamReviewPage({ params }: PageProps<"/reviews/[examId]">) {
   return (
-    <div className="mx-auto max-w-[1200px] px-4 pt-8 pb-12 md:px-6 md:pt-12">
+    <div className="mx-auto max-w-[1200px] px-4 pt-4 pb-12 md:px-6 md:pt-12">
       <Link href="/reviews" className="link inline-flex items-center gap-1 type-caption">
         <ArrowLeft className="h-4 w-4" strokeWidth={1.75} />
         필기 후기 목록
@@ -70,11 +70,11 @@ function ExamContent({ examId }: { examId: string }) {
 
   return (
     <>
-      <header className="mt-6 flex flex-col gap-5 md:flex-row md:items-center">
+      <header className="mt-3 flex flex-col gap-3 md:mt-6 md:flex-row md:items-center md:gap-5">
         <CompanyAvatar company={{ id: exam.companyId, shortName: exam.shortName, avatar: exam.avatar, logo: exam.logo }} size="lg" />
         <div className="min-w-0 flex-1">
-          <Eyebrow>필기 후기</Eyebrow>
-          <h1 className="mt-2 type-display-md text-ink md:type-display-lg">
+          <Eyebrow className="max-md:hidden">필기 후기</Eyebrow>
+          <h1 className="type-heading-lg text-ink md:mt-2 md:type-display-lg">
             <Link href={`/companies/${exam.companyId}`} className="hover:underline">
               {exam.companyName}
             </Link>{" "}
@@ -94,7 +94,7 @@ function ExamContent({ examId }: { examId: string }) {
         </div>
       </header>
 
-      <div className="mt-10">
+      <div className="mt-6 md:mt-10">
         <DbSection noticeTitle="필기 후기 투표를 준비하고 있어요">
           <Suspense fallback={<div className="h-[480px] animate-pulse rounded-lg bg-canvas-soft" />}>
             <ExamLive exam={exam} />

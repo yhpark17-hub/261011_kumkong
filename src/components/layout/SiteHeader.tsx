@@ -94,7 +94,8 @@ export function SiteHeader() {
         scrolled || menuOpen ? "border-b border-hairline bg-canvas" : "border-b border-transparent bg-transparent",
       )}
     >
-      <div className="mx-auto flex max-w-[1200px] items-center gap-8 px-4 py-4 md:px-6">
+      {/* 휴대폰은 위아래 여백을 줄여 61px (DESIGN-MOBILE.md 원칙 3) */}
+      <div className="mx-auto flex max-w-[1200px] items-center gap-8 px-4 py-2.5 md:px-6 md:py-4">
         <Link href="/" className="flex items-center gap-2" aria-label="금콩 홈" onClick={close}>
           <Logo className="h-8 w-8" />
           <span className="type-heading-lg text-ink">금콩</span>

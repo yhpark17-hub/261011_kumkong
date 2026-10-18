@@ -23,10 +23,10 @@ export default function CalendarPage() {
         <NewPostingsTicker />
       </Suspense>
 
-      <div className="mx-auto max-w-[1200px] px-4 pt-8 pb-8 md:px-6 md:pt-12">
-        <Eyebrow>2026 하반기 금융권 채용</Eyebrow>
-        <h1 className="mt-3 type-display-md text-ink md:type-display-lg lg:type-display-xl">금융공기업·공공기관 채용 캘린더</h1>
-        <p className="mt-4 max-w-2xl type-body-lg text-ink-secondary">
+      <div className="mx-auto max-w-[1200px] px-4 pt-4 pb-4 md:px-6 md:pt-12 md:pb-8">
+        <Eyebrow className="max-md:hidden">2026 하반기 금융권 채용</Eyebrow>
+        <h1 className="type-heading-lg text-ink md:mt-3 md:type-display-lg lg:type-display-xl">금융공기업·공공기관 채용 캘린더</h1>
+        <p className="mt-4 max-w-2xl type-body-lg text-ink-secondary max-md:hidden">
           서류 마감부터 필기·면접·최종 발표까지, 놓치면 안 되는 일정을 한 달력에서 확인하세요.
         </p>
       </div>

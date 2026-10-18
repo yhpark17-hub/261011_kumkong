@@ -269,17 +269,22 @@ function LiveCard({
 
       <span className="mt-5 flex items-end justify-between gap-3">
         <span>
-          <span className="block tabular type-display-md text-ink">
-            {count?.n ?? 0}
-            <span className="ml-1 type-body-md text-ink-mute">명 참여</span>
-          </span>
+          {/* 아직 후기가 없으면 '0명' 대신 '후기 받는 중' (없는 숫자는 만들지 않음) */}
+          {count ? (
+            <span className="block tabular type-display-md text-ink">
+              {count.n}
+              <span className="ml-1 type-body-md text-ink-mute">명 참여</span>
+            </span>
+          ) : (
+            <span className="block type-heading-lg text-ink">후기 받는 중</span>
+          )}
           <span className="mt-1 block type-caption text-ink-secondary">
             {activity && activity.lastHour > 0 ? (
               <span className="font-semibold text-ruby">최근 1시간 {activity.lastHour}명</span>
             ) : count ? (
               difficultyWord(count.avg)
             ) : (
-              "아직 아무도 남기지 않았어요"
+              "시험 봤다면 30초면 남길 수 있어요"
             )}
             {last && <span className="text-ink-mute"> · 마지막 후기 {last}</span>}
           </span>
@@ -334,9 +339,9 @@ function ExamCard({
       <span className="mt-5 flex items-end justify-between gap-3">
         <span>
           <span className="block type-micro text-ink-mute">체감 난이도</span>
-          <span className="mt-0.5 block type-heading-sm text-ink">{count ? difficultyWord(count.avg) : "참여 대기"}</span>
+          <span className="mt-0.5 block type-heading-sm text-ink">{count ? difficultyWord(count.avg) : "후기 받는 중"}</span>
         </span>
-        <span className="tabular type-caption text-ink-mute">{count ? `${count.n}명 참여` : "첫 후기를 남겨 주세요"}</span>
+        {count && <span className="tabular type-caption text-ink-mute">{count.n}명 참여</span>}
       </span>
       <DifficultyMeter avg={count?.avg ?? null} className="mt-3" />
       <span className="mt-4 inline-flex items-center gap-1 type-caption text-primary-text">

@@ -32,12 +32,12 @@ function one(v: string | string[] | undefined): string {
 
 export default function BoardPage({ searchParams }: PageProps<"/board">) {
   return (
-    <div className="mx-auto max-w-[1200px] px-4 pt-8 pb-12 md:px-6 md:pt-12">
-      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div className="mx-auto max-w-[1200px] px-4 pt-4 pb-12 md:px-6 md:pt-12">
+      <header className="flex items-center justify-between gap-3 md:items-end md:gap-4">
         <div>
-          <Eyebrow>{BOARD_TAGLINE}</Eyebrow>
-          <h1 className="mt-3 type-display-md text-ink md:type-display-lg">{BOARD_NAME}</h1>
-          <p className="mt-3 max-w-2xl type-body-lg text-ink-secondary">
+          <Eyebrow className="max-md:hidden">{BOARD_TAGLINE}</Eyebrow>
+          <h1 className="type-heading-lg text-ink md:mt-3 md:type-display-lg">{BOARD_NAME}</h1>
+          <p className="mt-3 max-w-2xl type-body-lg text-ink-secondary max-md:hidden">
             로그인 없이 닉네임과 비밀번호만으로 글을 쓸 수 있어요. 필기·면접 후기, 질문, 정보를 편하게 나눠 주세요.
           </p>
         </div>

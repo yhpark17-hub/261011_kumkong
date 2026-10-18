@@ -19,6 +19,8 @@ function buildWeeks(today: string): WeekDay[][] {
         companyId: e.company.id,
         name: e.company.name,
         short: e.company.shortName,
+        logo: e.company.logo,
+        avatar: e.company.avatar,
         type: e.type,
         label: e.label,
         expected: e.recruitment.status === "expected",

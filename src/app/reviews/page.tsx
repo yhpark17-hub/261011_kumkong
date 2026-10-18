@@ -29,14 +29,14 @@ const STEPS = [
 
 export default function ReviewsPage() {
   return (
-    <div className="mx-auto max-w-[1200px] px-4 pt-8 pb-12 md:px-6 md:pt-12">
-      <Eyebrow>필기 후기</Eyebrow>
-      <h1 className="mt-3 type-display-md text-ink md:type-display-lg lg:type-display-xl">필기 끝나고, 30초 후기</h1>
-      <p className="mt-4 max-w-2xl type-body-lg text-ink-secondary">
+    <div className="mx-auto max-w-[1200px] px-4 pt-4 pb-12 md:px-6 md:pt-12">
+      <Eyebrow className="max-md:hidden">필기 후기</Eyebrow>
+      <h1 className="type-heading-lg text-ink md:mt-3 md:type-display-lg lg:type-display-xl">필기 끝나고, 30초 후기</h1>
+      <p className="mt-4 max-w-2xl type-body-lg text-ink-secondary max-md:hidden">
         다들 쉬웠다는데 나만 어려웠을까? 시험 본 사람들의 체감 난이도와 과목별 후기를 숫자로 확인하세요.
       </p>
-      {/* 휴대폰에서는 한 줄로 짧게 — 오늘 시험(LIVE)이 화면 위쪽에 보이도록 */}
-      <ul className="mt-6 grid grid-cols-3 gap-2 md:mt-8 md:gap-3">
+      {/* 기능 안내는 PC 에서만 — 휴대폰은 오늘 시험(LIVE)·목록이 첫 화면에 */}
+      <ul className="mt-8 hidden grid-cols-3 gap-3 md:grid">
         {STEPS.map(({ icon: Icon, title, desc }) => (
           <li key={title} className="flex flex-col items-center gap-1.5 rounded-lg bg-canvas-soft px-2 py-3 text-center md:flex-row md:items-start md:gap-3 md:p-4 md:text-left">
             <Icon className="h-5 w-5 shrink-0 text-primary-text md:mt-0.5" strokeWidth={1.75} />
@@ -48,7 +48,7 @@ export default function ReviewsPage() {
         ))}
       </ul>
 
-      <div className="mt-12">
+      <div className="mt-4 md:mt-12">
         <DbSection noticeTitle="필기 후기 투표를 준비하고 있어요">
           <Suspense fallback={<GridSkeleton />}>
             <ExamLists />

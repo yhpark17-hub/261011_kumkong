@@ -785,7 +785,7 @@ export function WrittenExamGuide({ title }: { title: string }) {
       </section>
 
       {/* 장 고르기 */}
-      <div ref={top} className="sticky top-[73px] z-20 border-y border-hairline bg-canvas/95 backdrop-blur md:top-[65px]">
+      <div ref={top} className="sticky top-[61px] z-20 border-y border-hairline bg-canvas/95 backdrop-blur md:top-[65px]">
         <div className="mx-auto max-w-[960px] px-3 md:px-8">
           <div role="tablist" aria-label="필기 입문 목차" className="no-scrollbar flex gap-1.5 overflow-x-auto py-2.5">
             {CHAPTERS.map((x, i) => (

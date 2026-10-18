@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, List, Plus, RotateCcw, Search, Star } from "lucide-react";
-import type { YearMonth } from "@/lib/date";
+import { CalendarDays, CalendarRange, ChevronLeft, ChevronRight, List, Plus, RotateCcw, Search, Star } from "lucide-react";
+import { formatDayHeading, type YearMonth } from "@/lib/date";
 import { CATEGORY_META, CATEGORY_ORDER, EVENT_FILTER_ORDER, EVENT_META, MAJOR_META } from "@/lib/meta";
 import type { Category, EventType, MajorType } from "@/lib/types";
 import { PRIMARY_CATEGORIES } from "../CategoryChips";
 import { cn } from "../ui";
 import { ALL_TYPES, DEFAULT_FILTERS, isDefaultFilters, type Filters } from "./filters";
 
-export type View = "month" | "list";
+/** 달력(월간) · 일간(날짜 띠 + 그날 목록) · 목록 */
+export type View = "month" | "day" | "list";
 
 export function CalendarHeader({
   ym,
@@ -18,6 +19,8 @@ export function CalendarHeader({
   onShift,
   onToday,
   listCount,
+  day,
+  onShiftDay,
 }: {
   ym: YearMonth | null;
   view: View;
@@ -25,6 +28,9 @@ export function CalendarHeader({
   onShift: (delta: number) => void;
   onToday: () => void;
   listCount: number | null;
+  /** 일간 보기에서 고른 날 */
+  day?: string | null;
+  onShiftDay?: (delta: number) => void;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -46,6 +52,21 @@ export function CalendarHeader({
               </button>
             </div>
           </>
+        ) : view === "day" ? (
+          <>
+            <h2 className="tabular type-heading-lg text-ink md:type-display-md">{day ? formatDayHeading(day) : <span className="inline-block h-7 w-32 rounded-md bg-canvas-soft" />}</h2>
+            <div className="flex items-center gap-2">
+              <button type="button" className="btn btn-icon btn-toggle" aria-label="전날" onClick={() => onShiftDay?.(-1)}>
+                <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
+              </button>
+              <button type="button" className="btn btn-icon btn-toggle" aria-label="다음 날" onClick={() => onShiftDay?.(1)}>
+                <ChevronRight className="h-4 w-4" strokeWidth={1.75} />
+              </button>
+              <button type="button" onClick={onToday} className="btn btn-sm btn-secondary">
+                오늘
+              </button>
+            </div>
+          </>
         ) : (
           <h2 className="type-display-md text-ink">
             다가오는 일정
@@ -59,6 +80,7 @@ export function CalendarHeader({
         {(
           [
             ["month", "달력", CalendarDays],
+            ["day", "일간", CalendarRange],
             ["list", "목록", List],
           ] as const
         ).map(([v, label, Icon]) => (
@@ -69,7 +91,7 @@ export function CalendarHeader({
             aria-selected={view === v}
             onClick={() => onViewChange(v)}
             className={cn(
-              "inline-flex min-h-8 items-center gap-2 rounded-full px-4 py-2 type-button-sm transition-colors",
+              "inline-flex min-h-8 items-center gap-1.5 rounded-full px-3 py-2 type-button-sm transition-colors md:gap-2 md:px-4",
               view === v ? "bg-canvas text-ink shadow-level-1" : "text-ink-mute hover:text-ink",
             )}
           >

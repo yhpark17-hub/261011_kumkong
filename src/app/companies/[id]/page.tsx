@@ -96,14 +96,14 @@ function CompanyContent({ id }: { id: string }) {
   const postingHref = recruitment.postingUrl ?? company.recruitUrl;
 
   return (
-    <div className="mx-auto max-w-[1200px] px-4 pt-8 pb-12 md:px-6 md:pt-12">
+    <div className="mx-auto max-w-[1200px] px-4 pt-4 pb-12 md:px-6 md:pt-12">
       <Link href="/companies" className="link inline-flex items-center gap-1 type-caption">
         <ArrowLeft className="h-4 w-4" strokeWidth={1.75} />
         기관 목록
       </Link>
 
       {/* 히어로 */}
-      <header className="mt-6 flex flex-col gap-6 md:flex-row md:items-start">
+      <header className="mt-3 flex flex-col gap-3 md:mt-6 md:flex-row md:items-start md:gap-6">
         {company.wideLogo && !company.logo ? (
           <span className="inline-flex h-16 items-center self-start rounded-lg border border-hairline bg-[#ffffff] px-4">
             <Image
@@ -127,8 +127,8 @@ function CompanyContent({ id }: { id: string }) {
               </span>
             ))}
           </div>
-          <h1 className="mt-3 type-display-md text-ink md:type-display-lg lg:type-display-xl">{company.name}</h1>
-          <p className="mt-3 max-w-2xl type-body-lg text-ink-secondary">{company.description}</p>
+          <h1 className="mt-2 type-heading-lg text-ink md:mt-3 md:type-display-lg lg:type-display-xl">{company.name}</h1>
+          <p className="mt-2 max-w-2xl type-body-lg text-ink-secondary max-md:line-clamp-2 md:mt-3">{company.description}</p>
           <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 type-caption text-ink-mute">
             {company.hq && (
               <span className="inline-flex items-center gap-1">
