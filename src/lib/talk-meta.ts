@@ -20,10 +20,18 @@ export interface TalkItem {
   mine: boolean;
   /** 이 시험에 후기를 남긴 사람 */
   reviewed: boolean;
-  /** 운영자에게만: 숨김 상태 · 신고 수 */
+  /** 운영자가 쓴 글 ('금콩 운영자' 표시) */
+  admin: boolean;
+  /** 가려진 글 — 방문자에게는 내용 없이 이유만 (admin: 운영자가 가림 · reports: 신고가 쌓여 가려짐) */
+  hidden?: "admin" | "reports";
+  /** 운영자에게만: 상태(0 보임 · 1 가림) · 신고 수 */
   status?: number;
   reports?: number;
 }
+
+export const TALK_HIDDEN_TEXT = { admin: "운영자에 의해 가려진 메시지입니다.", reports: "신고가 쌓여 가려진 메시지입니다." } as const;
+/** 운영자 글 이름 */
+export const TALK_ADMIN_NAME = "금콩 운영자";
 
 const COLORS = [
   { word: "노란", tone: "#f2b100" },

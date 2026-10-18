@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   MessageSquare,
   MessageSquareWarning,
+  MessagesSquare,
   Newspaper,
   Sparkles,
   type LucideIcon,
@@ -31,6 +32,7 @@ export const ADMIN_NAV: { href: string; label: string; icon: LucideIcon; group: 
   { href: "/admin/posts", label: "콩밭 글", icon: FileText, group: "콘텐츠" },
   { href: "/admin/comments", label: "댓글", icon: MessageSquare, group: "콘텐츠" },
   { href: "/admin/reviews", label: "필기 후기", icon: ClipboardList, group: "콘텐츠" },
+  { href: "/admin/talk", label: "실시간 톡", icon: MessagesSquare, group: "콘텐츠" },
   { href: "/admin/bans", label: "차단 목록", icon: Ban, group: "콘텐츠" },
   { href: "/admin/data", label: "일정 데이터 점검", icon: Database, group: "데이터" },
 ];

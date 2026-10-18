@@ -295,6 +295,8 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: "briefing_issues", column: "extras", ddl: "ALTER TABLE briefing_issues ADD COLUMN extras TEXT NOT NULL DEFAULT '{}'" },
   // 블로그 글 강조 표시(인기·NEW·추천·필독) — 운영자가 고름, 2026-10 추가
   { table: "articles", column: "badge", ddl: "ALTER TABLE articles ADD COLUMN badge TEXT NOT NULL DEFAULT ''" },
+  // 실시간 톡 운영자 글 표시 — 2026-10 추가
+  { table: "exam_talk", column: "is_admin", ddl: "ALTER TABLE exam_talk ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0" },
   // 의견 보내기 첨부(사진·파일) — 2026-10 추가
   { table: "feedback", column: "attachments", ddl: "ALTER TABLE feedback ADD COLUMN attachments TEXT NOT NULL DEFAULT '[]'" },
   // 브리핑 썸네일 설정(만화 변장·말풍선·논술 주제·올린 그림·사이트 표지) — 2026-10 추가
