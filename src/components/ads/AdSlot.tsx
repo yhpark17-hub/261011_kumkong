@@ -42,18 +42,8 @@ export function AdSlot({ slot, variant, className = "" }: Props) {
     }
   }, [enabled]);
 
-  if (!enabled) {
-    if (process.env.NODE_ENV === "production") return null;
-    return (
-      <div
-        className={`flex flex-col items-center justify-center rounded-md border border-dashed border-hairline-input bg-canvas-soft text-center text-ink-mute ${v.minH} ${className}`}
-        aria-hidden
-      >
-        <span className="type-micro-cap">AD</span>
-        <span className="mt-1 type-micro">광고 영역 · {v.label}</span>
-      </div>
-    );
-  }
+  // 광고가 아직 꺼져 있으면(퍼블리셔 ID·슬롯 없음) 자리 표시도 그리지 않아요
+  if (!enabled) return null;
 
   return (
     <div className={className}>

@@ -183,114 +183,64 @@
 
 @utility type-display-xxl {
   font-size: 56px;
-  font-weight: 300;
+  font-weight: 700;
   line-height: 1.03;
   letter-spacing: -1.4px;
-  /* 휴대폰: DESIGN-MOBILE.md */
-  @media (width < 48rem) {
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
 }
 @utility type-display-xl {
   font-size: 48px;
-  font-weight: 300;
+  font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.96px;
-  /* 휴대폰: DESIGN-MOBILE.md */
-  @media (width < 48rem) {
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
 }
 @utility type-display-lg {
   font-size: 32px;
-  font-weight: 300;
+  font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.64px;
-  /* 휴대폰: DESIGN-MOBILE.md */
-  @media (width < 48rem) {
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
 }
 @utility type-display-md {
   font-size: 26px;
-  font-weight: 300;
+  font-weight: 700;
   line-height: 1.12;
   letter-spacing: -0.26px;
-  /* 휴대폰: DESIGN-MOBILE.md */
-  @media (width < 48rem) {
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
 }
 @utility type-heading-lg {
   font-size: 22px;
-  font-weight: 300;
-  line-height: 1.1;
-  letter-spacing: -0.22px;
-  /* 휴대폰: DESIGN-MOBILE.md */
-  @media (width < 48rem) {
-    font-weight: 700;
-    line-height: 1.3;
-    letter-spacing: -0.02em;
-  }
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
 }
 @utility type-heading-md {
   font-size: 20px;
-  font-weight: 300;
+  font-weight: 700;
   line-height: 1.4;
-  letter-spacing: -0.2px;
-  /* 휴대폰: DESIGN-MOBILE.md */
-  @media (width < 48rem) {
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }
+  letter-spacing: -0.01em;
 }
 @utility type-heading-sm {
   font-size: 18px;
-  font-weight: 300;
+  font-weight: 700;
   line-height: 1.4;
   letter-spacing: 0;
-  /* 휴대폰: DESIGN-MOBILE.md */
-  @media (width < 48rem) {
-    font-weight: 700;
-  }
 }
 @utility type-body-lg {
-  font-size: 16px;
-  font-weight: 300;
-  line-height: 1.4;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.65;
   letter-spacing: 0;
-  /* 휴대폰: DESIGN-MOBILE.md */
-  @media (width < 48rem) {
-    font-size: 17px;
-    font-weight: 400;
-    line-height: 1.65;
-  }
 }
 @utility type-body-md {
   font-size: 15px;
-  font-weight: 300;
-  line-height: 1.4;
+  font-weight: 400;
+  line-height: 1.5;
   letter-spacing: 0;
-  /* 휴대폰: DESIGN-MOBILE.md */
-  @media (width < 48rem) {
-    font-weight: 400;
-    line-height: 1.5;
-  }
 }
 @utility type-body-tabular {
   font-size: 14px;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.4;
   letter-spacing: -0.42px;
   font-feature-settings: "ss01", "tnum";
-  /* 휴대폰: DESIGN-MOBILE.md */
-  @media (width < 48rem) {
-    font-weight: 400;
-  }
 }
 @utility type-button-md {
   font-size: 16px;
@@ -313,13 +263,9 @@
 }
 @utility type-micro {
   font-size: 11px;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.4;
   letter-spacing: 0;
-  /* 휴대폰: DESIGN-MOBILE.md */
-  @media (width < 48rem) {
-    font-weight: 400;
-  }
 }
 @utility type-micro-cap {
   font-size: 10px;
@@ -483,22 +429,17 @@
     min-width: 0;
   }
 
-  /* body: body-md(15px/300/1.4) + ss01 전역 — 휴대폰은 보통 굵기(400) */
+  /* body: 15px/400(보통 굵기) + ss01 전역 — 2026-10-18 얇은 글씨(300)에서 바꿈, DESIGN-MOBILE.md */
   body {
     background: var(--canvas);
     color: var(--ink);
     font-family: var(--font-sans);
     font-size: 15px;
-    font-weight: 300;
+    font-weight: 400;
     line-height: 1.4;
     font-feature-settings: "ss01";
     word-break: keep-all;
     overflow-wrap: anywhere;
-  }
-  @media (width < 48rem) {
-    body {
-      font-weight: 400;
-    }
   }
 
   :focus-visible {

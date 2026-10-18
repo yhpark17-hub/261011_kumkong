@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { DbSection } from "@/components/db/DbSection";
 import { CommunityStrip, CommunityStripSkeleton, RecentExamsPanel, RecentExamsPanelSkeleton } from "@/components/home/CommunityStrip";
-import { BlogStrip, BriefingStrip, PopularBriefing, StripSkeleton, TodayQuiz } from "@/components/home/MagazineStrip";
+import { BlogStrip, BriefingStrip, PopularBriefing, StripSkeleton } from "@/components/home/MagazineStrip";
 import { NewPostingsTicker, NewPostingsTickerSkeleton } from "@/components/home/NewPostingsTicker";
 import { QuickMenu } from "@/components/home/QuickMenu";
 import { WeeklySchedule, WeeklyScheduleSkeleton } from "@/components/home/WeeklySchedule";
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 /**
  * 홈 — 금콩의 섹션 입구가 모인 첫 화면 (전체 달력은 /calendar)
- * 휴대폰: 바로가기 → 이번 주 일정 → 브리핑 → 필기 체감 난이도 → 오늘의 퀴즈 → 많이 본 브리핑 → 블로그 → 콩밭
+ * 휴대폰: 바로가기 → 이번 주 일정 → 필기 후기 → 금콩 브리핑 → 많이 본 브리핑 기사 → 블로그 → 콩밭
  * PC: 바로가기는 위 메뉴로 충분해서 숨기고, 두 칸씩 높이를 맞춰 배치
  */
 export default function Home() {
@@ -42,45 +42,36 @@ export default function Home() {
           <WeeklySchedule />
         </Suspense>
 
-        {/* 늘 내용이 차 있는 두 칸끼리 (높이가 맞음) */}
+        {/* 이번 주 일정 바로 다음: 필기 후기(몇 명이 남겼는지) → 금콩 브리핑 */}
         <DbSection silent>
           <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
-            <Suspense fallback={<StripSkeleton />}>
-              <BriefingStrip />
-            </Suspense>
             <Suspense fallback={<RecentExamsPanelSkeleton />}>
               <RecentExamsPanel limit={6} large />
             </Suspense>
+            <Suspense fallback={<StripSkeleton />}>
+              <BriefingStrip />
+            </Suspense>
           </div>
         </DbSection>
 
-        {/* 매일 들어올 이유: 오늘의 퀴즈 한 문제 + 많이 본 브리핑 (DESIGN-MOBILE.md 6) */}
         <DbSection silent>
           <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
             <Suspense fallback={<StripSkeleton />}>
-              <TodayQuiz />
+              <PopularBriefing />
             </Suspense>
             <Suspense fallback={<StripSkeleton />}>
-              <PopularBriefing />
+              <BlogStrip />
             </Suspense>
           </div>
         </DbSection>
 
-        {/* 글 수가 들쭉날쭉한 두 칸 — 아래에 '전체 보기·글쓰기' 줄을 붙여 빈 칸처럼 보이지 않게 */}
-        <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
-          <DbSection silent>
-            <Suspense fallback={<StripSkeleton />}>
-              <BlogStrip />
+        <section aria-label="콩밭 새 글">
+          <DbSection>
+            <Suspense fallback={<CommunityStripSkeleton />}>
+              <CommunityStrip limit={5} />
             </Suspense>
           </DbSection>
-          <section aria-label="콩밭 새 글" className="min-w-0">
-            <DbSection>
-              <Suspense fallback={<CommunityStripSkeleton />}>
-                <CommunityStrip limit={5} />
-              </Suspense>
-            </DbSection>
-          </section>
-        </div>
+        </section>
       </div>
     </>
   );

@@ -3,13 +3,12 @@
 import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { buildEvents } from "@/lib/catalog-client";
-import { addDays, formatDayHeading, shiftMonth, ymOf, type YearMonth } from "@/lib/date";
+import { addDays, shiftMonth, ymOf, type YearMonth } from "@/lib/date";
 import { useFavorites, useTodayKey } from "@/lib/hooks";
 import { AD_SLOTS } from "@/lib/site";
 import type { Catalog } from "@/lib/types";
 import { AdSlot } from "../ads/AdSlot";
 import { AgendaList, DayModal } from "./AgendaList";
-import { EventRow } from "./EventRow";
 import { DEFAULT_FILTERS, applyFilters, groupByDay, type Filters } from "./filters";
 import { MonthGrid } from "./MonthGrid";
 import { Sidebar } from "./Sidebar";
@@ -92,20 +91,6 @@ export function HomeDashboard({ catalog, afterStatus }: { catalog: Catalog; afte
                 onOpenDay={setDayModal}
                 onOpenCompany={setOpenCompany}
               />
-
-              {/* 모바일: 선택한 날짜의 일정 */}
-              {activeDay && (
-                <div className="card p-2 shadow-level-1 md:hidden">
-                  <h3 className="px-3 pt-2 pb-1 type-heading-sm text-ink">{formatDayHeading(activeDay)}</h3>
-                  {(byDay.get(activeDay) ?? []).length ? (
-                    byDay.get(activeDay)!.map((ev) => (
-                      <EventRow key={ev.id} ev={ev} onOpen={setOpenCompany} />
-                    ))
-                  ) : (
-                    <p className="px-3 pt-1 pb-3 text-ink-mute">이 날은 일정이 없어요.</p>
-                  )}
-                </div>
-              )}
             </>
           ) : view === "day" ? (
             activeDay && (

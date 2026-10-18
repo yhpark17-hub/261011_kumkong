@@ -6,7 +6,6 @@ import { ArticleRow } from "@/components/magazine/parts";
 import { formatDayHeading } from "@/lib/date";
 import { BLOG_CATEGORIES, SECTION_INFO } from "@/lib/magazine-meta";
 import { EDITION_LABEL, EDITION_SLOT, NEWS_SECTION_INFO, itemHref, letterHref, type BriefingIssue, type NewsItem } from "@/lib/news-meta";
-import { BriefingQuiz } from "@/components/magazine/BriefingQuiz";
 import { arrangeLetter, issueItems, latestIssue } from "@/lib/server/briefing";
 import { listArticles } from "@/lib/server/magazine";
 import { popularNews } from "@/lib/server/news";
@@ -122,22 +121,6 @@ export async function BlogStrip() {
         </div>
       </div>
     </section>
-  );
-}
-
-/** 홈: 오늘의 퀴즈 — 최신 아침판 퀴즈 첫 문제 (토스피드 '오늘의 퀴즈' 참고, DESIGN-MOBILE.md) */
-export async function TodayQuiz() {
-  await connection();
-  const issue = (await latestIssue("morning")) ?? (await latestIssue("noon"));
-  if (!issue || !issue.quiz.length) return null;
-  const rest = issue.quiz.length - 1;
-  return (
-    <BriefingQuiz
-      quiz={issue.quiz.slice(0, 1)}
-      title="오늘의 퀴즈"
-      subtitle={`${formatDayHeading(issue.date)} ${EDITION_LABEL[issue.edition]}에서 한 문제`}
-      more={{ href: `${letterHref(issue.date, issue.edition)}#${issue.edition === "noon" ? "noon-quiz" : "briefing-quiz"}`, label: rest > 0 ? `브리핑 읽고 나머지 ${rest}문제도 풀기` : "오늘 브리핑 읽으러 가기" }}
-    />
   );
 }
 
