@@ -35,7 +35,9 @@ export async function GET(req: Request, ctx: RouteContext<"/magazine/[id]/thumb"
       tags: q.has("tags") ? (q.get("tags") ?? "").split(",").map((t) => t.trim()).filter(Boolean) : a.tags,
       category: isMagazineCategory(category) ? category : a.category,
     };
-    const thumb = parseArticleThumb(JSON.stringify({ scene: q.get("scene"), company: q.get("company"), kicker: q.get("kicker"), headline: q.get("headline"), sub: q.get("sub") }));
+    const thumb = parseArticleThumb(
+      JSON.stringify({ scene: q.get("scene"), company: q.get("company"), kicker: q.get("kicker"), headline: q.get("headline"), sub: q.get("sub"), layout: q.get("layout"), tone: q.get("tone") }),
+    );
     return articleOgImage(draft, { thumb, headers, scale });
   }
   return articleOgImage(a, { headers, scale });

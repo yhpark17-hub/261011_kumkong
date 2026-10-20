@@ -2,11 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { ARTICLE_SCENES, ARTICLE_THUMB_LIMITS, summaryLines, type ArticleSceneKey } from "@/lib/magazine-meta";
+import {
+  ARTICLE_LAYOUTS,
+  ARTICLE_SCENES,
+  ARTICLE_THUMB_LIMITS,
+  ARTICLE_TONES,
+  summaryLines,
+  type ArticleLayout,
+  type ArticleSceneKey,
+  type ArticleTone,
+} from "@/lib/magazine-meta";
 import { captionFit, headlineFit } from "@/lib/og-text";
 
 /** 자동이면 무엇인지 (저장된 글 기준으로 서버가 계산) */
 export interface ThumbAutoInfo {
+  layout: ArticleLayout;
+  tone: ArticleTone;
   scene: ArticleSceneKey;
   company: string;
   companyName: string;
@@ -19,7 +30,12 @@ export interface ThumbValues {
   thumbKicker: string;
   thumbHeadline: string;
   thumbSub: string;
+  thumbLayout: ArticleLayout | "";
+  thumbTone: ArticleTone | "";
 }
+
+const layoutLabel = (k: ArticleLayout) => ARTICLE_LAYOUTS.find((s) => s.key === k)?.label.split(" — ")[0] ?? k;
+const toneLabel = (k: ArticleTone) => ARTICLE_TONES.find((s) => s.key === k)?.label ?? k;
 
 const sceneLabel = (k: ArticleSceneKey) => ARTICLE_SCENES.find((s) => s.key === k)?.label ?? k;
 
@@ -70,6 +86,8 @@ export function ArticleThumbFields({
     kicker: v.thumbKicker,
     headline: v.thumbHeadline,
     sub: v.thumbSub,
+    layout: v.thumbLayout,
+    tone: v.thumbTone,
     title: draft.title,
     summary: draft.summary,
     tags: draft.tags,
@@ -83,7 +101,7 @@ export function ArticleThumbFields({
   const src = id ? `/magazine/${id}/thumb?${q}` : null;
   const [loadedSrc, setLoadedSrc] = useState(src);
 
-  const head = headlineFit(v.thumbHeadline || autoHeadline);
+  const head = headlineFit((v.thumbHeadline || autoHeadline).replace(/\*/g, ""));
   const sub = captionFit(v.thumbSub || autoSub);
 
   return (
@@ -113,6 +131,28 @@ export function ArticleThumbFields({
       </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-1 block type-caption text-ink-secondary">배치</span>
+          <select name="thumbLayout" value={v.thumbLayout} onChange={(e) => onChange("thumbLayout", e.target.value as ThumbValues["thumbLayout"])} className="input w-full">
+            <option value="">자동{auto ? ` (${layoutLabel(auto.layout)})` : ""}</option>
+            {ARTICLE_LAYOUTS.map((s) => (
+              <option key={s.key} value={s.key}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="mb-1 block type-caption text-ink-secondary">색 분위기 (기관 건물 그림)</span>
+          <select name="thumbTone" value={v.thumbTone} onChange={(e) => onChange("thumbTone", e.target.value as ThumbValues["thumbTone"])} className="input w-full">
+            <option value="">자동{auto ? ` (${toneLabel(auto.tone)})` : ""}</option>
+            {ARTICLE_TONES.map((s) => (
+              <option key={s.key} value={s.key}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="block">
           <span className="mb-1 block type-caption text-ink-secondary">그림</span>
           <select name="thumbScene" value={v.thumbScene} onChange={(e) => onChange("thumbScene", e.target.value as ThumbValues["thumbScene"])} className="input w-full">
@@ -147,6 +187,7 @@ export function ArticleThumbFields({
           </span>
           <input name="thumbHeadline" value={v.thumbHeadline} onChange={(e) => onChange("thumbHeadline", e.target.value)} maxLength={ARTICLE_THUMB_LIMITS.headline} className="input w-full" placeholder={`자동: ${autoHeadline || "글 제목"}`} />
           <FitNote fit={head} what="제목이" />
+          <p className="mt-0.5 type-micro text-ink-mute">*200조*처럼 별표로 감싼 말은 노란색으로 크게 보여요(큰 글씨형). 별표가 없으면 제목 속 숫자를 강조해요.</p>
         </label>
         <label className="block sm:col-span-2">
           <span className="mb-1 flex justify-between type-caption text-ink-secondary">

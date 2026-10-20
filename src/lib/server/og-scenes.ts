@@ -28,6 +28,11 @@ export class Defs {
     );
     return `url(#${id})`;
   }
+  /** 잘라 보이기 (안쪽 도형만 보이게) */
+  clip(id: string, shape: string): string {
+    this.items.push(`<clipPath id="${id}">${shape}</clipPath>`);
+    return `url(#${id})`;
+  }
   blur(id: string, sd: number): string {
     this.items.push(`<filter id="${id}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${sd}"/></filter>`);
     return `url(#${id})`;

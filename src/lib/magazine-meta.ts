@@ -181,6 +181,7 @@ export const articleHref = (id: number) => `/magazine/${id}`;
 /** 썸네일 그림 (기관 글이면 그 기관 본사 건물 + 로고 간판) */
 export const ARTICLE_SCENES = [
   { key: "company", label: "기관 본사 건물 + 로고" },
+  { key: "fund", label: "돈의 흐름 (펀드·기금 통)" },
   { key: "exam", label: "필기 시험지 · 시계" },
   { key: "interview", label: "면접장" },
   { key: "knowledge", label: "금융 지식 (책 · 차트)" },
@@ -191,6 +192,23 @@ export const ARTICLE_SCENES = [
 export type ArticleSceneKey = (typeof ARTICLE_SCENES)[number]["key"];
 
 export const isArticleScene = (v: unknown): v is ArticleSceneKey => typeof v === "string" && ARTICLE_SCENES.some((x) => x.key === v);
+
+/** 썸네일 배치 — 글마다 모양이 달라 보이게 (비우면 글 번호에 따라 번갈아) */
+export const ARTICLE_LAYOUTS = [
+  { key: "card", label: "카드형 — 그림 + 제목 카드" },
+  { key: "bold", label: "큰 글씨형 — 유튜브 썸네일처럼 숫자·말 강조" },
+] as const;
+export type ArticleLayout = (typeof ARTICLE_LAYOUTS)[number]["key"];
+const isArticleLayout = (v: unknown): v is ArticleLayout => typeof v === "string" && ARTICLE_LAYOUTS.some((x) => x.key === v);
+
+/** 기관 건물 그림의 색 분위기 (비우면 글 번호에 따라 낮·노을·밤) */
+export const ARTICLE_TONES = [
+  { key: "day", label: "낮" },
+  { key: "dusk", label: "노을" },
+  { key: "night", label: "밤" },
+] as const;
+export type ArticleTone = (typeof ARTICLE_TONES)[number]["key"];
+const isArticleTone = (v: unknown): v is ArticleTone => typeof v === "string" && ARTICLE_TONES.some((x) => x.key === v);
 
 export interface ArticleThumb {
   /** '' = 자동 (기관이 나온 글이면 기관 건물, 아니면 카테고리 그림) */
@@ -203,9 +221,13 @@ export interface ArticleThumb {
   headline: string;
   /** 제목 아래 한 줄 ('' = 제목의 '—' 뒤 또는 요약 첫 줄) */
   sub: string;
+  /** 배치 ('' = 자동) */
+  layout: ArticleLayout | "";
+  /** 기관 건물 색 분위기 ('' = 자동) */
+  tone: ArticleTone | "";
 }
 
-export const EMPTY_ARTICLE_THUMB: ArticleThumb = { scene: "", company: "", kicker: "", headline: "", sub: "" };
+export const EMPTY_ARTICLE_THUMB: ArticleThumb = { scene: "", company: "", kicker: "", headline: "", sub: "", layout: "", tone: "" };
 
 export const ARTICLE_THUMB_LIMITS = { kicker: 16, headline: 60, sub: 60 } as const;
 
@@ -223,6 +245,8 @@ export function parseArticleThumb(raw: unknown): ArticleThumb {
     kicker: text(o.kicker, ARTICLE_THUMB_LIMITS.kicker),
     headline: text(o.headline, ARTICLE_THUMB_LIMITS.headline),
     sub: text(o.sub, ARTICLE_THUMB_LIMITS.sub),
+    layout: isArticleLayout(o.layout) ? o.layout : "",
+    tone: isArticleTone(o.tone) ? o.tone : "",
   };
 }
 

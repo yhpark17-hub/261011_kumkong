@@ -1,5 +1,5 @@
 import "server-only";
-import type { ArticleSceneKey } from "@/lib/magazine-meta";
+import type { ArticleSceneKey, ArticleTone } from "@/lib/magazine-meta";
 import { Defs, SCENE_H, SCENE_W, arrowBadge, bg, blob, coin, shadow } from "./og-scenes";
 
 /**
@@ -14,8 +14,11 @@ export type ScenePropKey = "exam" | "interview" | "doc";
 /** 기관 간판 자리 (그림 좌표) — article-og 가 이 자리에 로고·이름을 얹어요 */
 export const SIGN = { x: 806, y: 92, w: 200, h: 64 } as const;
 
-const tree = (d: Defs, x: number, base: number, r: number, id: string) => {
-  const leaf = d.rad(id, [[0, "#8be8b0"], [0.7, "#3fb574"], [1, "#2a8a55"]], 0.35, 0.3, 0.8);
+/** 돈의 흐름 장면의 통 이름표 자리 (로고 + 기금 이름) */
+export const FUND_BADGE = { x: 804, y: 236, w: 220, h: 58 } as const;
+
+const tree = (d: Defs, x: number, base: number, r: number, id: string, dark = false) => {
+  const leaf = dark ? d.rad(id, [[0, "#4fa57f"], [0.7, "#2b6f52"], [1, "#1d4f3b"]], 0.35, 0.3, 0.8) : d.rad(id, [[0, "#8be8b0"], [0.7, "#3fb574"], [1, "#2a8a55"]], 0.35, 0.3, 0.8);
   return (
     `<rect x="${x - 5}" y="${base - r * 1.2}" width="10" height="${r * 1.2}" rx="4" fill="#7a5b3a"/>` +
     `<circle cx="${x - r * 0.45}" cy="${base - r * 1.45}" r="${r * 0.78}" fill="${leaf}"/>` +
@@ -123,17 +126,80 @@ function chartCard(d: Defs, x: number, y: number, w: number, h: number, id: stri
 /* 기관 본사 건물 + 간판 자리                                              */
 /* ------------------------------------------------------------------ */
 
-function company(prop: ScenePropKey): string {
+/** 기관 건물 장면의 색 분위기 — 같은 기관 글이 여러 편이어도 썸네일이 달라 보이게 */
+const TONES: Record<
+  ArticleTone,
+  {
+    sky: [number, string][];
+    glowA: string;
+    glowB: string;
+    cloud: number;
+    front: [string, string, string];
+    side: [string, string];
+    band: string;
+    back: [string, string];
+    backWin: [string, number];
+    ground: [string, string];
+    lobby: [string, string];
+    lit: boolean;
+  }
+> = {
+  day: {
+    sky: [[0, "#c6d6ff"], [0.6, "#e6edff"], [1, "#f7f9ff"]],
+    glowA: "#a9c1ff",
+    glowB: "#d8cdff",
+    cloud: 0.8,
+    front: ["#6f90ff", "#4565e2", "#2b3b9c"],
+    side: ["#3a4cab", "#1c2569"],
+    band: "#8ea8ff",
+    back: ["#d3ddf9", "#b4c2ec"],
+    backWin: ["#ffffff", 0.8],
+    ground: ["#e4e9f8", "#cdd6ef"],
+    lobby: ["#cfeaff", "#86bdf2"],
+    lit: false,
+  },
+  dusk: {
+    sky: [[0, "#8f7bff"], [0.45, "#ff9fb0"], [1, "#ffd3a1"]],
+    glowA: "#ffe08a",
+    glowB: "#ff9ec4",
+    cloud: 0.55,
+    front: ["#7d6bff", "#5a4bd6", "#352a8f"],
+    side: ["#3d2f97", "#221a5e"],
+    band: "#a99bff",
+    back: ["#d9b3e6", "#b98fd6"],
+    backWin: ["#fff2c4", 0.85],
+    ground: ["#f3cfd6", "#dcaec9"],
+    lobby: ["#ffe2b8", "#ffb36b"],
+    lit: false,
+  },
+  night: {
+    sky: [[0, "#0b1033"], [0.6, "#1a2160"], [1, "#2a2f7a"]],
+    glowA: "#5b6cff",
+    glowB: "#7b66ff",
+    cloud: 0.1,
+    front: ["#3a4cb8", "#26348c", "#151d5c"],
+    side: ["#161c50", "#0b1033"],
+    band: "#5a6be0",
+    back: ["#272e70", "#1c225a"],
+    backWin: ["#ffd86b", 0.85],
+    ground: ["#1a1f52", "#10143a"],
+    lobby: ["#ffe7a3", "#ffbf47"],
+    lit: true,
+  },
+};
+
+function company(prop: ScenePropKey, tone: ArticleTone = "day"): string {
+  const t = TONES[tone];
   const d = new Defs();
-  const sky = d.lin("sky", [[0, "#c6d6ff"], [0.6, "#e6edff"], [1, "#f7f9ff"]]);
+  const sky = d.lin("sky", t.sky);
   const soft = d.blur("soft", 60);
   const sh = d.blur("sh", 14);
-  const front = d.lin("tf", [[0, "#6f90ff"], [0.5, "#4565e2"], [1, "#2b3b9c"]]);
-  const side = d.lin("ts", [[0, "#3a4cab"], [1, "#1c2569"]]);
+  const front = d.lin("tf", [[0, t.front[0]], [0.5, t.front[1]], [1, t.front[2]]]);
+  const side = d.lin("ts", [[0, t.side[0]], [1, t.side[1]]]);
   const glass = d.lin("gl", [[0, "#ffffff", 0.34], [1, "#ffffff", 0]], 0, 0, 1, 1);
-  const back = d.lin("bk", [[0, "#d3ddf9"], [1, "#b4c2ec"]]);
-  const ground = d.lin("gd", [[0, "#e4e9f8"], [1, "#cdd6ef"]]);
-  const lobby = d.lin("lb", [[0, "#cfeaff"], [1, "#86bdf2"]]);
+  const back = d.lin("bk", [[0, t.back[0]], [1, t.back[1]]]);
+  const ground = d.lin("gd", [[0, t.ground[0]], [1, t.ground[1]]]);
+  const lobby = d.lin("lb", [[0, t.lobby[0]], [1, t.lobby[1]]]);
 
   const X0 = 800;
   const X1 = 1012;
@@ -145,13 +211,44 @@ function company(prop: ScenePropKey): string {
     grid += `<path d="M${X1} ${y + (y - TOP) * 0.03}L1062 ${y + 14 + (y - TOP) * 0.03}" stroke="#ffffff" stroke-opacity=".12" stroke-width="2"/>`;
   }
   for (const x of [842, 884, 926, 970]) grid += `<path d="M${x} 176V460" stroke="#ffffff" stroke-opacity=".18" stroke-width="2"/>`;
-  // 뒤 건물 창 점
+  // 밤: 불 켜진 창 몇 개
+  let lit = "";
+  if (t.lit) {
+    const xs = [800, 842, 884, 926, 970, 1012];
+    for (let r = 0; r < 11; r++)
+      for (let c = 0; c < 5; c++) {
+        if ((r * 7 + c * 3) % 5 >= 2) continue;
+        const y = 182 + r * 24;
+        lit += `<rect x="${xs[c] + 4}" y="${y + 4}" width="${xs[c + 1] - xs[c] - 8}" height="16" rx="2" fill="#ffd86b" opacity=".8"/>`;
+      }
+  }
+  // 뒤 건물 창 점 (밤에는 띄엄띄엄 불이 켜져요)
   let backWin = "";
   for (let r = 0; r < 9; r++)
     for (let c = 0; c < 3; c++) {
-      backWin += `<rect x="${704 + c * 30}" y="${262 + r * 30}" width="16" height="12" rx="3" fill="#ffffff" opacity=".8"/>`;
-      backWin += `<rect x="${1088 + c * 28}" y="${214 + r * 34}" width="14" height="12" rx="3" fill="#ffffff" opacity=".75"/>`;
+      const on = !t.lit || (r + c * 2) % 3 !== 0;
+      if (!on) continue;
+      backWin += `<rect x="${704 + c * 30}" y="${262 + r * 30}" width="16" height="12" rx="3" fill="${t.backWin[0]}" opacity="${t.backWin[1]}"/>`;
+      backWin += `<rect x="${1088 + c * 28}" y="${214 + r * 34}" width="14" height="12" rx="3" fill="${t.backWin[0]}" opacity="${t.backWin[1] - 0.05}"/>`;
     }
+  // 하늘 장식: 노을 해 · 밤 달과 별
+  const skyDeco =
+    tone === "dusk"
+      ? `<circle cx="1110" cy="150" r="44" fill="#ffe08a" opacity=".95"/>`
+      : tone === "night"
+        ? `<circle cx="1120" cy="82" r="30" fill="#fff6d6"/><circle cx="1132" cy="74" r="27" fill="#141a52"/>` +
+          [
+            [660, 60, 2.4],
+            [720, 130, 1.8],
+            [610, 200, 2],
+            [1060, 40, 1.6],
+            [1170, 170, 2.2],
+            [760, 40, 1.6],
+            [690, 260, 1.4],
+          ]
+            .map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#ffffff" opacity=".85"/>`)
+            .join("")
+        : "";
 
   const props: Record<ScenePropKey, string> = {
     exam: examSheet(d, 584, 126, 146, 196, -9, "ex") + stopwatch(d, 740, 300, 50, "sw"),
@@ -162,9 +259,10 @@ function company(prop: ScenePropKey): string {
   const body =
     "" +
     bg(sky) +
-    blob(1010, 60, 210, "#a9c1ff", soft, 0.6) +
-    blob(600, 540, 200, "#d8cdff", soft, 0.28) +
-    clouds(0.8) +
+    blob(1010, 60, 210, t.glowA, soft, tone === "night" ? 0.35 : 0.6) +
+    blob(600, 540, 200, t.glowB, soft, 0.28) +
+    skyDeco +
+    clouds(t.cloud) +
     // 뒤 건물들
     `<rect x="688" y="244" width="112" height="320" rx="6" fill="${back}"/>` +
     `<rect x="1074" y="196" width="104" height="368" rx="6" fill="${back}"/>` +
@@ -176,7 +274,7 @@ function company(prop: ScenePropKey): string {
     // 본사 건물 — 앞면 · 옆면
     `<path d="M${X1} ${TOP}L1062 ${TOP + 18}V${BASE}H${X1}Z" fill="${side}"/>` +
     `<rect x="${X0}" y="${TOP}" width="${X1 - X0}" height="${BASE - TOP}" fill="${front}"/>` +
-    `<rect x="${X0}" y="${TOP}" width="${X1 - X0}" height="14" fill="#8ea8ff"/>` +
+    `<rect x="${X0}" y="${TOP}" width="${X1 - X0}" height="14" fill="${t.band}"/>` +
     `<path d="M${X1} ${TOP}L1062 ${TOP + 18}V${TOP + 32}L${X1} ${TOP + 14}Z" fill="#5b6fd0"/>` +
     // 모서리 빛 — 앞면 왼쪽·위, 앞면과 옆면 사이
     `<path d="M${X0 + 1.5} ${TOP + 14}V${BASE}" stroke="#b9c9ff" stroke-width="3"/>` +
@@ -184,6 +282,7 @@ function company(prop: ScenePropKey): string {
     // 간판 받침
     `<rect x="${SIGN.x - 8}" y="${SIGN.y - 8}" width="${SIGN.w + 16}" height="${SIGN.h + 16}" rx="20" fill="#18206a" opacity=".35"/>` +
     grid +
+    lit +
     `<path d="M${X0} 176H884L${X0} 318Z" fill="${glass}"/>` +
     `<path d="M952 176H${X1}V214L866 462H${X0 + 24}Z" fill="#ffffff" opacity=".07"/>` +
     // 1층 로비
@@ -192,9 +291,9 @@ function company(prop: ScenePropKey): string {
     [0, 1, 2, 3].map((i) => `<path d="M${X0 + 22 + (i + 1) * ((X1 - X0 - 44) / 5)} 486V${BASE}" stroke="#ffffff" stroke-opacity=".6" stroke-width="3"/>`).join("") +
     `<rect x="${(X0 + X1) / 2 - 22}" y="506" width="44" height="${BASE - 506}" fill="#ffffff" opacity=".35"/>` +
     // 나무
-    tree(d, 752, BASE + 2, 30, "t1") +
-    tree(d, 1112, BASE + 2, 34, "t2") +
-    tree(d, 1172, BASE + 6, 24, "t3") +
+    tree(d, 752, BASE + 2, 30, "t1", t.lit) +
+    tree(d, 1112, BASE + 2, 34, "t2", t.lit) +
+    tree(d, 1172, BASE + 6, 24, "t3", t.lit) +
     // 글 주제 소품 (건물 앞 왼쪽 위)
     props[prop];
   return `${d}${body}`;
@@ -420,8 +519,146 @@ function insider(): string {
 
 /* ------------------------------------------------------------------ */
 
-export function articleSceneSvg(key: ArticleSceneKey, prop: ScenePropKey = "doc"): string {
+/* ------------------------------------------------------------------ */
+/* 돈의 흐름 — 동전이 모이는 통 → 네 갈래 관 → 산업 타일 (어두운 바탕)        */
+/* ------------------------------------------------------------------ */
+
+function fund(): string {
+  const d = new Defs();
+  const sky = d.lin("sky", [[0, "#0b1040"], [1, "#1d2470"]], 0, 0, 1, 1);
+  const soft = d.blur("soft", 60);
+  const sh = d.blur("sh", 12);
+  const gold = d.lin("gd", [[0, "#ffe68a"], [0.55, "#ffc93d"], [1, "#e0a000"]]);
+  const pipe = d.lin("pp", [[0, "#ffe08a"], [1, "#f0a91a"]], 0, 0, 1, 0);
+  const lid = d.lin("ld", [[0, "#ffe08a"], [1, "#c98a00"]]);
+  const glass = d.lin("gl", [[0, "#ffffff", 0.2], [0.5, "#ffffff", 0.06], [1, "#ffffff", 0.14]], 0, 0, 1, 0);
+  const JX0 = 790;
+  const JX1 = 1038;
+  const JY0 = 170;
+  const JY1 = 420;
+  const inside = d.clip("jar", `<rect x="${JX0 + 4}" y="${JY0 + 4}" width="${JX1 - JX0 - 8}" height="${JY1 - JY0 - 8}" rx="36"/>`);
+
+  let grid = "";
+  for (let x = 0; x <= 1200; x += 60) grid += `<path d="M${x} 0V630" stroke="#ffffff" stroke-opacity=".035" stroke-width="1"/>`;
+  for (let y = 0; y <= 630; y += 60) grid += `<path d="M0 ${y}H1200" stroke="#ffffff" stroke-opacity=".035" stroke-width="1"/>`;
+
+  // 통 안 동전 더미 (아래부터 층층이)
+  let pile = "";
+  const layers: [number, number][] = [
+    [404, 9],
+    [384, 9],
+    [364, 8],
+    [344, 8],
+    [326, 7],
+    [310, 5],
+  ];
+  layers.forEach(([y, n], li) => {
+    for (let i = 0; i < n; i++) {
+      const x = JX0 + 30 + i * ((JX1 - JX0 - 60) / Math.max(1, n - 1)) + (li % 2 ? 8 : -4);
+      pile += `<ellipse cx="${x}" cy="${y + 4}" rx="24" ry="9" fill="#a86f00" opacity=".6"/><ellipse cx="${x}" cy="${y}" rx="24" ry="9" fill="${gold}"/>`;
+    }
+  });
+
+  const tiles: { cx: number; c: [string, string]; icon: (cx: number) => string }[] = [
+    {
+      cx: 716,
+      c: ["#8f7bff", "#533afd"],
+      icon: (cx) =>
+        `<rect x="${cx - 22}" y="${526}" width="44" height="44" rx="7" fill="#ffffff"/><rect x="${cx - 11}" y="${537}" width="22" height="22" rx="4" fill="#533afd"/>` +
+        [0, 1, 2].map((i) => `<path d="M${cx - 12 + i * 12} 518V526M${cx - 12 + i * 12} 570V578M${cx - 30} ${536 + i * 12}H${cx - 22}M${cx + 22} ${536 + i * 12}H${cx + 30}" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>`).join(""),
+    },
+    {
+      cx: 848,
+      c: ["#3fd0c9", "#178a95"],
+      icon: (cx) =>
+        `<path d="M${cx} 586V542" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>` +
+        [-90, 30, 150]
+          .map((deg) => {
+            const r = (deg * Math.PI) / 180;
+            return `<path d="M${cx} 542L${cx + Math.cos(r) * 32} ${542 + Math.sin(r) * 32}" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>`;
+          })
+          .join("") +
+        `<circle cx="${cx}" cy="542" r="6" fill="#ffffff"/>`,
+    },
+    {
+      cx: 980,
+      c: ["#ff8fb0", "#e8335a"],
+      icon: (cx) =>
+        // 이중 나선 — 두 가닥이 번갈아 꼬이고, 벌어진 자리에 가로대
+        [1, -1]
+          .map(
+            (k) =>
+              `<path d="M${cx - 14 * k} 516C${cx - 14 * k} 526 ${cx + 14 * k} 523 ${cx + 14 * k} 533C${cx + 14 * k} 543 ${cx - 14 * k} 540 ${cx - 14 * k} 550C${cx - 14 * k} 560 ${cx + 14 * k} 557 ${cx + 14 * k} 567C${cx + 14 * k} 577 ${cx - 14 * k} 574 ${cx - 14 * k} 584" stroke="#ffffff" stroke-width="4.5" fill="none" stroke-linecap="round" opacity="${k === 1 ? 1 : 0.8}"/>`,
+          )
+          .join("") +
+        [533, 550, 567].map((y) => `<path d="M${cx - 9} ${y}H${cx + 9}" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity=".85"/>`).join(""),
+    },
+    {
+      cx: 1112,
+      c: ["#5cf2b5", "#10a36c"],
+      icon: (cx) =>
+        `<rect x="${cx - 26}" y="530" width="46" height="36" rx="7" fill="none" stroke="#ffffff" stroke-width="4.5"/><rect x="${cx + 20}" y="541" width="7" height="14" rx="2" fill="#ffffff"/>` +
+        [0, 1, 2].map((i) => `<rect x="${cx - 19 + i * 12}" y="537" width="8" height="22" rx="2" fill="#ffffff"/>`).join(""),
+    },
+  ];
+  const tileSvg = tiles
+    .map((t, i) => {
+      const g = d.lin(`tl${i}`, [[0, t.c[0]], [1, t.c[1]]], 0, 0, 1, 1);
+      return (
+        `<rect x="${t.cx - 48 + 4}" y="${502 + 8}" width="96" height="96" rx="24" fill="#05081f" opacity=".45" filter="${sh}"/>` +
+        `<rect x="${t.cx - 48}" y="502" width="96" height="96" rx="24" fill="${g}"/>` +
+        `<rect x="${t.cx - 48}" y="502" width="96" height="96" rx="24" fill="none" stroke="#ffffff" stroke-opacity=".25" stroke-width="2"/>` +
+        t.icon(t.cx)
+      );
+    })
+    .join("");
+
+  const flowDots = [740, 790, 840, 890, 940, 990, 1040, 1090].map((x) => `<circle cx="${x}" cy="470" r="3.5" fill="#fff7d6" opacity=".9"/>`).join("");
+
+  const body =
+    "" +
+    bg(sky) +
+    grid +
+    blob(914, 300, 190, "#ffc93d", soft, 0.22) +
+    blob(1120, 80, 160, "#7b66ff", soft, 0.45) +
+    blob(420, 560, 220, "#533afd", soft, 0.35) +
+    // 떨어지는 동전
+    coin(d, 858, 74, 24, "won", "c1") +
+    coin(d, 962, 44, 19, "won", "c2") +
+    coin(d, 1010, 104, 15, "won", "c3") +
+    // 관 (통 아래 → 가로 관 → 네 갈래)
+    `<path d="M914 ${JY1 - 6}V470M716 470H1112M716 470V504M848 470V504M980 470V504M1112 470V504" stroke="#a86f00" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".6" transform="translate(0 3)"/>` +
+    `<path d="M914 ${JY1 - 6}V470M716 470H1112M716 470V504M848 470V504M980 470V504M1112 470V504" stroke="${pipe}" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/>` +
+    flowDots +
+    // 통
+    `<rect x="${JX0}" y="${JY0}" width="${JX1 - JX0}" height="${JY1 - JY0}" rx="40" fill="#ffffff" opacity=".05"/>` +
+    `<g clip-path="${inside}">${pile}</g>` +
+    `<rect x="${JX0}" y="${JY0}" width="${JX1 - JX0}" height="${JY1 - JY0}" rx="40" fill="${glass}" stroke="#ffffff" stroke-opacity=".5" stroke-width="4"/>` +
+    `<rect x="${JX0 + 18}" y="${JY0 + 26}" width="14" height="${JY1 - JY0 - 60}" rx="7" fill="#ffffff" opacity=".28"/>` +
+    `<rect x="836" y="150" width="156" height="26" rx="10" fill="#ffffff" fill-opacity=".1" stroke="#ffffff" stroke-opacity=".45" stroke-width="3"/>` +
+    `<rect x="826" y="128" width="176" height="28" rx="12" fill="${lid}"/>` +
+    `<rect x="836" y="133" width="80" height="6" rx="3" fill="#ffffff" opacity=".55"/>` +
+    tileSvg +
+    // 반짝임
+    `<path d="M1150 260l6 14 14 6-14 6-6 14-6-14-14-6 14-6z" fill="#ffd84d"/>` +
+    `<path d="M700 140l4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="#ffffff" opacity=".8"/>`;
+  return `${d}${body}`;
+}
+
+export function articleSceneSvg(key: ArticleSceneKey, prop: ScenePropKey = "doc", tone: ArticleTone = "day"): string {
   const inner =
-    key === "company" ? company(prop) : key === "exam" ? exam() : key === "interview" ? interview() : key === "starter" ? starter() : key === "insider" ? insider() : knowledge();
+    key === "company"
+      ? company(prop, tone)
+      : key === "fund"
+        ? fund()
+        : key === "exam"
+          ? exam()
+          : key === "interview"
+            ? interview()
+            : key === "starter"
+              ? starter()
+              : key === "insider"
+                ? insider()
+                : knowledge();
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${SCENE_W}" height="${SCENE_H}" viewBox="0 0 ${SCENE_W} ${SCENE_H}">${inner}</svg>`;
 }

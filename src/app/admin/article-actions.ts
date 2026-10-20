@@ -53,7 +53,15 @@ export async function saveArticle(_prev: ArticleFormState, fd: FormData): Promis
   // 썸네일 설정 (비면 자동)
   const thumb = serializeArticleThumb(
     parseArticleThumb(
-      JSON.stringify({ scene: str(fd, "thumbScene"), company: str(fd, "thumbCompany"), kicker: str(fd, "thumbKicker"), headline: str(fd, "thumbHeadline"), sub: str(fd, "thumbSub") }),
+      JSON.stringify({
+        scene: str(fd, "thumbScene"),
+        company: str(fd, "thumbCompany"),
+        kicker: str(fd, "thumbKicker"),
+        headline: str(fd, "thumbHeadline"),
+        sub: str(fd, "thumbSub"),
+        layout: str(fd, "thumbLayout"),
+        tone: str(fd, "thumbTone"),
+      }),
     ),
   );
 

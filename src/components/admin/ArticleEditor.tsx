@@ -70,6 +70,8 @@ export interface EditorInitial {
   thumbKicker: string;
   thumbHeadline: string;
   thumbSub: string;
+  thumbLayout: ThumbValues["thumbLayout"];
+  thumbTone: ThumbValues["thumbTone"];
   /** 자동이면 어떤 그림·기관인지 (새 글은 null) */
   thumbAuto: ThumbAutoInfo | null;
   /** 간판 기관 고르기 목록 */
@@ -98,6 +100,8 @@ const pick = (i: EditorInitial): Fields => ({
   thumbKicker: i.thumbKicker,
   thumbHeadline: i.thumbHeadline,
   thumbSub: i.thumbSub,
+  thumbLayout: i.thumbLayout,
+  thumbTone: i.thumbTone,
 });
 
 /** 예약 시각은 예약 발행일 때만 비교 */
@@ -122,6 +126,8 @@ const fromForm = (fd: FormData): Fields => ({
   thumbKicker: String(fd.get("thumbKicker") ?? ""),
   thumbHeadline: String(fd.get("thumbHeadline") ?? ""),
   thumbSub: String(fd.get("thumbSub") ?? ""),
+  thumbLayout: String(fd.get("thumbLayout") ?? "") as Fields["thumbLayout"],
+  thumbTone: String(fd.get("thumbTone") ?? "") as Fields["thumbTone"],
 });
 
 /* 이 브라우저에 작성 중인 내용 임시 보관 (저장 전 창을 닫아도 복구) */

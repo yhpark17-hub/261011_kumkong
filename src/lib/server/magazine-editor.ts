@@ -18,8 +18,8 @@ function tomorrowMorning(now: number): string {
 
 /** 썸네일을 비워 두면 어떤 그림·기관이 들어가는지 */
 function autoInfo(a: ArticleDetail): EditorInitial["thumbAuto"] {
-  const { scene, company, companyName, kicker } = articleThumbPlan(a, EMPTY_ARTICLE_THUMB).auto;
-  return { scene, company, companyName, kicker };
+  const { layout, tone, scene, company, companyName, kicker } = articleThumbPlan(a, EMPTY_ARTICLE_THUMB).auto;
+  return { layout, tone, scene, company, companyName, kicker };
 }
 
 export function editorFromArticle(a: ArticleDetail, now = Date.now()): EditorInitial {
@@ -45,6 +45,8 @@ export function editorFromArticle(a: ArticleDetail, now = Date.now()): EditorIni
     thumbKicker: a.thumb.kicker,
     thumbHeadline: a.thumb.headline,
     thumbSub: a.thumb.sub,
+    thumbLayout: a.thumb.layout,
+    thumbTone: a.thumb.tone,
     thumbAuto: autoInfo(a),
     companies: companyOptions(),
   };
@@ -74,6 +76,8 @@ export function editorForNew(templateKey: string | null, now = Date.now()): Edit
     thumbKicker: "",
     thumbHeadline: "",
     thumbSub: "",
+    thumbLayout: "",
+    thumbTone: "",
     thumbAuto: null,
     companies: companyOptions(),
   };

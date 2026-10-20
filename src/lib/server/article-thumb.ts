@@ -1,6 +1,15 @@
 import "server-only";
 import { getCompany } from "@/lib/data";
-import { CATEGORY_INFO, summaryLines, type ArticleSceneKey, type ArticleSummary, type ArticleThumb, type MagazineCategory } from "@/lib/magazine-meta";
+import {
+  CATEGORY_INFO,
+  summaryLines,
+  type ArticleLayout,
+  type ArticleSceneKey,
+  type ArticleSummary,
+  type ArticleThumb,
+  type ArticleTone,
+  type MagazineCategory,
+} from "@/lib/magazine-meta";
 import type { Company } from "@/lib/types";
 import { companiesInArticle } from "./article-links";
 import type { ScenePropKey } from "./article-scenes";
@@ -31,7 +40,14 @@ function splitTitle(title: string): [string, string] {
   return i < 0 ? [title.trim(), ""] : [title.slice(0, i).trim(), title.slice(i + 3).trim()];
 }
 
+/** 자동 변형 — 글 번호로 번갈아 (이웃한 글끼리 같은 모양이 되지 않게) */
+const TONE_ORDER: ArticleTone[] = ["day", "dusk", "night"];
+const autoLayout = (id: number): ArticleLayout => (id % 2 === 1 ? "bold" : "card");
+const autoTone = (id: number): ArticleTone => TONE_ORDER[((id % 3) + 3) % 3];
+
 export interface ArticleThumbPlan {
+  layout: ArticleLayout;
+  tone: ArticleTone;
   scene: ArticleSceneKey;
   prop: ScenePropKey;
   company: Company | null;
@@ -39,10 +55,10 @@ export interface ArticleThumbPlan {
   headline: string;
   sub: string;
   /** 자동이면 무엇인지 (관리자 화면 안내용) */
-  auto: { scene: ArticleSceneKey; company: string; companyName: string; kicker: string; headline: string; sub: string };
+  auto: { layout: ArticleLayout; tone: ArticleTone; scene: ArticleSceneKey; company: string; companyName: string; kicker: string; headline: string; sub: string };
 }
 
-export function articleThumbPlan(a: Pick<ArticleSummary, "title" | "summary" | "tags" | "category">, thumb: ArticleThumb): ArticleThumbPlan {
+export function articleThumbPlan(a: Pick<ArticleSummary, "id" | "title" | "summary" | "tags" | "category">, thumb: ArticleThumb): ArticleThumbPlan {
   const detected = companiesInArticle(a)[0]?.company ?? null;
   const company = (thumb.company ? getCompany(thumb.company) : undefined) ?? detected;
   const autoScene: ArticleSceneKey = detected ? "company" : CATEGORY_SCENE[a.category];
@@ -53,12 +69,14 @@ export function articleThumbPlan(a: Pick<ArticleSummary, "title" | "summary" | "
   const kickerFor = (c: Company | null) => (c ? `${c.shortName} ${label}` : label);
   const autoSub = rest || summaryLines(a.summary)[0] || "";
   return {
+    layout: thumb.layout || autoLayout(a.id),
+    tone: thumb.tone || autoTone(a.id),
     scene,
     prop: CATEGORY_PROP[a.category] ?? "doc",
     company,
     kicker: thumb.kicker || kickerFor(scene === "company" ? company : null),
     headline: thumb.headline || main,
     sub: thumb.sub || autoSub,
-    auto: { scene: autoScene, company: detected?.id ?? "", companyName: detected?.name ?? "", kicker: kickerFor(detected), headline: main, sub: autoSub },
+    auto: { layout: autoLayout(a.id), tone: autoTone(a.id), scene: autoScene, company: detected?.id ?? "", companyName: detected?.name ?? "", kicker: kickerFor(detected), headline: main, sub: autoSub },
   };
 }
