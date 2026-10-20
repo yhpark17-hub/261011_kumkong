@@ -1,5 +1,6 @@
 import "server-only";
 import type { ArticleFeatureKey } from "@/lib/article-widgets";
+import { GrowthFundGuide } from "./GrowthFundGuide";
 import { KdbWrittenGuide } from "./KdbWrittenGuide";
 import { WrittenExamGuide } from "./WrittenExamGuide";
 
@@ -13,5 +14,7 @@ export function ArticleFeature({ name, title }: { name: ArticleFeatureKey; title
       return <WrittenExamGuide title={title} />;
     case "feature:kdb-written":
       return <KdbWrittenGuide title={title} />;
+    case "feature:growth-fund":
+      return <GrowthFundGuide title={title} />;
   }
 }

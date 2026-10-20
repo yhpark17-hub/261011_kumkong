@@ -14,6 +14,7 @@ import type { ScenePropKey } from "./article-scenes";
 const CATEGORY_SCENE: Record<MagazineCategory, ArticleSceneKey> = {
   briefing: "knowledge",
   exam: "exam",
+  deepdive: "knowledge",
   knowledge: "knowledge",
   starter: "starter",
   interview: "interview",

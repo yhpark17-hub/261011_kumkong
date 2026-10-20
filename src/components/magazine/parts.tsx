@@ -4,6 +4,7 @@ import {
   BriefcaseBusiness,
   Compass,
   Landmark,
+  Lightbulb,
   MessagesSquare,
   Newspaper,
   PencilLine,
@@ -33,6 +34,7 @@ import { ReadBadge } from "./interactive";
 export const CATEGORY_ICON: Record<MagazineCategory, LucideIcon> = {
   briefing: Newspaper,
   exam: PencilLine,
+  deepdive: Lightbulb,
   knowledge: Landmark,
   starter: Compass,
   interview: MessagesSquare,

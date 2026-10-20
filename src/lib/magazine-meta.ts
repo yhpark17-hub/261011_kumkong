@@ -8,6 +8,7 @@ export const MAGAZINE_PAGE_SIZE = 12;
 export type MagazineCategory =
   | "briefing"
   | "exam"
+  | "deepdive"
   | "knowledge"
   | "starter"
   | "interview"
@@ -44,6 +45,13 @@ export const MAGAZINE_CATEGORIES: CategoryInfo[] = [
     desc: "NCS·전공·논술, 유형별 준비법과 기출 경향",
     tone: "bg-ev-final-soft text-ev-final",
     cover: "from-ev-final-soft",
+  },
+  {
+    key: "deepdive",
+    label: "논술·면접 딥다이브",
+    desc: "논술과 면접에 나올 시사 주제를 처음부터 끝까지, 쉬운 말로",
+    tone: "bg-ev-interview2-soft text-ev-interview2",
+    cover: "from-ev-interview2-soft",
   },
   {
     key: "knowledge",
