@@ -296,22 +296,27 @@
     "period": "2026 하반기",
     "status": "confirmed",
     "tracks": [
-      "일반사무(인턴·계약직, 정규직 전환 가능)",
-      "법무"
+      "법무(경력, 2년 계약직·정규직 전환 가능) 1명",
+      "일반사무(채용전환형 인턴 3개월 이내) 2명"
     ],
     "events": [
       {
+        "type": "posting",
+        "date": "2026-07-30",
+        "time": "14:00"
+      },
+      {
         "type": "doc",
         "date": "2026-08-17",
-        "note": "캐치 표기 마감일(캐치 등록일 2026-07-31). 접수 시작일·마감 시각 미확인"
+        "time": "16:00"
       }
     ],
     "essayQuestions": [],
-    "postingUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/564014",
-    "confidence": "low",
-    "updatedAt": "2026-10-13",
-    "note": "정규 신입 공채가 아닌 인턴·계약직(정규직 전환 가능) 채용. 이후 2026-09-10 등록 변호사(경력, ~9/21) 공고만 있어 신입 대상 아님. 2026 하반기 정규 신입 공채는 확인되지 않음. 공식 홈페이지(egic.co.kr)는 스크립트 렌더링으로 공고 원문 열람 불가.",
-    "sourceUrl": "https://m.catch.co.kr/NCS/RecruitInfoDetails/564014"
+    "postingUrl": "https://www.egic.co.kr/web/wcp/WCPRE01M05.html?blobNo=301021",
+    "sourceUrl": "https://www.egic.co.kr/web/wcp/WCPRE01M05.html?blobNo=301021",
+    "confidence": "high",
+    "updatedAt": "2026-10-20",
+    "note": "정규 신입 공채가 아닌 법무(경력·계약직) + 일반사무(채용전환형 인턴) 채용. 2단계 온라인 인적성검사(직무능력 언어·수리 + 성격검사, 경력 제외) — 날짜는 공고에 없음. 이후 공고는 변호사(경력, 9/7~9/21)뿐이고 2026-10-20 기준 하반기 정규 신입 공채 없음."
   },
   {
     "companyId": "fic",
