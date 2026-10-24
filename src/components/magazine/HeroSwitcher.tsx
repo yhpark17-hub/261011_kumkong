@@ -18,7 +18,8 @@ const BAR = { morning: "bg-[#ff9a4d]", noon: "bg-[#3fa36b]" } as const;
 
 /**
  * 첫 화면 대표 브리핑 — 아침판·금콩 스터디 카드를 번갈아 보여 줘요.
- * 넘기는 화살표와 판 표시 점은 썸네일 오른쪽 위 구석에 작게 모아 둬요 (휴대폰은 옆으로 밀어서도 넘겨요).
+ * 넘기는 화살표와 판 표시 점은 썸네일 바로 아래, 카드 머리줄(판 이름 배지와 같은 줄) 오른쪽에 둬요 —
+ * 썸네일은 호마다 그림·글자 자리가 달라서 그림 위 어느 구석에 둬도 가릴 수 있어요 (휴대폰은 옆으로 밀어서도 넘겨요).
  */
 export function HeroSwitcher({ slides }: { slides: HeroSlide[] }) {
   const ready = slides.map((s, i) => (s.card ? i : -1)).filter((i) => i >= 0);
@@ -45,7 +46,7 @@ export function HeroSwitcher({ slides }: { slides: HeroSlide[] }) {
   }, [running, index, ready]);
 
   const go = (d: number) => setIndex((i) => ready[(ready.indexOf(i) + d + ready.length) % ready.length]);
-  const arrow = "inline-flex h-7 w-7 items-center justify-center rounded-full text-[#fffaf0] transition-colors hover:bg-[#fffaf0]/20";
+  const arrow = "inline-flex h-6 w-6 md:h-7 md:w-7 items-center justify-center rounded-full text-[#fffaf0] transition-colors hover:bg-[#fffaf0]/20";
 
   return (
     <div
@@ -86,11 +87,11 @@ export function HeroSwitcher({ slides }: { slides: HeroSlide[] }) {
         ) : null,
       )}
 
-      {/* 썸네일(카드 위쪽 16:9) 오른쪽 위 구석에 작게 — 썸네일 왼쪽 위 이름표와 겹치지 않게 */}
+      {/* 썸네일(카드 위쪽 16:9) 바로 아래 — 카드 머리줄 오른쪽, 배지와 같은 높이에 (그림은 가리지 않게) */}
       <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[16/9]">
-        <div className="absolute top-2.5 right-2.5 flex items-center md:top-3.5 md:right-3.5">
+        <div className="absolute top-full right-4 mt-6 flex items-center md:right-5">
           {many ? (
-            <div className="pointer-events-auto flex items-center gap-0.5 rounded-full bg-brand-dark/60 p-1 shadow-level-1 backdrop-blur-sm">
+            <div className="pointer-events-auto flex items-center gap-0.5 rounded-full bg-brand-dark/85 p-0.5 shadow-level-1 md:p-1">
               <button type="button" onClick={() => go(-1)} className={arrow} aria-label="이전 판 보기">
                 <ChevronLeft className="h-4 w-4" strokeWidth={2.4} />
               </button>
@@ -124,7 +125,7 @@ export function HeroSwitcher({ slides }: { slides: HeroSlide[] }) {
           ) : (
             waiting && (
               <span
-                className="inline-flex items-center gap-1 rounded-full bg-[#fffaf0]/92 px-2 py-0.5 text-[11px] leading-4 font-semibold whitespace-nowrap text-brand-dark shadow-level-1 backdrop-blur-sm sm:px-2.5 sm:py-1 sm:type-caption"
+                className="inline-flex items-center gap-1 rounded-full bg-canvas-soft px-2 py-0.5 text-[11px] leading-4 font-semibold whitespace-nowrap text-ink-secondary ring-1 ring-hairline sm:px-2.5 sm:py-1 sm:type-caption"
                 title={`${EDITION_LABEL[waiting.edition]} · ${waiting.hint}`}
               >
                 <Clock3 className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2.2} />

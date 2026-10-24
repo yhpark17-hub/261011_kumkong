@@ -416,7 +416,8 @@ export function BriefingHeroCard({ issue }: { issue: BriefingIssue }) {
       <IssueCover issue={issue} className="aspect-[16/9] w-full" sizes="(min-width: 1024px) 720px, 100vw" />
       <span className={cn("h-1.5 w-full", EDITION_TONE[issue.edition].bar)} aria-hidden />
       <span className="flex flex-1 flex-col p-5 md:p-6">
-        <span className="flex flex-wrap items-center gap-2 type-caption">
+        {/* 오른쪽은 비워 둬요 — 첫 화면 넘기기 버튼(HeroSwitcher)이 이 줄 오른쪽에 와요 */}
+        <span className="flex flex-wrap items-center gap-2 pr-28 type-caption">
           <span className={cn("rounded-full px-2.5 py-0.5 font-semibold text-brand-dark", EDITION_TONE[issue.edition].soft)}>
             {issue.edition === "morning" ? "금콩 브리핑 · 오늘의 기사 브리핑" : "금콩 스터디 · 점심 시사 공부"}
           </span>
