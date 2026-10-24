@@ -4,7 +4,7 @@ import { formatDayHeading } from "@/lib/date";
 import { EDITION_LABEL, EDITION_SLOT, type BriefingIssue } from "@/lib/news-meta";
 import { ART_H, ART_W, layoutArtText, type ArtBrand, type ArtText, type ThumbArt } from "@/lib/thumb-art";
 import { BRAND_LOGO, C, svgUri } from "./og";
-import { expandKit } from "./thumb-kit";
+import { expandKit, kitCredits } from "./thumb-kit";
 
 /**
  * 브리핑 썸네일 '직접 그린 그림' 그리기 — 그림(svg + 금콩 부품)을 바탕에 깔고, 글자 상자들을 그 위에 놓아요.
@@ -130,6 +130,30 @@ function Brand({ issue, brand }: { issue: Pick<BriefingIssue, "date" | "edition"
   );
 }
 
+/** 원본 사진 출처 (사진 기반 인물 초상을 쓴 그림) — 아래 가장자리에 작게 */
+function Credits({ items, left }: { items: string[]; left: boolean }) {
+  if (!items.length) return null;
+  return (
+    <div
+      style={{
+        position: "absolute",
+        display: "flex",
+        bottom: 8,
+        ...(left ? { left: 10 } : { right: 10 }),
+        padding: "3px 10px",
+        borderRadius: 999,
+        background: "rgba(12,14,30,0.42)",
+        color: "rgba(255,255,255,0.92)",
+        fontSize: 14,
+        fontWeight: 700,
+        letterSpacing: -0.2,
+      }}
+    >
+      {items.join(" / ")}
+    </div>
+  );
+}
+
 export function ArtView({ issue, art }: { issue: Pick<BriefingIssue, "date" | "edition">; art: ThumbArt }) {
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", fontFamily: "Pretendard", background: "#0b1040" }}>
@@ -139,6 +163,7 @@ export function ArtView({ issue, art }: { issue: Pick<BriefingIssue, "date" | "e
         <TextBox key={i} t={t} />
       ))}
       <Brand issue={issue} brand={art.brand} />
+      <Credits items={kitCredits(art.svg)} left={art.brand.pos === "br"} />
     </div>
   );
 }

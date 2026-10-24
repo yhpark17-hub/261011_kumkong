@@ -1,9 +1,12 @@
 import "server-only";
+import { KEVIN_WARSH } from "./portraits/kevin-warsh";
+import { SHIN_HYUNSONG } from "./portraits/shin-hyunsong";
 
 /**
  * 인물 초상 부품 — 브리핑 썸네일 '직접 그린 그림'의 <kk-portrait …/>.
  * 굵은 테두리 + 한 단계 그늘의 카툰 초상 (480×560 상자, 얼굴이 크게 보이는 상반신).
- *   - who: 자주 나오는 인물은 공개 사진의 생김새(머리 모양·색, 얼굴형, 눈매, 미소)를 보고 따로 그려 둔 것
+ *   - who: 자주 나오는 인물 — 자유 이용 사진(퍼블릭 도메인·CC BY)을 바탕으로 만든 일러스트라 한눈에 알아봐요.
+ *     원본 사진의 출처 표시가 썸네일 구석에 자동으로 붙어요 (look="cartoon" 이면 손으로 그린 카툰판)
  *   - 그 밖의 인물은 hair·hc·skin·glasses·eyes·suit… 로 조합 (누군지는 이름표로 알려 줘요)
  *   - face: smile(다문 미소) · speak(말하는 중) · serious(진지) · grin(이가 보이는 미소)
  * 사진을 따라 그리지 않고, 실제 로고·문장은 넣지 않아요. 표정은 늘 정중하게.
@@ -316,8 +319,21 @@ function custom(a: A, id: string): string {
   );
 }
 
+/** 사진 기반 일러스트 (자유 이용 사진으로 만든 것 — 출처 표시 필요) */
+const PHOTO: Record<string, { svg: string; credit: string }> = {
+  "shin-hyunsong": SHIN_HYUNSONG,
+  "kevin-warsh": KEVIN_WARSH,
+};
+const usesPhoto = (a: A) => Boolean(a.who && PHOTO[a.who] && a.look !== "cartoon");
+
+/** 이 초상이 쓰면 썸네일에 붙일 원본 사진 출처 (없으면 null) */
+export function portraitCredit(a: A): string | null {
+  return usesPhoto(a) ? PHOTO[a.who].credit : null;
+}
+
 /** <kk-portrait …/> 안쪽 그림 (480×560 상자, 테두리 색·두께 공통) */
 export function portraitSvg(a: A, id: string): string {
+  if (usesPhoto(a)) return PHOTO[a.who].svg;
   const preset = a.who ? PRESETS[a.who] : undefined;
   const inner = preset ? preset(id, a.face ?? "") : custom(a, id);
   return `<g stroke="${O}" stroke-linejoin="round" stroke-linecap="round">${inner}</g>`;

@@ -2,7 +2,7 @@ import "server-only";
 import { isArtColor } from "@/lib/thumb-art";
 import { COSTUME_LOOK, kongSvg, type OgKong } from "./og";
 import { Defs, arrowBadge, coin } from "./og-scenes";
-import { portraitSvg } from "./thumb-portraits";
+import { portraitCredit, portraitSvg } from "./thumb-portraits";
 
 /**
  * 금콩 그림 부품 — 브리핑 썸네일 '직접 그린 그림'(svg) 안에 <kk-이름 속성…/> 으로 넣으면 여기서 도형으로 바꿔요.
@@ -416,14 +416,29 @@ const KIT: Record<string, (a: A, id: string) => string> = {
 
 export const KIT_NAMES = Object.keys(KIT);
 
+const kitAttrs = (attrs: string): A => {
+  const a: A = {};
+  for (const m of attrs.matchAll(/([a-z][a-z0-9-]*)="([^"]*)"/g)) a[m[1]] = m[2].replace(/&quot;/g, '"').replace(/&amp;/g, "&");
+  return a;
+};
+
+/** 그림에 쓴 부품의 원본 사진 출처들 (사진 기반 인물 초상) — 썸네일 구석에 표시 */
+export function kitCredits(svg: string): string[] {
+  const out = new Set<string>();
+  for (const m of svg.matchAll(/<kk-portrait((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*\/>/g)) {
+    const c = portraitCredit(kitAttrs(m[1]));
+    if (c) out.add(c);
+  }
+  return [...out];
+}
+
 /** 정리된 그림 속 <kk-이름 …/> 부품을 도형으로 바꿔요 (모르는 부품은 지워요) */
 export function expandKit(svg: string): string {
   let i = 0;
   return svg.replace(/<kk-([a-z]+)((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*\/>/g, (_, name: string, attrs: string) => {
     const make = KIT[name];
     if (!make) return "";
-    const a: A = {};
-    for (const m of attrs.matchAll(/([a-z][a-z0-9-]*)="([^"]*)"/g)) a[m[1]] = m[2].replace(/&quot;/g, '"').replace(/&amp;/g, "&");
+    const a = kitAttrs(attrs);
     i += 1;
     return make(a, `k${i}`);
   });

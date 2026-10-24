@@ -327,8 +327,10 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 2. **후킹 문구** — 큰 글은 6~14자, 강조 한 단어(`*별표*`)나 숫자 하나를 아주 크게(100~200). 작은 글은 사실 한 줄(24~30).
    카드에서는 작게 보여요. 작은 글은 24 이상, 글 상자는 2~4개만 둬요.
 3. **사람 뉴스**(발언·인물이 주인공)는 `kk-portrait` 로 그 사람을 크게 그리고 말풍선(`kk-bubble`)을 달아요.
-   - 따로 그려 둔 인물은 `who` 로 불러요: `shin-hyunsong`(신현송 한은 총재) · `kevin-warsh`(케빈 워시 연준 의장).
-   - 그 밖의 인물은 공개 사진 속 생김새를 떠올려 `hair`·`hc`·`glasses`·`eyes`·`skin`·`suit` 를 그 사람에 가깝게 고르고, 이름표로 누군지 알려요.
+   - 등록된 인물은 `who` 로 불러요: `shin-hyunsong`(신현송 한은 총재) · `kevin-warsh`(케빈 워시 연준 의장).
+     자유 이용 사진으로 만든 일러스트라 한눈에 알아보고, 원본 사진 출처가 그림 아래 구석에 자동으로 붙어요 (그 자리는 비워 두기).
+   - 등록되지 않은 인물은 조합형(`hair`·`hc`·`glasses`·`eyes`·`skin`·`suit`)으로 그 사람에 가깝게 고르고 이름표로 누군지 알려요.
+     사진을 직접 내려받아 쓰지 않아요 — 자주 나오는 인물이면 마지막 메시지에 "초상 등록 필요: 이름"을 남겨 운영자가 추가하게 해요 (scripts/portraits/README.md).
    - 발언은 **기사에 실린 말 그대로 따옴표째**(“ ”)만 넣어요.
    - 표정은 존중하는 것(smile·speak·grin, 꼭 필요할 때 serious)만 써요. 찡그리거나 우스꽝스럽게 만든 캐리커처는 쓰지 않아요.
    - 그 사람을 알려 주는 이름표 한 줄을 달아요 (예: `신현송 한은 총재 · 23일 국정감사`).
@@ -370,7 +372,7 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 
 | 부품 | 상자 | 속성 |
 | --- | --- | --- |
-| `portrait` 인물 초상 (카툰, 얼굴이 크게) | 480×560 | `who` shin-hyunsong·kevin-warsh (따로 그린 인물) / 또는 `hair` sweep·parted·short·bald·bob·long, `hc` 머리색, `temples` gray, `skin` light·medium·tan·deep, `eyes` narrow·almond, `glasses` none·rect·round·rim, `suit`·`shirt`·`tie`(색 또는 none) · 공통 `face` smile·speak·grin·serious, `flip` |
+| `portrait` 인물 초상 (얼굴이 크게) | 480×560 | `who` shin-hyunsong·kevin-warsh (사진 기반 일러스트, `look='cartoon'` 이면 카툰판) / 또는 `hair` sweep·parted·short·bald·bob·long, `hc` 머리색, `temples` gray, `skin` light·medium·tan·deep, `eyes` narrow·almond, `glasses` none·rect·round·rim, `suit`·`shirt`·`tie`(색 또는 none) · 공통 `face` smile·speak·grin·serious, `flip` |
 | `podium` 연단+마이크 | 360×220 | `c`, `mics` 0~4, `emblem` star·won·none |
 | `kong` 금콩 마스코트 | `size`(기본 300) | `costume` banker·reporter·trader·oil·chip·security·builder·money·shopper·president, 또는 `hold`·`outfit`·`head`·`glasses='1'`·`worried='1'`·`wave='1'` |
 | `bank` 기둥 있는 은행 건물 | 420×300 | `c`(상징색), `stone` |
