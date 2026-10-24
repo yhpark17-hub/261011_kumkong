@@ -9,7 +9,7 @@ export interface HeroSlide {
   edition: IssueEdition;
   /** 이 판의 대표 카드 (없으면 아직 안 올라온 판) */
   card: ReactNode | null;
-  /** 아직 없을 때 썸네일 위에 보일 말 (예: 금콩 스터디는 낮 12시 30분에 올라와요) */
+  /** 아직 없을 때 썸네일 구석에 보일 말 (예: 낮 12시 30분 공개 — 넓은 화면에선 앞에 판 이름이 붙어요) */
   hint?: string;
 }
 
@@ -18,7 +18,7 @@ const BAR = { morning: "bg-[#ff9a4d]", noon: "bg-[#3fa36b]" } as const;
 
 /**
  * 첫 화면 대표 브리핑 — 아침판·금콩 스터디 카드를 번갈아 보여 줘요.
- * 넘기는 화살표와 판 표시 점은 썸네일 안에 (휴대폰은 옆으로 밀어서도 넘겨요).
+ * 넘기는 화살표와 판 표시 점은 썸네일 오른쪽 위 구석에 작게 모아 둬요 (휴대폰은 옆으로 밀어서도 넘겨요).
  */
 export function HeroSwitcher({ slides }: { slides: HeroSlide[] }) {
   const ready = slides.map((s, i) => (s.card ? i : -1)).filter((i) => i >= 0);
@@ -45,8 +45,7 @@ export function HeroSwitcher({ slides }: { slides: HeroSlide[] }) {
   }, [running, index, ready]);
 
   const go = (d: number) => setIndex((i) => ready[(ready.indexOf(i) + d + ready.length) % ready.length]);
-  const arrow =
-    "pointer-events-auto inline-flex h-8 w-8 items-center justify-center rounded-full border border-brand-dark/15 bg-[#fffaf0]/90 text-brand-dark shadow-level-1 backdrop-blur-[2px] transition-transform hover:scale-105 sm:h-9 sm:w-9 md:h-10 md:w-10";
+  const arrow = "inline-flex h-7 w-7 items-center justify-center rounded-full text-[#fffaf0] transition-colors hover:bg-[#fffaf0]/20";
 
   return (
     <div
@@ -87,48 +86,54 @@ export function HeroSwitcher({ slides }: { slides: HeroSlide[] }) {
         ) : null,
       )}
 
-      {/* 썸네일(카드 위쪽 16:9) 안에 얹는 조작 — 점·화살표 */}
+      {/* 썸네일(카드 위쪽 16:9) 오른쪽 위 구석에 작게 — 썸네일 왼쪽 위 이름표와 겹치지 않게 */}
       <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[16/9]">
-        {many ? (
-          <>
-            <div className="pointer-events-auto absolute top-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-brand-dark/25 px-2 py-1.5 backdrop-blur-[2px] md:top-4">
-              {slides.map((s, i) =>
-                s.card ? (
-                  <button
-                    key={s.edition}
-                    type="button"
-                    onClick={() => setIndex(i)}
-                    aria-label={`${EDITION_LABEL[s.edition]} 보기`}
-                    aria-current={i === index}
-                    className={cn("relative h-2 overflow-hidden rounded-full transition-all", i === index ? "w-7 bg-[#fffaf0]/60" : "w-2 bg-[#fffaf0]/80 hover:bg-[#fffaf0]")}
-                  >
-                    {i === index && (
-                      <span
-                        key={`${index}-${running}`}
-                        aria-hidden
-                        className={cn("absolute inset-0 origin-left rounded-full", BAR[s.edition])}
-                        style={running ? { animation: `kk-fill ${INTERVAL}ms linear forwards` } : undefined}
-                      />
-                    )}
-                  </button>
-                ) : null,
-              )}
+        <div className="absolute top-2.5 right-2.5 flex items-center md:top-3.5 md:right-3.5">
+          {many ? (
+            <div className="pointer-events-auto flex items-center gap-0.5 rounded-full bg-brand-dark/60 p-1 shadow-level-1 backdrop-blur-sm">
+              <button type="button" onClick={() => go(-1)} className={arrow} aria-label="이전 판 보기">
+                <ChevronLeft className="h-4 w-4" strokeWidth={2.4} />
+              </button>
+              <div className="flex items-center gap-1 px-1">
+                {slides.map((s, i) =>
+                  s.card ? (
+                    <button
+                      key={s.edition}
+                      type="button"
+                      onClick={() => setIndex(i)}
+                      aria-label={`${EDITION_LABEL[s.edition]} 보기`}
+                      aria-current={i === index}
+                      className={cn("relative h-2 overflow-hidden rounded-full transition-all", i === index ? "w-6 bg-[#fffaf0]/45" : "w-2 bg-[#fffaf0]/75 hover:bg-[#fffaf0]")}
+                    >
+                      {i === index && (
+                        <span
+                          key={`${index}-${running}`}
+                          aria-hidden
+                          className={cn("absolute inset-0 origin-left rounded-full", BAR[s.edition])}
+                          style={running ? { animation: `kk-fill ${INTERVAL}ms linear forwards` } : undefined}
+                        />
+                      )}
+                    </button>
+                  ) : null,
+                )}
+              </div>
+              <button type="button" onClick={() => go(1)} className={arrow} aria-label="다음 판 보기">
+                <ChevronRight className="h-4 w-4" strokeWidth={2.4} />
+              </button>
             </div>
-            <button type="button" onClick={() => go(-1)} className={cn(arrow, "absolute top-1/2 left-2.5 -translate-y-1/2 md:left-3.5")} aria-label="이전 판 보기">
-              <ChevronLeft className="h-5 w-5" strokeWidth={2.2} />
-            </button>
-            <button type="button" onClick={() => go(1)} className={cn(arrow, "absolute top-1/2 right-2.5 -translate-y-1/2 md:right-3.5")} aria-label="다음 판 보기">
-              <ChevronRight className="h-5 w-5" strokeWidth={2.2} />
-            </button>
-          </>
-        ) : (
-          waiting && (
-            <span className="absolute top-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-[#fffaf0]/90 px-3 py-1 type-caption font-semibold whitespace-nowrap text-brand-dark shadow-level-1 md:top-4">
-              <Clock3 className="h-3.5 w-3.5" strokeWidth={2.2} />
-              {waiting.hint}
-            </span>
-          )
-        )}
+          ) : (
+            waiting && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-[#fffaf0]/92 px-2 py-0.5 text-[11px] leading-4 font-semibold whitespace-nowrap text-brand-dark shadow-level-1 backdrop-blur-sm sm:px-2.5 sm:py-1 sm:type-caption"
+                title={`${EDITION_LABEL[waiting.edition]} · ${waiting.hint}`}
+              >
+                <Clock3 className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2.2} />
+                <span className="max-sm:hidden">{EDITION_LABEL[waiting.edition]} · </span>
+                {waiting.hint}
+              </span>
+            )
+          )}
+        </div>
       </div>
     </div>
   );

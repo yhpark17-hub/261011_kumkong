@@ -3,11 +3,12 @@ import { connection } from "next/server";
 import { addDays, todayKST } from "@/lib/date";
 import { EMPTY_THUMB, isIssueEdition, isNewsSection, kindOf, parseExtras, parseQuiz, parseThumb } from "@/lib/news-meta";
 import { automationAuthorized, json, unauthorized } from "@/lib/server/automation";
-import { morningForAutomation } from "@/lib/server/briefing";
+import { autoPublishOn, morningForAutomation, publishIssue } from "@/lib/server/briefing";
 import { db, dbConfigured } from "@/lib/server/db";
 
 /**
- * 데일리 브리핑 초안 한 호 올리기 — 항상 '초안 · 자동'으로만 들어가고 운영자가 확인 후 발행합니다.
+ * 데일리 브리핑 한 호 올리기 — 자동 발행이 켜져 있으면(기본) 검사를 통과하는 대로 바로 발행돼요.
+ * 관리자 화면에서 자동 발행을 끄면 '초안 · 자동'으로 들어가고 운영자가 확인 후 발행합니다.
  *
  * 아침판 { edition: "morning", title, lede, closing?, items: [기사 6~8건], quiz: [3~4문제] }
  *   - 기사: { section: finance|economy|policy|global|public, headline?: true, title, takeaway, summary, point, sourceName, sourceUrl }
@@ -224,6 +225,15 @@ export async function POST(req: Request) {
     ],
     "write",
   );
+  const issueId = Number(res[0].lastInsertRowid);
+  // 자동 발행 — 검사를 다 통과한 호만 여기까지 와요
+  const published = (await autoPublishOn()) && (await publishIssue(issueId));
   revalidatePath("/admin/news");
-  return json({ date, edition, ok: true, issueId: Number(res[0].lastInsertRowid), items: ok.length, quiz: quiz.length, ...(warnings.length ? { warnings } : {}) });
+  if (published) {
+    revalidatePath("/magazine");
+    revalidatePath("/magazine/archive");
+    revalidatePath("/magazine/letter/[date]/[edition]", "page");
+    revalidatePath("/");
+  }
+  return json({ date, edition, ok: true, issueId, published, items: ok.length, quiz: quiz.length, ...(warnings.length ? { warnings } : {}) });
 }

@@ -12,7 +12,7 @@ import { ArchiveCallout, BriefingHeroCard, FeatureItemCard, IssueCard, NewsCateg
 import { EmptyLine, MagazineShell } from "@/components/magazine/sections";
 import { addDays, formatDayHeading, todayKST } from "@/lib/date";
 import { MAGAZINE_NAME, isBlogCategory, magazineHref } from "@/lib/magazine-meta";
-import { EDITION_LABEL, EDITION_SCHEDULE, briefingArchiveHref, isDateKey, isNewsSection, type NewsView } from "@/lib/news-meta";
+import { EDITION_SCHEDULE, briefingArchiveHref, isDateKey, isNewsSection, type NewsView } from "@/lib/news-meta";
 import { arrangeLetter, getIssue, issueItems, issuesBetween, latestIssue, listIssues, type IssueSummary } from "@/lib/server/briefing";
 import { latestInSection, newsSectionCounts, popularNews } from "@/lib/server/news";
 import { AD_SLOTS, adEnabled, pageMetadata } from "@/lib/site";
@@ -120,12 +120,12 @@ async function BriefingFront({ sp }: { sp: SP }) {
                 {
                   edition: "morning",
                   card: morningIssue ? <BriefingHeroCard issue={morningIssue} /> : null,
-                  hint: `${EDITION_LABEL.morning}은 ${EDITION_SCHEDULE[0].time}에 올라와요`,
+                  hint: `${EDITION_SCHEDULE[0].time} 공개`,
                 },
                 {
                   edition: "noon",
                   card: noonIssue ? <BriefingHeroCard issue={noonIssue} /> : null,
-                  hint: `${EDITION_LABEL.noon}는 ${EDITION_SCHEDULE[1].time}에 올라와요`,
+                  hint: `${EDITION_SCHEDULE[1].time} 공개`,
                 },
               ]}
             />

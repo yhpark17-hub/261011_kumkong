@@ -248,3 +248,65 @@ export async function morningForAutomation(date: string): Promise<{ issue: Brief
   const [issue, items] = await Promise.all([getIssue(date, "morning", { admin: true }), issueItems(date, "morning", { admin: true })]);
   return { issue, items };
 }
+
+/* ------------------------------------------------------------------ */
+/* 발행 — 관리자 '발행' 버튼과 자동 발행이 같이 써요                          */
+/* ------------------------------------------------------------------ */
+
+/** 그 호에 실리는 기사 조건 (아침판 = 아침판 기사, 금콩 스터디 = 그날 용어·면접 질문) */
+export const ISSUE_ITEMS_WHERE = {
+  morning: "edition_date = ? AND edition = 'morning' AND section NOT IN ('term', 'question')",
+  noon: "edition_date = ? AND section IN ('term', 'question')",
+} as const;
+
+/** 판별 호수(Vol)를 날짜 순서대로 다시 매김 — 발행된 호만 1부터, 초안은 0. 지난 날짜 호를 나중에 발행해도 순서가 맞아요 */
+export async function renumberVols(edition: IssueEdition): Promise<void> {
+  const client = await db();
+  await client.batch(
+    [
+      {
+        sql: `UPDATE briefing_issues SET vol = (SELECT COUNT(*) FROM briefing_issues b WHERE b.edition = briefing_issues.edition AND b.status = 1 AND b.issue_date <= briefing_issues.issue_date)
+              WHERE edition = ? AND status = 1`,
+        args: [edition],
+      },
+      { sql: "UPDATE briefing_issues SET vol = 0 WHERE edition = ? AND status = 0", args: [edition] },
+    ],
+    "write",
+  );
+}
+
+/** 한 호 발행 — 그 호에 실린 기사 초안도 함께 공개하고, 호수를 다시 매겨요 */
+export async function publishIssue(id: number): Promise<boolean> {
+  const client = await db();
+  const row = (await client.execute({ sql: "SELECT issue_date, edition FROM briefing_issues WHERE id = ?", args: [id] })).rows[0];
+  if (!row) return false;
+  const date = String(row.issue_date);
+  const edition: IssueEdition = isIssueEdition(row.edition) ? row.edition : "morning";
+  const now = Date.now();
+  await client.batch(
+    [
+      { sql: "UPDATE briefing_issues SET status = 1, published_at = COALESCE(published_at, ?), updated_at = ? WHERE id = ?", args: [now, now, id] },
+      { sql: `UPDATE news SET status = 1, published_at = COALESCE(published_at, ?), updated_at = ? WHERE ${ISSUE_ITEMS_WHERE[edition]} AND status = 0`, args: [now, now, date] },
+    ],
+    "write",
+  );
+  await renumberVols(edition);
+  return true;
+}
+
+const AUTO_PUBLISH_KEY = "briefing:auto-publish";
+
+/** 자동 발행 — 자동 점검이 만든 브리핑(아침 6시·낮 12시 30분)을 확인 없이 바로 발행할지. 기본은 켜짐 */
+export async function autoPublishOn(): Promise<boolean> {
+  const client = await db();
+  const row = (await client.execute({ sql: "SELECT value FROM kv WHERE key = ?", args: [AUTO_PUBLISH_KEY] })).rows[0];
+  return row ? String(row.value) !== "0" : true;
+}
+
+export async function setAutoPublish(on: boolean): Promise<void> {
+  const client = await db();
+  await client.execute({
+    sql: "INSERT INTO kv (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
+    args: [AUTO_PUBLISH_KEY, on ? "1" : "0", Date.now()],
+  });
+}

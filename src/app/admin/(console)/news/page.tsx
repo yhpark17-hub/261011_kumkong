@@ -2,7 +2,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { Eye, Mail, PenLine, Star } from "lucide-react";
-import { issueAction } from "@/app/admin/issue-actions";
+import { issueAction, toggleAutoPublish } from "@/app/admin/issue-actions";
 import { newsAction } from "@/app/admin/news-actions";
 import { BulkForm, ConfirmForm, RowCheck } from "@/components/admin/ModerationForm";
 import { AdminCard, AdminPageTitle, BulkButton, EmptyRow, RowButton, StatTile, listHref, nf } from "@/components/admin/parts";
@@ -12,7 +12,7 @@ import { NewsSectionTag, newsTitle } from "@/components/magazine/news";
 import { cn } from "@/components/ui";
 import { formatDayHeading, todayKST } from "@/lib/date";
 import { EDITION_LABEL, NEWS_SECTIONS, isDateKey, isNewsSection, kindOf, letterHref, newsHref, shareImageUrl, volLabel, type NewsItem } from "@/lib/news-meta";
-import { adminListIssues, type AdminIssueRow } from "@/lib/server/briefing";
+import { adminListIssues, autoPublishOn, type AdminIssueRow } from "@/lib/server/briefing";
 import { requireAdmin } from "@/lib/server/admin";
 import { adminListNews, newsAdminCounts, type AdminNewsFilter } from "@/lib/server/news";
 
@@ -43,7 +43,7 @@ async function NewsAdmin({ sp }: { sp: SP }) {
   const q = one(sp.q).trim().slice(0, 40) || null;
   const section = isNewsSection(one(sp.c)) ? (one(sp.c) as NewsItem["section"]) : null;
   const today = todayKST();
-  const [items, counts, issues] = await Promise.all([adminListNews({ filter, date, q, section }), newsAdminCounts(today), adminListIssues(30)]);
+  const [items, counts, issues, autoOn] = await Promise.all([adminListNews({ filter, date, q, section }), newsAdminCounts(today), adminListIssues(30), autoPublishOn()]);
   const draftIssues = issues.filter((r) => r.issue.status === 0).length;
   const groups = [...new Set(items.map((n) => n.editionDate))].map((d) => ({ date: d, list: items.filter((n) => n.editionDate === d) }));
 
@@ -51,7 +51,11 @@ async function NewsAdmin({ sp }: { sp: SP }) {
     <>
       <AdminPageTitle
         title="데일리 브리핑"
-        desc="금콩 브리핑(아침판 — 기사 브리핑·퀴즈)과 금콩 스터디(점심판 — 숫자·용어·논술·면접·퀴즈)가 매일 한 호씩 나가요. 자동 점검이 초안을 만들면 미리보기로 확인하고 '발행'을 누르세요."
+        desc={
+          autoOn
+            ? "금콩 브리핑(아침 6시 — 기사 브리핑·퀴즈)과 금콩 스터디(낮 12시 30분 — 숫자·용어·논술·면접·퀴즈)가 매일 한 호씩, 자동 점검이 만들면 바로 발행돼요."
+            : "금콩 브리핑(아침판 — 기사 브리핑·퀴즈)과 금콩 스터디(점심판 — 숫자·용어·논술·면접·퀴즈)가 매일 한 호씩 나가요. 자동 점검이 초안을 만들면 미리보기로 확인하고 '발행'을 누르세요."
+        }
         aside={
           <div className="flex flex-wrap gap-2">
             <Link href="/admin/news/issue/new" className="btn btn-sm btn-primary">
@@ -65,6 +69,20 @@ async function NewsAdmin({ sp }: { sp: SP }) {
           </div>
         }
       />
+
+      <form action={toggleAutoPublish} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-hairline bg-canvas px-4 py-3">
+        <input type="hidden" name="on" value={autoOn ? "0" : "1"} />
+        <p className="flex items-center gap-2 type-body-md text-ink">
+          <span className={cn("inline-flex h-2.5 w-2.5 rounded-full", autoOn ? "bg-ev-final" : "bg-ink-mute-2")} aria-hidden />
+          <span className="font-semibold">자동 발행 {autoOn ? "켜짐" : "꺼짐"}</span>
+          <span className="type-caption text-ink-mute">
+            {autoOn ? "아침 6시 브리핑·낮 12시 30분 스터디가 확인 없이 바로 올라가요" : "자동 점검이 만든 브리핑은 초안으로 기다려요"}
+          </span>
+        </p>
+        <button type="submit" className={cn("btn btn-sm", autoOn ? "btn-secondary" : "btn-primary")}>
+          {autoOn ? "자동 발행 끄기" : "자동 발행 켜기"}
+        </button>
+      </form>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <StatTile label="발행 대기 브리핑" value={nf.format(draftIssues)} tone={draftIssues ? "alert" : "default"} href="#letters" />

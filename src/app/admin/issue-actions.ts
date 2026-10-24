@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isDateKey, isIssueEdition, parseExtras, parseQuiz, parseThumb, type IssueExtras, type QuizItem } from "@/lib/news-meta";
+import { ISSUE_ITEMS_WHERE, publishIssue, renumberVols, setAutoPublish } from "@/lib/server/briefing";
 import { db } from "@/lib/server/db";
 import { isAdmin } from "@/lib/server/security";
 
@@ -89,27 +90,6 @@ export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<Is
   redirect(`/admin/news/issue/${Number(res.lastInsertRowid)}`);
 }
 
-/** 그 호에 실리는 기사 조건 (아침판 = 아침판 기사, 금콩 스터디 = 그날 용어·면접 질문) */
-const ITEMS_OF = {
-  morning: "edition_date = ? AND edition = 'morning' AND section NOT IN ('term', 'question')",
-  noon: "edition_date = ? AND section IN ('term', 'question')",
-} as const;
-
-/** 판별 호수(Vol)를 날짜 순서대로 다시 매김 — 발행된 호만 1부터, 초안은 0. 지난 날짜 호를 나중에 발행해도 순서가 맞아요 */
-async function renumberVols(client: Awaited<ReturnType<typeof db>>, edition: "morning" | "noon"): Promise<void> {
-  await client.batch(
-    [
-      {
-        sql: `UPDATE briefing_issues SET vol = (SELECT COUNT(*) FROM briefing_issues b WHERE b.edition = briefing_issues.edition AND b.status = 1 AND b.issue_date <= briefing_issues.issue_date)
-              WHERE edition = ? AND status = 1`,
-        args: [edition],
-      },
-      { sql: "UPDATE briefing_issues SET vol = 0 WHERE edition = ? AND status = 0", args: [edition] },
-    ],
-    "write",
-  );
-}
-
 /**
  * 브리핑 발행·내리기·지우기 (target="publish:3")
  * - 발행: 그 호의 기사도 모두 공개, 판별 호수(Vol)는 날짜 순서대로 다시 매김
@@ -129,30 +109,30 @@ export async function issueAction(fd: FormData): Promise<void> {
   const now = Date.now();
 
   if (op === "publish") {
-    await client.batch(
-      [
-        { sql: "UPDATE briefing_issues SET status = 1, published_at = COALESCE(published_at, ?), updated_at = ? WHERE id = ?", args: [now, now, id] },
-        { sql: `UPDATE news SET status = 1, published_at = COALESCE(published_at, ?), updated_at = ? WHERE ${ITEMS_OF[edition]} AND status = 0`, args: [now, now, date] },
-      ],
-      "write",
-    );
-    await renumberVols(client, edition);
+    await publishIssue(id);
   } else if (op === "unpublish") {
     await client.batch(
       [
         { sql: "UPDATE briefing_issues SET status = 0, published_at = NULL, updated_at = ? WHERE id = ?", args: [now, id] },
-        { sql: `UPDATE news SET status = 0, published_at = NULL, updated_at = ? WHERE ${ITEMS_OF[edition]}`, args: [now, date] },
+        { sql: `UPDATE news SET status = 0, published_at = NULL, updated_at = ? WHERE ${ISSUE_ITEMS_WHERE[edition]}`, args: [now, date] },
       ],
       "write",
     );
-    await renumberVols(client, edition);
+    await renumberVols(edition);
   } else if (op === "delete") {
     await client.execute({ sql: "DELETE FROM briefing_issues WHERE id = ?", args: [id] });
-    await renumberVols(client, edition);
+    await renumberVols(edition);
     revalidateBriefings();
     redirect("/admin/news");
   }
   revalidateBriefings();
+}
+
+/** 자동 발행 켜고 끄기 — 켜면 자동 점검이 만든 브리핑이 확인 없이 바로 공개돼요 */
+export async function toggleAutoPublish(fd: FormData): Promise<void> {
+  if (!(await isAdmin())) redirect("/admin/login");
+  await setAutoPublish(fd.get("on") === "1");
+  revalidatePath("/admin/news");
 }
 
 export type ThumbFormState = { ok: boolean; error?: string; savedAt?: number };
