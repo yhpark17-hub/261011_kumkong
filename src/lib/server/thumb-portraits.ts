@@ -319,7 +319,7 @@ function custom(a: A, id: string): string {
   );
 }
 
-/** 사진 기반 일러스트 (자유 이용 사진으로 만든 것 — 출처 표시 필요) */
+/** 자유 이용 사진을 밑그림 삼아 손으로 짠 일러스트 (scripts/portraits — 참고 사진 출처 표시) */
 const PHOTO: Record<string, { svg: string; credit: string }> = {
   "shin-hyunsong": SHIN_HYUNSONG,
   "kevin-warsh": KEVIN_WARSH,

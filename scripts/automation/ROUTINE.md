@@ -372,7 +372,7 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 
 | 부품 | 상자 | 속성 |
 | --- | --- | --- |
-| `portrait` 인물 초상 (얼굴이 크게) | 480×560 | `who` shin-hyunsong·kevin-warsh (사진 기반 일러스트, `look='cartoon'` 이면 카툰판) / 또는 `hair` sweep·parted·short·bald·bob·long, `hc` 머리색, `temples` gray, `skin` light·medium·tan·deep, `eyes` narrow·almond, `glasses` none·rect·round·rim, `suit`·`shirt`·`tie`(색 또는 none) · 공통 `face` smile·speak·grin·serious, `flip` |
+| `portrait` 인물 초상 (얼굴이 크게) | 480×560 | `who` shin-hyunsong·kevin-warsh (사진을 밑그림 삼아 그린 정교한 일러스트, `look='cartoon'` 이면 단순 카툰판) / 또는 `hair` sweep·parted·short·bald·bob·long, `hc` 머리색, `temples` gray, `skin` light·medium·tan·deep, `eyes` narrow·almond, `glasses` none·rect·round·rim, `suit`·`shirt`·`tie`(색 또는 none) · 공통 `face` smile·speak·grin·serious, `flip` |
 | `podium` 연단+마이크 | 360×220 | `c`, `mics` 0~4, `emblem` star·won·none |
 | `kong` 금콩 마스코트 | `size`(기본 300) | `costume` banker·reporter·trader·oil·chip·security·builder·money·shopper·president, 또는 `hold`·`outfit`·`head`·`glasses='1'`·`worried='1'`·`wave='1'` |
 | `bank` 기둥 있는 은행 건물 | 420×300 | `c`(상징색), `stone` |
