@@ -1,5 +1,7 @@
 /** 데일리 브리핑 공통 정보 — 서버·클라이언트 모두에서 사용 */
 
+import { parseArt, type ThumbArt } from "./thumb-art";
+
 /** 브리핑 카테고리: 시사 뉴스 5분야 + 오늘의 용어 + 면접 질문 */
 export type NewsSection = "finance" | "economy" | "policy" | "global" | "public" | "term" | "question";
 
@@ -361,9 +363,11 @@ export interface IssueThumb {
   layout: IssueLayout | "";
   /** 아침판 숫자 칩 — 한 줄에 하나(최대 3줄), 맨 앞 ▲·▼ 선택. 비우면 오늘 기사 제목에서 */
   stats: string;
+  /** 직접 그린 그림 — 있으면 위의 틀(배치·그림·콩이·공책) 대신 그날 뉴스에 맞춰 새로 짠 그림으로 (두 판 모두) */
+  art: ThumbArt | null;
 }
 
-export const EMPTY_THUMB: IssueThumb = { scene: "", costume: "", kong: "auto", mood: "", bubble: "", caption: "", topic: "", shareUrl: "", cover: "default", coverUrl: "", checked: false, layout: "", stats: "" };
+export const EMPTY_THUMB: IssueThumb = { scene: "", costume: "", kong: "auto", mood: "", bubble: "", caption: "", topic: "", shareUrl: "", cover: "default", coverUrl: "", checked: false, layout: "", stats: "", art: null };
 
 /** 올린 그림 주소 — 우리 파일 주소(/api/files/…)나 https 만 */
 const imageUrl = (v: unknown) => {
@@ -403,6 +407,7 @@ export function parseThumb(raw: unknown): IssueThumb {
       .filter(Boolean)
       .slice(0, 3)
       .join("\n"),
+    art: parseArt(o.art),
   };
 }
 
@@ -420,7 +425,7 @@ export function studyTopic(thumb: IssueThumb, extras: IssueExtras): string {
 }
 
 /** 썸네일 그림 디자인 판 — 그리는 방식을 바꾸면 올려서, 이미 공유된 주소도 새 그림으로 가져가게 */
-export const OG_DESIGN = 5;
+export const OG_DESIGN = 6;
 
 /** 썸네일 버전 — 썸네일·제목을 고치거나 디자인 판이 바뀌면 달라져요 */
 export const thumbVersion = (issue: Pick<BriefingIssue, "updatedAt">) => `${issue.updatedAt.toString(36)}${OG_DESIGN}`;

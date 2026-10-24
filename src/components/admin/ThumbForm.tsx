@@ -19,6 +19,7 @@ import {
   type ThumbMood,
 } from "@/lib/news-meta";
 import { captionFit, headlineFit, speechFit, topicFit } from "@/lib/og-text";
+import { artOverflows, parseArt } from "@/lib/thumb-art";
 import { uploadFile } from "@/lib/upload-client";
 import { BriefingCover } from "../magazine/BriefingBrand";
 import { cn } from "../ui";
@@ -129,6 +130,13 @@ export function ThumbForm({
   const [checked, setChecked] = useState(initial.checked);
   const [layout, setLayout] = useState<IssueLayout | "">(initial.layout);
   const [stats, setStats] = useState(initial.stats);
+  // 직접 그린 그림 (JSON) — 켜 두면 아래 틀 설정 대신 이 그림이 나가요
+  const initialArt = initial.art ? JSON.stringify(initial.art, null, 1) : "";
+  const [artText, setArtText] = useState(initialArt);
+  const [artOn, setArtOn] = useState(Boolean(initial.art));
+  const artParsed = artText.trim() ? parseArt(artText) : null;
+  const artBroken = Boolean(artText.trim()) && !artParsed;
+  const artLong = artParsed ? artOverflows(artParsed) : [];
   const morning = edition === "morning";
 
   // 미리보기 주소 — 글자를 칠 때마다가 아니라 잠깐 멈추면 다시 그려요
@@ -138,8 +146,28 @@ export function ThumbForm({
     const t = window.setTimeout(() => setPreviewQuery(query), 500);
     return () => window.clearTimeout(t);
   }, [query]);
-  const drawn = `/admin/news/issue/${id}/thumb?${previewQuery}`;
-  const share = shareUrl || drawn;
+  const drawn = `/admin/news/issue/${id}/thumb?${previewQuery}${artOn ? "" : "&art=off"}`;
+  // 그림 JSON 을 고치는 중이면 주소에 담기엔 길어서 POST 로 그려 받아요
+  const artEdited = artOn && artText !== initialArt && Boolean(artParsed);
+  const [artBlob, setArtBlob] = useState("");
+  useEffect(() => {
+    if (!artEdited) return;
+    const ctl = new AbortController();
+    const t = window.setTimeout(async () => {
+      const res = await fetch(drawn, { method: "POST", body: JSON.stringify({ art: JSON.parse(artText) }), signal: ctl.signal }).catch(() => null);
+      if (!res?.ok) return;
+      const url = URL.createObjectURL(await res.blob());
+      setArtBlob((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return url;
+      });
+    }, 700);
+    return () => {
+      window.clearTimeout(t);
+      ctl.abort();
+    };
+  }, [artEdited, artText, drawn]);
+  const share = shareUrl || (artEdited && artBlob ? artBlob : drawn);
   const [loadedSrc, setLoadedSrc] = useState(share);
   const loading = loadedSrc !== share;
 
@@ -163,7 +191,9 @@ export function ThumbForm({
     coverUrl !== initial.coverUrl ||
     checked !== initial.checked ||
     layout !== initial.layout ||
-    stats !== initial.stats;
+    stats !== initial.stats ||
+    artOn !== Boolean(initial.art) ||
+    (artOn && artText !== initialArt);
 
   return (
     <form
@@ -178,6 +208,7 @@ export function ThumbForm({
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="shareUrl" value={shareUrl} />
       <input type="hidden" name="coverUrl" value={coverUrl} />
+      <input type="hidden" name="art" value={artOn ? artText : ""} />
 
       {/* ---------- 미리보기 ---------- */}
       <div className="space-y-5 lg:order-2">
@@ -212,8 +243,41 @@ export function ThumbForm({
             직접 올린 그림을 공유 썸네일로 쓰고 있어요. 아래 설정은 올린 그림을 지웠을 때 그리는 그림에 쓰여요.
           </p>
         )}
+        <fieldset className="space-y-2 rounded-lg border border-hairline p-3">
+          <legend className="px-1 type-caption font-semibold text-ink-secondary">직접 그린 그림 — 그날 뉴스에 맞춰 새로 짠 썸네일</legend>
+          <label className="inline-flex items-center gap-2 type-caption text-ink">
+            <input type="checkbox" checked={artOn} disabled={!artText.trim()} onChange={(e) => setArtOn(e.target.checked)} className="h-4 w-4 accent-[var(--primary)]" />
+            {artText.trim() ? "직접 그린 그림 쓰기 (끄면 아래 틀로 그려요)" : "이 호는 직접 그린 그림이 없어요 — 아래 틀로 그려요"}
+          </label>
+          <details className="group">
+            <summary className="cursor-pointer type-caption text-ink-mute hover:text-ink">그림 JSON 고치기 (svg · texts · brand)</summary>
+            <textarea
+              value={artText}
+              onChange={(e) => setArtText(e.target.value)}
+              rows={10}
+              spellCheck={false}
+              placeholder='{ "svg": "<rect …/><kk-person …/>", "texts": [{ "t": "큰 글 *강조*", "x": 60, "y": 120, "w": 600, "size": 80 }], "brand": { "pos": "tr", "theme": "dark" } }'
+              className="input mt-2 w-full resize-y font-mono text-[12px] leading-snug"
+            />
+            <p className="mt-1 type-micro text-ink-mute">자동 점검이 호마다 새로 그려요. 글자 속 숫자·따옴표 말은 기사에 실린 그대로만. 부품 목록은 scripts/automation/ROUTINE.md 에 있어요.</p>
+          </details>
+          {artBroken && (
+            <p className="flex items-center gap-1 type-micro text-ev-doc">
+              <AlertTriangle className="h-3.5 w-3.5" strokeWidth={2} />
+              JSON 을 읽을 수 없어요 — 형식을 확인해 주세요 (svg 가 꼭 있어야 해요).
+            </p>
+          )}
+          {artLong.length > 0 && (
+            <p className="flex items-center gap-1 type-micro text-ev-doc">
+              <AlertTriangle className="h-3.5 w-3.5" strokeWidth={2} />
+              칸보다 긴 글자: {artLong.join(" · ")}
+            </p>
+          )}
+          {artOn && <p className="type-micro text-ink-mute">그린 그림을 쓰는 동안 아래 틀 설정(배치·그림·제목 상자·공책)은 쓰이지 않아요.</p>}
+        </fieldset>
+
         {morning ? (
-          <fieldset className="space-y-3">
+          <fieldset className={cn("space-y-3", artOn && "opacity-50")}>
             <legend className="type-caption font-semibold text-ink-secondary">뉴스 그림 — 날마다 배치·그림을 바꿔 매번 다른 썸네일로</legend>
             <label className="block">
               <span className="mb-1 block type-caption text-ink-secondary">배치</span>
@@ -298,7 +362,7 @@ export function ThumbForm({
             </label>
           </fieldset>
         ) : (
-          <fieldset className="space-y-3">
+          <fieldset className={cn("space-y-3", artOn && "opacity-50")}>
             <legend className="type-caption font-semibold text-ink-secondary">공책 템플릿 — 오늘의 논술 주제</legend>
             <label className="block">
               <span className="mb-1 flex justify-between gap-3 type-caption text-ink-secondary">

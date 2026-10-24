@@ -5,6 +5,8 @@ import { EMPTY_THUMB, isIssueEdition, isNewsSection, kindOf, parseExtras, parseQ
 import { automationAuthorized, json, unauthorized } from "@/lib/server/automation";
 import { autoPublishOn, morningForAutomation, publishIssue } from "@/lib/server/briefing";
 import { db, dbConfigured } from "@/lib/server/db";
+import { checkArt } from "@/lib/server/thumb-check";
+import { parseArt } from "@/lib/thumb-art";
 
 /**
  * 데일리 브리핑 한 호 올리기 — 자동 발행이 켜져 있으면(기본) 검사를 통과하는 대로 바로 발행돼요.
@@ -22,7 +24,9 @@ import { db, dbConfigured } from "@/lib/server/db";
  *   - 논술 한 문단: { topic, intro, body, conclusion, evidence: [근거 1~4개] }
  *   - 점심 퀴즈: { question, options: ["O", "X"], answer, explain, basis } 3문제
  *     basis = 금콩 스터디 본문(숫자·용어·논술·면접 질문)에 실린 근거 문장 그대로. 아침판에만 있고 금콩 스터디에는 없는 내용은 거절
- * 공유 썸네일 (선택, 운영자가 발행 전에 확인·수정)
+ * 공유 썸네일 (선택)
+ *   - 두 판 공통 thumb.art: 그날 뉴스에 맞춰 직접 그린 그림 { svg, texts, brand } — 있으면 아래 틀 대신 이걸로 (권장, ROUTINE.md '썸네일 그리기')
+ *     글자 속 숫자·따옴표 말이 이 판 본문에 그대로 없으면 그림을 빼고 warnings. 미리보기·고치기는 /api/automation/thumb
  *   - 아침판 thumb: { layout?, scene?, costume?, kong?, mood?: "up"|"down"|"neutral", bubble?, caption?, stats? }
  *     layout = card(그림+제목 카드)|bold(유튜브식 큰 글씨)|board(오늘의 숫자 카드) — 어제와 다른 배치로 (비우면 날짜에 따라 자동)
  *     scene = speech|market|rate|gauge|fx|oil|housing|prices|security|chip|trade|bond|news (그날 헤드라인 주제 그림 — 인물 발언이면 speech, 금리는 rate·gauge 번갈아)
@@ -167,6 +171,17 @@ export async function POST(req: Request) {
   if (thumb.bubble && (!thumb.scene || thumb.scene === "speech") && !corpus.includes(plain(thumb.bubble.replace(/\*/g, "")))) {
     warnings.push("thumb.bubble: 이 판 기사에 그대로 실린 문장이 아니라 뺐어요 (지어낸 말 방지) — 제목으로 그려요");
     thumb.bubble = "";
+  }
+  // 직접 그린 그림 — 글자 속 숫자·따옴표 말이 이 판 본문에 그대로 있을 때만 (아니면 빼고 틀로 그려요)
+  if (rawThumb.art) {
+    const art = parseArt(rawThumb.art);
+    if (!art) warnings.push("thumb.art: 그림을 읽을 수 없어 정해진 틀로 그려요 (svg·texts·brand 확인)");
+    else {
+      const { problems, long } = checkArt(art, corpus);
+      if (problems.length) warnings.push(...problems.map((p) => `thumb.art: ${p} — 그림을 빼고 정해진 틀로 그려요 (api.mjs thumb 로 고쳐 올릴 수 있어요)`));
+      else thumb.art = art;
+      if (long.length) warnings.push(`thumb.art: 칸보다 긴 글자 — ${long.join(" / ")}`);
+    }
   }
   const thumbJson = JSON.stringify({ ...EMPTY_THUMB, ...thumb, checked: false });
   rawQuiz.forEach((q, i) => {

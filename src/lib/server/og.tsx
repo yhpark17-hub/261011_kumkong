@@ -30,21 +30,28 @@ export const C = {
 } as const;
 
 const FONT_DIR = join(process.cwd(), "node_modules/pretendard/dist/public/static");
-let fonts: Promise<{ name: string; data: Buffer; weight: 400 | 700 | 800; style: "normal" }[]> | null = null;
+let fonts: Promise<{ name: string; data: Buffer; weight: 300 | 400 | 700 | 800 | 900; style: "normal" }[]> | null = null;
 
-/** Pretendard 400·700·800 (한 번 읽어 두고 재사용) */
+/** Pretendard 300·400·700·800·900 (한 번 읽어 두고 재사용 — 300·900 은 직접 그린 썸네일 글자용) */
 export function ogFonts() {
   fonts ??= Promise.all(
     ([
+      [300, "Pretendard-Light.otf"],
       [400, "Pretendard-Regular.otf"],
       [700, "Pretendard-Bold.otf"],
       [800, "Pretendard-ExtraBold.otf"],
+      [900, "Pretendard-Black.otf"],
     ] as const).map(async ([weight, file]) => ({ name: "Pretendard", data: await readFile(join(FONT_DIR, file)), weight, style: "normal" as const })),
   );
   return fonts;
 }
 
 export const svgUri = (svg: string) => `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+
+/** 이름표 속 작은 금콩 로고 (사이트 왼쪽 위 로고와 같은 얼굴) */
+export const BRAND_LOGO = svgUri(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="34" height="34"><defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5e9d4"/><stop offset="1" stop-color="#ffa26b"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="#1c1e54"/><path d="M20.6 7.4c3.7 1.6 5 6.5 3 10.9-1.4 3.1-4.7 4.7-6.5 6.4-1.7 1.6-4.5 1.9-6.5.2-2.4-2-2.3-5.2-.6-7.3 1.3-1.6 3.3-2 4.1-3.9.9-2 .9-4.7 2.9-6 1-.7 2.3-.8 3.6-.3z" fill="url(#b)"/><circle cx="13.7" cy="18.9" r="1.15" fill="#1c1e54"/><circle cx="18.5" cy="16.9" r="1.15" fill="#1c1e54"/><path d="M15.3 21.1c.9.8 2.2.6 2.9-.3" stroke="#1c1e54" stroke-width=".9" stroke-linecap="round" fill="none"/></svg>`,
+);
 
 /** 기관 로고 — 글자형(가로) 로고가 있으면 그걸로 (없으면 정사각 로고, 그것도 없으면 null). 크기는 PNG 머리에서 */
 export async function companyLogo(companyId: string): Promise<{ src: string; wide: boolean; width: number; height: number } | null> {

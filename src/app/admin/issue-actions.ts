@@ -6,6 +6,7 @@ import { isDateKey, isIssueEdition, parseExtras, parseQuiz, parseThumb, type Iss
 import { ISSUE_ITEMS_WHERE, publishIssue, renumberVols, setAutoPublish } from "@/lib/server/briefing";
 import { db } from "@/lib/server/db";
 import { isAdmin } from "@/lib/server/security";
+import { ART_LIMITS } from "@/lib/thumb-art";
 
 export type IssueFormState = { ok: boolean; error?: string; savedAt?: number };
 
@@ -159,8 +160,10 @@ export async function saveIssueThumb(_prev: ThumbFormState, fd: FormData): Promi
     checked: fd.get("checked") === "on",
     layout: str(fd, "layout", 10),
     stats: String(fd.get("stats") ?? "").slice(0, 200),
+    art: String(fd.get("art") ?? "").slice(0, ART_LIMITS.svg + 8000),
   });
   if (str(fd, "cover", 10) === "upload" && !thumb.coverUrl) return { ok: false, error: "사이트 표지로 쓸 그림을 먼저 올려 주세요." };
+  if (str(fd, "art", 10) && !thumb.art) return { ok: false, error: "직접 그린 그림(JSON)을 읽을 수 없어요. svg 가 있는지, JSON 형식이 맞는지 확인해 주세요." };
   const client = await db();
   const res = await client.execute({ sql: "UPDATE briefing_issues SET thumb = ?, updated_at = ? WHERE id = ?", args: [JSON.stringify(thumb), Date.now(), id] });
   if (!res.rowsAffected) return { ok: false, error: "브리핑을 찾을 수 없어요." };

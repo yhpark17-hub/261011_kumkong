@@ -212,7 +212,8 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
    - **`basis` 필수**: 정답의 근거가 되는 문장을 본문에서 글자 그대로 복사합니다. 사이트가 본문에 그 문장이 있는지 확인하고, 없으면 거절합니다.
    - 보기는 4개(사지선다) 또는 2개(`["O", "X"]`). 아래 **'퀴즈 출제 기준'**을 따르고, 헤드라인에서 1문제 이상
 7. `lede` 는 독자에게 말하듯 '~했어요/~예요' 말투, 과장·추측("폭락 공포" 등) 없이.
-8. 공유 썸네일 `thumb` — **매일 같은 모양이 되지 않게, 그날 주제에 맞춰** 채웁니다 (바로 공개되니 그대로 나가도 되는 문구로 — 운영자는 나중에 고칠 수 있어요).
+8. 공유 썸네일 — **아래 '썸네일 그리기'대로 그날 뉴스만을 위한 그림 `thumb.art` 를 직접 그려 넣습니다** (두 판 공통, 바로 공개돼요).
+   `thumb.art` 가 없거나 검사에서 빠지면 아래 틀 설정으로 그려요 (예비용):
    - `layout`: **어제 아침판과 다른 배치로** — `card`(주제 그림 + 제목 카드) · `bold`(유튜브 썸네일처럼 큰 글씨) · `board`(오늘의 숫자 카드 2~3장)
    - `scene`: 헤드라인 주제 그림 — speech(인물 발언)·market·rate·gauge(금리 계기판)·fx·oil·housing·prices·security·chip·trade·bond·news. 금리 기사는 rate·gauge 를 전날과 다르게
    - `bubble`: 썸네일 큰 글(44자 안). 강조할 말은 `*초저금리* 복귀 어렵다`처럼 별표로 감싸면 노랗게 크게 나와요(bold). 인물 발언(speech)은 기사에 실린 말 그대로만
@@ -258,6 +259,7 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
    - **⑤ 점심 퀴즈** `quiz` (O/X 3문제): `{ "question": "…", "options": ["O", "X"], "answer": 0 또는 1, "explain": "해설 1~2문장", "basis": "근거 문장" }` — ①~④ 코너에 실은 숫자·용어·논술·면접 질문에서만, 아래 **'퀴즈 출제 기준'**대로 출제
      - **`basis` 필수**: 정답의 근거 문장을 ①~④ 코너 본문(숫자 label·note, 용어 summary·point·body, 논술 각 칸, 질문 summary·body)에서 글자 그대로 복사. 본문에 없으면 사이트가 거절합니다. 해설도 본문 밖 지식을 덧붙이지 않습니다.
 4. 제목 `title`(목록·카드용) · 오늘의 스터디 `lede` 2~3문장(오늘 무엇을 공부하는지) · `closing` 은 비워 두기
+5. 공유 썸네일 `thumb.art` — 아래 '썸네일 그리기'대로 오늘 논술 주제·용어를 한 장면으로 (아침판과 다른 그림·색으로)
 
 ```json
 {
@@ -301,6 +303,106 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 - **해설**: 왜 정답인지 + 시험·면접에서 어떻게 쓰이는지 한 줄. 본문 범위 안에서만
 - **O/X(금콩 스터디)도 같은 기준** — 개념·경로·방향을 묻고, 범위 착각·반대 방향 같은 함정으로 비틉니다
 
+### 썸네일 그리기 (두 판 공통) — `thumb.art`
+
+목표: 유튜브 썸네일처럼 **그날 뉴스만을 위한 한 장**. 정해진 틀에서 색만 바꾸는 게 아니라 **매번 구도·그림·색·글자 배치를 새로 짭니다.**
+카톡 공유 그림과 사이트 브리핑 카드에 같은 그림이 나가요. 어제·그제 썸네일과 나란히 놓았을 때 확실히 달라 보여야 합니다.
+
+1. **장면 한 줄 먼저** — 오늘 헤드라인을 한 장면(비유)으로 정해요. 예시 (지난 호들):
+   - 주가 급락·성장률 상향 → 화면을 대각선으로 갈라 파란 쪽 '-5.46%', 주황 쪽 '3.3%'
+   - 서킷브레이커 → 빨간 경광등과 '결국 멈췄다'
+   - 해킹 침해 → 깨진 자물쇠와 '금융권 16곳 뚫렸다'
+   - 돈이 국채로 → 날개 달린 지폐가 금고로
+   - 동결 후 인상 전망 → 얼음에 갇힌 10월 달력과 빨간 화살표 11월 달력
+   - 예보료 3.3배 → 노란 바탕에 커지는 동전 탑과 우산
+   - 재정·통화 엇갈림 → 브레이크 vs 액셀 페달
+   - 고정금리 13% → 빙산 (물 위 13%, 물 아래 165조원)
+   - 인물 발언 → 그 사람 일러스트 + 말풍선
+2. **후킹 문구** — 큰 글은 6~14자, 강조 한 단어(`*별표*`)나 숫자 하나를 아주 크게(100~200). 작은 글은 사실 한 줄(24~30).
+   카드에서는 작게 보여요. 작은 글은 24 이상, 글 상자는 2~4개만 둬요.
+3. **사람 뉴스**(발언·인물이 주인공)는 `kk-person` 으로 그 사람을 그리고 말풍선(`kk-bubble`)을 달아요.
+   - 발언은 **기사에 실린 말 그대로 따옴표째**(“ ”)만 넣어요.
+   - 표정은 존중하는 것(calm·speak·serious·smile)만 써요. 찡그리거나 우스꽝스럽게 만든 캐리커처는 쓰지 않아요.
+   - 그 사람을 알려 주는 이름표 한 줄을 달아요 (예: `신현송 한은 총재 · 23일 국정감사`).
+   - 사진·실제 로고·국기·기관 문장은 쓰지 않아요 (저작권·초상).
+4. **색과 분위기** — 바탕을 날마다 바꿔요 (깊은 남색·노랑·민트·크림·경보 빨강·밤비·하늘…).
+   - 오름은 빨강, 내림은 파랑(한국식)이에요. 좋고 나쁨이 아니라 숫자의 방향이에요.
+5. **숫자·말은 사실 그대로** — 글자 속 **숫자와 따옴표 말은 이 판 본문에 그대로 있어야** 해요. 없으면 사이트가 그림을 빼고 틀로 그려요.
+   기간·대상을 빼서 뜻이 바뀌지 않게 써요 (예: `1~8월 경상흑자 2792억달러`, `연 4% 미만 가계대출 비중`).
+
+형식 (1200×630 기준 좌표):
+
+```json
+{
+  "svg": "<defs>…</defs><rect width='1200' height='630' fill='url(#bg)'/><kk-person x='680' y='150' s='1' hair='side' hc='#2f2c2b' age='senior' face='serious' pose='point'/>",
+  "texts": [
+    { "t": "한은 기준금리", "x": 60, "y": 112, "w": 560, "size": 36, "weight": 800, "color": "#9fe6f0" },
+    { "t": "3.00%", "x": 52, "y": 152, "w": 600, "size": 170, "weight": 900, "color": "#ffffff", "ls": -0.05, "shadow": "hard" },
+    { "t": "*만장일치* 동결", "x": 58, "y": 340, "w": 600, "size": 70, "weight": 900, "em": "#ffd84d" },
+    { "t": "신현송 총재, 확장재정에 이례적 경고", "x": 640, "y": 586, "w": 520, "size": 28, "weight": 900, "color": "#2a1606", "align": "center", "bg": "#ffd84d", "pad": 12, "radius": 12, "anchor": "bottom" }
+  ],
+  "brand": { "pos": "tr", "theme": "dark" }
+}
+```
+
+- **`svg`** — 도형만 써요. 쓸 수 있는 것: `path`·`rect`·`circle`·`ellipse`·`line`·`polygon`·`g`·`defs`·`linearGradient`·`radialGradient`·`pattern`·`clipPath`·`filter`(`feGaussianBlur` 등)·`use`(`href='#id'`).
+  - 글자(`<text>`)·바깥 그림·스크립트는 지워져요. 글자는 `texts` 로 넣어요.
+  - 속성은 홑따옴표(`'`)로 쓰면 JSON 안에서 편해요. 최대 6만 자.
+- **`texts[]`** — 최대 10개. 각 상자의 칸:
+  - 필수: `t`(줄바꿈 `\n`, 강조 `*별표*`) · `x` · `y` · `w`(상자 폭) · `size`
+  - 크기: `min`(넘치면 여기까지 줄여요)
+  - 색: `color` · `em`(강조 색) · `hl`(강조 형광펜)
+  - 글꼴: `weight` 300·400·700·800·900 · `ls`(자간, 글자 크기 배수, 보통 -0.05~0) · `lh`(줄 간격)
+  - 정렬: `align` left·center·right · `anchor` top·bottom (y 가 글 위쪽인지 아래쪽인지) · `lines`(최대 줄 수)
+  - 띠: `bg` · `pad` · `radius` — `bg` 를 주면 글자 길이에 맞는 띠(알약)가 돼요
+  - 효과: `rotate` · `shadow` soft·hard·glow · `stroke`·`strokeW`(글자 테두리)
+- **`brand`** — `{ "pos": "tl"|"tr"|"bl"|"br", "theme": "light"|"dark" }`. 금콩 이름표(판 이름·날짜)예요. 큰 글과 겹치지 않는 구석에 둬요. 이름표는 위·아래 약 100px 를 차지해요.
+
+금콩 부품 — svg 안에 `<kk-이름 속성…/>` 으로 넣어요. 기본 크기 상자의 왼쪽 위가 `x`·`y` 이고 `s` 가 배율, `flip='1'` 은 좌우 뒤집기예요.
+
+| 부품 | 상자 | 속성 |
+| --- | --- | --- |
+| `person` 인물 상반신 | 400×500 | `hair` side·short·slick·parted·crop·bald·bob·long·bun·wave, `hc` 머리색, `skin` light·medium·tan·deep, `glasses` none·round·square·rim, `suit`·`shirt`·`tie`(색 또는 none), `face` calm·speak·serious·smile·talk·worried·surprised, `age` young·mid·senior, `pose` none·raise(손바닥)·point(검지)·fist |
+| `podium` 연단+마이크 | 360×220 | `c`, `mics` 0~4, `emblem` star·won·none |
+| `kong` 금콩 마스코트 | `size`(기본 300) | `costume` banker·reporter·trader·oil·chip·security·builder·money·shopper·president, 또는 `hold`·`outfit`·`head`·`glasses='1'`·`worried='1'`·`wave='1'` |
+| `bank` 기둥 있는 은행 건물 | 420×300 | `c`(상징색), `stone` |
+| `barrel` 기름통 | 160×220 | `c` |
+| `house` 집 | 260×240 | `c`(지붕), `wall` |
+| `chip` 반도체 칩 | 260×260 | `c`, `glow='0'` |
+| `lock` 자물쇠 | 200×250 | `c`, `open='1'`(열림·금 감) |
+| `doc` 서류 | 220×280 | `c`, `lines` |
+| `gavel` 의사봉 | 280×200 | `c` |
+| `bolt` 번개 | 120×220 | `c` |
+| `candles` 주가 봉 차트 | `x`·`y`·`w`·`h` | `n`, `trend` up·down·crash·rebound·fall-rise·choppy, `up`·`down`(색), `seed` |
+| `bubble` 말풍선 바탕 | `x`·`y`·`w`·`h` | `r`, `tx`·`ty`(꼬리 끝), `c`, `op` |
+| `swoosh` 굵은 곡선 화살표 | `x1`·`y1`→`x2`·`y2` | `bend`, `w`, `c` |
+| `bigarrow` 큰 화살표 | `x`·`y`·`w`·`h` | `dir` up·down·left·right, `c` |
+| `coin` 동전 · `badge` 오름·내림 배지 | `cx`·`cy`·`r` | `kind` won·dollar / `dir` up·down |
+| `burst` 폭발형 별 · `glow` 빛 번짐 | `cx`·`cy`·`r` | `c`, `n`·`r2`·`rot` / `op` |
+| `grid` 바탕 격자 | 전체 | `step`, `c`, `op` |
+
+**미리 보고 고치기 (꼭)** — 올리기 전에 그림을 PNG 로 받아 **직접 열어 보고** 고칩니다 (2~3번이면 충분해요).
+
+```bash
+# /tmp/kk/art.json = { "edition": "morning", "art": { …위 형식… } }
+node scripts/automation/api.mjs thumb-preview /tmp/kk/art.json /tmp/kk/thumb.png
+```
+
+- 출력의 `warnings` 를 먼저 봐요. 본문에 없는 숫자·따옴표 말, 칸보다 긴 글자가 나와요. 호를 올리기 전이면 숫자 확인은 올릴 때 해요.
+- 그다음 `/tmp/kk/thumb.png` 를 열어 눈으로 확인해요.
+  - 글자끼리·글자와 그림이 겹치는 곳
+  - 화면 밖으로 잘린 곳
+  - 이름표를 가린 곳
+  - 작게 줄여도 큰 글이 읽히는지
+  - 어제 썸네일과 달라 보이는지
+- 마음에 들면 브리핑 JSON 의 `thumb.art` 에 넣어 `issue` 로 올립니다.
+- 올린 응답 `warnings` 에 `thumb.art` 가 있으면(그림이 빠짐) 고쳐서 아래로 다시 넣어요.
+  `art.json` 에 `"date"` 를 넣으면 어제 호도 고칠 수 있어요.
+
+```bash
+node scripts/automation/api.mjs thumb /tmp/kk/art.json
+```
+
 ### 올리기 (두 판 공통)
 
 ```bash
@@ -310,7 +412,7 @@ node scripts/automation/api.mjs issue /tmp/kk/briefing.json
 - 응답 `ok: false` 면 `errors` 를 보고 고쳐서 다시 올립니다 (하나라도 틀리면 아무것도 저장되지 않습니다).
 - `skipped: true` 면 오늘 그 판이 이미 있는 것 — 다시 만들지 않습니다.
 - `published: true` 면 바로 공개된 것, `false` 면 자동 발행이 꺼져 있어 초안으로 들어간 것입니다.
-- 올리기 전에 스스로 점검: ① 아침판 기사 6~8건·헤드라인 1건·퀴즈 3~4문제 / 금콩 스터디 숫자 3개·용어 2~3개·논술 1개·질문 1~2개·O/X 3문제인가 ② 모든 기사에 원문 링크·한 줄 요약이 있는가 ③ 같은 사건이 두 번 나오지 않는가 ④ 숫자는 원문 그대로인가 ⑤ 퀴즈마다 basis 가 그 판 본문에 글자 그대로 있고, 정답·해설이 그 문장과 맞는가 (금콩 스터디 퀴즈는 금콩 스터디 본문 안에서만) ⑥ lede 가 나열이 아니라 흐름인가
+- 올리기 전에 스스로 점검: ① 아침판 기사 6~8건·헤드라인 1건·퀴즈 3~4문제 / 금콩 스터디 숫자 3개·용어 2~3개·논술 1개·질문 1~2개·O/X 3문제인가 ② 모든 기사에 원문 링크·한 줄 요약이 있는가 ③ 같은 사건이 두 번 나오지 않는가 ④ 숫자는 원문 그대로인가 ⑤ 퀴즈마다 basis 가 그 판 본문에 글자 그대로 있고, 정답·해설이 그 문장과 맞는가 (금콩 스터디 퀴즈는 금콩 스터디 본문 안에서만) ⑥ lede 가 나열이 아니라 흐름인가 ⑦ thumb.art 를 미리보기 PNG 로 열어 봤고, 겹침·잘림 없이 어제와 다른 그림인가
 
 ---
 

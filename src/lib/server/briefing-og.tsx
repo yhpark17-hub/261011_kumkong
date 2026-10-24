@@ -18,10 +18,12 @@ import {
   type ThumbMood,
   type ThumbStat,
 } from "@/lib/news-meta";
+import type { ThumbArt } from "@/lib/thumb-art";
 import { arrangeLetter, issueItems } from "./briefing";
 import { TOPIC_W, captionFit, fitText, headlineFit, speechFit, topicFit } from "../og-text";
-import { C, COSTUME_LOOK, OG_SIZE, kongSvg, ogFonts, svgUri, type OgKong } from "./og";
+import { BRAND_LOGO as LOGO, C, COSTUME_LOOK, OG_SIZE, kongSvg, ogFonts, svgUri, type OgKong } from "./og";
 import { GAUGE, sceneSvg } from "./og-scenes";
+import { ArtView } from "./thumb-art";
 
 /**
  * 데일리 브리핑 공유 썸네일(og:image) 그리기 — 공유 미리보기 경로와 관리자 미리보기가 같이 써요.
@@ -39,11 +41,6 @@ export function splitTitle(title: string): [string, string] {
 /** 말풍선 꼬리 (오른쪽 콩이 쪽으로) — 테두리 없는 흰 말풍선에 맞게 */
 const TAIL = svgUri(
   `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="64" viewBox="0 0 80 64"><path d="M0 4 L76 46 L0 58 Z" fill="#ffffff"/></svg>`,
-);
-
-/** 이름표 속 작은 금콩 로고 (사이트 왼쪽 위 로고와 같은 얼굴) */
-const LOGO = svgUri(
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="34" height="34"><defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5e9d4"/><stop offset="1" stop-color="#ffa26b"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="#1c1e54"/><path d="M20.6 7.4c3.7 1.6 5 6.5 3 10.9-1.4 3.1-4.7 4.7-6.5 6.4-1.7 1.6-4.5 1.9-6.5.2-2.4-2-2.3-5.2-.6-7.3 1.3-1.6 3.3-2 4.1-3.9.9-2 .9-4.7 2.9-6 1-.7 2.3-.8 3.6-.3z" fill="url(#b)"/><circle cx="13.7" cy="18.9" r="1.15" fill="#1c1e54"/><circle cx="18.5" cy="16.9" r="1.15" fill="#1c1e54"/><path d="M15.3 21.1c.9.8 2.2.6 2.9-.3" stroke="#1c1e54" stroke-width=".9" stroke-linecap="round" fill="none"/></svg>`,
 );
 
 /** 연단 마이크 (가로 위치 · 색 · 기울기) */
@@ -614,9 +611,11 @@ export async function briefingOgImage(
   issue: BriefingIssue,
   { thumb = issue.thumb, admin = false, headers, scale = 1 }: { thumb?: IssueThumb; admin?: boolean; headers?: HeadersInit; scale?: number } = {},
 ) {
+  // 그날 뉴스에 맞춰 직접 그린 그림 — 정해진 틀 대신
+  if (thumb.art) return artOgImage(issue, thumb.art, { headers, scale });
   const fonts = await ogFonts();
-  const items = await issueItems(issue.date, issue.edition, { admin }).catch(() => []);
   let view: ReactElement;
+  const items = await issueItems(issue.date, issue.edition, { admin }).catch(() => []);
   if (issue.edition === "noon") {
     const terms = items.filter((n) => n.section === "term").map((n) => n.title);
     const topic = studyTopic(thumb, issue.extras) || splitTitle(issue.title)[0];
@@ -627,6 +626,15 @@ export async function briefingOgImage(
     view =
       plan.layout === "bold" ? <MorningBold issue={issue} plan={plan} /> : plan.layout === "board" ? <MorningBoard issue={issue} plan={plan} /> : <MorningThumb issue={issue} plan={plan} />;
   }
+  return render(view, { fonts, headers, scale });
+}
+
+/** 직접 그린 그림 한 장 — 자동 점검 미리보기도 이걸로 (호가 아직 없어도 날짜·판만 있으면 그려요) */
+export async function artOgImage(issue: Pick<BriefingIssue, "date" | "edition">, art: ThumbArt, { headers, scale = 1 }: { headers?: HeadersInit; scale?: number } = {}) {
+  return render(<ArtView issue={issue} art={art} />, { fonts: await ogFonts(), headers, scale });
+}
+
+function render(view: ReactElement, { fonts, headers, scale }: { fonts: Awaited<ReturnType<typeof ogFonts>>; headers?: HeadersInit; scale: number }) {
   if (scale === 1) return new ImageResponse(view, { ...OG_SIZE, fonts, headers });
   // 같은 그림을 그 배율 크기로 (도형·글자라 또렷해요)
   return new ImageResponse(
