@@ -177,6 +177,8 @@ export async function saveIssueThumb(_prev: ThumbFormState, fd: FormData): Promi
     cover: str(fd, "cover", 10),
     coverUrl: str(fd, "coverUrl", 500),
     checked: fd.get("checked") === "on",
+    layout: str(fd, "layout", 10),
+    stats: String(fd.get("stats") ?? "").slice(0, 200),
   });
   if (str(fd, "cover", 10) === "upload" && !thumb.coverUrl) return { ok: false, error: "사이트 표지로 쓸 그림을 먼저 올려 주세요." };
   const client = await db();

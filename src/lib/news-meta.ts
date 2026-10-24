@@ -258,6 +258,7 @@ export const SCENES = [
   { key: "speech", label: "인물 발언·연설 (콩이가 그 인물로 변장)", match: /트럼프|백악관|파월|대통령|총재 ?["'‘“]|장관|위원장|정상회담/ },
   { key: "market", label: "증시 (차트 급락·반등)", match: /코스피|코스닥|나스닥|증시|주가|주식|다우|S&P|사이드카|서킷브레이커/ },
   { key: "rate", label: "금리·통화정책 (중앙은행·%)", match: /금통위|기준금리|금리|연준|FOMC|통화정책|한국은행|한은/ },
+  { key: "gauge", label: "금리 계기판 (저금리↔고금리 바늘)", match: null },
   { key: "fx", label: "환율 (원·달러 저울)", match: /환율|달러|원화|엔화|외환|위안/ },
   { key: "oil", label: "유가·원자재 (드럼통·펌프)", match: /유가|원유|OPEC|배럴|원자재/ },
   { key: "housing", label: "부동산 (아파트·가격표)", match: /집값|부동산|아파트|주택|전세|PF/ },
@@ -270,13 +271,52 @@ export const SCENES = [
 ] as const satisfies readonly { key: string; label: string; match: RegExp | null }[];
 export type SceneKey = (typeof SCENES)[number]["key"];
 export const isScene = (v: unknown): v is SceneKey => SCENES.some((c) => c.key === v);
-/** 제목·헤드라인으로 고르는 뉴스 그림 (변장과 같은 방식) */
-export function autoScene(texts: string[]): SceneKey {
+/** 날짜 → 일련번호 (썸네일을 날마다 번갈아 바꿀 때) */
+export const dayIndex = (date: string) => {
+  const [y, m, d] = date.split("-").map(Number);
+  return Math.floor(Date.UTC(y, (m || 1) - 1, d || 1) / 86_400_000);
+};
+
+/**
+ * 제목·헤드라인으로 고르는 뉴스 그림 (변장과 같은 방식).
+ * date 를 주면 금리 기사는 날마다 중앙은행 그림 ↔ 금리 계기판을 번갈아 — 같은 그림이 이어지지 않게.
+ */
+export function autoScene(texts: string[], date?: string): SceneKey {
   for (const t of texts) {
     const hit = earliest(SCENES, t);
-    if (hit) return hit.key;
+    if (hit) return hit.key === "rate" && date && dayIndex(date) % 2 === 1 ? "gauge" : hit.key;
   }
   return "news";
+}
+
+/**
+ * 아침판 썸네일 배치 — 비우면 날짜에 따라 번갈아 (카드형 → 큰 글씨형 → 숫자판)
+ * card: 그림 + 왼쪽 아래 제목 카드 / bold: 유튜브 썸네일처럼 큰 글씨 / board: 오늘의 숫자 카드
+ */
+export const ISSUE_LAYOUTS = [
+  { key: "card", label: "카드형 — 그림 + 제목 카드" },
+  { key: "bold", label: "큰 글씨형 — 유튜브 썸네일처럼" },
+  { key: "board", label: "숫자판 — 오늘의 숫자 2~3개" },
+] as const;
+export type IssueLayout = (typeof ISSUE_LAYOUTS)[number]["key"];
+export const isIssueLayout = (v: unknown): v is IssueLayout => ISSUE_LAYOUTS.some((x) => x.key === v);
+
+/** 숫자 칩 한 줄 — 맨 앞 ▲(오름)·▼(내림) 표시는 선택 */
+export interface ThumbStat {
+  dir: "up" | "down" | "";
+  text: string;
+}
+
+export function parseStats(raw: string): ThumbStat[] {
+  return raw
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, 3)
+    .map((l) => {
+      const dir = /^(▲|↑)/.test(l) ? "up" : /^(▼|↓)/.test(l) ? "down" : "";
+      return { dir, text: l.replace(/^(▲|▼|↑|↓)\s*/, "").slice(0, THUMB_LIMITS.stat) } as ThumbStat;
+    });
 }
 
 export type ThumbMood = "up" | "down" | "neutral";
@@ -286,14 +326,14 @@ export const THUMB_MOODS: { key: ThumbMood | ""; label: string }[] = [
   { key: "down", label: "걱정 · 내림" },
   { key: "neutral", label: "보통" },
 ];
-const MOOD_DOWN = /급락|하락|폭락|최저|최악|적자|위기|쇼크|우려|침해|유출|해킹|둔화|감소|하향|경고|불안|사이드카|서킷브레이커|패닉/;
+const MOOD_DOWN = /급락|하락|폭락|급감|최저|최악|적자|위기|쇼크|우려|침해|유출|해킹|둔화|감소|하향|경고|불안|사이드카|서킷브레이커|패닉/;
 const MOOD_UP = /반등|상승|급등|최고|회복|흑자|돌파|호조|증가|상향|개선|훈풍|귀환/;
 export const autoMood = (text: string): ThumbMood => (MOOD_DOWN.test(text) ? "down" : MOOD_UP.test(text) ? "up" : "neutral");
 
 /** 사이트 표지(시사 뉴스 첫 화면·목록 카드) — 기본 표지 / 공유 썸네일과 같은 그림 / 직접 올린 그림 */
 export type CoverMode = "default" | "share" | "upload";
 
-export const THUMB_LIMITS = { bubble: 44, caption: 64, topic: 120 } as const;
+export const THUMB_LIMITS = { bubble: 44, caption: 64, topic: 120, stat: 30 } as const;
 
 export interface IssueThumb {
   /** 아침판 뉴스 그림 ("" = 자동) */
@@ -316,9 +356,13 @@ export interface IssueThumb {
   coverUrl: string;
   /** 운영자가 썸네일을 확인했는지 */
   checked: boolean;
+  /** 아침판 배치 ("" = 날짜에 따라 자동) */
+  layout: IssueLayout | "";
+  /** 아침판 숫자 칩 — 한 줄에 하나(최대 3줄), 맨 앞 ▲·▼ 선택. 비우면 오늘 기사 제목에서 */
+  stats: string;
 }
 
-export const EMPTY_THUMB: IssueThumb = { scene: "", costume: "", kong: "auto", mood: "", bubble: "", caption: "", topic: "", shareUrl: "", cover: "default", coverUrl: "", checked: false };
+export const EMPTY_THUMB: IssueThumb = { scene: "", costume: "", kong: "auto", mood: "", bubble: "", caption: "", topic: "", shareUrl: "", cover: "default", coverUrl: "", checked: false, layout: "", stats: "" };
 
 /** 올린 그림 주소 — 우리 파일 주소(/api/files/…)나 https 만 */
 const imageUrl = (v: unknown) => {
@@ -350,6 +394,13 @@ export function parseThumb(raw: unknown): IssueThumb {
     cover: cover === "upload" && !coverUrl ? "default" : cover,
     coverUrl,
     checked: o.checked === true,
+    layout: isIssueLayout(o.layout) ? o.layout : "",
+    stats: (Array.isArray(o.stats) ? o.stats.join("\n") : typeof o.stats === "string" ? o.stats : "")
+      .split(/\r?\n/)
+      .map((l: string) => l.trim().slice(0, THUMB_LIMITS.stat + 2))
+      .filter(Boolean)
+      .slice(0, 3)
+      .join("\n"),
   };
 }
 
@@ -367,7 +418,7 @@ export function studyTopic(thumb: IssueThumb, extras: IssueExtras): string {
 }
 
 /** 썸네일 그림 디자인 판 — 그리는 방식을 바꾸면 올려서, 이미 공유된 주소도 새 그림으로 가져가게 */
-export const OG_DESIGN = 3;
+export const OG_DESIGN = 4;
 
 /** 썸네일 버전 — 썸네일·제목을 고치거나 디자인 판이 바뀌면 달라져요 */
 export const thumbVersion = (issue: Pick<BriefingIssue, "updatedAt">) => `${issue.updatedAt.toString(36)}${OG_DESIGN}`;

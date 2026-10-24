@@ -499,10 +499,99 @@ function speech(): string {
   return `${d}${body}`;
 }
 
-export const SCENE_SVG: Record<SceneKey, (mood: ThumbMood) => string> = {
+/* ------------------------------------------------------------------ */
+/* 금리 계기판 — 저금리(파랑)~고금리(빨강) 반원 눈금과 바늘 (어두운 바탕)      */
+/* ------------------------------------------------------------------ */
+
+/** 계기판 중심·반지름 — briefing-og 가 양 끝에 '저금리·고금리' 글자를 얹어요 */
+export const GAUGE = { cx: 905, cy: 410, r: 250 } as const;
+
+function gauge(mood: ThumbMood, opts: SceneOpts = {}): string {
+  const d = new Defs();
+  const sky = d.lin("sky", [[0, "#0b1040"], [1, "#1c2266"]], 0, 0, 1, 1);
+  const soft = d.blur("soft", 60);
+  const glow = d.blur("glow", 12);
+  const sh = d.blur("sh", 14);
+  const face = d.rad("fc", [[0, "#2a3290"], [1, "#151a55"]], 0.5, 0.9, 0.9);
+  const needleG = d.lin("nd", [[0, "#fff1a8"], [1, "#ffc93d"]], 0, 0, 1, 0);
+  const { cx, cy, r } = GAUGE;
+  const pt = (deg: number, rr: number) => [cx + Math.cos((deg * Math.PI) / 180) * rr, cy - Math.sin((deg * Math.PI) / 180) * rr] as const;
+  const arc = (a1: number, a2: number, rr: number) => {
+    const [x1, y1] = pt(a1, rr);
+    const [x2, y2] = pt(a2, rr);
+    return `M${x1.toFixed(1)} ${y1.toFixed(1)}A${rr} ${rr} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+  };
+  // 띠: 저금리(파랑) → 보통(노랑) → 고금리(빨강) — 사이를 2px 띄워서
+  const bands: [number, number, string][] = [
+    [180, 122, "#5b8cff"],
+    [120, 62, "#ffd84d"],
+    [60, 0, "#ff4d6d"],
+  ];
+  const bandSvg = bands
+    .map(([a1, a2, c]) => `<path d="${arc(a1, a2, r)}" stroke="${c}" stroke-width="44" fill="none" opacity=".25" filter="${glow}"/><path d="${arc(a1, a2, r)}" stroke="${c}" stroke-width="40" fill="none"/>`)
+    .join("");
+  let ticks = "";
+  for (let i = 0; i <= 18; i++) {
+    const deg = 180 - i * 10;
+    const [x1, y1] = pt(deg, r - 34);
+    const [x2, y2] = pt(deg, r - (i % 3 === 0 ? 62 : 50));
+    ticks += `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}" stroke="#ffffff" stroke-opacity="${i % 3 === 0 ? 0.75 : 0.35}" stroke-width="${i % 3 === 0 ? 4 : 2.5}" stroke-linecap="round"/>`;
+  }
+  // 바늘: 오름 = 고금리 쪽, 내림 = 저금리 쪽, 보통 = 가운데보다 조금 오른쪽
+  const p = mood === "up" ? 0.8 : mood === "down" ? 0.22 : 0.64;
+  const deg = 180 - p * 180;
+  const [tx, ty] = pt(deg, r - 70);
+  const [lx, ly] = pt(deg + 90, 14);
+  const [rx, ry] = pt(deg - 90, 14);
+  const needle = `M${lx.toFixed(1)} ${ly.toFixed(1)}L${tx.toFixed(1)} ${ty.toFixed(1)}L${rx.toFixed(1)} ${ry.toFixed(1)}Z`;
+  // 저금리 칸 자물쇠 (‘초저금리’ 기사일 때)
+  const [kx, ky] = pt(151, r);
+  const lock = opts.lockLow
+    ? `<g transform="translate(${kx.toFixed(1)} ${ky.toFixed(1)})">` +
+      `<circle r="34" fill="#0b1040" stroke="#ffffff" stroke-opacity=".9" stroke-width="3"/>` +
+      `<path d="M-10 -4V-12a10 10 0 0 1 20 0V-4" stroke="#ffffff" stroke-width="4.5" fill="none" stroke-linecap="round"/>` +
+      `<rect x="-15" y="-5" width="30" height="22" rx="5" fill="#ffffff"/>` +
+      `<circle cy="5" r="3.5" fill="#0b1040"/>` +
+      `</g>`
+    : "";
+  let grid = "";
+  for (let x = 0; x <= 1200; x += 60) grid += `<path d="M${x} 0V630" stroke="#ffffff" stroke-opacity=".035" stroke-width="1"/>`;
+  for (let y = 0; y <= 630; y += 60) grid += `<path d="M0 ${y}H1200" stroke="#ffffff" stroke-opacity=".035" stroke-width="1"/>`;
+  const body =
+    "" +
+    bg(sky) +
+    grid +
+    blob(1120, 90, 170, "#ff4d6d", soft, mood === "down" ? 0.18 : 0.38) +
+    blob(cx, cy - 60, 220, "#5b6cff", soft, 0.35) +
+    blob(420, 560, 220, "#533afd", soft, 0.3) +
+    // 받침 · 그림자
+    shadow(cx, cy + 48, 290, 16, sh, 0.45) +
+    `<path d="M${cx - r - 34} ${cy} A${r + 34} ${r + 34} 0 0 1 ${cx + r + 34} ${cy} Z" fill="${face}"/>` +
+    `<path d="M${cx - r - 34} ${cy} A${r + 34} ${r + 34} 0 0 1 ${cx + r + 34} ${cy}" stroke="#ffffff" stroke-opacity=".18" stroke-width="3" fill="none"/>` +
+    `<rect x="${cx - r - 44}" y="${cy}" width="${(r + 44) * 2}" height="26" rx="13" fill="#262d7a"/>` +
+    bandSvg +
+    ticks +
+    lock +
+    // 바늘 · 중심
+    `<path d="${needle}" fill="#000000" opacity=".35" transform="translate(4 8)"/>` +
+    `<path d="${needle}" fill="${needleG}"/>` +
+    `<circle cx="${cx}" cy="${cy}" r="24" fill="#ffd84d"/><circle cx="${cx}" cy="${cy}" r="11" fill="#1c1e54"/>` +
+    // % 반짝이
+    `<g opacity=".9"><circle cx="1110" cy="150" r="9" fill="none" stroke="#ffffff" stroke-width="4"/><circle cx="1140" cy="182" r="9" fill="none" stroke="#ffffff" stroke-width="4"/><path d="M1146 146L1104 186" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/></g>` +
+    `<path d="M700 120l5 11 11 5-11 5-5 11-5-11-11-5 11-5z" fill="#ffd84d"/>`;
+  return `${d}${body}`;
+}
+
+export interface SceneOpts {
+  /** 금리 계기판: 저금리 칸에 자물쇠 (‘초저금리’ 기사) */
+  lockLow?: boolean;
+}
+
+export const SCENE_SVG: Record<SceneKey, (mood: ThumbMood, opts?: SceneOpts) => string> = {
   speech,
   market,
   rate,
+  gauge,
   fx,
   oil,
   housing,
@@ -514,6 +603,6 @@ export const SCENE_SVG: Record<SceneKey, (mood: ThumbMood) => string> = {
   news,
 };
 
-export function sceneSvg(key: SceneKey, mood: ThumbMood): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${SCENE_W}" height="${SCENE_H}" viewBox="0 0 ${SCENE_W} ${SCENE_H}">${SCENE_SVG[key](mood)}</svg>`;
+export function sceneSvg(key: SceneKey, mood: ThumbMood, opts: SceneOpts = {}): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${SCENE_W}" height="${SCENE_H}" viewBox="0 0 ${SCENE_W} ${SCENE_H}">${SCENE_SVG[key](mood, opts)}</svg>`;
 }

@@ -36,7 +36,7 @@ async function EditIssue({ rawId }: { rawId: string }) {
   const items = await issueItems(issue.date, issue.edition, { admin: true });
   const content = arrangeLetter(items);
   // 썸네일 칸을 비워 두면 무엇으로 그려지는지 (관리자 화면에 '자동 — …'로 보여 줌)
-  const comicAuto = comicPlan(issue, EMPTY_THUMB, content.headline?.title ?? "").auto;
+  const comicAuto = comicPlan(issue, EMPTY_THUMB, content.headline?.title ?? "", content.stories.map((n) => n.title)).auto;
   const thumbAuto = { ...comicAuto, topic: studyTopic(EMPTY_THUMB, issue.extras) || splitTitle(issue.title)[0] };
   const groups: { label: string; desc: string; list: NewsItem[] }[] =
     issue.edition === "morning"

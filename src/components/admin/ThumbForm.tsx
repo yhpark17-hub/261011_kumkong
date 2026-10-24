@@ -4,13 +4,29 @@ import { startTransition, useActionState, useEffect, useRef, useState } from "re
 import { AlertTriangle, Check, ImageUp, Loader2, X } from "lucide-react";
 import { saveIssueThumb, type ThumbFormState } from "@/app/admin/issue-actions";
 import { formatShort } from "@/lib/date";
-import { COSTUMES, SCENES, THUMB_LIMITS, THUMB_MOODS, type CostumeKey, type CoverMode, type IssueEdition, type IssueThumb, type SceneKey, type ThumbMood } from "@/lib/news-meta";
+import {
+  COSTUMES,
+  ISSUE_LAYOUTS,
+  SCENES,
+  THUMB_LIMITS,
+  THUMB_MOODS,
+  type CostumeKey,
+  type CoverMode,
+  type IssueEdition,
+  type IssueLayout,
+  type IssueThumb,
+  type SceneKey,
+  type ThumbMood,
+} from "@/lib/news-meta";
 import { captionFit, headlineFit, speechFit, topicFit } from "@/lib/og-text";
 import { uploadFile } from "@/lib/upload-client";
 import { BriefingCover } from "../magazine/BriefingBrand";
 import { cn } from "../ui";
 
 export interface ThumbAuto {
+  layout: IssueLayout;
+  /** 자동 숫자 칩 (한 줄에 하나) */
+  stats: string;
   scene: SceneKey;
   costume: CostumeKey;
   mood: ThumbMood;
@@ -111,10 +127,12 @@ export function ThumbForm({
   const [cover, setCover] = useState<CoverMode>(initial.cover);
   const [coverUrl, setCoverUrl] = useState(initial.coverUrl);
   const [checked, setChecked] = useState(initial.checked);
+  const [layout, setLayout] = useState<IssueLayout | "">(initial.layout);
+  const [stats, setStats] = useState(initial.stats);
   const morning = edition === "morning";
 
   // 미리보기 주소 — 글자를 칠 때마다가 아니라 잠깐 멈추면 다시 그려요
-  const query = new URLSearchParams({ scene, costume, kong, mood, bubble, caption, topic }).toString();
+  const query = new URLSearchParams({ scene, costume, kong, mood, bubble, caption, topic, layout, stats }).toString();
   const [previewQuery, setPreviewQuery] = useState(query);
   useEffect(() => {
     const t = window.setTimeout(() => setPreviewQuery(query), 500);
@@ -143,7 +161,9 @@ export function ThumbForm({
     shareUrl !== initial.shareUrl ||
     cover !== initial.cover ||
     coverUrl !== initial.coverUrl ||
-    checked !== initial.checked;
+    checked !== initial.checked ||
+    layout !== initial.layout ||
+    stats !== initial.stats;
 
   return (
     <form
@@ -194,7 +214,18 @@ export function ThumbForm({
         )}
         {morning ? (
           <fieldset className="space-y-3">
-            <legend className="type-caption font-semibold text-ink-secondary">뉴스 그림 — 칸을 채우는 주제 그림 + 왼쪽 아래 제목</legend>
+            <legend className="type-caption font-semibold text-ink-secondary">뉴스 그림 — 날마다 배치·그림을 바꿔 매번 다른 썸네일로</legend>
+            <label className="block">
+              <span className="mb-1 block type-caption text-ink-secondary">배치</span>
+              <select name="layout" value={layout} onChange={(e) => setLayout(e.target.value as IssueLayout | "")} className="input w-full">
+                <option value="">자동 — {ISSUE_LAYOUTS.find((x) => x.key === auto.layout)?.label ?? auto.layout} (날짜에 따라 번갈아)</option>
+                {ISSUE_LAYOUTS.map((x) => (
+                  <option key={x.key} value={x.key}>
+                    {x.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <label className="block">
               <span className="mb-1 block type-caption text-ink-secondary">뉴스 그림</span>
               <select name="scene" value={scene} onChange={(e) => setScene(e.target.value as SceneKey | "")} className="input w-full">
@@ -259,6 +290,11 @@ export function ThumbForm({
               </span>
               <input name="caption" value={caption} onChange={(e) => setCaption(e.target.value)} maxLength={THUMB_LIMITS.caption} placeholder={auto.caption || "예: 트럼프, 중국산 수입품 관세 인상 예고"} className="input w-full" />
               {(caption || auto.caption) && <FitNote fit={captionNow} what="아래 띠가" />}
+            </label>
+            <label className="block">
+              <span className="mb-1 block type-caption text-ink-secondary">숫자 칩 — 큰 글씨형·숫자판에 나와요 (한 줄에 하나, 최대 3줄 · 맨 앞 ▲ 오름 / ▼ 내림)</span>
+              <textarea name="stats" value={stats} onChange={(e) => setStats(e.target.value)} rows={3} placeholder={auto.stats || "▼ 연 4% 미만 가계대출 비중 12.9%\n▲ 브렌트유 117달러"} className="input w-full resize-y" />
+              <p className="mt-1 type-micro text-ink-mute">비우면 오늘 기사 제목에서 숫자가 있는 것을 골라요. 숫자는 기사에 실린 그대로만 써 주세요. 큰 글을 *별표*로 감싸면 그 말이 노랗게 크게 보여요.</p>
             </label>
           </fieldset>
         ) : (
