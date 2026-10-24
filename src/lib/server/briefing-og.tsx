@@ -145,7 +145,7 @@ export function comicPlan(issue: Pick<BriefingIssue, "title" | "date">, thumb: I
   const capWord = (thumb.caption || sub).split(/\s+/)[0] ?? "";
   const autoStats = statsFromTitles(stories).filter((x) => !capWord || x.text.split(/\s+/)[0] !== capWord);
   const stats = thumb.stats ? parseStats(thumb.stats) : autoStats;
-  const autoLayoutKey = LAYOUT_ORDER[((dayIndex(issue.date) % 3) + 3) % 3];
+  const autoLayoutKey = LAYOUT_ORDER[(((dayIndex(issue.date) + 2) % 3) + 3) % 3];
   const want = thumb.layout || autoLayoutKey;
   // 숫자판인데 숫자가 없으면 큰 글씨형으로
   const layout: IssueLayout = want === "board" && stats.length < 2 ? "bold" : want;

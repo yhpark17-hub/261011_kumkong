@@ -284,7 +284,7 @@ export const dayIndex = (date: string) => {
 export function autoScene(texts: string[], date?: string): SceneKey {
   for (const t of texts) {
     const hit = earliest(SCENES, t);
-    if (hit) return hit.key === "rate" && date && dayIndex(date) % 2 === 1 ? "gauge" : hit.key;
+    if (hit) return hit.key === "rate" && date && dayIndex(date) % 2 === 0 ? "gauge" : hit.key;
   }
   return "news";
 }
@@ -418,7 +418,7 @@ export function studyTopic(thumb: IssueThumb, extras: IssueExtras): string {
 }
 
 /** 썸네일 그림 디자인 판 — 그리는 방식을 바꾸면 올려서, 이미 공유된 주소도 새 그림으로 가져가게 */
-export const OG_DESIGN = 4;
+export const OG_DESIGN = 5;
 
 /** 썸네일 버전 — 썸네일·제목을 고치거나 디자인 판이 바뀌면 달라져요 */
 export const thumbVersion = (issue: Pick<BriefingIssue, "updatedAt">) => `${issue.updatedAt.toString(36)}${OG_DESIGN}`;
