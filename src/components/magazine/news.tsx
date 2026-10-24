@@ -13,6 +13,8 @@ import {
   itemHref,
   kindOf,
   letterHref,
+  issueThumbSrcSet,
+  issueThumbUrl,
   shareImageUrl,
   volLabel,
   type BriefingIssue,
@@ -332,14 +334,21 @@ export function EditionBadge({ edition, className }: { edition: BriefingIssue["e
   );
 }
 
-/** 브리핑 표지 — 운영자가 고른 것: 기본 표지 / 공유 썸네일과 같은 그림 / 직접 올린 그림 */
-function IssueCover({ issue, size, className }: { issue: BriefingIssue; size?: "sm"; className?: string }) {
+/**
+ * 브리핑 표지 — 기본은 그날 썸네일(카톡 공유 그림과 같은 그림)이에요. 운영자가 판 색 표지나 직접 올린 그림으로 바꿀 수 있어요.
+ * 그린 썸네일은 카드 크기에 맞는 배율을 브라우저가 골라요 (sizes = 화면에 보이는 폭).
+ */
+function IssueCover({ issue, size, className, sizes = "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" }: { issue: BriefingIssue; size?: "sm"; className?: string; sizes?: string }) {
   const t = issue.thumb;
-  const src = t.cover === "share" ? shareImageUrl(issue) : t.cover === "upload" && t.coverUrl ? t.coverUrl : null;
-  if (src)
-    // eslint-disable-next-line @next/next/no-img-element -- 그날 그린 썸네일·운영자가 올린 그림
-    return <img src={src} alt="" loading="lazy" decoding="async" className={cn("bg-canvas-soft object-cover", className)} />;
-  return <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`조회 ${issue.views.toLocaleString()}`} noteIcon="eye" size={size} className={className} />;
+  if (t.cover === "brand" || (t.cover === "upload" && !t.coverUrl))
+    return <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`조회 ${issue.views.toLocaleString()}`} noteIcon="eye" size={size} className={className} />;
+  if (t.cover === "upload" || t.shareUrl)
+    // eslint-disable-next-line @next/next/no-img-element -- 운영자가 올린 그림
+    return <img src={t.cover === "upload" ? t.coverUrl : shareImageUrl(issue)} alt="" loading="lazy" decoding="async" className={cn("bg-canvas-soft object-cover", className)} />;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- 그날 그린 썸네일
+    <img src={issueThumbUrl(issue)} srcSet={issueThumbSrcSet(issue)} sizes={sizes} alt="" loading="lazy" decoding="async" className={cn("bg-canvas-soft object-cover", className)} />
+  );
 }
 
 /** 브리핑 한 호 카드 — 카드(크게) / 목록(글만, 왼쪽 판 색 줄 + 판 이름표로 구분) */
@@ -404,7 +413,7 @@ export function BriefingHeroCard({ issue }: { issue: BriefingIssue }) {
       href={letterHref(issue.date, issue.edition)}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-level-1 transition-shadow hover:shadow-level-2"
     >
-      <IssueCover issue={issue} className="aspect-[16/9] w-full" />
+      <IssueCover issue={issue} className="aspect-[16/9] w-full" sizes="(min-width: 1024px) 720px, 100vw" />
       <span className={cn("h-1.5 w-full", EDITION_TONE[issue.edition].bar)} aria-hidden />
       <span className="flex flex-1 flex-col p-5 md:p-6">
         <span className="flex flex-wrap items-center gap-2 type-caption">

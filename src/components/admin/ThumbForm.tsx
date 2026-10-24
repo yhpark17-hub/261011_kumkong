@@ -36,8 +36,8 @@ export interface ThumbAuto {
 }
 
 const COVER_OPTIONS: { key: CoverMode; label: string; desc: string }[] = [
-  { key: "default", label: "기본 표지", desc: "판 색 하늘 + 금콩 로고 (지금처럼)" },
-  { key: "share", label: "공유 썸네일과 같은 그림", desc: "왼쪽 위 그림을 사이트 카드에도" },
+  { key: "default", label: "오늘 썸네일 (기본)", desc: "카톡 공유 그림과 같은 그림을 브리핑 목록·카드에도" },
+  { key: "brand", label: "판 색 표지", desc: "판 색 하늘 + 금콩 로고 (예전 기본 표지)" },
   { key: "upload", label: "직접 올린 그림", desc: "16:9 그림을 올려 주세요" },
 ];
 
@@ -195,11 +195,11 @@ export function ThumbForm({
         <div>
           <p className="mb-1.5 type-caption font-semibold text-ink-secondary">시사 뉴스 화면 표지 (첫 화면·목록 카드)</p>
           <div className="overflow-hidden rounded-lg border border-hairline">
-            {cover === "default" || (cover === "upload" && !coverUrl) ? (
+            {cover === "brand" || (cover === "upload" && !coverUrl) ? (
               <BriefingCover edition={edition} date={formatShort(date)} note={`조회 ${views.toLocaleString()}`} noteIcon="eye" className="aspect-[16/9] w-full" />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element -- 미리보기
-              <img src={cover === "share" ? share : coverUrl} alt="사이트 표지 미리보기" className="aspect-[16/9] w-full bg-canvas-soft object-cover" />
+              <img src={cover === "upload" ? coverUrl : share} alt="사이트 표지 미리보기" className="aspect-[16/9] w-full bg-canvas-soft object-cover" />
             )}
           </div>
         </div>

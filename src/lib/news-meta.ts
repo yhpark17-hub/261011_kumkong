@@ -331,7 +331,8 @@ const MOOD_UP = /반등|상승|급등|최고|회복|흑자|돌파|호조|증가|
 export const autoMood = (text: string): ThumbMood => (MOOD_DOWN.test(text) ? "down" : MOOD_UP.test(text) ? "up" : "neutral");
 
 /** 사이트 표지(시사 뉴스 첫 화면·목록 카드) — 기본 표지 / 공유 썸네일과 같은 그림 / 직접 올린 그림 */
-export type CoverMode = "default" | "share" | "upload";
+/** 사이트 표지 — default: 그날 썸네일(공유 그림과 같은 것) / brand: 판 색 표지 / upload: 직접 올린 그림 */
+export type CoverMode = "default" | "brand" | "upload";
 
 export const THUMB_LIMITS = { bubble: 44, caption: 64, topic: 120, stat: 30 } as const;
 
@@ -380,7 +381,8 @@ export function parseThumb(raw: unknown): IssueThumb {
     }
   }
   const o = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
-  const cover = o.cover === "share" || o.cover === "upload" ? o.cover : "default";
+  // 예전 'share'(공유 그림과 같은 표지)는 이제 기본이에요
+  const cover = o.cover === "brand" || o.cover === "upload" ? o.cover : "default";
   const coverUrl = imageUrl(o.coverUrl);
   return {
     scene: isScene(o.scene) ? o.scene : "",
@@ -422,6 +424,16 @@ export const OG_DESIGN = 5;
 
 /** 썸네일 버전 — 썸네일·제목을 고치거나 디자인 판이 바뀌면 달라져요 */
 export const thumbVersion = (issue: Pick<BriefingIssue, "updatedAt">) => `${issue.updatedAt.toString(36)}${OG_DESIGN}`;
+
+/** 사이트 화면용 썸네일 (배율 0.5~2 — 카드 크기에 맞춰 그린 그림을 골라 쓰면 또렷해요) */
+export const ISSUE_THUMB_SCALES = [0.5, 0.75, 1, 1.5, 2] as const;
+export type IssueThumbScale = (typeof ISSUE_THUMB_SCALES)[number];
+export const isIssueThumbScale = (v: number): v is IssueThumbScale => (ISSUE_THUMB_SCALES as readonly number[]).includes(v);
+
+export const issueThumbUrl = (issue: Pick<BriefingIssue, "date" | "edition" | "updatedAt">, scale: IssueThumbScale = 1) =>
+  `/magazine/letter/${issue.date}/${issue.edition}/thumb?v=${thumbVersion(issue)}${scale === 1 ? "" : `&s=${scale}`}`;
+
+export const issueThumbSrcSet = (issue: Pick<BriefingIssue, "date" | "edition" | "updatedAt">) => ISSUE_THUMB_SCALES.map((s) => `${issueThumbUrl(issue, s)} ${1200 * s}w`).join(", ");
 
 /** 공유 썸네일 주소 — 올린 그림이 있으면 그것, 아니면 그날 그린 그림 (고칠 때마다 주소가 바뀌어 카톡도 새로 가져가요) */
 export function shareImageUrl(issue: Pick<BriefingIssue, "date" | "edition" | "updatedAt" | "thumb">): string {

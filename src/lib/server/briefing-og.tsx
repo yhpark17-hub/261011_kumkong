@@ -1,6 +1,6 @@
 import "server-only";
 import { ImageResponse } from "next/og";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { formatDayHeading } from "@/lib/date";
 import {
   autoCostume,
@@ -610,19 +610,31 @@ function NoonStudy({ issue, topic, terms }: { issue: BriefingIssue; topic: strin
  * 한 호의 공유 썸네일 — thumb 를 주면 저장된 값 대신 그걸로 (관리자 미리보기).
  * admin 이면 초안 기사까지 읽어요.
  */
-export async function briefingOgImage(issue: BriefingIssue, { thumb = issue.thumb, admin = false, headers }: { thumb?: IssueThumb; admin?: boolean; headers?: HeadersInit } = {}) {
+export async function briefingOgImage(
+  issue: BriefingIssue,
+  { thumb = issue.thumb, admin = false, headers, scale = 1 }: { thumb?: IssueThumb; admin?: boolean; headers?: HeadersInit; scale?: number } = {},
+) {
   const fonts = await ogFonts();
   const items = await issueItems(issue.date, issue.edition, { admin }).catch(() => []);
+  let view: ReactElement;
   if (issue.edition === "noon") {
     const terms = items.filter((n) => n.section === "term").map((n) => n.title);
     const topic = studyTopic(thumb, issue.extras) || splitTitle(issue.title)[0];
-    return new ImageResponse(<NoonStudy issue={issue} topic={topic} terms={terms} />, { ...OG_SIZE, fonts, headers });
+    view = <NoonStudy issue={issue} topic={topic} terms={terms} />;
+  } else {
+    const letter = arrangeLetter(items);
+    const plan = comicPlan(issue, thumb, letter.headline?.title ?? "", letter.stories.map((n) => n.title));
+    view =
+      plan.layout === "bold" ? <MorningBold issue={issue} plan={plan} /> : plan.layout === "board" ? <MorningBoard issue={issue} plan={plan} /> : <MorningThumb issue={issue} plan={plan} />;
   }
-  const letter = arrangeLetter(items);
-  const plan = comicPlan(issue, thumb, letter.headline?.title ?? "", letter.stories.map((n) => n.title));
-  const view =
-    plan.layout === "bold" ? <MorningBold issue={issue} plan={plan} /> : plan.layout === "board" ? <MorningBoard issue={issue} plan={plan} /> : <MorningThumb issue={issue} plan={plan} />;
-  return new ImageResponse(view, { ...OG_SIZE, fonts, headers });
+  if (scale === 1) return new ImageResponse(view, { ...OG_SIZE, fonts, headers });
+  // 같은 그림을 그 배율 크기로 (도형·글자라 또렷해요)
+  return new ImageResponse(
+    <div style={{ display: "flex", width: OG_SIZE.width * scale, height: OG_SIZE.height * scale }}>
+      <div style={{ display: "flex", width: OG_SIZE.width, height: OG_SIZE.height, flexShrink: 0, transform: `scale(${scale})`, transformOrigin: "top left" }}>{view}</div>
+    </div>,
+    { width: Math.round(OG_SIZE.width * scale), height: Math.round(OG_SIZE.height * scale), fonts, headers },
+  );
 }
 
 export async function fallbackOgImage(headers?: HeadersInit) {
