@@ -99,8 +99,8 @@ export function FallbackImage() {
 const UNIT_NUM = /\d[\d,.]*\s?(?:조원|조|억원|억|만원|만|천|%p|%|bp|달러|원|배럴|배|개|명|건|포인트|MW)/g;
 
 /** 숫자의 방향 — 분위기(좋다·나쁘다)가 아니라 숫자가 오르내렸다는 말이 있을 때만 */
-const NUM_UP = /상승|급등|오름|올라|증가|급증|늘|돌파|최고|확대|인상/;
-const NUM_DOWN = /하락|급락|내림|내려|감소|급감|줄|최저|축소|인하/;
+const NUM_UP = /상승|급등|반등|회복|오름|올라|오른|증가|급증|늘|돌파|최고|확대|인상/;
+const NUM_DOWN = /하락|급락|내림|내려|내린|감소|급감|줄|최저|축소|인하/;
 function numDir(text: string): ThumbStat["dir"] {
   const u = text.search(NUM_UP);
   const d = text.search(NUM_DOWN);
@@ -128,7 +128,7 @@ export function splitStat(text: string): { value: string; label: string } {
   const last = all[all.length - 1];
   if (!last || last.index == null) return { value: "", label: text };
   const value = last[0].trim();
-  const label = (text.slice(0, last.index) + text.slice(last.index + last[0].length)).replace(/\s+/g, " ").replace(/\s*[·,]\s*$/, "").trim();
+  const label = (text.slice(0, last.index) + text.slice(last.index + last[0].length)).replace(/\s+/g, " ").replace(/\s+([,·])/g, "$1").replace(/\s*[·,]\s*$/, "").trim();
   return { value, label };
 }
 
@@ -315,6 +315,18 @@ function MorningThumb({ issue, plan }: { issue: BriefingIssue; plan: Plan }) {
 
 const GOLD = "#ffd84d";
 
+/** 쉼표가 있으면 쉼표에서 두 줄로 (‘오늘 금통위,’ / ‘동결 무게’) — 안 들어가면 보통 줄바꿈 */
+function fitByComma(text: string, sizes: number[], width: number, maxLines: number): { size: number; lines: string[] } {
+  const parts = text.split(/(?<=,)\s+/);
+  if (parts.length === 2)
+    for (const size of sizes) {
+      const a = fitText(parts[0], [size], width, 1);
+      const b = fitText(parts[1], [size], width, 1);
+      if (a.lines.length === 1 && b.lines.length === 1 && !a.lines[0].endsWith("…") && !b.lines[0].endsWith("…")) return { size, lines: parts };
+    }
+  return fitText(text, sizes, width, maxLines);
+}
+
 /** 숫자판 바탕 — 남색 그라데이션 + 옅은 격자 + 빛 번짐 */
 const BOARD_BG = svgUri(
   `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">` +
@@ -379,8 +391,8 @@ function MorningBold({ issue, plan }: { issue: BriefingIssue; plan: Plan }) {
   const room = chips.length ? 300 : 360;
   let block: ReactNode;
   if (giant) {
-    const pre = giant.pre ? fitText(giant.pre, [54, 48, 44], 600, 2) : null;
-    const post = giant.post ? fitText(giant.post, [62, 56, 50, 44], 600, 2) : null;
+    const pre = giant.pre ? fitByComma(giant.pre, [54, 48, 44], 600, 2) : null;
+    const post = giant.post ? fitByComma(giant.post, [62, 56, 50, 44], 600, 2) : null;
     const rest = (pre ? pre.lines.length * pre.size * 1.14 + 8 : 0) + (post ? post.lines.length * post.size * 1.14 + 8 : 0);
     const big = [170, 150, 134, 118, 104, 92].find((sz) => {
       const f = fitText(giant.big, [sz], 600, 1);
@@ -440,7 +452,7 @@ function MorningBold({ issue, plan }: { issue: BriefingIssue; plan: Plan }) {
 
 /** 숫자판 — 왼쪽 제목, 오른쪽 오늘의 숫자 카드 2~3장 */
 function MorningBoard({ issue, plan }: { issue: BriefingIssue; plan: Plan }) {
-  const head = fitText(plainText(plan.bubble), [60, 54, 48, 44], 560, 3);
+  const head = fitByComma(plainText(plan.bubble), [60, 54, 48, 44], 560, 3);
   const cap = plan.caption ? fitText(plan.caption, [24, 22, 20], 560, 2) : null;
   const cards = plan.stats.slice(0, 3);
   const cardH = cards.length === 3 ? 122 : 150;
