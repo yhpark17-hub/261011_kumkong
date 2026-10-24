@@ -308,6 +308,12 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 목표: 유튜브 썸네일처럼 **그날 뉴스만을 위한 한 장**. 정해진 틀에서 색만 바꾸는 게 아니라 **매번 구도·그림·색·글자 배치를 새로 짭니다.**
 카톡 공유 그림과 사이트 브리핑 카드에 같은 그림이 나가요. 어제·그제 썸네일과 나란히 놓았을 때 확실히 달라 보여야 합니다.
 
+**기준은 '디자인팀이 만든 깔끔한 한 장'이에요** (운영자 피드백 — 잘된 예: 10/19 '10월은 동결, 11월은 인상?' 달력).
+- 주인공 그림은 1~2개만 크게, 나머지는 비워요. 비·격자·작은 점처럼 화면을 메우는 무늬는 쓰지 않아요.
+- 물건은 **바닥선 위에 놓거나 그림자를 달아** 붕 떠 보이지 않게 해요. 바닥선·지평선은 한 높이로, 길·땅처럼 이어지는 것은 끝이 서로 맞게 그려요.
+- 바퀴·다리·받침은 같은 기준선에 닿게, 같은 줄의 카드·이름표는 같은 높이·간격으로 맞춰요.
+- 글자와 그림은 겹치지 않게 칸을 나눠요 (글 쪽 / 그림 쪽).
+
 1. **장면 한 줄 먼저** — 오늘 헤드라인을 한 장면(비유)으로 정해요. 예시 (지난 호들):
    - 주가 급락·성장률 상향 → 화면을 대각선으로 갈라 파란 쪽 '-5.46%', 주황 쪽 '3.3%'
    - 서킷브레이커 → 빨간 경광등과 '결국 멈췄다'
@@ -320,9 +326,11 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
    - 인물 발언 → 그 사람 일러스트 + 말풍선
 2. **후킹 문구** — 큰 글은 6~14자, 강조 한 단어(`*별표*`)나 숫자 하나를 아주 크게(100~200). 작은 글은 사실 한 줄(24~30).
    카드에서는 작게 보여요. 작은 글은 24 이상, 글 상자는 2~4개만 둬요.
-3. **사람 뉴스**(발언·인물이 주인공)는 `kk-person` 으로 그 사람을 그리고 말풍선(`kk-bubble`)을 달아요.
+3. **사람 뉴스**(발언·인물이 주인공)는 `kk-portrait` 로 그 사람을 크게 그리고 말풍선(`kk-bubble`)을 달아요.
+   - 따로 그려 둔 인물은 `who` 로 불러요: `shin-hyunsong`(신현송 한은 총재) · `kevin-warsh`(케빈 워시 연준 의장).
+   - 그 밖의 인물은 공개 사진 속 생김새를 떠올려 `hair`·`hc`·`glasses`·`eyes`·`skin`·`suit` 를 그 사람에 가깝게 고르고, 이름표로 누군지 알려요.
    - 발언은 **기사에 실린 말 그대로 따옴표째**(“ ”)만 넣어요.
-   - 표정은 존중하는 것(calm·speak·serious·smile)만 써요. 찡그리거나 우스꽝스럽게 만든 캐리커처는 쓰지 않아요.
+   - 표정은 존중하는 것(smile·speak·grin, 꼭 필요할 때 serious)만 써요. 찡그리거나 우스꽝스럽게 만든 캐리커처는 쓰지 않아요.
    - 그 사람을 알려 주는 이름표 한 줄을 달아요 (예: `신현송 한은 총재 · 23일 국정감사`).
    - 사진·실제 로고·국기·기관 문장은 쓰지 않아요 (저작권·초상).
 4. **색과 분위기** — 바탕을 날마다 바꿔요 (깊은 남색·노랑·민트·크림·경보 빨강·밤비·하늘…).
@@ -334,7 +342,7 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 
 ```json
 {
-  "svg": "<defs>…</defs><rect width='1200' height='630' fill='url(#bg)'/><kk-person x='680' y='150' s='1' hair='side' hc='#2f2c2b' age='senior' face='serious' pose='point'/>",
+  "svg": "<defs>…</defs><rect width='1200' height='630' fill='url(#bg)'/><kk-portrait who='shin-hyunsong' face='smile' x='690' y='86' s='1'/>",
   "texts": [
     { "t": "한은 기준금리", "x": 60, "y": 112, "w": 560, "size": 36, "weight": 800, "color": "#9fe6f0" },
     { "t": "3.00%", "x": 52, "y": 152, "w": 600, "size": 170, "weight": 900, "color": "#ffffff", "ls": -0.05, "shadow": "hard" },
@@ -362,7 +370,7 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 
 | 부품 | 상자 | 속성 |
 | --- | --- | --- |
-| `person` 인물 상반신 | 400×500 | `hair` side·short·slick·parted·crop·bald·bob·long·bun·wave, `hc` 머리색, `skin` light·medium·tan·deep, `glasses` none·round·square·rim, `suit`·`shirt`·`tie`(색 또는 none), `face` calm·speak·serious·smile·talk·worried·surprised, `age` young·mid·senior, `pose` none·raise(손바닥)·point(검지)·fist |
+| `portrait` 인물 초상 (카툰, 얼굴이 크게) | 480×560 | `who` shin-hyunsong·kevin-warsh (따로 그린 인물) / 또는 `hair` sweep·parted·short·bald·bob·long, `hc` 머리색, `temples` gray, `skin` light·medium·tan·deep, `eyes` narrow·almond, `glasses` none·rect·round·rim, `suit`·`shirt`·`tie`(색 또는 none) · 공통 `face` smile·speak·grin·serious, `flip` |
 | `podium` 연단+마이크 | 360×220 | `c`, `mics` 0~4, `emblem` star·won·none |
 | `kong` 금콩 마스코트 | `size`(기본 300) | `costume` banker·reporter·trader·oil·chip·security·builder·money·shopper·president, 또는 `hold`·`outfit`·`head`·`glasses='1'`·`worried='1'`·`wave='1'` |
 | `bank` 기둥 있는 은행 건물 | 420×300 | `c`(상징색), `stone` |
