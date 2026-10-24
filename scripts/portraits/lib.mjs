@@ -9,9 +9,12 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "../..");
 const r1 = (n) => Math.round(n * 10) / 10;
 
-/** 머리결 한 가닥 — 2차 곡선 p0→c→p1 을 따라 가운데가 두껍고(최대 w) 양끝이 뾰족한 면 */
-export function strand(p0, c, p1, w, fill, op = 1) {
-  const N = 14, L = [], R = [];
+/**
+ * 끝이 뾰족한 선(머리결·속눈썹·입선) — 2차 곡선 p0→c→p1 을 따라 가운데가 두껍고(최대 w) 양끝이 가는 면
+ * skew < 1 이면 굵은 곳이 p0 쪽, > 1 이면 p1 쪽으로 가요
+ */
+export function strand(p0, c, p1, w, fill, op = 1, skew = 1, N = 14) {
+  const L = [], R = [];
   for (let i = 0; i <= N; i++) {
     const t = i / N, u = 1 - t;
     const x = u * u * p0[0] + 2 * u * t * c[0] + t * t * p1[0];
@@ -19,13 +22,67 @@ export function strand(p0, c, p1, w, fill, op = 1) {
     const dx = 2 * u * (c[0] - p0[0]) + 2 * t * (p1[0] - c[0]);
     const dy = 2 * u * (c[1] - p0[1]) + 2 * t * (p1[1] - c[1]);
     const len = Math.hypot(dx, dy) || 1;
-    const h = (w / 2) * Math.pow(Math.sin(Math.PI * Math.min(1, t * 1.15)), 0.8);
+    const h = (w / 2) * Math.pow(Math.sin(Math.PI * Math.min(1, Math.pow(t, skew) * 1.08)), 0.7);
     L.push([x - (dy / len) * h, y + (dx / len) * h]);
     R.push([x + (dy / len) * h, y - (dx / len) * h]);
   }
   const pts = L.concat(R.reverse());
   return `<path d="M${pts.map((p) => `${r1(p[0])} ${r1(p[1])}`).join("L")}Z" fill="${fill}"${op < 1 ? ` opacity="${op}"` : ""} stroke="none"/>`;
 }
+
+/** 늘 같은 결과를 내는 난수 (머리결 흩뿌리기용) */
+export function rng(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+// 2차 곡선의 [a, b] 구간 (끝점 둘 + 조절점)
+function sub([p0, c, p1], a, b) {
+  const at = (t) => [(1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * c[0] + t * t * p1[0], (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * c[1] + t * t * p1[1]];
+  const k0 = (1 - a) * (1 - b), k1 = (1 - a) * b + a * (1 - b), k2 = a * b;
+  return [at(a), [k0 * p0[0] + k1 * c[0] + k2 * p1[0], k0 * p0[1] + k1 * c[1] + k2 * p1[1]], at(b)];
+}
+
+/**
+ * 머리결 다발 — 길잡이 곡선 두 개(g1, g2: [p0, c, p1]) 사이를 n 가닥으로 메워요
+ * colors: [[색, 비율], …], w: [최소, 최대] 두께, jitter: 흔들림(px)
+ */
+export function flow(R, g1, g2, n, { colors, w = [2, 4], op = [0.6, 0.95], jitter = 6, trim = 0.22 }) {
+  const total = colors.reduce((s, c) => s + c[1], 0);
+  let s = "";
+  for (let i = 0; i < n; i++) {
+    const t = (i + R()) / n;
+    const j = () => (R() - 0.5) * 2 * jitter;
+    const g = [0, 1, 2].map((k) => {
+      const p = lerp(g1[k], g2[k], t);
+      return [p[0] + j(), p[1] + j()];
+    });
+    const a = R() * trim, b = 1 - R() * trim;
+    const [q0, qc, q1] = sub(g, a, b);
+    let pick = R() * total, col = colors[0][0];
+    for (const [cc, wgt] of colors) if ((pick -= wgt) <= 0) { col = cc; break; }
+    s += strand(q0, qc, q1, w[0] + R() * (w[1] - w[0]), col, r1(op[0] + R() * (op[1] - op[0])), 0.8 + R() * 0.6, 10);
+  }
+  return s;
+}
+
+/**
+ * 흐림 필터들 — 부드러운 명암(에어브러시)용. 쓸 때는 <g filter="url(#<id>-b<세기>)">
+ * 필터 영역은 그린 모양 크기의 사방 100% — 넓게 잡으면 썸네일 만드는 시간이 크게 늘어요
+ */
+export function blurDefs(id, stds) {
+  return stds.map((s) => `<filter id="${id}-b${s}" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="${s}"/></filter>`).join("");
+}
+
+/** 타원 (회전 rot°) */
+export const ell = (cx, cy, rx, ry, fill, op = 1, rot = 0) =>
+  `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}"${op < 1 ? ` opacity="${op}"` : ""}${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ""}/>`;
 
 /** 머리 바깥 윤곽 — 점 사이를 바깥쪽(시계 방향 기준 왼쪽)으로 살짝 부풀린 곡선. 점마다 [x, y, 부풀림 비율] */
 export function scallop(pts, k = 0.1) {
