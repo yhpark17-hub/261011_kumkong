@@ -73,6 +73,29 @@ export function flow(R, g1, g2, n, { colors, w = [2, 4], op = [0.6, 0.95], jitte
 }
 
 /**
+ * 눈썹 털 — 눈썹 가운데 곡선 [안쪽 끝, 조절점, 바깥 끝] 을 따라 n 가닥.
+ * 안쪽 끝 털은 위로 서고, 바깥으로 갈수록 눈썹 결을 따라 눕고 짧아져요 (눈썹 모양 clipPath 안에 그리면 깔끔)
+ */
+export function browHairs(R, [p0, c, p1], n, { len = 22, w = 3.4, color = "#1a1413", op = 0.85, spread = 6 } = {}) {
+  let s = "";
+  for (let i = 0; i < n; i++) {
+    const t = (i + R() * 0.8) / n, u = 1 - t;
+    const x = u * u * p0[0] + 2 * u * t * c[0] + t * t * p1[0];
+    const y = u * u * p0[1] + 2 * u * t * c[1] + t * t * p1[1];
+    const tx = 2 * u * (c[0] - p0[0]) + 2 * t * (p1[0] - c[0]), ty = 2 * u * (c[1] - p0[1]) + 2 * t * (p1[1] - c[1]);
+    const k = Math.hypot(tx, ty), ux = tx / k, uy = ty / k;
+    const a = Math.min(1, 0.2 + t * 1.1); // 0 이면 위로, 1 이면 결 방향
+    let dx = ux * a, dy = -1 * (1 - a) + uy * a;
+    const m = Math.hypot(dx, dy); dx /= m; dy /= m;
+    const L = len * (1 - 0.4 * t) * (0.85 + R() * 0.3);
+    const off = (R() - 0.5) * spread;
+    const bx = x - uy * off, by = y + Math.abs(ux) * off + 4;
+    s += strand([bx, by], [bx + dx * L * 0.5 - (dy > -0.5 ? 0 : 2 * Math.sign(ux)), by + dy * L * 0.5 - 2], [bx + dx * L, by + dy * L], w * (1 - 0.35 * t), color, op);
+  }
+  return s;
+}
+
+/**
  * 흐림 필터들 — 부드러운 명암(에어브러시)용. 쓸 때는 <g filter="url(#<id>-b<세기>)">
  * 필터 영역은 그린 모양 크기의 사방 100% — 넓게 잡으면 썸네일 만드는 시간이 크게 늘어요
  */
