@@ -22,7 +22,21 @@ export const AI = {
   "lee-hyoungil": { who: "이형일 부총리 겸 재정경제부 장관", exportName: "LEE_HYOUNGIL", id: "lhi", credit: "인물 그림 원본 사진: 대한민국 국회 · 공공누리 제1유형 · 변형" },
   "lee-eogweon": { who: "이억원 금융위원장", exportName: "LEE_EOGWEON", id: "lew", credit: "인물 그림 원본 사진: 대한민국 대통령실 · 공공누리 제1유형 · 변형" },
   "scott-bessent": { who: "스콧 베선트 미국 재무장관", exportName: "SCOTT_BESSENT", id: "sbt", credit: "인물 그림 원본 사진: 미국 재무부 · 퍼블릭 도메인" },
-  "sanae-takaichi": { who: "다카이치 사나에", exportName: "SANAE_TAKAICHI", id: "stk", credit: "" },
+  "sanae-takaichi": { who: "다카이치 사나에 일본 총리", exportName: "SANAE_TAKAICHI", id: "stk", credit: "" },
+  // 표정 바꾼 판 — <kk-portrait who="donald-trump" face="speak"/> 로 불러요 (thumb-portraits.ts 의 FACES)
+  "donald-trump-speak": { who: "도널드 트럼프 미국 대통령 (말하는 얼굴)", exportName: "DONALD_TRUMP_SPEAK", id: "dts", credit: "" },
+  "xi-jinping": { who: "시진핑 중국 국가주석", exportName: "XI_JINPING", id: "xjp", credit: "" },
+  "andy-burnham": { who: "앤디 버넘 영국 총리", exportName: "ANDY_BURNHAM", id: "abn", credit: "" },
+  "emmanuel-macron": { who: "에마뉘엘 마크롱 프랑스 대통령", exportName: "EMMANUEL_MACRON", id: "emc", credit: "" },
+  "friedrich-merz": { who: "프리드리히 메르츠 독일 총리", exportName: "FRIEDRICH_MERZ", id: "fmz", credit: "" },
+  "lee-jaeyong": { who: "이재용 삼성전자 회장", exportName: "LEE_JAEYONG", id: "ljy", credit: "" },
+  "chung-euisun": { who: "정의선 현대자동차그룹 회장", exportName: "CHUNG_EUISUN", id: "ces", credit: "" },
+  "chey-taewon": { who: "최태원 SK그룹 회장", exportName: "CHEY_TAEWON", id: "ctw", credit: "" },
+  "jensen-huang": { who: "젠슨 황 엔비디아 CEO", exportName: "JENSEN_HUANG", id: "jhn", credit: "" },
+  "elon-musk": { who: "일론 머스크 테슬라 CEO", exportName: "ELON_MUSK", id: "emk", credit: "" },
+  "sam-altman": { who: "샘 올트먼 오픈AI CEO", exportName: "SAM_ALTMAN", id: "sal", credit: "" },
+  "dario-amodei": { who: "다리오 아모데이 앤트로픽 CEO", exportName: "DARIO_AMODEI", id: "dam", credit: "" },
+  "mark-zuckerberg": { who: "마크 저커버그 메타 CEO", exportName: "MARK_ZUCKERBERG", id: "mzk", credit: "" },
 };
 
 const BW = 720, BH = 840; // 480×560 상자의 1.5배로 넣어요 (썸네일에서 크게 써도 또렷하게)
@@ -41,12 +55,19 @@ async function make(name) {
     L[i] = 0.299 * r + 0.587 * g + 0.114 * b;
     white[i] = Math.min(r, g, b) > 226 && Math.max(r, g, b) - Math.min(r, g, b) < 22 ? 1 : 0;
   }
+  // 아래 자르기: 양쪽 어깨 쪽 세로줄에서 정장(어두운 색)이 끝나는 높이 중 가장 높은 곳 — 아래 흰 띠(둥근 받침)를 잘라 내요
+  let cropH = H;
+  for (const x of [...Array(Math.floor(W * 0.22)).keys(), ...Array.from({ length: Math.floor(W * 0.22) }, (_, k) => W - 1 - k)]) {
+    let last = -1;
+    for (let y = H - 1; y > H * 0.6; y--) if (L[y * W + x] < 140) { last = y; break; }
+    if (last > 0) cropH = Math.min(cropH, last - 3);
+  }
   // 배경: 위·왼쪽·오른쪽 가장자리에서 흰색을 따라 번져요 (검은 윤곽선에서 멈춰요).
-  // 아래 가장자리는 흰 셔츠와 이어져 있을 수 있어 쓰지 않아요 — 아래 흰 띠는 잘라 내요
+  // 자른 높이 아래로는 번지지 않게 — 아래 흰 띠가 흰 셔츠와 이어져 있어 셔츠까지 지워지곤 했어요
   const bg = new Uint8Array(N), stack = [];
-  const push = (i) => { if (white[i] && !bg[i]) { bg[i] = 1; stack.push(i); } };
+  const push = (i) => { if (i < cropH * W && white[i] && !bg[i]) { bg[i] = 1; stack.push(i); } };
   for (let x = 0; x < W; x++) push(x);
-  for (let y = 0; y < H; y++) { push(y * W); push(y * W + W - 1); }
+  for (let y = 0; y < cropH; y++) { push(y * W); push(y * W + W - 1); }
   while (stack.length) {
     const i = stack.pop(), x = i % W, y = (i - x) / W;
     if (x > 0) push(i - 1);
@@ -54,13 +75,11 @@ async function make(name) {
     if (y > 0) push(i - W);
     if (y < H - 1) push(i + W);
   }
-  // 아래 자르기: 양쪽 어깨 쪽 세로줄에서 정장(어두운 색)이 끝나는 높이 중 가장 높은 곳
-  let cropH = H;
-  for (const x of [...Array(Math.floor(W * 0.22)).keys(), ...Array.from({ length: Math.floor(W * 0.22) }, (_, k) => W - 1 - k)]) {
-    let last = -1;
-    for (let y = H - 1; y > H * 0.6; y--) if (L[y * W + x] < 140) { last = y; break; }
-    if (last > 0) cropH = Math.min(cropH, last - 3);
-  }
+  // 새는지 확인: 아래 가운데(셔츠·넥타이 자리)가 배경으로 잡히면 윤곽선 틈으로 번진 거예요
+  let leak = 0, area = 0;
+  for (let y = Math.floor(cropH * 0.85); y < cropH; y++)
+    for (let x = Math.floor(W * 0.3); x < Math.floor(W * 0.7); x++) { area++; leak += bg[y * W + x]; }
+  if (leak / area > 0.02) console.warn(`${name}: 아래 가운데 ${Math.round((leak / area) * 100)}% 가 배경으로 잡혔어요 — out/${name}-ai.png 에서 셔츠를 확인하세요`);
   // 알파: 배경 0, 배경과 맞닿은 밝은 가장자리 화소(윤곽선 바깥 번짐)는 밝을수록 투명하게
   const rgba = Buffer.alloc(W * cropH * 4);
   for (let y = 0; y < cropH; y++)

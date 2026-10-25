@@ -1,5 +1,5 @@
 /**
- * 다카이치 사나에 — AI 일러스트 (480×560)
+ * 다카이치 사나에 일본 총리 — AI 일러스트 (480×560)
  * 운영자가 만든 일러스트 scripts/portraits/ai/sanae-takaichi.webp 에서 배경을 뗀 것 — 다시 만들려면 node scripts/portraits/ai.mjs sanae-takaichi
  */
 export const SANAE_TAKAICHI = {

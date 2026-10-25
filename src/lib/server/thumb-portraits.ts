@@ -1,18 +1,31 @@
 import "server-only";
+import { ANDY_BURNHAM } from "./portraits/andy-burnham";
+import { CHEY_TAEWON } from "./portraits/chey-taewon";
+import { CHUNG_EUISUN } from "./portraits/chung-euisun";
+import { DARIO_AMODEI } from "./portraits/dario-amodei";
 import { DONALD_TRUMP } from "./portraits/donald-trump";
+import { DONALD_TRUMP_SPEAK } from "./portraits/donald-trump-speak";
+import { ELON_MUSK } from "./portraits/elon-musk";
+import { EMMANUEL_MACRON } from "./portraits/emmanuel-macron";
+import { FRIEDRICH_MERZ } from "./portraits/friedrich-merz";
+import { JENSEN_HUANG } from "./portraits/jensen-huang";
 import { KEVIN_WARSH } from "./portraits/kevin-warsh";
 import { LEE_CHANJIN } from "./portraits/lee-chanjin";
 import { LEE_EOGWEON } from "./portraits/lee-eogweon";
 import { LEE_HYOUNGIL } from "./portraits/lee-hyoungil";
 import { LEE_JAEMYUNG } from "./portraits/lee-jaemyung";
+import { LEE_JAEYONG } from "./portraits/lee-jaeyong";
+import { MARK_ZUCKERBERG } from "./portraits/mark-zuckerberg";
+import { SAM_ALTMAN } from "./portraits/sam-altman";
 import { SANAE_TAKAICHI } from "./portraits/sanae-takaichi";
 import { SCOTT_BESSENT } from "./portraits/scott-bessent";
 import { SHIN_HYUNSONG } from "./portraits/shin-hyunsong";
+import { XI_JINPING } from "./portraits/xi-jinping";
 
 /**
  * 인물 초상 부품 — 브리핑 썸네일 '직접 그린 그림'의 <kk-portrait …/>.
  * 굵은 테두리 + 한 단계 그늘의 카툰 초상 (480×560 상자, 얼굴이 크게 보이는 상반신).
- *   - who: 자주 나오는 인물 — 미리 만들어 둔 일러스트라 한눈에 알아봐요 (표정은 그림 그대로라 face 는 안 먹어요).
+ *   - who: 자주 나오는 인물 — 미리 만들어 둔 일러스트라 한눈에 알아봐요 (표정은 그림 그대로 — 표정 바꾼 판이 있으면 face 로 골라요).
  *     바탕 사진의 출처 표시가 필요하면 썸네일 구석에 자동으로 붙어요 (shin·warsh 는 look="cartoon" 이면 손으로 그린 카툰판)
  *   - 그 밖의 인물은 hair·hc·skin·glasses·eyes·suit… 로 조합 (누군지는 이름표로 알려 줘요)
  *   - face: smile(다문 미소) · speak(말하는 중) · serious(진지) · grin(이가 보이는 미소)
@@ -331,26 +344,46 @@ function custom(a: A, id: string): string {
  * 일러스트가 자유 이용 사진을 바탕으로 한 것이면 그 사진 출처가 붙어요 (credit). lee-chanjin 은 손으로 그린 벡터 그림
  */
 const PHOTO: Record<string, { svg: string; credit: string }> = {
-  "shin-hyunsong": SHIN_HYUNSONG,
-  "kevin-warsh": KEVIN_WARSH,
+  // 경제·금융 당국
   "lee-jaemyung": LEE_JAEMYUNG,
-  "donald-trump": DONALD_TRUMP,
   "lee-hyoungil": LEE_HYOUNGIL,
+  "shin-hyunsong": SHIN_HYUNSONG,
   "lee-eogweon": LEE_EOGWEON,
   "lee-chanjin": LEE_CHANJIN,
+  // 해외 정상·당국
+  "donald-trump": DONALD_TRUMP,
+  "kevin-warsh": KEVIN_WARSH,
   "scott-bessent": SCOTT_BESSENT,
+  "xi-jinping": XI_JINPING,
   "sanae-takaichi": SANAE_TAKAICHI,
+  "andy-burnham": ANDY_BURNHAM,
+  "emmanuel-macron": EMMANUEL_MACRON,
+  "friedrich-merz": FRIEDRICH_MERZ,
+  // 기업
+  "lee-jaeyong": LEE_JAEYONG,
+  "chung-euisun": CHUNG_EUISUN,
+  "chey-taewon": CHEY_TAEWON,
+  "jensen-huang": JENSEN_HUANG,
+  "elon-musk": ELON_MUSK,
+  "sam-altman": SAM_ALTMAN,
+  "dario-amodei": DARIO_AMODEI,
+  "mark-zuckerberg": MARK_ZUCKERBERG,
 };
-const usesPhoto = (a: A) => Boolean(a.who && PHOTO[a.who] && a.look !== "cartoon");
+/** 표정 바꾼 판 — <kk-portrait who="donald-trump" face="speak"/> (없는 표정이면 기본 그림) */
+const FACES: Record<string, Record<string, { svg: string; credit: string }>> = {
+  "donald-trump": { speak: DONALD_TRUMP_SPEAK },
+};
+const photoOf = (a: A) => (a.who && a.look !== "cartoon" ? (FACES[a.who]?.[a.face ?? ""] ?? PHOTO[a.who]) : undefined);
 
 /** 이 초상이 쓰면 썸네일에 붙일 원본 사진 출처 (없으면 null) */
 export function portraitCredit(a: A): string | null {
-  return usesPhoto(a) ? PHOTO[a.who].credit : null;
+  return photoOf(a)?.credit || null;
 }
 
 /** <kk-portrait …/> 안쪽 그림 (480×560 상자, 테두리 색·두께 공통) */
 export function portraitSvg(a: A, id: string): string {
-  if (usesPhoto(a)) return PHOTO[a.who].svg;
+  const photo = photoOf(a);
+  if (photo) return photo.svg;
   const preset = a.who ? PRESETS[a.who] : undefined;
   const inner = preset ? preset(id, a.face ?? "") : custom(a, id);
   return `<g stroke="${O}" stroke-linejoin="round" stroke-linecap="round">${inner}</g>`;

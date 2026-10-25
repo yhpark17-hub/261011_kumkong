@@ -9,21 +9,36 @@ node scripts/portraits/ai.mjs lee-jaemyung # 한 명
 ```
 
 - 결과: `src/lib/server/portraits/<인물>.ts` (JPEG 그림 + PNG 마스크를 품은 svg, 한 명에 130KB 안팎) · 확인용 `out/<인물>-ai.png`
-- 배경은 위·왼쪽·오른쪽 가장자리의 흰색을 따라 떼고(검은 윤곽선에서 멈춰요), 아래 흰 띠는 잘라 내요
+- 아래 흰 띠(둥근 받침)를 먼저 잘라 내고, 배경은 위·왼쪽·오른쪽 가장자리의 흰색을 따라 떼요(검은 윤곽선에서 멈춰요).
+  흰 띠를 남긴 채 떼면 흰 셔츠까지 번져 지워져요 — 셔츠 자리가 배경으로 잡히면 경고가 나와요
 - 출처 표시(`ai.mjs` 의 `AI` 목록 `credit`): 일러스트를 자유 이용 사진(CC BY·공공누리 제1유형 등)을 바탕으로 만들었으면 그 사진 출처를 꼭 적어요. 바탕 사진을 모르면 비워요
 - 새 인물: 그림을 `ai/<인물>.webp` 로 넣고 `AI` 목록에 한 줄, `src/lib/server/thumb-portraits.ts` 의 `PHOTO` 에 등록, `scripts/automation/ROUTINE.md` 의 인물 목록에 추가
 
-| 인물 | `who` | 일러스트 | 출처 표시 |
-| --- | --- | --- | --- |
-| 신현송 한국은행 총재 | `shin-hyunsong` | `ai/shin-hyunsong.webp` | G20 Argentina 사진 바탕 — CC BY 2.0 |
-| 케빈 워시 연준 의장 | `kevin-warsh` | `ai/kevin-warsh.webp` | 없음 |
-| 이재명 대통령 | `lee-jaemyung` | `ai/lee-jaemyung.webp` | 대한민국 국회 사진 바탕 — 공공누리 제1유형 |
-| 도널드 트럼프 미국 대통령 | `donald-trump` | `ai/donald-trump.webp` | 없음 |
-| 이형일 부총리 겸 재정경제부 장관 | `lee-hyoungil` | `ai/lee-hyoungil.webp` | 대한민국 국회 사진 바탕 — 공공누리 제1유형 |
-| 이억원 금융위원장 | `lee-eogweon` | `ai/lee-eogweon.webp` | 대한민국 대통령실 사진 바탕 — 공공누리 제1유형 |
-| 스콧 베선트 미국 재무장관 | `scott-bessent` | `ai/scott-bessent.webp` | 미국 재무부 사진 바탕 — 퍼블릭 도메인 |
-| 다카이치 사나에 | `sanae-takaichi` | `ai/sanae-takaichi.webp` | 없음 |
-| 이찬진 금융감독원장 | `lee-chanjin` | 손으로 그린 벡터 `lee-chanjin.mjs` (출처 모를 사진은 생김새 참고로만) | 없음 |
+| 인물 | `who` | 출처 표시 |
+| --- | --- | --- |
+| 신현송 한국은행 총재 | `shin-hyunsong` | G20 Argentina 사진 바탕 — CC BY 2.0 |
+| 케빈 워시 연준 의장 | `kevin-warsh` | 없음 |
+| 이재명 대통령 | `lee-jaemyung` | 대한민국 국회 사진 바탕 — 공공누리 제1유형 |
+| 도널드 트럼프 미국 대통령 | `donald-trump` | 없음 (`face="speak"` 이면 `donald-trump-speak.webp`) |
+| 이형일 부총리 겸 재정경제부 장관 | `lee-hyoungil` | 대한민국 국회 사진 바탕 — 공공누리 제1유형 |
+| 이억원 금융위원장 | `lee-eogweon` | 대한민국 대통령실 사진 바탕 — 공공누리 제1유형 |
+| 스콧 베선트 미국 재무장관 | `scott-bessent` | 미국 재무부 사진 바탕 — 퍼블릭 도메인 |
+| 다카이치 사나에 일본 총리 | `sanae-takaichi` | 없음 |
+| 시진핑 중국 국가주석 | `xi-jinping` | 없음 |
+| 앤디 버넘 영국 총리 | `andy-burnham` | 없음 |
+| 에마뉘엘 마크롱 프랑스 대통령 | `emmanuel-macron` | 없음 |
+| 프리드리히 메르츠 독일 총리 | `friedrich-merz` | 없음 |
+| 이재용 삼성전자 회장 | `lee-jaeyong` | 없음 |
+| 정의선 현대자동차그룹 회장 | `chung-euisun` | 없음 |
+| 최태원 SK그룹 회장 | `chey-taewon` | 없음 |
+| 젠슨 황 엔비디아 CEO | `jensen-huang` | 없음 |
+| 일론 머스크 테슬라 CEO | `elon-musk` | 없음 |
+| 샘 올트먼 오픈AI CEO | `sam-altman` | 없음 |
+| 다리오 아모데이 앤트로픽 CEO | `dario-amodei` | 없음 |
+| 마크 저커버그 메타 CEO | `mark-zuckerberg` | 없음 |
+| 이찬진 금융감독원장 | `lee-chanjin` | 없음 — 손으로 그린 벡터 `lee-chanjin.mjs` (출처 모를 사진은 생김새 참고로만) |
+
+일러스트는 `ai/<who>.webp`. 표정 바꾼 판은 `ai/<who>-<face>.webp` 로 넣고 `ai.mjs` 의 `AI` 목록과 `thumb-portraits.ts` 의 `FACES` 에 등록해요.
 
 ## 대비용: 사진 칠하기·벡터
 
