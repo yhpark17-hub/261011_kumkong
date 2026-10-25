@@ -368,5 +368,9 @@ for (const n of names) {
     console.log(`${n}: paint.config.mjs 에 없어요 (벡터 그림만 써요)`);
     continue;
   }
+  if (fs.existsSync(path.join(HERE, "ai", `${n}.webp`))) {
+    console.log(`${n}: AI 일러스트(ai/${n}.webp)가 있어 건너뛰어요 — node scripts/portraits/ai.mjs ${n}`);
+    continue;
+  }
   await make(n);
 }

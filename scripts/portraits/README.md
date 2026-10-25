@@ -1,25 +1,43 @@
 # 브리핑 썸네일 인물 초상 만들기
 
-데일리 브리핑 썸네일의 `<kk-portrait who="…"/>` 인물은 **자유 이용 사진(퍼블릭 도메인·CC BY·공공누리 제1유형)을 칠한 일러스트**예요.
-손으로 짠 벡터만으로는 '누군지 알 것 같은데 어색한' 그림이 되기 쉬워서, 사진을 매끈한 붓 칠·정리된 명암·가는 잉크 선으로 바꿔
-그 사람 그대로의 생김새를 살리고, 배경은 떼어 내 썸네일 어디에나 놓을 수 있게 해요 (`paint.mjs`).
-벡터 그림(`<인물>.mjs`)은 실루엣(배경 떼기)과, 사진 배경이 비치는 가장자리·사진 밖(어깨 아래 등)을 메울 바탕으로 써요.
-자유 이용 사진이 없는 인물은 손으로 그린 벡터 그림을 그대로 써요 (`paint.config.mjs` 에 없는 인물).
+데일리 브리핑 썸네일의 `<kk-portrait who="…"/>` 인물은 **운영자가 만든 AI 일러스트**(`ai/<인물>.webp`, 흰 바탕·검은 윤곽선 상반신)를
+`ai.mjs` 로 배경을 떼어 480×560 초상으로 만든 거예요. 손으로 짠 벡터나 사진을 칠한 그림보다 훨씬 그림 같고 자연스러워서 이걸 먼저 써요.
 
-| 인물 | `who` | 그림 스크립트 | 참고 사진 | 라이선스 |
-| --- | --- | --- | --- | --- |
-| 신현송 한국은행 총재 | `shin-hyunsong` | `shin-hyunsong.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Hyun_Song_Shin,_deputy_del_Banco_de_Pagos_Internacionales_-_D%C3%ADa_2_-_3era_reuni%C3%B3n_de_ministros_de_Finanzas_y_Presidentes_de_Bancos_Centrales_(cropped).jpg) (G20 Argentina) | CC BY 2.0 — 출처 표시 필요 |
-| 케빈 워시 연준 의장 | `kevin-warsh` | `kevin-warsh.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Official_portrait_of_Kevin_M._Warsh_(cropped)2.jpg) (미국 연준 이사회) | 퍼블릭 도메인 |
-| 이재명 대통령 | `lee-jaemyung` | `lee-jaemyung.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Lee_Jae-myung%27s_Portrait_(2024.2).jpg) (대한민국 국회) | 공공누리 제1유형 — 출처 표시 필요 |
-| 도널드 트럼프 미국 대통령 | `donald-trump` | `donald-trump.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Donald_Trump_official_portrait.jpg) (미국 백악관, 2017 공식 초상 — 미소 띤 얼굴) | 퍼블릭 도메인 |
-| 이형일 부총리 겸 재정경제부 장관 | `lee-hyoungil` | `lee-hyoungil.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Lee_Hyoung-il%27s_portrait_(2026.10).jpg) (대한민국 국회) | 공공누리 제1유형 — 출처 표시 필요 |
-| 이억원 금융위원장 | `lee-eogweon` | `lee-eogweon.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Lee_Eog-weon%27s_portrait_(2025.09).jpg) (대한민국 대통령실, 188×241 작은 사진) | 공공누리 제1유형 — 출처 표시 필요 |
-| 스콧 베선트 미국 재무장관 | `scott-bessent` | `scott-bessent.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Official_portrait_of_Treasury_Secretary_Scott_Bessent_(cropped).jpg) (미국 재무부) | 퍼블릭 도메인 |
-| 이찬진 금융감독원장 | `lee-chanjin` | `lee-chanjin.mjs` | 출처를 모르는 사진(운영자 제공)을 생김새 참고로만 씀 — 따라 그리지 않고 정면 구도로 새로 그림 | 출처 표시 없음 |
+```bash
+node scripts/portraits/ai.mjs              # ai/ 의 전부
+node scripts/portraits/ai.mjs lee-jaemyung # 한 명
+```
 
-썸네일에 이 초상을 쓰면 **참고 사진 출처가 그림 아래 구석에 자동으로 붙어요** (`src/lib/server/portraits/*.ts` 의 `credit`).
+- 결과: `src/lib/server/portraits/<인물>.ts` (JPEG 그림 + PNG 마스크를 품은 svg, 한 명에 130KB 안팎) · 확인용 `out/<인물>-ai.png`
+- 배경은 위·왼쪽·오른쪽 가장자리의 흰색을 따라 떼고(검은 윤곽선에서 멈춰요), 아래 흰 띠는 잘라 내요
+- 출처 표시(`ai.mjs` 의 `AI` 목록 `credit`): 일러스트를 자유 이용 사진(CC BY·공공누리 제1유형 등)을 바탕으로 만들었으면 그 사진 출처를 꼭 적어요. 바탕 사진을 모르면 비워요
+- 새 인물: 그림을 `ai/<인물>.webp` 로 넣고 `AI` 목록에 한 줄, `src/lib/server/thumb-portraits.ts` 의 `PHOTO` 에 등록, `scripts/automation/ROUTINE.md` 의 인물 목록에 추가
 
-## 고치기
+| 인물 | `who` | 일러스트 | 출처 표시 |
+| --- | --- | --- | --- |
+| 신현송 한국은행 총재 | `shin-hyunsong` | `ai/shin-hyunsong.webp` | G20 Argentina 사진 바탕 — CC BY 2.0 |
+| 케빈 워시 연준 의장 | `kevin-warsh` | `ai/kevin-warsh.webp` | 없음 |
+| 이재명 대통령 | `lee-jaemyung` | `ai/lee-jaemyung.webp` | 대한민국 국회 사진 바탕 — 공공누리 제1유형 |
+| 도널드 트럼프 미국 대통령 | `donald-trump` | `ai/donald-trump.webp` | 없음 |
+| 이형일 부총리 겸 재정경제부 장관 | `lee-hyoungil` | `ai/lee-hyoungil.webp` | 대한민국 국회 사진 바탕 — 공공누리 제1유형 |
+| 이억원 금융위원장 | `lee-eogweon` | `ai/lee-eogweon.webp` | 대한민국 대통령실 사진 바탕 — 공공누리 제1유형 |
+| 스콧 베선트 미국 재무장관 | `scott-bessent` | `ai/scott-bessent.webp` | 미국 재무부 사진 바탕 — 퍼블릭 도메인 |
+| 다카이치 사나에 | `sanae-takaichi` | `ai/sanae-takaichi.webp` | 없음 |
+| 이찬진 금융감독원장 | `lee-chanjin` | 손으로 그린 벡터 `lee-chanjin.mjs` (출처 모를 사진은 생김새 참고로만) | 없음 |
+
+## 대비용: 사진 칠하기·벡터
+
+AI 일러스트가 없는 인물은 예전 방식으로 만들 수 있어요. 순서는 **AI 일러스트 > 사진 칠하기 > 벡터** — 앞의 것이 있으면 뒤의 스크립트는 썸네일 그림을 덮어쓰지 않아요.
+
+- 사진 칠하기(`paint.mjs`, `paint.config.mjs`): 자유 이용 사진(`photos/<인물>.jpg`, 저장소에 없음)을 매끈한 붓 칠·명암·잉크 선으로 칠하고 벡터 실루엣으로 배경을 떼요
+- 벡터(`<인물>.mjs`, `lib.mjs`): 사진에서 잰 좌표로 손으로 짠 그림. 사진 칠하기의 실루엣으로도 써요
+
+참고 사진 (사진 칠하기·벡터용, Wikimedia Commons): [신현송](https://commons.wikimedia.org/wiki/File:Hyun_Song_Shin,_deputy_del_Banco_de_Pagos_Internacionales_-_D%C3%ADa_2_-_3era_reuni%C3%B3n_de_ministros_de_Finanzas_y_Presidentes_de_Bancos_Centrales_(cropped).jpg) ·
+[워시](https://commons.wikimedia.org/wiki/File:Official_portrait_of_Kevin_M._Warsh_(cropped)2.jpg) · [이재명](https://commons.wikimedia.org/wiki/File:Lee_Jae-myung%27s_Portrait_(2024.2).jpg) ·
+[트럼프](https://commons.wikimedia.org/wiki/File:Donald_Trump_official_portrait.jpg) · [이형일](https://commons.wikimedia.org/wiki/File:Lee_Hyoung-il%27s_portrait_(2026.10).jpg) ·
+[이억원](https://commons.wikimedia.org/wiki/File:Lee_Eog-weon%27s_portrait_(2025.09).jpg) · [베선트](https://commons.wikimedia.org/wiki/File:Official_portrait_of_Treasury_Secretary_Scott_Bessent_(cropped).jpg)
+
+### 고치기 (사진 칠하기·벡터)
 
 사진(`photos/<인물>.jpg`, 표의 960px 판)은 저장소에 없으니 먼저 받아 두세요.
 
@@ -33,7 +51,7 @@ node scripts/portraits/paint.mjs shin-hyunsong
   - 칠하는 세기·지울 곳(국기·배지·명찰 줄)은 `paint.config.mjs` — 지울 곳은 원본 사진 좌표 `[cx, cy, rx, ry]`
 - 확인용: `out/<인물>-paint.png`(칠한 그림), `out/<인물>.png`(벡터), `out/<인물>-over.png`(사진 위에 벡터를 겹친 것 — 실루엣이 맞는지)
 
-## 새 인물 추가
+### 새 인물 추가 (사진 칠하기·벡터)
 
 1. **라이선스부터 확인** — Wikimedia Commons 등에서 퍼블릭 도메인·CC BY·공공누리 제1유형인 정면 사진만 밑그림으로 써요.
    언론사 사진·출처가 불분명한 사진은 밑그림으로 쓰지 않아요 (정부 누리집·정책브리핑 사진도 '변경 금지'인 경우가 많아요).
@@ -53,7 +71,7 @@ node scripts/portraits/paint.mjs shin-hyunsong
    - 칠할 인물은 벡터를 실루엣만 정확히 그려도 돼요 (`donald-trump.mjs` — 머리·얼굴·귀·목·셔츠·넥타이·정장 면만)
 5. `paint.config.mjs` 에 넣고 `paint.mjs` 로 칠해요. `out/` 그림을 보며 맞추고, `src/lib/server/thumb-portraits.ts` 의 `PHOTO` 에 등록해요.
 
-## 닮게 만드는 포인트
+### 닮게 만드는 포인트 (벡터)
 
 좌표만 맞으면 '누군지 모를 아저씨'가 되기 쉬워요. 썸네일 크기(세로 200px 안팎)로 줄여 사진과 나란히 놓고, 그 사람을 알아보게 하는 특징 3~4개를 또렷하게 살려요.
 

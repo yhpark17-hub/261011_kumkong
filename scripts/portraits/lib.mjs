@@ -156,8 +156,10 @@ export async function build({ name, exportName, doc, credit, id, crop, body }) {
   fs.mkdirSync(path.join(HERE, "vector"), { recursive: true });
   fs.writeFileSync(path.join(HERE, "vector", `${name}.svg`), svg);
   fs.writeFileSync(path.join(HERE, "vector", `${name}.json`), JSON.stringify({ exportName, doc, credit, id, crop }, null, 2) + "\n");
-  if (PAINT[name]) {
-    console.log(`${name}: 벡터 → scripts/portraits/vector/${name}.svg (썸네일 그림은 node scripts/portraits/paint.mjs ${name})`);
+  // 썸네일 그림은 AI 일러스트(ai/) > 사진 칠하기(paint.config) > 이 벡터 순 — 앞의 것이 있으면 벡터는 덮어쓰지 않아요
+  const aiArt = fs.existsSync(path.join(HERE, "ai", `${name}.webp`));
+  if (aiArt || PAINT[name]) {
+    console.log(`${name}: 벡터 → scripts/portraits/vector/${name}.svg (썸네일 그림은 ${aiArt ? "ai.mjs" : "paint.mjs"})`);
   } else {
     const ts =
       `/**\n${doc.map((l) => ` * ${l}`).join("\n")}\n */\n` +
@@ -176,5 +178,5 @@ export async function build({ name, exportName, doc, credit, id, crop, body }) {
     const merged = await sharp(photo).composite([{ input: Buffer.from(over) }]).png().toBuffer();
     await sharp(merged).resize(640).png().toFile(path.join(out, `${name}-over.png`));
   }
-  if (!PAINT[name]) console.log(`${name}: ${svg.length} bytes → src/lib/server/portraits/${name}.ts, scripts/portraits/out/${name}.png`);
+  if (!aiArt && !PAINT[name]) console.log(`${name}: ${svg.length} bytes → src/lib/server/portraits/${name}.ts, scripts/portraits/out/${name}.png`);
 }

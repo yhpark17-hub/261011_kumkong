@@ -329,8 +329,9 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 3. **사람 뉴스**(발언·인물이 주인공)는 `kk-portrait` 로 그 사람을 크게 그리고 말풍선(`kk-bubble`)을 달아요.
    - 등록된 인물은 `who` 로 불러요: `shin-hyunsong`(신현송 한은 총재) · `kevin-warsh`(케빈 워시 연준 의장) · `lee-jaemyung`(이재명 대통령) ·
      `donald-trump`(트럼프 미국 대통령) · `lee-hyoungil`(이형일 부총리 겸 재정경제부 장관) · `lee-eogweon`(이억원 금융위원장) ·
-     `lee-chanjin`(이찬진 금감원장) · `scott-bessent`(스콧 베선트 미 재무장관). 직함이 바뀌었으면 이름표는 기사에 나온 현재 직함으로 써요.
-     자유 이용 사진으로 만든 일러스트라 한눈에 알아보고, 원본 사진 출처가 그림 아래 구석에 자동으로 붙어요 (그 자리는 비워 두기).
+     `lee-chanjin`(이찬진 금감원장) · `scott-bessent`(스콧 베선트 미 재무장관) · `sanae-takaichi`(다카이치 사나에).
+     직함은 기사에 나온 그대로 이름표에 써요 (바뀌었을 수 있어요).
+     미리 만든 일러스트라 한눈에 알아보고, 바탕 사진 출처가 필요한 그림은 그림 아래 구석에 자동으로 붙어요 (그 자리는 비워 두기).
    - 등록되지 않은 인물은 조합형(`hair`·`hc`·`glasses`·`eyes`·`skin`·`suit`)으로 그 사람에 가깝게 고르고 이름표로 누군지 알려요.
      사진을 직접 내려받아 쓰지 않아요 — 자주 나오는 인물이면 마지막 메시지에 "초상 등록 필요: 이름"을 남겨 운영자가 추가하게 해요 (scripts/portraits/README.md).
    - 발언은 **기사에 실린 말 그대로 따옴표째**(“ ”)만 넣어요.
@@ -374,7 +375,7 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 
 | 부품 | 상자 | 속성 |
 | --- | --- | --- |
-| `portrait` 인물 초상 (얼굴이 크게) | 480×560 | `who` shin-hyunsong·kevin-warsh·lee-jaemyung·donald-trump·lee-hyoungil·lee-eogweon·lee-chanjin·scott-bessent (자유 이용 사진을 칠한 일러스트 — 표정은 사진 그대로라 `face` 는 안 먹어요, 이찬진은 손으로 그린 그림. shin·warsh 는 `look='cartoon'` 이면 단순 카툰판) / 또는 `hair` sweep·parted·short·bald·bob·long, `hc` 머리색, `temples` gray, `skin` light·medium·tan·deep, `eyes` narrow·almond, `glasses` none·rect·round·rim, `suit`·`shirt`·`tie`(색 또는 none) · 공통 `face` smile·speak·grin·serious, `flip` |
+| `portrait` 인물 초상 (얼굴이 크게) | 480×560 | `who` shin-hyunsong·kevin-warsh·lee-jaemyung·donald-trump·lee-hyoungil·lee-eogweon·lee-chanjin·scott-bessent·sanae-takaichi (미리 만든 일러스트 — 표정은 그림 그대로라 `face` 는 안 먹어요. shin·warsh 는 `look='cartoon'` 이면 단순 카툰판) / 또는 `hair` sweep·parted·short·bald·bob·long, `hc` 머리색, `temples` gray, `skin` light·medium·tan·deep, `eyes` narrow·almond, `glasses` none·rect·round·rim, `suit`·`shirt`·`tie`(색 또는 none) · 공통 `face` smile·speak·grin·serious, `flip` |
 | `podium` 연단+마이크 | 360×220 | `c`, `mics` 0~4, `emblem` star·won·none |
 | `kong` 금콩 마스코트 | `size`(기본 300) | `costume` banker·reporter·trader·oil·chip·security·builder·money·shopper·president, 또는 `hold`·`outfit`·`head`·`glasses='1'`·`worried='1'`·`wave='1'` |
 | `bank` 기둥 있는 은행 건물 | 420×300 | `c`(상징색), `stone` |

@@ -5,14 +5,15 @@ import { LEE_CHANJIN } from "./portraits/lee-chanjin";
 import { LEE_EOGWEON } from "./portraits/lee-eogweon";
 import { LEE_HYOUNGIL } from "./portraits/lee-hyoungil";
 import { LEE_JAEMYUNG } from "./portraits/lee-jaemyung";
+import { SANAE_TAKAICHI } from "./portraits/sanae-takaichi";
 import { SCOTT_BESSENT } from "./portraits/scott-bessent";
 import { SHIN_HYUNSONG } from "./portraits/shin-hyunsong";
 
 /**
  * 인물 초상 부품 — 브리핑 썸네일 '직접 그린 그림'의 <kk-portrait …/>.
  * 굵은 테두리 + 한 단계 그늘의 카툰 초상 (480×560 상자, 얼굴이 크게 보이는 상반신).
- *   - who: 자주 나오는 인물 — 자유 이용 사진(퍼블릭 도메인·CC BY)을 바탕으로 만든 일러스트라 한눈에 알아봐요.
- *     원본 사진의 출처 표시가 썸네일 구석에 자동으로 붙어요 (look="cartoon" 이면 손으로 그린 카툰판)
+ *   - who: 자주 나오는 인물 — 미리 만들어 둔 일러스트라 한눈에 알아봐요 (표정은 그림 그대로라 face 는 안 먹어요).
+ *     바탕 사진의 출처 표시가 필요하면 썸네일 구석에 자동으로 붙어요 (shin·warsh 는 look="cartoon" 이면 손으로 그린 카툰판)
  *   - 그 밖의 인물은 hair·hc·skin·glasses·eyes·suit… 로 조합 (누군지는 이름표로 알려 줘요)
  *   - face: smile(다문 미소) · speak(말하는 중) · serious(진지) · grin(이가 보이는 미소)
  * 사진을 따라 그리지 않고, 실제 로고·문장은 넣지 않아요. 표정은 늘 정중하게.
@@ -326,8 +327,8 @@ function custom(a: A, id: string): string {
 }
 
 /**
- * 등록 인물 초상 (scripts/portraits) — 자유 이용 사진을 붓 칠·셀 명암·잉크 선으로 칠한 일러스트 (원본 사진 출처 표시)
- * lee-chanjin 은 출처 모를 사진을 생김새 참고로만 보고 손으로 새로 그린 벡터 그림이라 출처 표시가 없어요
+ * 등록 인물 초상 (scripts/portraits) — 운영자가 만든 AI 일러스트에서 배경을 뗀 그림
+ * 일러스트가 자유 이용 사진을 바탕으로 한 것이면 그 사진 출처가 붙어요 (credit). lee-chanjin 은 손으로 그린 벡터 그림
  */
 const PHOTO: Record<string, { svg: string; credit: string }> = {
   "shin-hyunsong": SHIN_HYUNSONG,
@@ -338,6 +339,7 @@ const PHOTO: Record<string, { svg: string; credit: string }> = {
   "lee-eogweon": LEE_EOGWEON,
   "lee-chanjin": LEE_CHANJIN,
   "scott-bessent": SCOTT_BESSENT,
+  "sanae-takaichi": SANAE_TAKAICHI,
 };
 const usesPhoto = (a: A) => Boolean(a.who && PHOTO[a.who] && a.look !== "cartoon");
 
