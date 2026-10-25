@@ -1041,49 +1041,28 @@
   },
   {
     "companyId": "kbcap",
-    "title": "2025년 KB캐피탈 신입직원 채용",
-    "period": "2025 하반기",
+    "title": "2027년 KB캐피탈 신입사원 공개채용",
+    "period": "2026 하반기(2027년 입사)",
     "status": "confirmed",
-    "tracks": [
-      "Retail",
-      "기업/투자",
-      "IT/디지털"
-    ],
+    "tracks": [],
     "events": [
       {
         "type": "posting",
-        "date": "2025-10-17",
+        "date": "2026-10-19",
         "time": "10:00"
       },
       {
         "type": "doc",
-        "date": "2025-10-31",
+        "date": "2026-10-30",
         "time": "18:00"
       }
     ],
-    "essayQuestions": [
-      {
-        "q": "지원 직무의 핵심 역량은 무엇인지와 그 이유를 기술하고, 관련된 본인의 경험이나 노력을 구체적으로 기술해주세요."
-      },
-      {
-        "q": "최근 1년간 캐피탈 산업에서 주목할 만한 변화나 이슈 한 가지를 기술하고, 그 안에서 우리회사가 어떤 기회를 갖고 있다고 생각하는지 구체적으로 기술해주세요."
-      },
-      {
-        "q": "KB캐피탈 Spirit 'TEAMS'(Trust, Empathy, Act on rule, Mutual-growth, Sense of innovation) 중 하나를 실천했던 경험과 입사 후 어떤 강점으로 발휘될 수 있을지 구체적으로 기술해주세요."
-      },
-      {
-        "q": "공동의 목표를 위해 팀원들과 협업했던 경험을 구체적으로 기술하고, 그 과정에서 본인이 맡았던 역할과, 목표 달성을 위해 기여한 부분을 기술해주세요."
-      },
-      {
-        "q": "새로운 업무나 낯선 환경에 빠르게 적응해야 했던 경험을 기술하고, 그때 스스로 어떤 방식으로 배우고 성장했는지 구체적으로 기술해주세요."
-      }
-    ],
-    "essayRef": "T4 하이잡(haijob.co.kr/posting/9747). 3개 트랙 동일, 글자수 미표기. 3번은 Spirit 설명부 축약. 별도 경력기술서 항목 있음.",
-    "postingUrl": "https://jrs.jobkorea.co.kr/kbcapital/Main/AgiList",
+    "essayQuestions": [],
+    "postingUrl": "https://jrs.jobkorea.co.kr/kbcapital/kbcapital26/Agi/Invite",
     "sourceUrl": "https://jrs.jobkorea.co.kr/kbcapital/Main/AgiList",
-    "confidence": "medium",
-    "updatedAt": "2026-10-13",
-    "note": "2026-10-13 기준 공식 채용 사이트에 2026년 신입 공고 없음(목록: 2025.10.17~10.31, 2024.10.29~11.07, 2023.01.19~01.31 모두 마감). 2025년 공고의 필기·면접 일정은 공개 자료에서 확인 불가. 인원 미확인."
+    "confidence": "high",
+    "updatedAt": "2026-10-23",
+    "note": "공식 채용 사이트 모집요강에는 공고명·접수기간만 텍스트로 확인됨(세부 요강은 이미지/지원서 내부). 링커리어 기준 전형: 서류→필기→1차면접→2차면접→채용검진·서류제출→최종합격, 모집 분야 일반(리테일금융·기업투자금융·재무기획 등)·디지털(AI 사업·IT플랫폼기획·정보보호 등) — 공식 원문 미확인. 필기·면접 날짜, 모집 인원 미확인."
   },
   {
     "companyId": "kbstar",
