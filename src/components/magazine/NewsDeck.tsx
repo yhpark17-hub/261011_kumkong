@@ -43,7 +43,7 @@ export const timetableItem = (n: NewsItem): TimetableItem => ({ id: n.id, label:
 /* 카드 뼈대                                                             */
 /* ------------------------------------------------------------------ */
 
-const SHELL = "flex flex-col overflow-clip rounded-[22px] bg-canvas shadow-[0_14px_30px_-18px_rgba(28,30,84,0.5)] ring-1 ring-black/5";
+const SHELL = "flex flex-col overflow-clip rounded-[22px] bg-canvas shadow-[0_14px_30px_-18px_rgba(28,30,84,0.5)] ring-1 ring-brand-dark/5";
 const HEAD = "text-[20px] leading-[1.32] font-bold tracking-[-0.02em] text-ink [word-break:keep-all]";
 const BODY = "mt-2 text-[15px] leading-[1.65] text-ink-secondary [word-break:keep-all]";
 const DOTS = "absolute inset-0 bg-[radial-gradient(rgba(28,30,84,0.07)_1.2px,transparent_1.2px)] bg-[length:16px_16px]";
@@ -64,7 +64,7 @@ function Pic({ name, theme, id, className }: { name: string; theme: Theme; id: s
 /** 인물 초상 원본 사진 출처 (자유 이용 사진을 바탕으로 그린 경우) */
 function PicCredit({ name }: { name: string }) {
   const credit = picPerson(name)?.credit;
-  return credit ? <span className="absolute right-2 bottom-1 z-10 rounded bg-white/75 px-1 text-[9px] text-ink-mute">{credit}</span> : null;
+  return credit ? <span className="absolute right-2 bottom-1 z-10 rounded bg-canvas/75 px-1 text-[9px] text-ink-mute">{credit}</span> : null;
 }
 
 /** 카드 위쪽 그림 칸 — 분야 색 바탕 + 이름표 */
@@ -73,7 +73,7 @@ function Panel({ theme, kicker, tall = false, children }: { theme: Theme; kicker
     <div className={cn("relative shrink-0 overflow-clip", tall ? "aspect-[5/3.7]" : "aspect-[5/3]")} style={{ background: `linear-gradient(180deg, ${theme.panel} 0%, #ffffff 135%)` }}>
       <span aria-hidden className={DOTS} />
       {kicker && (
-        <span className="absolute top-3 left-3 z-10 rounded-full bg-white/90 px-2.5 py-1 text-[12px] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.08)]" style={{ color: theme.accent }}>
+        <span className="absolute top-3 left-3 z-10 rounded-full bg-canvas/90 px-2.5 py-1 text-[12px] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.08)]" style={{ color: theme.accent }}>
           {kicker}
         </span>
       )}
@@ -169,7 +169,7 @@ function ChangeChart({ c, theme }: { c: Extract<NewsCard, { type: "change" }>; t
         return (
           <div key={i} className="flex min-w-0 flex-1 flex-col items-center">
             {dir !== 0 && (
-              <span className={cn("mb-1 rounded-full px-2 py-0.5 text-[11px] font-bold text-white", dir > 0 ? "bg-ruby" : "bg-[#2f6fd6]")}>{dir > 0 ? "▲ 오름" : "▼ 내림"}</span>
+              <span className={cn("mb-1 rounded-full px-2 py-0.5 text-[11px] font-bold text-on-primary", dir > 0 ? "bg-ruby" : "bg-[#2f6fd6]")}>{dir > 0 ? "▲ 오름" : "▼ 내림"}</span>
             )}
             <div className={cn("relative flex w-full flex-1 items-end justify-center pt-5", one ? "gap-[14%]" : "gap-[12%]")}>
               {bar(a, r.from, false)}
@@ -198,7 +198,7 @@ function Cover({ n, total, theme }: { n: NewsItem; total: number; theme: Theme }
           <>
             {/* eslint-disable-next-line @next/next/no-img-element -- 운영자가 올린 사진 (Blob 주소) */}
             <img src={n.imageUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
-            {n.imageCredit && <span className="absolute right-2 bottom-1 z-10 rounded bg-black/40 px-1 text-[9px] text-white">사진 · {n.imageCredit}</span>}
+            {n.imageCredit && <span className="absolute right-2 bottom-1 z-10 rounded bg-brand-dark/50 px-1 text-[9px] text-on-primary">사진 · {n.imageCredit}</span>}
           </>
         ) : (
           <>
@@ -207,7 +207,7 @@ function Cover({ n, total, theme }: { n: NewsItem; total: number; theme: Theme }
             <PicCredit name={pic} />
           </>
         )}
-        <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1 rounded-full bg-black/25 px-2.5 py-1 text-[12px] font-bold backdrop-blur-sm">
+        <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1 rounded-full bg-brand-dark/30 px-2.5 py-1 text-[12px] font-bold backdrop-blur-sm">
           <Icon className="h-3.5 w-3.5" strokeWidth={2.2} />
           {info.label}
         </span>
@@ -284,7 +284,7 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
       return (
         <div className={SHELL} style={{ background: `linear-gradient(180deg, ${theme.panel} 0%, #ffffff 120%)` }}>
           <div className="px-5 pt-4">
-            <span className="inline-block rounded-full bg-white/90 px-2.5 py-1 text-[12px] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.08)]" style={{ color: theme.accent }}>
+            <span className="inline-block rounded-full bg-canvas/90 px-2.5 py-1 text-[12px] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.08)]" style={{ color: theme.accent }}>
               흐름으로 보기
             </span>
             {c.title && <h4 className={cn(HEAD, "mt-2.5")}>{c.title}</h4>}
@@ -295,11 +295,11 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
               const last = i === c.steps.length - 1;
               return (
                 <li key={i} className="relative flex items-center gap-3">
-                  <span className="z-10 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full tabular text-[13px] font-bold text-white ring-4 ring-white/70" style={{ background: last ? theme.deep : theme.accent }}>
+                  <span className="z-10 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full tabular text-[13px] font-bold text-on-primary ring-4 ring-canvas/70" style={{ background: last ? theme.deep : theme.accent }}>
                     {i + 1}
                   </span>
                   <span
-                    className={cn("min-w-0 flex-1 rounded-xl px-3.5 py-2.5 text-[15px] leading-snug font-semibold [word-break:keep-all]", last ? "text-white" : "bg-white text-ink shadow-[0_1px_3px_rgba(28,30,84,0.1)]")}
+                    className={cn("min-w-0 flex-1 rounded-xl px-3.5 py-2.5 text-[15px] leading-snug font-semibold [word-break:keep-all]", last ? "text-on-primary" : "bg-canvas text-ink shadow-[0_1px_3px_rgba(28,30,84,0.1)]")}
                     style={last ? { background: theme.deep } : undefined}
                   >
                     {s}
@@ -335,7 +335,7 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
               {person ? <Pic name={who} theme={theme} id={id} className="h-full" /> : <Pic name="podium" theme={theme} id={id} className="absolute bottom-0 h-full w-full" />}
             </span>
             {person && <PicCredit name={who} />}
-            <span className="absolute top-12 left-3 z-10 max-w-[58%] rounded-2xl rounded-bl-sm bg-white px-3.5 py-3 text-[17px] leading-snug font-extrabold text-ink shadow-[0_6px_16px_-8px_rgba(28,30,84,0.45)] [word-break:keep-all]">
+            <span className="absolute top-12 left-3 z-10 max-w-[58%] rounded-2xl rounded-bl-sm bg-canvas px-3.5 py-3 text-[17px] leading-snug font-extrabold text-ink shadow-[0_6px_16px_-8px_rgba(28,30,84,0.45)] [word-break:keep-all]">
               &ldquo;{c.text}&rdquo;
             </span>
           </Panel>
@@ -365,7 +365,7 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
                   <p className="mt-2.5 text-[14px] leading-relaxed text-ink-secondary [word-break:keep-all]">{side.text}</p>
                 </div>
               ) : (
-                <span key={i} className="inline-flex h-8 w-8 items-center justify-center self-center rounded-full bg-brand-dark text-[11px] font-extrabold text-white">
+                <span key={i} className="inline-flex h-8 w-8 items-center justify-center self-center rounded-full bg-brand-dark text-[11px] font-extrabold text-on-primary">
                   VS
                 </span>
               ),
@@ -397,7 +397,7 @@ function Point({ text, theme, id }: { text: string; theme: Theme; id: string }) 
     <div className={SHELL}>
       <div className="relative aspect-[5/2.5] shrink-0 overflow-clip bg-linear-to-b from-[#ffe9bf] to-[#fff7e8]">
         <span aria-hidden className={DOTS} />
-        <span className="absolute top-3 left-3 z-10 rounded-full bg-white/90 px-2.5 py-1 text-[12px] font-bold text-lemon shadow-[0_1px_2px_rgba(0,0,0,0.08)]">왜 중요할까</span>
+        <span className="absolute top-3 left-3 z-10 rounded-full bg-canvas/90 px-2.5 py-1 text-[12px] font-bold text-lemon shadow-[0_1px_2px_rgba(0,0,0,0.08)]">왜 중요할까</span>
         <Pic name="kong-note" theme={theme} id={id} className="absolute inset-x-0 bottom-0 h-[96%] w-full" />
       </div>
       <Caption>
