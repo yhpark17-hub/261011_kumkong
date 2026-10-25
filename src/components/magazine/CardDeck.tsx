@@ -150,9 +150,17 @@ export function TimetableBar({ items }: { items: TimetableItem[] }) {
       .split(",")
       .map((id) => document.getElementById(`item-${id}`))
       .filter((el): el is HTMLElement => Boolean(el));
+    // 지금 그 줄에 걸친 기사들 — 순서상 첫 기사를 진하게, 기사 밖(맨 위·맨 아래)이면 없음
+    const order = ids.split(",").map(Number);
+    const crossing = new Set<number>();
     const io = new IntersectionObserver(
       (entries) => {
-        for (const e of entries) if (e.isIntersecting) setActive(Number(e.target.id.slice(5)));
+        for (const e of entries) {
+          const id = Number(e.target.id.slice(5));
+          if (e.isIntersecting) crossing.add(id);
+          else crossing.delete(id);
+        }
+        setActive(order.find((id) => crossing.has(id)) ?? null);
       },
       { rootMargin: "-35% 0px -60% 0px" },
     );
@@ -172,7 +180,7 @@ export function TimetableBar({ items }: { items: TimetableItem[] }) {
   return (
     <nav
       aria-label="오늘의 시간표"
-      className="sticky top-[61px] z-20 -mx-3 border-b border-brand-dark/10 bg-canvas-cream/95 px-3 py-2 backdrop-blur sm:-mx-4 sm:px-4 md:top-[73px] md:-mx-7 md:px-7"
+      className="sticky top-[61px] z-20 -mx-3 border-b border-brand-dark/10 bg-canvas-cream/95 px-3 py-2 backdrop-blur sm:-mx-4 sm:px-4 md:top-[65px] md:-mx-7 md:px-7"
     >
       <div className="flex items-center gap-2.5">
         <p className="shrink-0 text-[12px] leading-tight font-bold text-ink">

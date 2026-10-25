@@ -113,8 +113,45 @@ const SECTION_PIC: Record<NewsSection, PicKey> = {
   question: "kong-reporter",
 };
 
-/** 제목에 나온 말로 콩이 변장 고르기 (썸네일 '자동'과 같은 낱말 목록) — 없으면 분야 기본 그림 */
-export function defaultPic(section: NewsSection, title: string): PicKey {
+/** 제목에 이름이 나오면 그 인물 초상 (등록 인물만 — scripts/automation/ROUTINE.md 의 who 목록) */
+const PEOPLE: [RegExp, string][] = [
+  [/이재명/, "lee-jaemyung"],
+  [/이형일/, "lee-hyoungil"],
+  [/신현송/, "shin-hyunsong"],
+  [/이억원/, "lee-eogweon"],
+  [/이찬진/, "lee-chanjin"],
+  [/권대영/, "kwon-daeyoung"],
+  [/박홍근/, "park-hongkeun"],
+  [/박상진/, "park-sangjin"],
+  [/트럼프/, "donald-trump"],
+  [/워시/, "kevin-warsh"],
+  [/베선트/, "scott-bessent"],
+  [/우에다/, "kazuo-ueda"],
+  [/시진핑/, "xi-jinping"],
+  [/다카이치/, "sanae-takaichi"],
+  [/버넘/, "andy-burnham"],
+  [/마크롱/, "emmanuel-macron"],
+  [/메르츠/, "friedrich-merz"],
+  [/이재용/, "lee-jaeyong"],
+  [/정의선/, "chung-euisun"],
+  [/최태원/, "chey-taewon"],
+  [/젠슨\s?황/, "jensen-huang"],
+  [/머스크/, "elon-musk"],
+  [/올트먼|알트먼/, "sam-altman"],
+  [/아모데이/, "dario-amodei"],
+  [/저커버그/, "mark-zuckerberg"],
+];
+
+/**
+ * 표지 그림을 고르지 않은 기사 — 제목에 등록 인물 이름이 있으면 그 인물(가장 앞에 나온 사람),
+ * 아니면 제목 낱말로 콩이 변장(썸네일 '자동'과 같은 낱말 목록), 그것도 없으면 분야 기본 그림.
+ * people = false 면 인물은 건너뛰어요 (속 장마다 같은 초상이 되풀이되지 않게)
+ */
+export function defaultPic(section: NewsSection, title: string, people = true): string {
+  const person = !people ? undefined : PEOPLE.map(([re, who]) => ({ who, at: title.search(re) }))
+    .filter((p) => p.at >= 0 && photoPortrait(p.who))
+    .sort((x, y) => x.at - y.at)[0];
+  if (person) return `who:${person.who}`;
   const hit = COSTUMES.filter((c) => c.match && c.key !== "uspresident")
     .map((c) => ({ key: c.key, at: c.match ? title.search(c.match) : -1 }))
     .filter((c) => c.at >= 0)

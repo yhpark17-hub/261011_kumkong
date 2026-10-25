@@ -224,8 +224,11 @@ function Cover({ n, total, theme }: { n: NewsItem; total: number; theme: Theme }
   );
 }
 
+/** 속 장의 기본 그림 — 표지 그림(인물 초상이면 건너뛰고 제목 낱말·분야로) */
+const innerPic = (n: NewsItem) => (n.pic && !n.pic.startsWith("who:") ? n.pic : defaultPic(n.section, n.title, false));
+
 function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; id: string }) {
-  const articlePic = n.pic || defaultPic(n.section, n.title);
+  const articlePic = innerPic(n);
   switch (c.type) {
     case "text":
       return (
@@ -378,7 +381,7 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
 
 /** 카드가 없는 예전 기사 — 요약 글을 나눠 담은 장 (그림은 기사 그림) */
 function SummarySlide({ n, text, first, theme, id }: { n: NewsItem; text: string; first: boolean; theme: Theme; id: string }) {
-  const pic = n.pic || defaultPic(n.section, n.title);
+  const pic = innerPic(n);
   return (
     <div className={SHELL}>
       <Panel theme={theme} kicker={first ? "무슨 일이에요?" : "조금 더 자세히"}>
