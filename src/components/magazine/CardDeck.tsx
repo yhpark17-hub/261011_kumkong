@@ -208,7 +208,7 @@ export function Timetable({ items }: { items: TimetableItem[] }) {
           </span>
           <span className="mt-0.5 block tabular text-[10.5px] font-semibold text-ink-mute">기사 {items.length}건</span>
         </p>
-        <ol ref={chips} className="relative flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-0.5 no-scrollbar fade-x">
+        <ol ref={chips} className="relative flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-0.5 no-scrollbar [mask-image:linear-gradient(to_right,#000_calc(100%-36px),transparent)]">
           {items.map((it, i) => {
             const now = active === it.id;
             const read = done.has(it.id);
