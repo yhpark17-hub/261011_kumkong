@@ -5,18 +5,22 @@ import { EMPTY_THUMB, isIssueEdition, isNewsSection, kindOf, parseExtras, parseQ
 import { automationAuthorized, json, unauthorized } from "@/lib/server/automation";
 import { autoPublishOn, morningForAutomation, publishIssue } from "@/lib/server/briefing";
 import { db, dbConfigured } from "@/lib/server/db";
-import { checkArt } from "@/lib/server/thumb-check";
+import { checkArt, plainCorpus } from "@/lib/server/thumb-check";
+import { CARD_LEN, checkCards, parseCards } from "@/lib/news-cards";
 import { parseArt } from "@/lib/thumb-art";
 
 /**
  * 데일리 브리핑 한 호 올리기 — 자동 발행이 켜져 있으면(기본) 검사를 통과하는 대로 바로 발행돼요.
  * 관리자 화면에서 자동 발행을 끄면 '초안 · 자동'으로 들어가고 운영자가 확인 후 발행합니다.
  *
- * 아침판 { edition: "morning", title, lede, closing?, items: [기사 6~8건], quiz: [3~4문제] }
- *   - 기사: { section: finance|economy|policy|global|public, headline?: true, title, takeaway, summary, point, sourceName, sourceUrl }
- *     헤드라인(headline: true) 정확히 1건. 모든 기사에 원문 링크·한 줄 요약
- *   - 퀴즈: { question, options: [2~4개], answer: 정답 보기 번호(0부터), explain, basis } — 그날 기사 내용으로만
- *     basis = 이 문제의 근거 문장. 이 판 본문(기사 제목·한 줄 요약·요약·포인트)에 실린 문장을 그대로 옮겨야 하고, 본문에 없으면 거절
+ * 아침판 { edition: "morning", title, lede, closing?, items: [기사 4~5건] } — 기사마다 옆으로 넘겨 보는 카드뉴스 (퀴즈는 없어요, 보내면 빼고 warnings)
+ *   - 기사: { section: finance|economy|policy|global|public, headline?: true, title, takeaway, summary, point, sourceName, sourceUrl, cards }
+ *     헤드라인(headline: true) 정확히 1건. 모든 기사에 원문 링크·한 줄 요약. point 는 카드 한 장에 들어가게 130자 안
+ *   - cards: 표지(제목·한 줄 요약)와 '왜 중요할까'(point) 장 사이에 들어갈 2~4장 — 처음 보는 사람도 알 수 있게 쉽게 (lib/news-cards.ts)
+ *     { type: "text", title, text } · { type: "stat", value, label, note? } · { type: "bars", title, bars: [{ label, value, hi? }], note? }
+ *     { type: "change", title, rows: [{ label, from, to }], note? } · { type: "flow", title, steps: [2~4개] } · { type: "term", term, text }
+ *     그림 카드(stat·bars·change·flow) 1장 이상. 카드 속 숫자는 전부 그 기사 글(제목·한 줄 요약·요약·포인트)에 그대로 있어야 하고, 없으면 거절
+ *   - lede: 공유 미리보기·검색 설명 2~3문장 (화면에는 안 나와요)
  * 금콩 스터디 { edition: "noon", title, lede, closing?, numbers: [3개], items: [용어 2~3개, 면접 질문 1~2개], essay, quiz: [O/X 3문제] }
  *   - 숫자로 보는 오늘: { value: "7.57%", label: "15일 코스피 하락률", note? } — 아침판 기사에 나온 숫자만
  *   - 용어: { section: "term", title, summary, point, body(헷갈리는 짝꿍 비교 표, 마크다운), sourceName?, sourceUrl? } — 최근 90일 안에 다룬 용어는 거절
@@ -40,10 +44,9 @@ import { parseArt } from "@/lib/thumb-art";
 
 type Raw = Record<string, unknown>;
 const LIMITS = {
-  morning: { min: 6, max: 8 },
+  morning: { min: 4, max: 5 },
   terms: { min: 2, max: 3 },
   questions: { min: 1, max: 2 },
-  quiz: { min: 3, max: 4 },
   numbers: { min: 2, max: 4 },
   noonQuiz: { min: 2, max: 4 },
 };
@@ -83,7 +86,7 @@ export async function POST(req: Request) {
 
   const errors: string[] = [];
   if (title.length < 4) errors.push("title(목록·카드에 보이는 제목)이 필요해요");
-  if (lede.length < 30) errors.push("lede(오늘의 흐름)를 30자 이상 써 주세요");
+  if (lede.length < 30) errors.push(edition === "morning" ? "lede(공유 미리보기·검색 설명)를 30자 이상 써 주세요" : "lede(오늘의 스터디)를 30자 이상 써 주세요");
 
   let headlines = 0;
   const rows = raw.map((it, i) => {
@@ -101,6 +104,7 @@ export async function POST(req: Request) {
       point: s(it.point, 600),
       body: s(it.body, 8000),
       takeaway: s(it.takeaway, 160),
+      cards: edition === "morning" ? parseCards(it.cards) : [],
       sourceName: s(it.sourceName, 60),
       sourceUrl: url(it.sourceUrl),
       headline: 0,
@@ -113,6 +117,10 @@ export async function POST(req: Request) {
       if (!row.sourceUrl) errors.push(`${where}: 기사는 sourceUrl(직접 연 원문 링크)이 필요해요`);
       if (row.takeaway.length < 8) errors.push(`${where}: takeaway(한 줄 요약)가 필요해요`);
       if (row.point.length < 10) errors.push(`${where}: point(왜 중요할까·필기·면접 포인트)가 필요해요`);
+      else if (row.point.length > CARD_LEN.point) errors.push(`${where}: point 는 카드 한 장에 들어가게 ${CARD_LEN.point}자 안으로 줄여 주세요 (지금 ${row.point.length}자)`);
+      // 카드뉴스 — 숫자는 이 기사 글에 실린 그대로만
+      const corpus = plainCorpus([row.title, row.takeaway, row.summary, row.point].join(" "));
+      errors.push(...checkCards(it.cards, row.cards, corpus).map((p) => `${where} ${p.startsWith("cards[") ? p : `cards: ${p}`}`));
       if (it.headline === true || it.tier === "headline") {
         row.headline = 1;
         headlines++;
@@ -125,7 +133,9 @@ export async function POST(req: Request) {
   });
   const ok = rows.filter((r): r is NonNullable<typeof r> => Boolean(r));
 
-  const rawQuiz = Array.isArray(b.quiz) ? b.quiz : [];
+  // 아침판은 퀴즈를 싣지 않아요 (카드뉴스로 바뀜)
+  const sentQuiz = Array.isArray(b.quiz) ? b.quiz : [];
+  const rawQuiz = edition === "morning" ? [] : sentQuiz;
   const quiz = parseQuiz(rawQuiz);
   if (quiz.length !== rawQuiz.length) errors.push("quiz: 질문·보기(2~4개)·정답 번호(answer, 0부터)를 확인해 주세요");
   if (quiz.some((q) => q.explain.length < 10)) errors.push("quiz: 문제마다 explain(해설)을 써 주세요");
@@ -133,7 +143,7 @@ export async function POST(req: Request) {
 
   // 퀴즈 근거 확인 — 문제마다 basis(근거 문장)가 이 판 본문에 그대로 있어야 해요.
   // 독자가 읽은 내용만으로 풀 수 있게, 본문에 없는 지식(예: 본문에 설명 없는 용어의 정의)으로 낸 문제를 막아요.
-  const plain = (t: string) => t.replace(/[\s'"‘’“”·…]/g, "");
+  const plain = plainCorpus;
   const corpus = plain(
     edition === "morning"
       ? ok.map((r) => [r.title, r.takeaway, r.summary, r.point].join(" ")).join(" ")
@@ -147,6 +157,7 @@ export async function POST(req: Request) {
 
   // 썸네일 — 틀려도 브리핑은 저장하고, 빼고 알려 줘요 (운영자가 발행 전에 확인)
   const warnings: string[] = [];
+  if (edition === "morning" && sentQuiz.length) warnings.push("quiz: 아침판은 이제 퀴즈를 싣지 않아 뺐어요");
   const rawThumb = b.thumb && typeof b.thumb === "object" ? (b.thumb as Raw) : {};
   const thumb = parseThumb(
     edition === "morning"
@@ -193,7 +204,6 @@ export async function POST(req: Request) {
     const n = ok.length;
     if (n < LIMITS.morning.min || n > LIMITS.morning.max) errors.push(`아침판 기사는 ${LIMITS.morning.min}~${LIMITS.morning.max}건이에요 (지금 ${n}건)`);
     if (headlines !== 1) errors.push(`헤드라인(headline: true)은 정확히 1건이어야 해요 (지금 ${headlines}건)`);
-    if (quiz.length < LIMITS.quiz.min || quiz.length > LIMITS.quiz.max) errors.push(`퀴즈는 ${LIMITS.quiz.min}~${LIMITS.quiz.max}문제예요 (지금 ${quiz.length}문제)`);
   } else {
     const rawNumbers = Array.isArray(b.numbers) ? b.numbers : [];
     if (extras.numbers.length !== rawNumbers.length) errors.push("numbers: 숫자마다 value(숫자)와 label(무슨 숫자)을 써 주세요");
@@ -233,9 +243,9 @@ export async function POST(req: Request) {
         args: [date, edition, title, lede, closing, JSON.stringify(quiz), JSON.stringify(extras), thumbJson, now, now],
       },
       ...ok.map((r) => ({
-        sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, tier, position, takeaway, headline, status, origin, created_at, updated_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'key', ?, ?, ?, 0, 'auto', ?, ?)`,
-        args: [date, edition, r.section, r.title, r.summary, r.point, r.body, r.sourceName, r.sourceUrl, r.position, r.takeaway, r.headline, now, now],
+        sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, tier, position, takeaway, cards, headline, status, origin, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'key', ?, ?, ?, ?, 0, 'auto', ?, ?)`,
+        args: [date, edition, r.section, r.title, r.summary, r.point, r.body, r.sourceName, r.sourceUrl, r.position, r.takeaway, JSON.stringify(r.cards), r.headline, now, now],
       })),
     ],
     "write",

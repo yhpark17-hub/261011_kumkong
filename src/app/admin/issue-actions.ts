@@ -50,7 +50,7 @@ function readExtras(fd: FormData): IssueExtras {
   return parseExtras({ numbers, essay });
 }
 
-/** 브리핑(호) 저장 — 날짜·판·제목·오늘의 흐름·맺는 말·퀴즈(·금콩 스터디 코너). 새로 만들면 편집 화면으로 */
+/** 브리핑(호) 저장 — 날짜·판·제목·설명(금콩 스터디는 오늘의 스터디)·맺는 말·(금콩 스터디) 퀴즈·코너. 새로 만들면 편집 화면으로 */
 export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<IssueFormState> {
   if (!(await isAdmin())) return { ok: false, error: "운영자 로그인이 필요해요." };
   const id = Number(fd.get("id")) || null;
@@ -62,8 +62,9 @@ export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<Is
   if (!isDateKey(date)) return { ok: false, error: "브리핑 날짜를 골라 주세요." };
   if (!isIssueEdition(edition)) return { ok: false, error: "금콩 브리핑(아침판)·금콩 스터디(점심판) 중에 골라 주세요." };
   if (title.length < 4) return { ok: false, error: "제목을 적어 주세요. (목록·카드에 쓰여요)" };
-  if (lede.length < 20) return { ok: false, error: "오늘의 흐름을 20자 이상 적어 주세요." };
-  const { quiz, error } = readQuiz(fd);
+  if (lede.length < 20) return { ok: false, error: edition === "morning" ? "공유 미리보기 설명을 20자 이상 적어 주세요." : "오늘의 스터디를 20자 이상 적어 주세요." };
+  // 아침판은 이제 퀴즈를 싣지 않아요 — 예전 호에 저장된 퀴즈는 그대로 둬요
+  const { quiz, error } = edition === "noon" ? readQuiz(fd) : { quiz: [], error: undefined };
   if (error) return { ok: false, error };
   const extras = edition === "noon" ? readExtras(fd) : parseExtras({});
 
@@ -75,10 +76,17 @@ export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<Is
   if (id) {
     const prev = (await client.execute({ sql: "SELECT id FROM briefing_issues WHERE id = ?", args: [id] })).rows[0];
     if (!prev) return { ok: false, error: "이미 지워진 브리핑이에요." };
-    await client.execute({
-      sql: "UPDATE briefing_issues SET issue_date = ?, edition = ?, title = ?, lede = ?, closing = ?, quiz = ?, extras = ?, updated_at = ? WHERE id = ?",
-      args: [date, edition, title, lede, closing, JSON.stringify(quiz), JSON.stringify(extras), now, id],
-    });
+    await client.execute(
+      edition === "noon"
+        ? {
+            sql: "UPDATE briefing_issues SET issue_date = ?, edition = ?, title = ?, lede = ?, closing = ?, quiz = ?, extras = ?, updated_at = ? WHERE id = ?",
+            args: [date, edition, title, lede, closing, JSON.stringify(quiz), JSON.stringify(extras), now, id],
+          }
+        : {
+            sql: "UPDATE briefing_issues SET issue_date = ?, edition = ?, title = ?, lede = ?, closing = ?, extras = ?, updated_at = ? WHERE id = ?",
+            args: [date, edition, title, lede, closing, JSON.stringify(extras), now, id],
+          },
+    );
     revalidateBriefings();
     return { ok: true, savedAt: now };
   }

@@ -42,7 +42,7 @@ export interface LetterContent {
   stories: NewsItem[];
   terms: NewsItem[];
   questions: NewsItem[];
-  /** 오늘 꼭 알아야 할 3가지 (헤드라인 + 앞의 두 기사) */
+  /** 지난 브리핑 목록에 보여 줄 앞의 세 기사 (헤드라인 + 앞의 두 기사) */
   top: NewsItem[];
   /** 기사 전체 (헤드라인 포함) */
   all: NewsItem[];
@@ -112,7 +112,7 @@ export async function issueItems(date: string, edition: IssueEdition, opts: { ad
   return res.rows.map(toItem);
 }
 
-/** 목록 한 줄: 호 + 오늘 꼭 알아야 할 3가지(아침판) 또는 용어·질문(금콩 스터디) */
+/** 목록 한 줄: 호 + 앞의 세 기사(아침판) 또는 용어·질문(금콩 스터디) */
 export interface IssueSummary {
   issue: BriefingIssue;
   /** 아침판: 헤드라인 + 앞의 두 기사 / 금콩 스터디: 용어·질문 */

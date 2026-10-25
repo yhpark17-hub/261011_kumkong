@@ -59,6 +59,27 @@ export function Masthead({ edition, size = "lg", className }: { edition: IssueEd
   );
 }
 
+/** 작은 로고 — 브리핑 머리 한 줄용. 큰 로고 대신 써서 그날 그림이 먼저 보이게 해요 */
+export function MastheadMini({ edition, className }: { edition: IssueEdition; className?: string }) {
+  const morning = edition === "morning";
+  const b = BRAND[edition];
+  return (
+    <span
+      className={cn(
+        "theme-light inline-flex items-center gap-1.5 rounded-full border-2 border-brand-dark bg-[#fffaf0] py-0.5 pr-1 pl-0.5 shadow-[2px_2px_0_0_var(--color-brand-dark)]",
+        className,
+      )}
+    >
+      <KongMascot hold={morning ? "news" : "book"} glasses={!morning} className="-my-1.5 h-9 w-9 shrink-0" />
+      <span className={cn(jua.className, "text-[17px] leading-none whitespace-nowrap text-brand-dark")}>{b.word}</span>
+      <span className={cn(jua.className, "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] whitespace-nowrap text-brand-dark", morning ? "bg-[#ffb36b]" : "bg-[#8fd6a8]")}>
+        {morning ? <Sunrise className="h-3 w-3" strokeWidth={2.2} /> : <Soup className="h-3 w-3" strokeWidth={2.2} />}
+        {b.sticker}
+      </span>
+    </span>
+  );
+}
+
 /**
  * 브리핑 표지(썸네일) — 판별 하늘색 + 해/점 무늬 + 로고 + 날짜.
  * 사진 저작권 걱정 없이 매일 자동으로 만들어져요.

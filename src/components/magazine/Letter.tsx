@@ -3,13 +3,11 @@ import { ArrowDown, ArrowRight, BookA, ChevronLeft, ChevronRight, ExternalLink, 
 import { formatDayHeading, formatShort } from "@/lib/date";
 import {
   BRIEFING_ARCHIVE,
-  BRIEFING_TAGLINE,
   EDITION_LABEL,
-  NEWS_SECTION_INFO,
+  EDITION_SLOT,
   briefingMinutes,
   letterHref,
   letterShareHref,
-  newsHref,
   volLabel,
   type BriefingIssue,
   type NewsItem,
@@ -17,12 +15,14 @@ import {
 import type { LetterContent } from "@/lib/server/briefing";
 import { FeedbackButton } from "../feedback/Feedback";
 import { cn } from "../ui";
-import { Masthead } from "./BriefingBrand";
+import { MastheadMini } from "./BriefingBrand";
 import { BriefingQuiz } from "./BriefingQuiz";
+import { Timetable } from "./CardDeck";
 import { Markdown } from "./Markdown";
 import { ReadingProgress } from "./KongMascot";
 import { IssueLikeButton, ShareButton, ShareUrlSync, SourceLink } from "./interactive";
-import { NEWS_ICON } from "./news-icons";
+import { IssueCover } from "./news";
+import { NewsDeck, deckSize, timetableItem } from "./NewsDeck";
 
 const anchor = (n: NewsItem) => `item-${n.id}`;
 /** 긴 글은 양쪽 맞춤 */
@@ -51,38 +51,6 @@ function progressMarks(blocks: number[], allowed: number[]): Map<number, number>
     if (best !== undefined) marks.set(best, before(best));
   }
   return marks;
-}
-
-function SectionLabel({ n, className }: { n: NewsItem; className?: string }) {
-  return <span className={cn("tag", NEWS_SECTION_INFO[n.section].tone, className)}>{NEWS_SECTION_INFO[n.section].label}</span>;
-}
-
-/** 헤드라인 표지 — 사진이 없으면 카테고리 색 + 한 줄 요약 */
-function Cover({ n }: { n: NewsItem }) {
-  if (n.imageUrl) {
-    return (
-      <figure className="mt-5">
-        {/* eslint-disable-next-line @next/next/no-img-element -- 운영자가 올린 사진 (Blob 주소) */}
-        <img src={n.imageUrl} alt="" loading="lazy" decoding="async" className="aspect-[16/9] w-full rounded-xl bg-canvas-soft object-cover" />
-        {n.imageCredit && <figcaption className="mt-1.5 text-right type-micro text-ink-mute">사진 · {n.imageCredit}</figcaption>}
-      </figure>
-    );
-  }
-  const Icon = NEWS_ICON[n.section];
-  return (
-    <div aria-hidden className="relative mt-5 flex min-h-[160px] flex-col justify-end overflow-hidden rounded-xl bg-brand-dark px-5 pt-10 pb-5 sm:min-h-[220px] md:px-8 md:pb-7">
-      <span className={cn("absolute -top-20 -right-16 h-72 w-72 rounded-full opacity-60 blur-3xl", NEWS_SECTION_INFO[n.section].dot)} />
-      <span className="absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-primary/40 blur-3xl" />
-      <span className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.09)_1px,transparent_1px)] bg-[length:18px_18px]" />
-      <Icon className="absolute top-1/2 right-4 h-28 w-28 -translate-y-1/2 text-on-primary/10 sm:right-8 sm:h-36 sm:w-36" strokeWidth={1} />
-      <span className="relative">
-        <span className="type-micro-cap text-on-primary/70">{NEWS_SECTION_INFO[n.section].label} · 한 줄 요약</span>
-        {n.takeaway && (
-          <span className="mt-1.5 block max-w-xl type-body-lg font-semibold text-on-primary [word-break:keep-all] sm:type-heading-md md:type-heading-lg">{n.takeaway}</span>
-        )}
-      </span>
-    </div>
-  );
 }
 
 function Paragraphs({ text, className }: { text: string; className?: string }) {
@@ -120,66 +88,6 @@ function PointBox({ text, label = "왜 중요할까 · 필기·면접 포인트"
   );
 }
 
-/** 자세히 보기 = 기사 원문 (원문이 없으면 금콩 기사 페이지) */
-function ReadMore({ n }: { n: NewsItem }) {
-  const label = (
-    <>
-      자세히 보기{n.sourceName ? ` · ${n.sourceName}` : ""}
-      <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} />
-    </>
-  );
-  return (
-    <div className="mt-5">
-      {n.sourceUrl ? (
-        <SourceLink id={n.id} href={n.sourceUrl} className="btn btn-sm btn-secondary">
-          {label}
-        </SourceLink>
-      ) : (
-        <Link href={newsHref(n.id)} className="btn btn-sm btn-secondary">
-          자세히 보기
-          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
-        </Link>
-      )}
-    </div>
-  );
-}
-
-/** 번호 붙은 기사 머리 (01·02 …) — 휴대폰은 번호·태그 한 줄 + 제목 아래, 넓은 화면은 번호 왼쪽 */
-function StoryHead({ n, no, headline = false }: { n: NewsItem; no: number; headline?: boolean }) {
-  const tags = (
-    <>
-      {headline && <span className="tag bg-brand-dark text-on-primary">오늘의 헤드라인</span>}
-      <SectionLabel n={n} />
-    </>
-  );
-  return (
-    <div className="md:flex md:items-start md:gap-4">
-      <div className="flex items-center gap-2 md:block">
-        <span
-          className={cn(
-            "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full tabular text-[15px] font-semibold md:h-14 md:w-14 md:type-heading-lg",
-            headline ? "bg-brand-dark text-on-primary" : "border-2 border-brand-dark bg-canvas text-brand-dark",
-          )}
-        >
-          {String(no).padStart(2, "0")}
-        </span>
-        <span className="flex flex-wrap items-center gap-1.5 md:hidden">{tags}</span>
-      </div>
-      <div className="min-w-0 md:pt-0.5">
-        <span className="hidden flex-wrap items-center gap-1.5 md:flex">{tags}</span>
-        <h3
-          className={cn(
-            "mt-3 text-ink [word-break:keep-all] md:mt-2",
-            headline ? "type-heading-md sm:type-heading-lg md:type-display-md" : "type-heading-sm sm:type-heading-md md:type-heading-lg",
-          )}
-        >
-          {n.title}
-        </h3>
-      </div>
-    </div>
-  );
-}
-
 function Box({ children, className, id }: { children: React.ReactNode; className?: string; id?: string }) {
   return (
     <section id={id} className={cn("scroll-mt-24 rounded-2xl bg-canvas px-4 py-5 sm:px-5 sm:py-6 md:px-7", className)}>
@@ -188,95 +96,20 @@ function Box({ children, className, id }: { children: React.ReactNode; className
   );
 }
 
-/** 아침판 — 기사 브리핑 + 퀴즈 */
-function MorningBody({ issue, content }: { issue: BriefingIssue; content: LetterContent }) {
-  const { headline, stories, top } = content;
-  const quiz = issue.quiz.length > 0;
-  // 읽은 정도 쉼표: 덩어리 = [여는 글·3가지·시간표·헤드라인, 기사들…, 퀴즈], 기사 앞에만
-  const intro = issue.lede.length + top.reduce((s, n) => s + n.title.length + n.takeaway.length, 0) + (headline ? textLength(headline) : 0);
-  const marks = progressMarks(
-    [intro, ...stories.map(textLength), quizLength(issue)],
-    stories.map((_, i) => i + 1),
-  );
-  // 콩이 말 — 다음에 읽을 기사 흐름에 맞춰
-  const say = (i: number, progress: number) => {
-    const label = NEWS_SECTION_INFO[stories[i].section].label;
-    const prev = i === 0 ? headline : stories[i - 1];
-    if (prev && prev.section === stories[i].section) return `${label} 소식 하나 더 있콩!`;
-    return progress < 0.5 ? `다음은 ${label} 소식이콩!` : `절반 넘었콩! 다음은 ${label} 소식`;
-  };
+/**
+ * 아침판 — 오늘의 시간표(기사마다 작은 표지 카드) + 기사마다 옆으로 넘겨 보는 카드뉴스.
+ * 읽은 정도는 시간표의 '다 봤어요'로 보여 줘요 (예전 호의 퀴즈는 싣지 않아요)
+ */
+function MorningBody({ content, minutes }: { content: LetterContent; minutes: number }) {
+  const { all } = content;
+  if (!all.length) return null;
+  const slides = all.reduce((s, n) => s + deckSize(n), 0);
   return (
     <>
-      {top.length > 0 && (
-        <section aria-labelledby="top-three" className="rounded-2xl bg-brand-dark px-4 py-5 text-on-primary sm:px-5 sm:py-6 md:px-7">
-          <h3 id="top-three" className="type-heading-md">
-            오늘 꼭 알아야 할 {top.length}가지
-          </h3>
-          <ol className="mt-4 space-y-3">
-            {top.map((n, i) => (
-              <li key={n.id}>
-                <a href={`#${anchor(n)}`} className="group flex gap-3 rounded-xl bg-on-primary/10 px-4 py-3 transition-colors hover:bg-on-primary/15">
-                  <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-on-primary tabular type-caption font-bold text-brand-dark">
-                    {i + 1}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block type-body-md font-semibold [word-break:keep-all] group-hover:underline">{n.title}</span>
-                    {n.takeaway && <span className="mt-0.5 block type-caption text-on-primary/80 [word-break:keep-all]">{n.takeaway}</span>}
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
-
-      {content.all.length > 0 && (
-        <Box>
-          <h3 className="flex items-baseline gap-2 type-heading-sm text-ink">
-            오늘의 시간표 <span className="type-micro-cap text-ink-mute">Timetable</span>
-          </h3>
-          <ol className="mt-3 space-y-2">
-            {content.all.map((n, i) => (
-              <li key={n.id}>
-                <a href={`#${anchor(n)}`} className="group flex items-baseline gap-2 type-body-md">
-                  <span className="w-6 shrink-0 tabular text-ink-mute">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="shrink-0 font-semibold text-primary-text">[{NEWS_SECTION_INFO[n.section].label}]</span>
-                  <span className={cn("min-w-0 [word-break:keep-all] group-hover:underline", i < 3 ? "font-semibold text-ink" : "text-ink-secondary")}>{n.title}</span>
-                </a>
-              </li>
-            ))}
-          </ol>
-        </Box>
-      )}
-
-      {headline && (
-        <Box id={anchor(headline)} className="md:py-8">
-          <StoryHead n={headline} no={1} headline />
-          <Cover n={headline} />
-          <Paragraphs text={headline.summary} />
-          <PointBox text={headline.point} />
-          <ReadMore n={headline} />
-        </Box>
-      )}
-
-      {stories.map((n, i) => (
-        <div key={n.id}>
-          {marks.has(i + 1) ? <ReadingProgress progress={marks.get(i + 1)!} say={say(i, marks.get(i + 1)!)} /> : <div className="h-6" />}
-          <Box id={anchor(n)}>
-            <StoryHead n={n} no={i + (headline ? 2 : 1)} />
-            {n.imageUrl && <Cover n={n} />}
-            <Paragraphs text={n.summary} />
-            <PointBox text={n.point} />
-            <ReadMore n={n} />
-          </Box>
-        </div>
+      <Timetable items={all.map(timetableItem)} meta={`기사 ${all.length}건 · 카드 ${slides}장 · 약 ${minutes}분`} />
+      {all.map((n, i) => (
+        <NewsDeck key={n.id} n={n} no={i + 1} />
       ))}
-
-      {quiz && (
-        <div className="pt-6">
-          <BriefingQuiz quiz={issue.quiz} />
-        </div>
-      )}
     </>
   );
 }
@@ -533,34 +366,44 @@ export function Letter({
     <article className="theme-light overflow-hidden rounded-3xl bg-canvas-cream">
       {/* 주소창도 썸네일 버전이 붙은 공유 주소로 (복사해 카톡에 보내도 새 미리보기) */}
       {issue.live && <ShareUrlSync path={letterShareHref(issue)} />}
-      {/* 머리 — 로고·호수·날짜 */}
-      <header className="relative px-6 pt-8 pb-8 text-center md:px-10 md:pt-10">
-        <p className="type-caption font-semibold text-lemon">{BRIEFING_TAGLINE[issue.edition]}</p>
-        <Masthead edition={issue.edition} className="mx-auto mt-6" />
-        <p className="mt-9 tabular type-body-md font-semibold text-ink">
-          {volLabel(issue.vol)} · {formatDayHeading(issue.date)}
-        </p>
-        <p className="mt-1 type-caption text-ink-mute">
-          {EDITION_LABEL[issue.edition]}
-          {morning && ` · 기사 ${content.all.length}건`} · 약 {minutes}분
+      {/* 머리 — 작은 로고 한 줄 + 호수·날짜 (그날 그림이 먼저 보이게) */}
+      <header className="flex items-center justify-between gap-3 px-4 pt-4 md:px-7 md:pt-6">
+        <MastheadMini edition={issue.edition} />
+        <p className="text-right tabular type-caption leading-snug">
+          <span className="block font-semibold whitespace-nowrap text-ink">{formatDayHeading(issue.date)}</span>
+          <span className="block whitespace-nowrap text-ink-mute">
+            {volLabel(issue.vol)} · 약 {minutes}분
+          </span>
         </p>
       </header>
 
-      <div className="space-y-5 px-3 pb-10 sm:space-y-6 sm:px-4 md:px-10">
-        {issue.lede && (
-          <section aria-label={morning ? "오늘의 흐름" : "오늘의 스터디"} className="rounded-2xl bg-canvas px-4 py-5 sm:px-5 md:px-7">
+      <div className="space-y-8 px-3 pt-4 pb-10 sm:px-4 md:space-y-10 md:px-7">
+        {/* 오늘의 그림 — 날마다 그 판 뉴스로 새로 그린 그림 (카톡 공유 그림과 같아요) */}
+        <div>
+          <IssueCover
+            issue={issue}
+            priority
+            alt={`${formatDayHeading(issue.date)} ${EDITION_SLOT[issue.edition]} 그림 — ${issue.title}`}
+            sizes="(min-width: 1024px) 700px, 100vw"
+            className="aspect-[1200/630] w-full rounded-2xl shadow-[0_8px_24px_-12px_rgba(28,30,84,0.35)]"
+          />
+          <h2 className="mt-4 px-1 type-heading-md text-ink [word-break:keep-all] md:type-display-md">{issue.title}</h2>
+        </div>
+
+        {!morning && issue.lede && (
+          <section aria-label="오늘의 스터디" className="rounded-2xl bg-canvas px-4 py-5 sm:px-5 md:px-7">
             <p className="flex items-center gap-1.5 type-caption font-semibold text-primary-text">
               <Sparkles className="h-4 w-4" strokeWidth={2} />
-              {morning ? "오늘의 흐름" : "오늘의 스터디"}
+              오늘의 스터디
             </p>
             <p className={cn("mt-2 type-body-lg leading-[1.85] whitespace-pre-line text-ink", JUSTIFY)}>{issue.lede}</p>
           </section>
         )}
 
-        {morning ? <MorningBody issue={issue} content={content} /> : <NoonBody issue={issue} content={content} />}
+        {morning ? <MorningBody content={content} minutes={minutes} /> : <NoonBody issue={issue} content={content} />}
 
-        {/* 끝까지 읽으면 — 바가 다 차고 정장 입은 합격 콩이 */}
-        <ReadingProgress progress={1} say={morning ? "오늘 브리핑 끝까지 읽었콩!" : "오늘 스터디 끝까지 마쳤콩!"} />
+        {/* 끝까지 읽으면 — 바가 다 차고 정장 입은 합격 콩이 (금콩 스터디만 — 아침판은 시간표가 읽은 정도를 보여 줘요) */}
+        {!morning && <ReadingProgress progress={1} say="오늘 스터디 끝까지 마쳤콩!" />}
 
         {/* 맺음 — ① 앞뒤 브리핑 바로 가기 ② 의견·공유와 원문 확인 안내 */}
         <footer className="space-y-4">

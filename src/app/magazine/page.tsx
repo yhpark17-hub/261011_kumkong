@@ -21,7 +21,7 @@ import { cn } from "@/components/ui";
 export const metadata: Metadata = pageMetadata({
   title: `데일리 브리핑 — 오늘의 금융·경제·시사 뉴스와 용어·면접 질문 | ${MAGAZINE_NAME}`,
   description:
-    "매일 아침 기사 브리핑과 퀴즈, 점심에는 금콩 스터디로 오늘의 용어·논술·면접 질문. 금융공기업 준비생이 알아야 할 금융·경제·정책·국제·공공기관 뉴스를 한 편의 브리핑으로.",
+    "매일 아침 그림과 카드뉴스로 넘겨 보는 기사 브리핑, 점심에는 금콩 스터디로 오늘의 용어·논술·면접 질문. 금융공기업 준비생이 알아야 할 금융·경제·정책·국제·공공기관 뉴스를 한 편의 브리핑으로.",
   path: "/magazine",
   alternates: { types: { "application/rss+xml": "/magazine/rss.xml" } },
 });

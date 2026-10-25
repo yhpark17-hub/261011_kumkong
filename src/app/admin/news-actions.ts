@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isOwnFileUrl } from "@/lib/attachments";
+import { parseCards } from "@/lib/news-cards";
 import { isDateKey, isEdition, isNewsSection, isNewsTier, kindOf } from "@/lib/news-meta";
 import { db } from "@/lib/server/db";
 import { isAdmin } from "@/lib/server/security";
@@ -39,6 +40,7 @@ export async function saveNews(_prev: NewsFormState, fd: FormData): Promise<News
   const tier = isNewsTier(tierRaw) ? tierRaw : "key";
   const position = Math.max(0, Math.min(99, Math.round(Number(fd.get("position")) || 0)));
   const takeaway = str(fd, "takeaway", 160);
+  const cardsRaw = str(fd, "cards", 6000);
   const headlineAsked = fd.get("headline") === "on";
   const publish = fd.get("status") === "1";
 
@@ -55,6 +57,19 @@ export async function saveNews(_prev: NewsFormState, fd: FormData): Promise<News
   if (imageRaw && !isOwnFileUrl(imageRaw)) return { ok: false, error: "사진은 이 화면에서 직접 올린 파일만 쓸 수 있어요." };
   const imageUrl = imageRaw || null;
   if (sourceUrl && !/^https?:\/\/[^\s/]+\.\S+$/i.test(sourceUrl)) return { ok: false, error: "출처 링크를 확인해 주세요." };
+  // 카드뉴스 사이 장 (뉴스만) — 모양이 틀린 장이 있으면 저장하지 않아요
+  let cardsJson = "[]";
+  if (kind === "news" && cardsRaw) {
+    let raw: unknown;
+    try {
+      raw = JSON.parse(cardsRaw);
+    } catch {
+      return { ok: false, error: "카드뉴스 JSON 을 읽을 수 없어요. 따옴표·쉼표·대괄호를 확인해 주세요." };
+    }
+    const cards = parseCards(raw);
+    if (!Array.isArray(raw) || cards.length !== raw.length) return { ok: false, error: "카드뉴스에 모양이 틀린 장이 있어요. type 과 칸 이름을 확인해 주세요." };
+    cardsJson = JSON.stringify(cards);
+  }
 
   const client = await db();
   const now = Date.now();
@@ -67,17 +82,17 @@ export async function saveNews(_prev: NewsFormState, fd: FormData): Promise<News
     const publishedAt = publish ? (Number(prev.status) === 1 && prev.published_at != null ? Number(prev.published_at) : now) : null;
     await client.execute({
       sql: `UPDATE news SET edition_date = ?, edition = ?, section = ?, title = ?, summary = ?, point = ?, body = ?, source_name = ?, source_url = ?,
-              image_url = ?, image_credit = ?, tier = ?, position = ?, takeaway = ?, headline = ?, status = ?, published_at = ?, updated_at = ? WHERE id = ?`,
-      args: [editionDate, edition, section, title, summary, point, body, sourceName, sourceUrl, imageUrl, imageCredit, tier, position, takeaway, headline, publish ? 1 : 0, publishedAt, now, id],
+              image_url = ?, image_credit = ?, tier = ?, position = ?, takeaway = ?, cards = ?, headline = ?, status = ?, published_at = ?, updated_at = ? WHERE id = ?`,
+      args: [editionDate, edition, section, title, summary, point, body, sourceName, sourceUrl, imageUrl, imageCredit, tier, position, takeaway, cardsJson, headline, publish ? 1 : 0, publishedAt, now, id],
     });
     revalidateNews(id);
     return { ok: true, savedAt: now };
   }
 
   await client.execute({
-    sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, image_url, image_credit, tier, position, takeaway, headline, status, origin, published_at, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', ?, ?, ?)`,
-    args: [editionDate, edition, section, title, summary, point, body, sourceName, sourceUrl, imageUrl, imageCredit, tier, position, takeaway, headline, publish ? 1 : 0, publish ? now : null, now, now],
+    sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, image_url, image_credit, tier, position, takeaway, cards, headline, status, origin, published_at, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', ?, ?, ?)`,
+    args: [editionDate, edition, section, title, summary, point, body, sourceName, sourceUrl, imageUrl, imageCredit, tier, position, takeaway, cardsJson, headline, publish ? 1 : 0, publish ? now : null, now, now],
   });
   revalidateNews();
   redirect(`/admin/news?date=${editionDate}`);

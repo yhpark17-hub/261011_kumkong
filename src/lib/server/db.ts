@@ -241,6 +241,7 @@ CREATE TABLE IF NOT EXISTS news (
   tier TEXT NOT NULL DEFAULT 'key',
   position INTEGER NOT NULL DEFAULT 0,
   takeaway TEXT NOT NULL DEFAULT '',
+  cards TEXT NOT NULL DEFAULT '[]',
   headline INTEGER NOT NULL DEFAULT 0,
   status INTEGER NOT NULL DEFAULT 0,
   origin TEXT NOT NULL DEFAULT 'admin',
@@ -253,7 +254,7 @@ CREATE INDEX IF NOT EXISTS idx_news_date ON news (status, edition_date DESC, id)
 CREATE INDEX IF NOT EXISTS idx_news_section ON news (section, status, published_at DESC);
 
 -- 데일리 브리핑 (호): 날짜·판(morning 아침판 / noon 금콩 스터디)마다 한 호. 그날 그 판의 기사(news.edition_date·edition)를 한 편으로 묶음
--- 아침판 = 기사 브리핑 + 퀴즈(quiz JSON), 금콩 스터디 = 용어·면접 질문 / vol 은 판별로 처음 발행할 때 정해짐 (초안은 0) / status: 0 = 초안, 1 = 발행
+-- 아침판 = 기사 카드뉴스 (예전 호는 퀴즈 quiz JSON 도), 금콩 스터디 = 용어·면접 질문 / vol 은 판별로 처음 발행할 때 정해짐 (초안은 0) / status: 0 = 초안, 1 = 발행
 CREATE TABLE IF NOT EXISTS briefing_issues (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   issue_date TEXT NOT NULL,
@@ -298,6 +299,8 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: "news", column: "tier", ddl: "ALTER TABLE news ADD COLUMN tier TEXT NOT NULL DEFAULT 'key'" },
   { table: "news", column: "position", ddl: "ALTER TABLE news ADD COLUMN position INTEGER NOT NULL DEFAULT 0" },
   { table: "news", column: "takeaway", ddl: "ALTER TABLE news ADD COLUMN takeaway TEXT NOT NULL DEFAULT ''" },
+  // 아침판 기사 카드뉴스 (표지·'왜 중요할까' 사이 장들, JSON) — 2026-10 추가
+  { table: "news", column: "cards", ddl: "ALTER TABLE news ADD COLUMN cards TEXT NOT NULL DEFAULT '[]'" },
   // 금콩 스터디 코너(숫자로 보는 오늘·논술 한 문단) — 2026-10 추가
   { table: "briefing_issues", column: "extras", ddl: "ALTER TABLE briefing_issues ADD COLUMN extras TEXT NOT NULL DEFAULT '{}'" },
   // 블로그 글 강조 표시(인기·NEW·추천·필독) — 운영자가 고름, 2026-10 추가

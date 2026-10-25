@@ -48,6 +48,7 @@ async function EditNews({ rawId }: { rawId: string }) {
           tier: n.tier,
           position: n.position,
           takeaway: n.takeaway,
+          cards: n.cards.length ? JSON.stringify(n.cards, null, 2) : "",
           imageUrl: n.imageUrl ?? "",
           imageCredit: n.imageCredit,
           headline: n.headline,

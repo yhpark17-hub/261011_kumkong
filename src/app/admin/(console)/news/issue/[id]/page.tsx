@@ -41,8 +41,8 @@ async function EditIssue({ rawId }: { rawId: string }) {
   const groups: { label: string; desc: string; list: NewsItem[] }[] =
     issue.edition === "morning"
       ? [
-          { label: "헤드라인", desc: "01 — 맨 위에 가장 크게", list: content.headline ? [content.headline] : [] },
-          { label: "기사", desc: "02부터 순서대로 · 앞의 둘은 '오늘 꼭 알아야 할 3가지'에", list: content.stories },
+          { label: "헤드라인", desc: "01 — 시간표·카드뉴스 맨 앞", list: content.headline ? [content.headline] : [] },
+          { label: "기사", desc: "02부터 순서대로 · 기사마다 카드뉴스 한 묶음 (4~5건 권장)", list: content.stories },
         ]
       : [
           { label: "오늘의 용어", desc: "", list: content.terms },

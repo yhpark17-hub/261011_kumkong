@@ -36,13 +36,13 @@ export function IssueForm({ initial }: { initial: IssueFormInitial }) {
         <label className="block">
           <span className="mb-1 block type-caption text-ink-secondary">판</span>
           <select name="edition" value={edition} onChange={(e) => setEdition(e.target.value as IssueEdition)} className="input w-full">
-            <option value="morning">금콩 브리핑 (아침판) — 기사 브리핑 + 퀴즈</option>
+            <option value="morning">금콩 브리핑 (아침판) — 그림 + 카드뉴스 기사</option>
             <option value="noon">금콩 스터디 (점심판) — 숫자·용어·논술·면접·퀴즈</option>
           </select>
         </label>
       </div>
       <label className="block">
-        <span className="mb-1 block type-caption text-ink-secondary">제목 — 목록·카드에 보이는 한 줄 (브리핑 본문 위에는 안 나와요)</span>
+        <span className="mb-1 block type-caption text-ink-secondary">제목 — 목록·카드와 브리핑 맨 위 그림 아래에 보이는 한 줄</span>
         <input
           name="title"
           defaultValue={initial.title}
@@ -54,7 +54,7 @@ export function IssueForm({ initial }: { initial: IssueFormInitial }) {
       </label>
       <label className="block">
         <span className="mb-1 flex justify-between gap-3 type-caption text-ink-secondary">
-          <span>{edition === "morning" ? "오늘의 흐름 — 오늘 기사들이 어떻게 이어지는지 2~3문장" : "오늘의 스터디 — 오늘 공부할 것을 2~3문장으로"}</span>
+          <span>{edition === "morning" ? "공유 미리보기 설명 — 카톡·검색에 보이는 2~3문장 (브리핑 화면에는 안 나와요)" : "오늘의 스터디 — 오늘 공부할 것을 2~3문장으로"}</span>
           <span className="tabular text-ink-mute">{lede.length}/1200</span>
         </span>
         <textarea name="lede" value={lede} onChange={(e) => setLede(e.target.value)} rows={4} maxLength={1200} required className="input w-full resize-y leading-relaxed" />
@@ -94,10 +94,9 @@ export function IssueForm({ initial }: { initial: IssueFormInitial }) {
         </>
       )}
 
-      <fieldset className="rounded-lg border border-hairline px-4 py-4">
-        <legend className="px-1 type-caption font-semibold text-ink-secondary">
-          {edition === "morning" ? "브리핑 퀴즈 (3~4문제) — 오늘 기사 내용으로만, 보기 2개면 O/X 처럼 보여요" : "⑤ 점심 퀴즈 (3문제) — 보기를 O, X 두 개만 쓰면 O/X 문제가 돼요"}
-        </legend>
+      {/* 퀴즈는 금콩 스터디만 (아침판은 카드뉴스로 바뀌며 퀴즈를 뺐어요) */}
+      <fieldset hidden={edition !== "noon"} className="rounded-lg border border-hairline px-4 py-4">
+        <legend className="px-1 type-caption font-semibold text-ink-secondary">⑤ 점심 퀴즈 (3문제) — 보기를 O, X 두 개만 쓰면 O/X 문제가 돼요</legend>
         <div className="mt-2 space-y-5">
           {Array.from({ length: QUIZ_SLOTS }, (_, i) => {
             const q = initial.quiz[i];

@@ -1,5 +1,6 @@
 /** 데일리 브리핑 공통 정보 — 서버·클라이언트 모두에서 사용 */
 
+import type { NewsCard } from "./news-cards";
 import { parseArt, type ThumbArt } from "./thumb-art";
 
 /** 브리핑 카테고리: 시사 뉴스 5분야 + 오늘의 용어 + 면접 질문 */
@@ -59,7 +60,7 @@ export const isEdition = (v: unknown): v is NewsEdition => v === "morning" || v 
 
 /** 판마다 무엇이 실리는지 — 아침판은 기사 브리핑, 금콩 스터디(점심)는 용어·논술·면접 공부 */
 export const EDITION_SCHEDULE: { key: Exclude<NewsEdition, "">; label: string; time: string; items: string[] }[] = [
-  { key: "morning", label: "금콩 브리핑", time: "오전 6시", items: ["오늘의 기사 브리핑", "브리핑 퀴즈"] },
+  { key: "morning", label: "금콩 브리핑", time: "오전 6시", items: ["오늘의 그림", "카드뉴스 기사 브리핑"] },
   { key: "noon", label: "금콩 스터디", time: "낮 12시 30분", items: ["오늘의 용어", "오늘의 면접 질문"] },
 ];
 
@@ -81,8 +82,10 @@ export interface NewsItem {
   tier: NewsTier;
   /** 브리핑 안 순서 (작을수록 앞) */
   position: number;
-  /** 한 줄 요약 — '오늘 꼭 알아야 할 3가지'와 헤드라인 표지에 */
+  /** 한 줄 요약 — 카드뉴스 표지와 한 줄 뉴스에 */
   takeaway: string;
+  /** 아침판 카드뉴스의 사이 장들 (비어 있으면 요약을 나눠 글 카드로) */
+  cards: NewsCard[];
   headline: boolean;
   status: number;
   origin: string;
@@ -105,12 +108,7 @@ export const isNewsTier = (v: unknown): v is NewsTier => v === "key" || v === "b
 export type IssueEdition = Exclude<NewsEdition, "">;
 export const isIssueEdition = (v: unknown): v is IssueEdition => v === "morning" || v === "noon";
 
-export const BRIEFING_TAGLINE: Record<IssueEdition, string> = {
-  morning: "금공 준비생의 아침을 여는 5분 브리핑",
-  noon: "점심 10분, 주요 뉴스로 보는 금공 시사 스터디",
-};
-
-/** 아침판 브리핑 퀴즈 한 문제 (보기 2~4개, answer 는 0부터) */
+/** 브리핑 퀴즈 한 문제 (보기 2~4개, answer 는 0부터) — 금콩 스터디 O/X, 예전 아침판 사지선다 */
 export interface QuizItem {
   question: string;
   options: string[];
@@ -458,13 +456,13 @@ export interface BriefingIssue {
   edition: IssueEdition;
   /** 판별로 처음 발행할 때 정해짐 (초안은 0) */
   vol: number;
-  /** 제목 — 목록·카드·검색에 쓰임 (브리핑 본문 위에는 안 나옴) */
+  /** 제목 — 목록·카드·검색과 브리핑 맨 위 그림 아래에 */
   title: string;
-  /** 오늘의 흐름: 2~3문장 */
+  /** 공유 미리보기·검색 설명 2~3문장 (금콩 스터디는 '오늘의 스터디'로 화면에도) */
   lede: string;
   /** 맺는 말 (선택) */
   closing: string;
-  /** 퀴즈 (아침판 사지선다·금콩 스터디 O/X) */
+  /** 퀴즈 (금콩 스터디 O/X · 예전 아침판 사지선다 — 아침판은 이제 화면에 안 나와요) */
   quiz: QuizItem[];
   /** 금콩 스터디 코너 (숫자로 보는 오늘·논술 한 문단) */
   extras: IssueExtras;

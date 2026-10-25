@@ -22,6 +22,8 @@ export interface NewsFormInitial {
   tier: NewsTier;
   position: number;
   takeaway: string;
+  /** 카드뉴스 사이 장 JSON (비우면 요약을 나눠 글 카드로) */
+  cards: string;
   imageUrl: string;
   imageCredit: string;
   headline: boolean;
@@ -142,7 +144,7 @@ export function NewsForm({ initial }: { initial: NewsFormInitial }) {
 
       {kind === "news" && (
         <label className="block">
-          <span className="mb-1 block type-caption text-ink-secondary">한 줄 요약 — &lsquo;오늘 꼭 알아야 할 3가지&rsquo;와 한 줄 뉴스에 그대로 나가요 (무슨 일 + 그래서 뭐가 중요한지)</span>
+          <span className="mb-1 block type-caption text-ink-secondary">한 줄 요약 — 카드뉴스 표지와 한 줄 뉴스에 그대로 나가요 (무슨 일 + 그래서 뭐가 중요한지)</span>
           <input name="takeaway" defaultValue={initial.takeaway} maxLength={160} className="input w-full" placeholder="예: 가계대출 9개월 만에 2.2조 순감 — 신용대출 3조 감소가 주도" />
         </label>
       )}
@@ -175,7 +177,7 @@ export function NewsForm({ initial }: { initial: NewsFormInitial }) {
 
       {kind === "news" && (
         <div className="rounded-lg border border-hairline px-4 py-3">
-          <p className="type-caption text-ink-secondary">헤드라인 사진 (선택) — 브리핑 첫 화면에서 넘어가는 큰 화면과 카드에 쓰여요. 없으면 카테고리 색 표지가 나와요.</p>
+          <p className="type-caption text-ink-secondary">표지 사진 (선택) — 카드뉴스 표지 바탕과 기사 카드에 쓰여요. 없으면 카테고리 색 표지가 나와요.</p>
           <p className="mt-1 type-micro text-ink-mute">
             언론사 기사 사진은 출처를 적어도 허락 없이 쓰면 저작권 침해예요. 직접 찍은 사진, 무료 이미지(Unsplash·Pexels·Pixabay), 공공누리 제1유형 사진(출처 표시)만 올려 주세요.
           </p>
@@ -203,6 +205,24 @@ export function NewsForm({ initial }: { initial: NewsFormInitial }) {
           </div>
           {uploadError && <p className="mt-2 type-caption text-ev-doc">{uploadError}</p>}
         </div>
+      )}
+
+      {kind === "news" && (
+        <details open={Boolean(initial.cards)} className="rounded-lg border border-hairline px-4 py-3">
+          <summary className="cursor-pointer type-caption text-ink-secondary">카드뉴스 사이 장 (선택 · JSON) — 표지와 &lsquo;왜 중요할까&rsquo; 사이에 넘겨 보는 2~4장</summary>
+          <p className="mt-2 type-micro leading-relaxed text-ink-mute">
+            비우면 요약을 나눠 글 카드로 보여 줘요. 종류: text {"{title, text}"} · stat {"{value, label, note}"} · bars {"{title, bars: [{label, value, hi}], note}"} · change{" "}
+            {"{title, rows: [{label, from, to}], note}"} · flow {"{title, steps: []}"} · term {"{term, text}"}. 숫자는 요약에 있는 그대로만 써 주세요 — 막대 길이·오름내림은 적힌 숫자로 계산해요.
+          </p>
+          <textarea
+            name="cards"
+            defaultValue={initial.cards}
+            rows={10}
+            maxLength={6000}
+            placeholder={'[\n  { "type": "stat", "value": "2조6058억원", "label": "이달 늘어난 가계대출" }\n]'}
+            className="input mt-3 w-full resize-y font-mono text-[13px] leading-relaxed"
+          />
+        </details>
       )}
 
       <details open={kind === "question" || Boolean(initial.body)} className="rounded-lg border border-hairline px-4 py-3">
