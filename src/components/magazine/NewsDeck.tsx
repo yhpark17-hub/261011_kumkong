@@ -3,7 +3,7 @@ import { ArrowRight, ChevronRight, ExternalLink } from "lucide-react";
 import { findNotes, noteIndex, termIndex } from "@/lib/glossary";
 import { amountOf, isMoneyUnit, type NewsCard } from "@/lib/news-cards";
 import { NEWS_SECTION_INFO, newsHref, type NewsItem, type NewsSection } from "@/lib/news-meta";
-import { PIC_H, PIC_W, SECTION_THEME, coinStack, defaultPic, findOrgs, picPerson, picSvg } from "@/lib/server/card-pics";
+import { PIC_H, PIC_W, SECTION_THEME, coinStack, defaultPic, findOrgs, picPerson, picPicker, picSvg } from "@/lib/server/card-pics";
 import { cn } from "../ui";
 import { CardDeck, type TimetableItem } from "./CardDeck";
 import { SourceLink } from "./interactive";
@@ -70,9 +70,13 @@ function PicCredit({ name }: { name: string }) {
 }
 
 /** 카드 위쪽 그림 칸 — 분야 색 바탕 + 이름표 */
-function Panel({ theme, kicker, tall = false, children }: { theme: Theme; kicker?: string; tall?: boolean; children: React.ReactNode }) {
+function Panel({ theme, kicker, tall = false, compact = false, children }: { theme: Theme; kicker?: string; tall?: boolean; compact?: boolean; children: React.ReactNode }) {
+  // 글이 긴 장은 그림 칸을 낮춰 글이 한눈에 들어오게
   return (
-    <div className={cn("relative shrink-0 overflow-clip", tall ? "aspect-[5/3.7]" : "aspect-[5/3]")} style={{ background: `linear-gradient(180deg, ${theme.panel} 0%, #ffffff 135%)` }}>
+    <div
+      className={cn("relative shrink-0 overflow-clip", tall ? "aspect-[5/3.7]" : compact ? "aspect-[5/2.3]" : "aspect-[5/3]")}
+      style={{ background: `linear-gradient(180deg, ${theme.panel} 0%, #ffffff 135%)` }}
+    >
       <span aria-hidden className={DOTS} />
       {kicker && (
         <span className="absolute top-3 left-3 z-10 rounded-full bg-canvas/90 px-2.5 py-1 text-[12px] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.08)]" style={{ color: theme.accent }}>
@@ -260,10 +264,9 @@ function ChangeChart({ c, theme }: { c: Extract<NewsCard, { type: "change" }>; t
 /* 카드                                                                  */
 /* ------------------------------------------------------------------ */
 
-function Cover({ n, total, theme, a }: { n: NewsItem; total: number; theme: Theme; a: Ann }) {
+function Cover({ n, total, theme, a, pic }: { n: NewsItem; total: number; theme: Theme; a: Ann; pic: string }) {
   const info = NEWS_SECTION_INFO[n.section];
   const Icon = NEWS_ICON[n.section];
-  const pic = n.pic || defaultPic(n.section, n.title);
   // 인물 표지인데 제목에 기관도 나오면 그 기관 로고를 구석에
   const org = picPerson(pic) ? findOrgs(n.title, 1)[0] : undefined;
   return (
@@ -309,18 +312,30 @@ function Cover({ n, total, theme, a }: { n: NewsItem; total: number; theme: Them
   );
 }
 
-/** 속 장의 기본 그림 — 표지 그림(인물 초상이면 건너뛰고 제목 낱말·분야로) */
-const innerPic = (n: NewsItem) => (n.pic && !n.pic.startsWith("who:") ? n.pic : defaultPic(n.section, n.title, false));
+/** 글이 길면 그림 칸을 낮춰요 */
+const LONG = 90;
 
-function Middle({ c, n, theme, id, a }: { c: NewsCard; n: NewsItem; theme: Theme; id: string; a: Ann }) {
-  const articlePic = innerPic(n);
+function Middle({ c, theme, id, a, pic }: { c: NewsCard; theme: Theme; id: string; a: Ann; pic: string }) {
   switch (c.type) {
+    case "background":
+      return (
+        <div className={SHELL}>
+          <Panel theme={theme} kicker="알고 가기" compact={c.text.length > LONG}>
+            <Pic name={pic} theme={theme} id={id} className="absolute inset-x-0 bottom-0 h-[92%] w-full" />
+            <PicCredit name={pic} />
+          </Panel>
+          <Caption>
+            <h4 className={HEAD}>{c.title}</h4>
+            <p className={BODY}>{a.r(c.text)}</p>
+          </Caption>
+        </div>
+      );
     case "text":
       return (
         <div className={SHELL}>
-          <Panel theme={theme} kicker="쉽게 말하면">
-            <Pic name={c.pic || articlePic} theme={theme} id={id} className="absolute inset-x-0 bottom-0 h-[92%] w-full" />
-            <PicCredit name={c.pic || articlePic} />
+          <Panel theme={theme} kicker="쉽게 말하면" compact={c.text.length > LONG}>
+            <Pic name={pic} theme={theme} id={id} className="absolute inset-x-0 bottom-0 h-[92%] w-full" />
+            <PicCredit name={pic} />
           </Panel>
           <Caption>
             {c.title && <h4 className={HEAD}>{c.title}</h4>}
@@ -331,9 +346,9 @@ function Middle({ c, n, theme, id, a }: { c: NewsCard; n: NewsItem; theme: Theme
     case "stat":
       return (
         <div className={SHELL}>
-          <Panel theme={theme} kicker="숫자로 보기">
-            <Pic name={c.pic || articlePic} theme={theme} id={id} className="absolute inset-x-0 bottom-0 h-[92%] w-full" />
-            <PicCredit name={c.pic || articlePic} />
+          <Panel theme={theme} kicker="숫자로 보기" compact={c.note.length > LONG}>
+            <Pic name={pic} theme={theme} id={id} className="absolute inset-x-0 bottom-0 h-[92%] w-full" />
+            <PicCredit name={pic} />
           </Panel>
           <Caption>
             <p className="tabular text-[clamp(30px,9.5vw,42px)] leading-[1.05] font-extrabold tracking-[-0.03em] [overflow-wrap:anywhere]" style={{ color: theme.accent }}>
@@ -402,9 +417,9 @@ function Middle({ c, n, theme, id, a }: { c: NewsCard; n: NewsItem; theme: Theme
     case "term":
       return (
         <div className={SHELL}>
-          <Panel theme={theme} kicker="용어 풀이">
-            <Pic name={c.pic || "kong-study"} theme={theme} id={id} className="absolute inset-x-0 bottom-0 h-[92%] w-full" />
-            <PicCredit name={c.pic} />
+          <Panel theme={theme} kicker="용어 풀이" compact={c.text.length > LONG}>
+            <Pic name={pic} theme={theme} id={id} className="absolute inset-x-0 bottom-0 h-[92%] w-full" />
+            <PicCredit name={pic} />
           </Panel>
           <Caption>
             <p className="w-fit rounded-xl px-3 py-1 text-[21px] leading-snug font-extrabold [word-break:keep-all]" style={{ background: theme.panel, color: theme.deep }}>
@@ -467,8 +482,7 @@ function Middle({ c, n, theme, id, a }: { c: NewsCard; n: NewsItem; theme: Theme
 }
 
 /** 카드가 없는 예전 기사 — 요약 글을 나눠 담은 장 (그림은 기사 그림) */
-function SummarySlide({ n, text, first, theme, id, a }: { n: NewsItem; text: string; first: boolean; theme: Theme; id: string; a: Ann }) {
-  const pic = innerPic(n);
+function SummarySlide({ text, first, theme, id, a, pic }: { text: string; first: boolean; theme: Theme; id: string; a: Ann; pic: string }) {
   return (
     <div className={SHELL}>
       <Panel theme={theme} kicker={first ? "무슨 일이에요?" : "조금 더 자세히"}>
@@ -541,6 +555,7 @@ function DeckHead({ n, no }: { n: NewsItem; no: number }) {
 /** 카드에서 괄호 풀이를 넣을 설명 글 (제목·이름표·인물의 말·단계는 그대로) */
 function proseStrings(c: NewsCard): string[] {
   switch (c.type) {
+    case "background":
     case "text":
       return [c.text];
     case "stat":
@@ -563,19 +578,27 @@ export function NewsDeck({ n, no }: { n: NewsItem; no: number }) {
   const total = deckSize(n);
   const theme = SECTION_THEME[n.section];
   const id = (i: number) => `p${n.id}x${i}`;
-  // 괄호 풀이는 기사 안에서 말마다 한 번 — 용어 카드로 따로 푸는 말은 빼요
+  // 괄호 풀이는 기사 안에서 말마다 한 번 — 배경·용어 카드가 이미 풀어 쓴 말은 빼요
   const index = noteIndex(n.notes);
-  const used = new Set(n.cards.flatMap((c) => (c.type === "term" ? findNotes(c.term, index).map((h) => h.note.term).concat(c.term) : [])));
+  const explained = n.cards
+    .filter((c) => c.type === "term" || c.type === "background")
+    .flatMap((c) => findNotes(c.type === "term" ? `${c.term} ${c.text}` : `${c.title} ${c.text}`, index).map((h) => h.note.term));
+  const used = new Set(explained);
   const ann = (strings: string[]) => annotate(strings, index, used);
+  // 그림 — 표지부터 장마다 다른 그림 (같은 그림이 오면 기사에 어울리는 다른 그림으로)
+  const coverPic = n.pic || defaultPic(n.section, n.title);
+  const pick = picPicker(`${n.title} ${n.takeaway} ${n.summary}`, [coverPic, "kong-note"]);
+  const cardPic = (c: NewsCard) =>
+    c.type === "text" || c.type === "stat" || c.type === "background" ? pick(c.pic || undefined) : c.type === "term" ? pick(c.pic || "kong-study") : "";
   const coverAnn = ann([n.takeaway || n.title]);
   const middles = n.cards.length
-    ? n.cards.map((c, i) => <Middle key={i} c={c} n={n} theme={theme} id={id(i)} a={ann(proseStrings(c))} />)
-    : summaryChunks(n.summary).map((t, i) => <SummarySlide key={i} n={n} text={t} first={i === 0} theme={theme} id={id(i)} a={ann([t])} />);
+    ? n.cards.map((c, i) => <Middle key={i} c={c} theme={theme} id={id(i)} a={ann(proseStrings(c))} pic={cardPic(c)} />)
+    : summaryChunks(n.summary).map((t, i) => <SummarySlide key={i} text={t} first={i === 0} theme={theme} id={id(i)} a={ann([t])} pic={pick()} />);
   const pointAnn = n.point ? ann([n.point]) : PLAIN;
   return (
     <div id={`item-${n.id}`} className="scroll-mt-32">
       <CardDeck id={n.id} label={`${pad(no)} ${n.title}`} head={<DeckHead n={n} no={no} />} foot={<ReadMore n={n} />}>
-        <Cover n={n} total={total} theme={theme} a={coverAnn} />
+        <Cover n={n} total={total} theme={theme} a={coverAnn} pic={coverPic} />
         {middles}
         {n.point && <Point text={n.point} theme={theme} id={id(9)} a={pointAnn} />}
       </CardDeck>

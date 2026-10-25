@@ -351,3 +351,52 @@ export function defaultPic(section: NewsSection, title: string, people = true): 
   const key = hit ? `kong-${hit.key}` : "";
   return isPicKey(key) ? key : SECTION_PIC[section];
 }
+
+/* ------------------------------------------------------------------ */
+/* 그림 나누기 — 한 기사 안에서는 장마다 다른 그림                          */
+/* ------------------------------------------------------------------ */
+
+/** 그림마다 어울리는 낱말 — 기사 글에 많이 나올수록 먼저 골라요 */
+const PIC_WORDS: Partial<Record<PicKey, string[]>> = {
+  "kong-banker": ["금리", "통화", "중앙은행", "한은", "연준", "금통위"],
+  "kong-trader": ["증시", "주가", "코스피", "주식", "나스닥", "투자자"],
+  "kong-builder": ["부동산", "건설", "일자리", "고용", "집값", "일용"],
+  "kong-shopper": ["물가", "소비", "내수"],
+  "kong-money": ["환율", "외환", "달러", "엔화"],
+  "kong-oil": ["유가", "원유", "원자재", "에너지", "중동"],
+  "kong-chip": ["반도체", "AI", "기술"],
+  "kong-security": ["감독", "검사", "제재", "조사", "보안"],
+  "kong-president": ["정부", "정책", "장관", "대통령", "당국"],
+  "kong-worried": ["우려", "위험", "불안", "급락", "부진"],
+  bank: ["은행", "대출", "예금"],
+  coins: ["흑자", "예금", "자금", "재원", "기금"],
+  dollar: ["달러", "수출", "무역", "외화"],
+  house: ["주택", "집값", "주택담보대출", "부동산"],
+  chip: ["반도체"],
+  oil: ["유가", "원유"],
+  doc: ["발표", "보고", "법안", "통계", "방안", "연구용역"],
+  gavel: ["제재", "과징금", "판결", "법원"],
+  lock: ["보호", "보안", "규제", "보험"],
+  podium: ["발표", "회의", "국정감사", "기자회견"],
+};
+/** 낱말이 안 맞을 때 고르는 차례 (주가 차트·화살표처럼 방향이 있는 그림은 일부러 고를 때만) */
+const FALLBACK: PicKey[] = ["kong-reporter", "doc", "coins", "kong-president", "bank", "podium", "kong-security", "dollar", "kong-banker", "kong-money", "house", "chip", "kong-shopper", "kong-trader", "kong-builder", "kong-oil", "oil", "gavel", "lock"];
+
+/**
+ * 한 기사의 그림 나누개 — 표지 그림부터 차례로 받아 가고, 이미 쓴 그림이 다시 오면 기사에 어울리는 다른 그림으로 바꿔요.
+ * (같은 그림이 장마다 되풀이되면 넘겨 볼 재미가 없어서)
+ */
+export function picPicker(articleText: string, taken: string[] = []) {
+  const score = (k: PicKey) => (PIC_WORDS[k] ?? []).filter((w) => articleText.includes(w)).length;
+  const pool = [...new Set([...FALLBACK.map((k) => ({ k, s: score(k) })).sort((a, b) => b.s - a.s).map((x) => x.k)])];
+  const used = new Set(taken);
+  return (want?: string): string => {
+    if (want && !used.has(want)) {
+      used.add(want);
+      return want;
+    }
+    const k = pool.find((p) => !used.has(p)) ?? "kong-reporter";
+    used.add(k);
+    return k;
+  };
+}

@@ -44,8 +44,9 @@ export const isPicName = (v: unknown): v is string =>
 
 /**
  * 기사 카드 한 장 — 맨 앞 표지(제목·한 줄 요약·기사 그림 pic)와 맨 뒤 '왜 중요할까'(point) 장은 기사에서 자동으로 만들고,
- * 이건 그 사이 장들이에요. 카드마다 그림이 크게, 글은 짧게.
- *   text   쉽게 말하면 — 그림 + 큰 소제목 + 짧은 설명
+ * 이건 그 사이 장들이에요. 카드마다 그림(장마다 다른 그림)과 설명 — 금융을 모르는 사람도 배경부터 알 수 있게.
+ *   background 알고 가기 — 이 뉴스를 이해하는 데 필요한 배경 (사건·제도·개념을 몇 문장으로)
+ *   text   쉽게 말하면 — 그림 + 소제목 + 설명
  *   stat   숫자로 보기 — 그림 + 큰 숫자 하나
  *   bars   비교해 보기 — 같은 단위 숫자 2~4개를 세로 막대로 (돈이면 동전 탑, 높이는 적힌 숫자에서 계산)
  *   change 무엇이 바뀌었나 — 전·후 막대 + 오름·내림 (숫자에서 계산)
@@ -55,6 +56,7 @@ export const isPicName = (v: unknown): v is string =>
  *   versus 둘을 비교 — 왼쪽 vs 오른쪽 (헷갈리는 짝꿍)
  */
 export type NewsCard =
+  | { type: "background"; title: string; text: string; pic: string }
   | { type: "text"; title: string; text: string; pic: string }
   | { type: "stat"; value: string; label: string; note: string; pic: string }
   | { type: "bars"; title: string; bars: { label: string; value: string; hi: boolean }[]; note: string }
@@ -69,26 +71,27 @@ export type NewsCardType = NewsCard["type"];
 /** 숫자·도표 카드 — 기사마다 하나 이상 (글 카드도 그림이 들어가지만, 숫자·관계를 보여 주는 장이 꼭 있게) */
 export const VISUAL_CARDS: ReadonlySet<NewsCardType> = new Set(["stat", "bars", "change", "flow", "quote", "versus"]);
 
-/** 기사 한 건의 사이 카드 수 (표지·'왜 중요할까' 장 빼고) */
-export const CARD_COUNT = { min: 2, max: 4 };
+/** 기사 한 건의 사이 카드 수 (표지·'왜 중요할까' 장 빼고) — 배경 설명이 필요하면 넉넉히 */
+export const CARD_COUNT = { min: 2, max: 6 };
 
-/** 카드에 들어가는 글 길이 — 그림이 반을 차지하는 휴대폰 카드 한 장에 넘치지 않게 (넘으면 자동 점검에서 고쳐 올려요) */
+/** 카드에 들어가는 글 길이 — 설명이 필요하면 충분히 쓰되, 카드 한 장에 다 읽히게 (넘으면 자동 점검에서 고쳐 올려요) */
 export const CARD_LEN = {
-  title: 22,
-  text: 70,
-  value: 14,
-  label: 24,
-  note: 40,
-  step: 24,
-  term: 14,
-  termText: 80,
-  barLabel: 10,
-  rowLabel: 12,
-  quote: 50,
-  name: 20,
-  vsName: 10,
-  vsText: 36,
-  point: 130,
+  title: 30,
+  text: 170,
+  bgText: 260,
+  value: 16,
+  label: 34,
+  note: 100,
+  step: 40,
+  term: 20,
+  termText: 170,
+  barLabel: 12,
+  rowLabel: 16,
+  quote: 60,
+  name: 24,
+  vsName: 12,
+  vsText: 80,
+  point: 200,
   short: 16,
   noteTerm: 16,
   noteText: 22,
@@ -110,13 +113,16 @@ export function parseCards(raw: unknown): NewsCard[] {
   }
   if (!Array.isArray(v)) return [];
   const out: NewsCard[] = [];
-  for (const item of v.slice(0, 8)) {
+  for (const item of v.slice(0, 10)) {
     const c = obj(item);
-    if (c.type === "text") {
-      const card = { type: "text" as const, title: str(c.title, 60), text: str(c.text, 240), pic: pic(c.pic) };
+    if (c.type === "background") {
+      const card = { type: "background" as const, title: str(c.title, 60), text: str(c.text, 400), pic: pic(c.pic) };
+      if (card.title && card.text) out.push(card);
+    } else if (c.type === "text") {
+      const card = { type: "text" as const, title: str(c.title, 60), text: str(c.text, 300), pic: pic(c.pic) };
       if (card.text) out.push(card);
     } else if (c.type === "stat") {
-      const card = { type: "stat" as const, value: str(c.value, 30), label: str(c.label, 60), note: str(c.note, 120), pic: pic(c.pic) };
+      const card = { type: "stat" as const, value: str(c.value, 30), label: str(c.label, 60), note: str(c.note, 200), pic: pic(c.pic) };
       if (card.value && card.label) out.push(card);
     } else if (c.type === "bars") {
       const bars = (Array.isArray(c.bars) ? c.bars : [])
@@ -124,26 +130,26 @@ export function parseCards(raw: unknown): NewsCard[] {
         .map((b) => ({ label: str(b.label, 30), value: str(b.value, 30), hi: b.hi === true }))
         .filter((b) => b.label && b.value)
         .slice(0, 5);
-      if (bars.length >= 2) out.push({ type: "bars", title: str(c.title, 60), bars, note: str(c.note, 120) });
+      if (bars.length >= 2) out.push({ type: "bars", title: str(c.title, 60), bars, note: str(c.note, 200) });
     } else if (c.type === "change") {
       const rows = (Array.isArray(c.rows) ? c.rows : [])
         .map(obj)
         .map((r) => ({ label: str(r.label, 30), from: str(r.from, 30), to: str(r.to, 30) }))
         .filter((r) => r.label && r.from && r.to)
         .slice(0, 3);
-      if (rows.length) out.push({ type: "change", title: str(c.title, 60), rows, note: str(c.note, 120) });
+      if (rows.length) out.push({ type: "change", title: str(c.title, 60), rows, note: str(c.note, 200) });
     } else if (c.type === "flow") {
-      const steps = (Array.isArray(c.steps) ? c.steps : []).map((s) => str(s, 60)).filter(Boolean).slice(0, 4);
+      const steps = (Array.isArray(c.steps) ? c.steps : []).map((s) => str(s, 80)).filter(Boolean).slice(0, 4);
       if (steps.length >= 2) out.push({ type: "flow", title: str(c.title, 60), steps });
     } else if (c.type === "term") {
-      const card = { type: "term" as const, term: str(c.term, 40), text: str(c.text, 240), pic: pic(c.pic) };
+      const card = { type: "term" as const, term: str(c.term, 40), text: str(c.text, 300), pic: pic(c.pic) };
       if (card.term && card.text) out.push(card);
     } else if (c.type === "quote") {
       const who = typeof c.who === "string" && /^[a-z][a-z-]{1,40}$/.test(c.who) ? c.who : "";
-      const card = { type: "quote" as const, who, name: str(c.name, 40), text: str(c.text, 120), note: str(c.note, 120) };
+      const card = { type: "quote" as const, who, name: str(c.name, 40), text: str(c.text, 120), note: str(c.note, 200) };
       if (card.name && card.text) out.push(card);
     } else if (c.type === "versus") {
-      const side = (s: unknown) => ({ name: str(obj(s).name, 30), text: str(obj(s).text, 90) });
+      const side = (s: unknown) => ({ name: str(obj(s).name, 30), text: str(obj(s).text, 160) });
       const card = { type: "versus" as const, title: str(c.title, 60), left: side(c.left), right: side(c.right) };
       if (card.left.name && card.right.name) out.push(card);
     }
@@ -183,6 +189,7 @@ export const isMoneyUnit = (unit: string) => /^(원|달러|엔|위안|유로|파
 /** 카드 글 전부 — 숫자 확인용 */
 export function cardTexts(c: NewsCard): string[] {
   switch (c.type) {
+    case "background":
     case "text":
       return [c.title, c.text];
     case "stat":
@@ -241,7 +248,10 @@ export function checkCards(raw: unknown, cards: NewsCard[], corpus: string): str
     for (const v of verbatimTexts(c)) {
       if (!corpus.includes(plain(v))) problems.push(`${at}: "${v}" 가 이 기사 글에 그대로 없어요 (${c.type === "quote" ? "인물의 말" : "숫자+단위"}는 기사에 적힌 그대로)`);
     }
-    if (c.type === "text") {
+    if (c.type === "background") {
+      long(`${at} title`, c.title, CARD_LEN.title);
+      long(`${at} text`, c.text, CARD_LEN.bgText);
+    } else if (c.type === "text") {
       long(`${at} title`, c.title, CARD_LEN.title);
       long(`${at} text`, c.text, CARD_LEN.text);
     } else if (c.type === "stat") {
