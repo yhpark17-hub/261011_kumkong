@@ -1,5 +1,11 @@
 import "server-only";
+import { DONALD_TRUMP } from "./portraits/donald-trump";
 import { KEVIN_WARSH } from "./portraits/kevin-warsh";
+import { LEE_CHANJIN } from "./portraits/lee-chanjin";
+import { LEE_EOGWEON } from "./portraits/lee-eogweon";
+import { LEE_HYOUNGIL } from "./portraits/lee-hyoungil";
+import { LEE_JAEMYUNG } from "./portraits/lee-jaemyung";
+import { SCOTT_BESSENT } from "./portraits/scott-bessent";
 import { SHIN_HYUNSONG } from "./portraits/shin-hyunsong";
 
 /**
@@ -319,10 +325,19 @@ function custom(a: A, id: string): string {
   );
 }
 
-/** 자유 이용 사진을 밑그림 삼아 손으로 짠 일러스트 (scripts/portraits — 참고 사진 출처 표시) */
+/**
+ * 자유 이용 사진을 밑그림 삼아 손으로 짠 일러스트 (scripts/portraits — 참고 사진 출처 표시)
+ * lee-chanjin 은 출처 모를 사진을 생김새 참고로만 쓴 새 그림이라 출처 표시가 없어요
+ */
 const PHOTO: Record<string, { svg: string; credit: string }> = {
   "shin-hyunsong": SHIN_HYUNSONG,
   "kevin-warsh": KEVIN_WARSH,
+  "lee-jaemyung": LEE_JAEMYUNG,
+  "donald-trump": DONALD_TRUMP,
+  "lee-hyoungil": LEE_HYOUNGIL,
+  "lee-eogweon": LEE_EOGWEON,
+  "lee-chanjin": LEE_CHANJIN,
+  "scott-bessent": SCOTT_BESSENT,
 };
 const usesPhoto = (a: A) => Boolean(a.who && PHOTO[a.who] && a.look !== "cartoon");
 

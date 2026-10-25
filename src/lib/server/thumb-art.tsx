@@ -131,6 +131,12 @@ function Brand({ issue, brand }: { issue: Pick<BriefingIssue, "date" | "edition"
 }
 
 /** 원본 사진 출처 (사진 기반 인물 초상을 쓴 그림) — 아래 가장자리에 작게 */
+/** "인물 그림 원본 사진: A", "인물 그림 원본 사진: B" → "인물 그림 원본 사진: A / B" (인물이 여럿이어도 짧게) */
+function joinCredits(items: string[]): string {
+  const head = /^[^:]+: /.exec(items[0])?.[0];
+  return head && items.every((s) => s.startsWith(head)) ? head + items.map((s) => s.slice(head.length)).join(" / ") : items.join(" / ");
+}
+
 function Credits({ items, left }: { items: string[]; left: boolean }) {
   if (!items.length) return null;
   return (
@@ -140,16 +146,19 @@ function Credits({ items, left }: { items: string[]; left: boolean }) {
         display: "flex",
         bottom: 8,
         ...(left ? { left: 10 } : { right: 10 }),
+        maxWidth: ART_W - 20,
         padding: "3px 10px",
-        borderRadius: 999,
+        borderRadius: 12,
         background: "rgba(12,14,30,0.42)",
         color: "rgba(255,255,255,0.92)",
         fontSize: 14,
+        lineHeight: 1.35,
         fontWeight: 700,
         letterSpacing: -0.2,
       }}
     >
-      {items.join(" / ")}
+      {/* 길면 줄을 바꿔요 (상자도 같이 커지게 글자를 한 번 더 감싸요) */}
+      <span style={{ display: "flex", flexWrap: "wrap" }}>{joinCredits(items)}</span>
     </div>
   );
 }

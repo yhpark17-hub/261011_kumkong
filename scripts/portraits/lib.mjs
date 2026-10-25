@@ -96,6 +96,28 @@ export function browHairs(R, [p0, c, p1], n, { len = 22, w = 3.4, color = "#1a14
 }
 
 /**
+ * 안경 — 렌즈 테두리 두 개(path d) + 브리지 + 다리. 얼굴 위에 맨 나중에 얹어요
+ * frame: 테 색, w: 테 굵기, rimless: 무테(렌즈 가장자리만 옅게), glare: 렌즈 위 빛 반사 [[p0, c, p1], …],
+ * shadow: 테 그림자 (아래로 dy 만큼, 흐린 필터 아이디)
+ */
+export function glasses({ lenses, bridge = "", temples = [], frame = "#3a3330", w = 4, rimless = false, glare = [], shadow }) {
+  const stroke = (d, c, sw, op = 1) =>
+    `<path d="${d}" fill="none" stroke="${c}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"${op < 1 ? ` opacity="${op}"` : ""}/>`;
+  let s = "";
+  if (shadow) s += `<g filter="url(#${shadow.filter})" opacity="${shadow.op ?? 0.25}" transform="translate(0 ${shadow.dy ?? 8})">${lenses.map((d) => stroke(d, "#5a3426", w * 1.2)).join("")}</g>`;
+  s += lenses.map((d) => `<path d="${d}" fill="#ffffff" opacity=".07"/>`).join("");
+  s += glare.map(([a, c, b, gw = 7]) => strand(a, c, b, gw, "#ffffff", 0.35)).join("");
+  if (rimless) {
+    s += lenses.map((d) => stroke(d, "#d9dde3", w * 0.6, 0.55) + stroke(d, "#6f6a66", w * 0.25, 0.5)).join("");
+    s += stroke(bridge, frame, w, 0.95) + temples.map((d) => stroke(d, frame, w * 0.9)).join("");
+  } else {
+    s += [...lenses, bridge, ...temples].filter(Boolean).map((d) => stroke(d, frame, w)).join("");
+    s += lenses.map((d) => stroke(d, "#ffffff", w * 0.3, 0.35)).join("");
+  }
+  return s;
+}
+
+/**
  * 흐림 필터들 — 부드러운 명암(에어브러시)용. 쓸 때는 <g filter="url(#<id>-b<세기>)">
  * 필터 영역은 그린 모양 크기의 사방 100% — 넓게 잡으면 썸네일 만드는 시간이 크게 늘어요
  */

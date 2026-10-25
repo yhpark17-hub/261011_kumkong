@@ -8,6 +8,12 @@
 | --- | --- | --- | --- | --- |
 | 신현송 한국은행 총재 | `shin-hyunsong` | `shin-hyunsong.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Hyun_Song_Shin,_deputy_del_Banco_de_Pagos_Internacionales_-_D%C3%ADa_2_-_3era_reuni%C3%B3n_de_ministros_de_Finanzas_y_Presidentes_de_Bancos_Centrales_(cropped).jpg) (G20 Argentina) | CC BY 2.0 — 출처 표시 필요 |
 | 케빈 워시 연준 의장 | `kevin-warsh` | `kevin-warsh.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Official_portrait_of_Kevin_M._Warsh_(cropped)2.jpg) (미국 연준 이사회) | 퍼블릭 도메인 |
+| 이재명 대통령 | `lee-jaemyung` | `lee-jaemyung.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Lee_Jae-myung%27s_Portrait_(2024.2).jpg) (대한민국 국회) | 공공누리 제1유형 — 출처 표시 필요 |
+| 도널드 트럼프 미국 대통령 | `donald-trump` | `donald-trump.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Official_Presidential_Portrait_of_President_Donald_J._Trump_(2025)_(3x4_close_cropped).jpg) (미국 백악관) | 퍼블릭 도메인 |
+| 이형일 부총리 겸 재정경제부 장관 | `lee-hyoungil` | `lee-hyoungil.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Lee_Hyoung-il%27s_portrait_(2026.10).jpg) (대한민국 국회) | 공공누리 제1유형 — 출처 표시 필요 |
+| 이억원 금융위원장 | `lee-eogweon` | `lee-eogweon.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Lee_Eog-weon%27s_portrait_(2025.09).jpg) (대한민국 대통령실, 188×241 작은 사진) | 공공누리 제1유형 — 출처 표시 필요 |
+| 스콧 베선트 미국 재무장관 | `scott-bessent` | `scott-bessent.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Official_portrait_of_Treasury_Secretary_Scott_Bessent_(cropped).jpg) (미국 재무부) | 퍼블릭 도메인 |
+| 이찬진 금융감독원장 | `lee-chanjin` | `lee-chanjin.mjs` | 출처를 모르는 사진(운영자 제공)을 생김새 참고로만 씀 — 따라 그리지 않고 정면 구도로 새로 그림 | 출처 표시 없음 |
 
 썸네일에 이 초상을 쓰면 **참고 사진 출처가 그림 아래 구석에 자동으로 붙어요** (`src/lib/server/portraits/*.ts` 의 `credit`).
 
@@ -24,7 +30,9 @@ node scripts/portraits/shin-hyunsong.mjs
 
 ## 새 인물 추가
 
-1. **라이선스부터 확인** — Wikimedia Commons 등에서 퍼블릭 도메인이거나 CC BY(-SA) 인 정면 사진만. 언론사 사진·출처가 불분명한 사진은 쓰지 않아요.
+1. **라이선스부터 확인** — Wikimedia Commons 등에서 퍼블릭 도메인·CC BY·공공누리 제1유형인 정면 사진만 밑그림으로 써요.
+   언론사 사진·출처가 불분명한 사진은 밑그림으로 쓰지 않아요 (정부 누리집·정책브리핑 사진도 '변경 금지'인 경우가 많아요).
+   그런 사진밖에 없으면 생김새 참고로만 보고 정면 구도로 새로 그리고, 출처 표시는 비워요 (`lee-chanjin.mjs`).
 2. 960px 판을 `scripts/portraits/photos/<인물>.jpg` 로 받아요 (사진 파일은 저장소에 올리지 않아요).
 3. 사진에 좌표 격자를 얹어 확대해 보며 머리 바깥선·머리선·눈썹·눈(눈동자 중심)·코·입·턱선·귀·목·옷깃·넥타이 좌표를 재요.
    머리선은 특히 정확히 — 너무 높거나 낮으면 머리가 모자처럼 보여요.
