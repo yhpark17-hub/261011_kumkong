@@ -266,7 +266,7 @@ export function Timetable({ items }: { items: TimetableItem[] }) {
                     {no(i)}
                   </span>
                   <span className={cn("tag shrink-0", info.tone)}>{info.label}</span>
-                  <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-ink group-hover:underline">{it.label}</span>
+                  <span className="min-w-0 flex-1 text-[15px] leading-snug font-semibold text-ink [word-break:keep-all] group-hover:underline">{it.label}</span>
                   {read ? (
                     <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#8fd6a8] text-brand-dark" title="다 봤어요">
                       <Check className="h-3 w-3" strokeWidth={3} />

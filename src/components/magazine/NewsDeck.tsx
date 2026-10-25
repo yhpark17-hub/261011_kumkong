@@ -148,7 +148,7 @@ function Footnotes({ a, accent, dark = false }: { a: Ann; accent: string; dark?:
       <ol className={cn("space-y-1 border-t pt-2.5", dark ? "border-on-primary/20" : "border-hairline")}>
         {a.notes.map(({ n, note }) => (
           <li key={n} className={cn("flex gap-1.5 text-[12px] leading-snug [word-break:keep-all]", dark ? "text-on-primary/75" : "text-ink-mute")}>
-            <span className="shrink-0 font-extrabold" style={{ color: dark ? undefined : accent }}>
+            <span className="shrink-0 font-extrabold" style={{ color: dark ? "#ffd27a" : accent }}>
               {n}
             </span>
             <span>
@@ -588,8 +588,9 @@ export function NewsDeck({ n, no }: { n: NewsItem; no: number }) {
   // 각주는 기사 안에서 말마다 한 번 — 용어 카드로 따로 푸는 말은 빼요
   const index = noteIndex(n.notes);
   const used = new Set(n.cards.flatMap((c) => (c.type === "term" ? findNotes(c.term, index).map((h) => h.note.term).concat(c.term) : [])));
-  const ann = (strings: string[]) => annotate(strings, index, used, theme.accent);
-  const coverAnn = ann([n.takeaway || n.title]);
+  const ann = (strings: string[], color = theme.accent) => annotate(strings, index, used, color);
+  // 표지는 어두운 바탕이라 각주 번호를 밝은 색으로
+  const coverAnn = ann([n.takeaway || n.title], "#ffd27a");
   const middles = n.cards.length
     ? n.cards.map((c, i) => <Middle key={i} c={c} n={n} theme={theme} id={id(i)} a={ann(cardStrings(c))} />)
     : summaryChunks(n.summary).map((t, i) => <SummarySlide key={i} n={n} text={t} first={i === 0} theme={theme} id={id(i)} a={ann([t])} />);
