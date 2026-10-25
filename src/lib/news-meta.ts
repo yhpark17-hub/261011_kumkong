@@ -86,6 +86,10 @@ export interface NewsItem {
   takeaway: string;
   /** 아침판 카드뉴스의 사이 장들 (비어 있으면 요약을 나눠 글 카드로) */
   cards: NewsCard[];
+  /** 아침판 시간표에 쓰는 짧은 이름 (8자 안 — 비면 분야 이름) */
+  short: string;
+  /** 카드뉴스 표지 그림 (news-cards PICS 이름 또는 'who:인물' — 비면 제목·분야로 골라요) */
+  pic: string;
   headline: boolean;
   status: number;
   origin: string;
@@ -488,6 +492,9 @@ export const itemEdition = (n: Pick<NewsItem, "section">): IssueEdition => (n.se
 
 /** 기사를 누르면 → 그 기사가 실린 브리핑의 그 자리 */
 export const itemHref = (n: Pick<NewsItem, "id" | "section" | "editionDate">) => letterHref(n.editionDate, itemEdition(n), n.id);
+
+/** 아침판 한 호에 싣는 기사 수의 최댓값 — 더 많이 저장된 예전 호도 앞에서부터 이만큼만 보여 줘요 */
+export const MAX_STORIES = 5;
 
 /** 썸네일·머리에 적는 예상 소요 시간의 최댓값 — 실제로 더 걸려도 이보다 길게 적지 않아요 */
 export const MAX_MINUTES = 5;

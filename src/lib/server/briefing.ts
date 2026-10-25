@@ -1,6 +1,6 @@
 import "server-only";
 import type { InValue, Row } from "@libsql/client";
-import { briefingMinutes, isIssueEdition, kindOf, parseExtras, parseQuiz, parseThumb, type BriefingIssue, type IssueEdition, type NewsItem } from "../news-meta";
+import { MAX_STORIES, briefingMinutes, isIssueEdition, kindOf, parseExtras, parseQuiz, parseThumb, type BriefingIssue, type IssueEdition, type NewsItem } from "../news-meta";
 import { db } from "./db";
 import { COLS, PUBLIC, toItem } from "./news";
 
@@ -44,7 +44,7 @@ export interface LetterContent {
   questions: NewsItem[];
   /** 지난 브리핑 목록에 보여 줄 앞의 세 기사 (헤드라인 + 앞의 두 기사) */
   top: NewsItem[];
-  /** 기사 전체 (헤드라인 포함) */
+  /** 기사 전체 (헤드라인 포함, MAX_STORIES 건까지) */
   all: NewsItem[];
 }
 
@@ -52,8 +52,9 @@ export function arrangeLetter(items: NewsItem[]): LetterContent {
   const order = (a: NewsItem, b: NewsItem) => a.position - b.position || (a.publishedAt ?? 0) - (b.publishedAt ?? 0) || a.id - b.id;
   const news = items.filter((n) => kindOf(n.section) === "news").sort(order);
   const headline = news.find((n) => n.headline) ?? news[0] ?? null;
-  const stories = news.filter((n) => n !== headline);
-  const all = headline ? [headline, ...stories] : stories;
+  // 기사는 많아도 MAX_STORIES 건까지만 (헤드라인 + 앞에서부터)
+  const all = (headline ? [headline, ...news.filter((n) => n !== headline)] : news).slice(0, MAX_STORIES);
+  const stories = all.filter((n) => n !== headline);
   return {
     headline,
     stories,

@@ -2,11 +2,10 @@
 
 import { Children, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
-import { NEWS_SECTION_INFO, type NewsSection } from "@/lib/news-meta";
+import type { NewsSection } from "@/lib/news-meta";
 import { cn } from "../ui";
-import { NEWS_ICON } from "./news-icons";
 
-/* 끝 장까지 넘겨 본 기사 — 시간표에 '다 봤어요' 표시 (이 화면을 보는 동안만 기억) */
+/* 끝 장까지 넘겨 본 기사 — 시간표에 체크 표시 (이 화면을 보는 동안만 기억) */
 const EMPTY: ReadonlySet<number> = new Set();
 let seen: ReadonlySet<number> = EMPTY;
 const listeners = new Set<() => void>();
@@ -31,7 +30,7 @@ const useSeen = () =>
 /**
  * 카드뉴스 한 묶음 — 옆으로 밀거나 화살표·막대를 눌러 한 장씩 넘겨요.
  * 카드는 서버에서 그린 것을 children 으로 받고, 여기서는 넘기기·몇 번째 장인지만 다뤄요.
- * 카드 높이는 한 묶음 안에서 가장 긴 장에 맞춰 같아요 (휴대폰은 정사각형, 넓은 화면은 4:3 이 최소 — 글이 길면 그만큼 늘어나요).
+ * 카드는 카드뉴스처럼 4:5 — 한 묶음 안에서 가장 긴 장에 맞춰 높이가 같아요 (글이 길면 그만큼 늘어나요). 넓은 화면은 여러 장이 나란히 보여요.
  */
 export function CardDeck({ id, label, head, foot, children }: { id: number; label: string; head: ReactNode; foot?: ReactNode; children: ReactNode }) {
   const slides = Children.toArray(children);
@@ -108,7 +107,7 @@ export function CardDeck({ id, label, head, foot, children }: { id: number; labe
         className="relative -mx-3 mt-1 flex snap-x snap-mandatory scroll-px-3 gap-3 overflow-x-auto px-3 pb-1 no-scrollbar focus-visible:outline-offset-0 sm:mx-0 sm:scroll-px-0 sm:px-0"
       >
         {slides.map((s, i) => (
-          <div key={i} role="group" aria-roledescription="slide" aria-label={`${i + 1} / ${total}`} className="flex aspect-square w-[86%] shrink-0 snap-start flex-col *:flex-1 sm:w-[78%] md:aspect-[4/3] md:w-[74%]">
+          <div key={i} role="group" aria-roledescription="slide" aria-label={`${i + 1} / ${total}`} className="flex aspect-[4/5] w-[84%] shrink-0 snap-start flex-col *:flex-1 sm:w-[330px] md:w-[350px]">
             {s}
           </div>
         ))}
@@ -129,62 +128,90 @@ export function CardDeck({ id, label, head, foot, children }: { id: number; labe
 
 export interface TimetableItem {
   id: number;
+  /** 짧은 이름 (예: 경상흑자) */
+  label: string;
   section: NewsSection;
-  title: string;
   headline: boolean;
-  /** 카드 장 수 */
-  slides: number;
 }
 
 /**
- * 오늘의 시간표 — 기사마다 작은 표지 카드를 옆으로 늘어놓아요. 누르면 그 기사 카드뉴스로,
- * 끝 장까지 넘겨 본 기사는 '다 봤어요'로 바뀌어요 (읽은 정도 표시를 겸해요).
+ * 오늘의 시간표 — 기사마다 번호 붙은 작은 칩 한 줄. 읽는 동안 화면 위에 붙어 있어서
+ * 지금 어느 기사인지(진한 칩)·끝까지 넘겨 본 기사(초록 체크)를 보여 주고, 누르면 그 기사로 가요.
  */
-export function Timetable({ items, meta }: { items: TimetableItem[]; meta: string }) {
+export function TimetableBar({ items }: { items: TimetableItem[] }) {
   const done = useSeen();
+  const [active, setActive] = useState<number | null>(null);
+  const list = useRef<HTMLOListElement>(null);
+  const ids = items.map((it) => it.id).join(",");
+
+  // 화면 가운데쯤을 지나는 기사 = 지금 읽는 기사
+  useEffect(() => {
+    const els = ids
+      .split(",")
+      .map((id) => document.getElementById(`item-${id}`))
+      .filter((el): el is HTMLElement => Boolean(el));
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) setActive(Number(e.target.id.slice(5)));
+      },
+      { rootMargin: "-35% 0px -60% 0px" },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [ids]);
+
+  // 지금 칩이 줄 밖이면 옆으로 밀어 보여 주기
+  useEffect(() => {
+    const ol = list.current;
+    const chip = ol?.querySelector<HTMLElement>('[aria-current="true"]');
+    if (!ol || !chip) return;
+    if (chip.offsetLeft < ol.scrollLeft || chip.offsetLeft + chip.offsetWidth > ol.scrollLeft + ol.clientWidth) ol.scrollTo({ left: chip.offsetLeft - 8, behavior: "smooth" });
+  }, [active]);
+
   const count = items.filter((it) => done.has(it.id)).length;
   return (
-    <section aria-labelledby="timetable-title">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-        <h3 id="timetable-title" className="type-heading-sm text-ink">
-          오늘의 시간표
-        </h3>
-        <p className="tabular type-caption text-ink-mute" aria-live="polite">
-          {count > 0 ? `다 본 기사 ${count} / ${items.length}` : meta}
+    <nav
+      aria-label="오늘의 시간표"
+      className="sticky top-[61px] z-20 -mx-3 border-b border-brand-dark/10 bg-canvas-cream/95 px-3 py-2 backdrop-blur sm:-mx-4 sm:px-4 md:top-[73px] md:-mx-7 md:px-7"
+    >
+      <div className="flex items-center gap-2.5">
+        <p className="shrink-0 text-[12px] leading-tight font-bold text-ink">
+          오늘의
+          <br />
+          시간표
         </p>
-      </div>
-      <ol className="-mx-3 mt-3 flex snap-x scroll-px-3 gap-2.5 overflow-x-auto px-3 pb-1 no-scrollbar sm:mx-0 sm:grid sm:grid-cols-[repeat(auto-fit,minmax(128px,1fr))] sm:overflow-visible sm:px-0">
-        {items.map((it, i) => {
-          const Icon = NEWS_ICON[it.section];
-          const info = NEWS_SECTION_INFO[it.section];
-          const read = done.has(it.id);
-          return (
-            <li key={it.id} className="w-[136px] shrink-0 snap-start sm:w-auto">
-              <a
-                href={`#item-${it.id}`}
-                className="group relative flex h-full min-h-[156px] flex-col overflow-hidden rounded-2xl bg-brand-dark p-3 text-on-primary transition-transform hover:-translate-y-0.5"
-              >
-                <span aria-hidden className={cn("absolute -top-10 -right-10 h-28 w-28 rounded-full opacity-70 blur-2xl", info.dot)} />
-                <Icon aria-hidden className="absolute right-2 bottom-2 h-11 w-11 text-on-primary/15" strokeWidth={1.5} />
-                <span className="relative flex items-center justify-between">
-                  <span className="tabular text-[22px] leading-none font-bold">{String(i + 1).padStart(2, "0")}</span>
-                  {read && (
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#8fd6a8] text-brand-dark">
-                      <Check className="h-3 w-3" strokeWidth={3} />
-                    </span>
+        <ol ref={list} className="relative flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-0.5 no-scrollbar">
+          {items.map((it, i) => {
+            const now = active === it.id;
+            const read = done.has(it.id);
+            return (
+              <li key={it.id} className="shrink-0">
+                <a
+                  href={`#item-${it.id}`}
+                  aria-current={now ? "true" : undefined}
+                  className={cn(
+                    "inline-flex h-8 items-center gap-1.5 rounded-full pr-3 pl-1 text-[13px] font-semibold whitespace-nowrap transition-colors",
+                    now ? "bg-brand-dark text-on-primary" : read ? "bg-[#d9f2e2] text-[#24683f]" : "bg-canvas text-ink ring-1 ring-hairline hover:ring-hairline-input",
                   )}
-                </span>
-                <span className="relative mt-2 type-micro font-semibold text-on-primary/70">
-                  {info.label}
-                  {it.headline && " · 헤드라인"}
-                </span>
-                <span className="relative mt-1 line-clamp-3 type-caption leading-snug font-semibold [word-break:keep-all] group-hover:underline">{it.title}</span>
-                <span className="relative mt-auto pt-2 type-micro text-on-primary/65">{read ? "다 봤어요" : `카드 ${it.slides}장`}</span>
-              </a>
-            </li>
-          );
-        })}
-      </ol>
-    </section>
+                >
+                  <span
+                    className={cn(
+                      "inline-flex h-6 w-6 items-center justify-center rounded-full tabular text-[11px] font-bold",
+                      now ? "bg-on-primary/20" : read ? "bg-[#8fd6a8] text-brand-dark" : "bg-canvas-soft text-ink-secondary",
+                    )}
+                  >
+                    {read && !now ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : String(i + 1).padStart(2, "0")}
+                  </span>
+                  {it.label}
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+        <span className="shrink-0 tabular text-[12px] font-semibold text-ink-mute" aria-live="polite" title="끝까지 넘겨 본 기사">
+          {count}/{items.length}
+        </span>
+      </div>
+    </nav>
   );
 }

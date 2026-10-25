@@ -242,6 +242,8 @@ CREATE TABLE IF NOT EXISTS news (
   position INTEGER NOT NULL DEFAULT 0,
   takeaway TEXT NOT NULL DEFAULT '',
   cards TEXT NOT NULL DEFAULT '[]',
+  short TEXT NOT NULL DEFAULT '',
+  pic TEXT NOT NULL DEFAULT '',
   headline INTEGER NOT NULL DEFAULT 0,
   status INTEGER NOT NULL DEFAULT 0,
   origin TEXT NOT NULL DEFAULT 'admin',
@@ -301,6 +303,9 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: "news", column: "takeaway", ddl: "ALTER TABLE news ADD COLUMN takeaway TEXT NOT NULL DEFAULT ''" },
   // 아침판 기사 카드뉴스 (표지·'왜 중요할까' 사이 장들, JSON) — 2026-10 추가
   { table: "news", column: "cards", ddl: "ALTER TABLE news ADD COLUMN cards TEXT NOT NULL DEFAULT '[]'" },
+  // 아침판 시간표에 쓰는 짧은 이름 · 카드뉴스 표지 그림 — 2026-10 추가
+  { table: "news", column: "short", ddl: "ALTER TABLE news ADD COLUMN short TEXT NOT NULL DEFAULT ''" },
+  { table: "news", column: "pic", ddl: "ALTER TABLE news ADD COLUMN pic TEXT NOT NULL DEFAULT ''" },
   // 금콩 스터디 코너(숫자로 보는 오늘·논술 한 문단) — 2026-10 추가
   { table: "briefing_issues", column: "extras", ddl: "ALTER TABLE briefing_issues ADD COLUMN extras TEXT NOT NULL DEFAULT '{}'" },
   // 블로그 글 강조 표시(인기·NEW·추천·필독) — 운영자가 고름, 2026-10 추가

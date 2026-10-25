@@ -338,32 +338,16 @@ export function EditionBadge({ edition, className }: { edition: BriefingIssue["e
  * 브리핑 표지 — 기본은 그날 썸네일(카톡 공유 그림과 같은 그림)이에요. 운영자가 판 색 표지나 직접 올린 그림으로 바꿀 수 있어요.
  * 그린 썸네일은 카드 크기에 맞는 배율을 브라우저가 골라요 (sizes = 화면에 보이는 폭).
  */
-export function IssueCover({
-  issue,
-  size,
-  className,
-  sizes = "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw",
-  priority = false,
-  alt = "",
-}: {
-  issue: BriefingIssue;
-  size?: "sm";
-  className?: string;
-  sizes?: string;
-  /** 브리핑 맨 위 그림 — 바로 받고, 로고 표지(brand)로 정해 둔 호도 그날 그림으로 보여 줘요 */
-  priority?: boolean;
-  alt?: string;
-}) {
+function IssueCover({ issue, size, className, sizes = "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" }: { issue: BriefingIssue; size?: "sm"; className?: string; sizes?: string }) {
   const t = issue.thumb;
-  const load = priority ? ({ loading: "eager", fetchPriority: "high" } as const) : ({ loading: "lazy" } as const);
-  if (!priority && (t.cover === "brand" || (t.cover === "upload" && !t.coverUrl)))
+  if (t.cover === "brand" || (t.cover === "upload" && !t.coverUrl))
     return <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`조회 ${issue.views.toLocaleString()}`} noteIcon="eye" size={size} className={className} />;
-  if ((t.cover === "upload" && t.coverUrl) || t.shareUrl)
+  if (t.cover === "upload" || t.shareUrl)
     // eslint-disable-next-line @next/next/no-img-element -- 운영자가 올린 그림
-    return <img src={t.cover === "upload" && t.coverUrl ? t.coverUrl : shareImageUrl(issue)} alt={alt} {...load} decoding="async" className={cn("bg-canvas-soft object-cover", className)} />;
+    return <img src={t.cover === "upload" ? t.coverUrl : shareImageUrl(issue)} alt="" loading="lazy" decoding="async" className={cn("bg-canvas-soft object-cover", className)} />;
   return (
     // eslint-disable-next-line @next/next/no-img-element -- 그날 그린 썸네일
-    <img src={issueThumbUrl(issue)} srcSet={issueThumbSrcSet(issue)} sizes={sizes} alt={alt} {...load} decoding="async" className={cn("bg-canvas-soft object-cover", className)} />
+    <img src={issueThumbUrl(issue)} srcSet={issueThumbSrcSet(issue)} sizes={sizes} alt="" loading="lazy" decoding="async" className={cn("bg-canvas-soft object-cover", className)} />
   );
 }
 

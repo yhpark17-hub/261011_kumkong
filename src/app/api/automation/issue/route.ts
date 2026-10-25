@@ -1,25 +1,29 @@
 import { revalidatePath } from "next/cache";
 import { connection } from "next/server";
 import { addDays, todayKST } from "@/lib/date";
-import { EMPTY_THUMB, isIssueEdition, isNewsSection, kindOf, parseExtras, parseQuiz, parseThumb } from "@/lib/news-meta";
+import { EMPTY_THUMB, MAX_STORIES, isIssueEdition, isNewsSection, kindOf, parseExtras, parseQuiz, parseThumb } from "@/lib/news-meta";
 import { automationAuthorized, json, unauthorized } from "@/lib/server/automation";
 import { autoPublishOn, morningForAutomation, publishIssue } from "@/lib/server/briefing";
 import { db, dbConfigured } from "@/lib/server/db";
 import { checkArt, plainCorpus } from "@/lib/server/thumb-check";
-import { CARD_LEN, checkCards, parseCards } from "@/lib/news-cards";
+import { CARD_LEN, checkCards, isPicName, parseCards } from "@/lib/news-cards";
+import { photoPortrait } from "@/lib/server/thumb-portraits";
 import { parseArt } from "@/lib/thumb-art";
 
 /**
  * 데일리 브리핑 한 호 올리기 — 자동 발행이 켜져 있으면(기본) 검사를 통과하는 대로 바로 발행돼요.
  * 관리자 화면에서 자동 발행을 끄면 '초안 · 자동'으로 들어가고 운영자가 확인 후 발행합니다.
  *
- * 아침판 { edition: "morning", title, lede, closing?, items: [기사 4~5건] } — 기사마다 옆으로 넘겨 보는 카드뉴스 (퀴즈는 없어요, 보내면 빼고 warnings)
- *   - 기사: { section: finance|economy|policy|global|public, headline?: true, title, takeaway, summary, point, sourceName, sourceUrl, cards }
+ * 아침판 { edition: "morning", title, lede, closing?, items: [기사 4~5건] } — 기사마다 옆으로 넘겨 보는 그림 카드뉴스 (퀴즈는 없어요, 보내면 빼고 warnings)
+ *   - 기사: { section: finance|economy|policy|global|public, headline?: true, title, short, pic?, takeaway, summary, point, sourceName, sourceUrl, cards }
  *     헤드라인(headline: true) 정확히 1건. 모든 기사에 원문 링크·한 줄 요약. point 는 카드 한 장에 들어가게 130자 안
- *   - cards: 표지(제목·한 줄 요약)와 '왜 중요할까'(point) 장 사이에 들어갈 2~4장 — 처음 보는 사람도 알 수 있게 쉽게 (lib/news-cards.ts)
- *     { type: "text", title, text } · { type: "stat", value, label, note? } · { type: "bars", title, bars: [{ label, value, hi? }], note? }
+ *     short = 시간표에 쓰는 짧은 이름 (8자 안, 예: "경상흑자") · pic = 표지 그림 (news-cards PICS 이름 또는 'who:인물')
+ *   - cards: 표지와 '왜 중요할까'(point) 장 사이에 들어갈 2~4장 — 카드마다 그림이 크게, 글은 짧게 (lib/news-cards.ts)
+ *     { type: "text", title, text, pic? } · { type: "stat", value, label, note?, pic? } · { type: "bars", title, bars: [{ label, value, hi? }], note? }
  *     { type: "change", title, rows: [{ label, from, to }], note? } · { type: "flow", title, steps: [2~4개] } · { type: "term", term, text }
- *     그림 카드(stat·bars·change·flow) 1장 이상. 카드 속 숫자는 전부 그 기사 글(제목·한 줄 요약·요약·포인트)에 그대로 있어야 하고, 없으면 거절
+ *     { type: "quote", who?, name, text, note? } · { type: "versus", title, left: { name, text }, right: { name, text } }
+ *     숫자·도표 카드(stat·bars·change·flow·quote·versus) 1장 이상. 카드 속 숫자는 전부 그 기사 글(제목·한 줄 요약·요약·포인트)에 있어야 하고,
+ *     숫자+단위 칸(value·from·to)과 인물의 말(quote.text)은 글자 그대로 있어야 해요 — 아니면 거절
  *   - lede: 공유 미리보기·검색 설명 2~3문장 (화면에는 안 나와요)
  * 금콩 스터디 { edition: "noon", title, lede, closing?, numbers: [3개], items: [용어 2~3개, 면접 질문 1~2개], essay, quiz: [O/X 3문제] }
  *   - 숫자로 보는 오늘: { value: "7.57%", label: "15일 코스피 하락률", note? } — 아침판 기사에 나온 숫자만
@@ -44,7 +48,7 @@ import { parseArt } from "@/lib/thumb-art";
 
 type Raw = Record<string, unknown>;
 const LIMITS = {
-  morning: { min: 4, max: 5 },
+  morning: { min: 4, max: MAX_STORIES },
   terms: { min: 2, max: 3 },
   questions: { min: 1, max: 2 },
   numbers: { min: 2, max: 4 },
@@ -105,6 +109,8 @@ export async function POST(req: Request) {
       body: s(it.body, 8000),
       takeaway: s(it.takeaway, 160),
       cards: edition === "morning" ? parseCards(it.cards) : [],
+      short: s(it.short, 20),
+      pic: s(it.pic, 60),
       sourceName: s(it.sourceName, 60),
       sourceUrl: url(it.sourceUrl),
       headline: 0,
@@ -118,6 +124,14 @@ export async function POST(req: Request) {
       if (row.takeaway.length < 8) errors.push(`${where}: takeaway(한 줄 요약)가 필요해요`);
       if (row.point.length < 10) errors.push(`${where}: point(왜 중요할까·필기·면접 포인트)가 필요해요`);
       else if (row.point.length > CARD_LEN.point) errors.push(`${where}: point 는 카드 한 장에 들어가게 ${CARD_LEN.point}자 안으로 줄여 주세요 (지금 ${row.point.length}자)`);
+      if (!row.short) errors.push(`${where}: short(시간표에 쓰는 짧은 이름, ${CARD_LEN.short}자 안)가 필요해요`);
+      else if (row.short.length > CARD_LEN.short) errors.push(`${where}: short "${row.short}" 를 ${CARD_LEN.short}자 안으로 줄여 주세요`);
+      if (row.pic && !(isPicName(row.pic) && (!row.pic.startsWith("who:") || photoPortrait(row.pic.slice(4)))))
+        errors.push(`${where}: pic "${row.pic}" 는 없는 그림이에요 (ROUTINE.md 그림 목록·인물 목록)`);
+      for (const [k, c] of row.cards.entries()) {
+        const who = c.type === "quote" ? c.who : c.type === "text" || c.type === "stat" ? (c.pic.startsWith("who:") ? c.pic.slice(4) : "") : "";
+        if (who && !photoPortrait(who)) errors.push(`${where} cards[${k}]: 등록되지 않은 인물 "${who}" 예요 (ROUTINE.md 인물 목록 — 없으면 비워 두세요)`);
+      }
       // 카드뉴스 — 숫자는 이 기사 글에 실린 그대로만
       const corpus = plainCorpus([row.title, row.takeaway, row.summary, row.point].join(" "));
       errors.push(...checkCards(it.cards, row.cards, corpus).map((p) => `${where} ${p.startsWith("cards[") ? p : `cards: ${p}`}`));
@@ -243,9 +257,9 @@ export async function POST(req: Request) {
         args: [date, edition, title, lede, closing, JSON.stringify(quiz), JSON.stringify(extras), thumbJson, now, now],
       },
       ...ok.map((r) => ({
-        sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, tier, position, takeaway, cards, headline, status, origin, created_at, updated_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'key', ?, ?, ?, ?, 0, 'auto', ?, ?)`,
-        args: [date, edition, r.section, r.title, r.summary, r.point, r.body, r.sourceName, r.sourceUrl, r.position, r.takeaway, JSON.stringify(r.cards), r.headline, now, now],
+        sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, tier, position, takeaway, cards, short, pic, headline, status, origin, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'key', ?, ?, ?, ?, ?, ?, 0, 'auto', ?, ?)`,
+        args: [date, edition, r.section, r.title, r.summary, r.point, r.body, r.sourceName, r.sourceUrl, r.position, r.takeaway, JSON.stringify(r.cards), r.short, r.pic, r.headline, now, now],
       })),
     ],
     "write",

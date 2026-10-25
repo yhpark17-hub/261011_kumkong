@@ -4,7 +4,6 @@ import { formatDayHeading, formatShort } from "@/lib/date";
 import {
   BRIEFING_ARCHIVE,
   EDITION_LABEL,
-  EDITION_SLOT,
   briefingMinutes,
   letterHref,
   letterShareHref,
@@ -17,12 +16,11 @@ import { FeedbackButton } from "../feedback/Feedback";
 import { cn } from "../ui";
 import { MastheadMini } from "./BriefingBrand";
 import { BriefingQuiz } from "./BriefingQuiz";
-import { Timetable } from "./CardDeck";
+import { TimetableBar } from "./CardDeck";
 import { Markdown } from "./Markdown";
 import { ReadingProgress } from "./KongMascot";
 import { IssueLikeButton, ShareButton, ShareUrlSync, SourceLink } from "./interactive";
-import { IssueCover } from "./news";
-import { NewsDeck, deckSize, timetableItem } from "./NewsDeck";
+import { NewsDeck, timetableItem } from "./NewsDeck";
 
 const anchor = (n: NewsItem) => `item-${n.id}`;
 /** 긴 글은 양쪽 맞춤 */
@@ -97,20 +95,19 @@ function Box({ children, className, id }: { children: React.ReactNode; className
 }
 
 /**
- * 아침판 — 오늘의 시간표(기사마다 작은 표지 카드) + 기사마다 옆으로 넘겨 보는 카드뉴스.
- * 읽은 정도는 시간표의 '다 봤어요'로 보여 줘요 (예전 호의 퀴즈는 싣지 않아요)
+ * 아침판 — 화면 위에 붙는 한 줄 시간표 + 기사마다 옆으로 넘겨 보는 그림 카드뉴스 (기사는 MAX_STORIES 건까지).
+ * 읽은 정도는 시간표의 체크로 보여 줘요 (예전 호의 퀴즈는 싣지 않아요)
  */
-function MorningBody({ content, minutes }: { content: LetterContent; minutes: number }) {
+function MorningBody({ content }: { content: LetterContent }) {
   const { all } = content;
   if (!all.length) return null;
-  const slides = all.reduce((s, n) => s + deckSize(n), 0);
   return (
-    <>
-      <Timetable items={all.map(timetableItem)} meta={`기사 ${all.length}건 · 카드 ${slides}장 · 약 ${minutes}분`} />
+    <div className="space-y-8 md:space-y-10">
+      <TimetableBar items={all.map(timetableItem)} />
       {all.map((n, i) => (
         <NewsDeck key={n.id} n={n} no={i + 1} />
       ))}
-    </>
+    </div>
   );
 }
 
@@ -363,10 +360,10 @@ export function Letter({
   const morning = issue.edition === "morning";
 
   return (
-    <article className="theme-light overflow-hidden rounded-3xl bg-canvas-cream">
+    <article className="theme-light overflow-clip rounded-3xl bg-canvas-cream">
       {/* 주소창도 썸네일 버전이 붙은 공유 주소로 (복사해 카톡에 보내도 새 미리보기) */}
       {issue.live && <ShareUrlSync path={letterShareHref(issue)} />}
-      {/* 머리 — 작은 로고 한 줄 + 호수·날짜 (그날 그림이 먼저 보이게) */}
+      {/* 머리 — 작은 로고 한 줄 + 날짜·호수 (아래 카드뉴스가 바로 보이게) */}
       <header className="flex items-center justify-between gap-3 px-4 pt-4 md:px-7 md:pt-6">
         <MastheadMini edition={issue.edition} />
         <p className="text-right tabular type-caption leading-snug">
@@ -377,18 +374,8 @@ export function Letter({
         </p>
       </header>
 
-      <div className="space-y-8 px-3 pt-4 pb-10 sm:px-4 md:space-y-10 md:px-7">
-        {/* 오늘의 그림 — 날마다 그 판 뉴스로 새로 그린 그림 (카톡 공유 그림과 같아요) */}
-        <div>
-          <IssueCover
-            issue={issue}
-            priority
-            alt={`${formatDayHeading(issue.date)} ${EDITION_SLOT[issue.edition]} 그림 — ${issue.title}`}
-            sizes="(min-width: 1024px) 700px, 100vw"
-            className="aspect-[1200/630] w-full rounded-2xl shadow-[0_8px_24px_-12px_rgba(28,30,84,0.35)]"
-          />
-          <h2 className="mt-4 px-1 type-heading-md text-ink [word-break:keep-all] md:type-display-md">{issue.title}</h2>
-        </div>
+      <div className="space-y-6 px-3 pt-4 pb-10 sm:px-4 md:space-y-8 md:px-7">
+        <h2 className="px-1 type-heading-md text-ink [word-break:keep-all] md:type-display-md">{issue.title}</h2>
 
         {!morning && issue.lede && (
           <section aria-label="오늘의 스터디" className="rounded-2xl bg-canvas px-4 py-5 sm:px-5 md:px-7">
@@ -400,7 +387,7 @@ export function Letter({
           </section>
         )}
 
-        {morning ? <MorningBody content={content} minutes={minutes} /> : <NoonBody issue={issue} content={content} />}
+        {morning ? <MorningBody content={content} /> : <NoonBody issue={issue} content={content} />}
 
         {/* 끝까지 읽으면 — 바가 다 차고 정장 입은 합격 콩이 (금콩 스터디만 — 아침판은 시간표가 읽은 정도를 보여 줘요) */}
         {!morning && <ReadingProgress progress={1} say="오늘 스터디 끝까지 마쳤콩!" />}

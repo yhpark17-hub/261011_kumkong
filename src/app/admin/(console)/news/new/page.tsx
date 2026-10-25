@@ -31,7 +31,7 @@ async function NewNews() {
       </Link>
       <AdminPageTitle title="브리핑 쓰기" desc="뉴스는 원문을 확인한 것만 요약해 주세요. 카테고리를 고르면 브리핑 화면에서 그 칸에 모여요." />
       <NewsForm
-        initial={{ id: null, editionDate: todayKST(), edition: editionNow(), section: "finance", title: "", summary: "", point: "", body: "", sourceName: "", sourceUrl: "", tier: "key", position: 0, takeaway: "", cards: "", imageUrl: "", imageCredit: "", headline: false, published: false }}
+        initial={{ id: null, editionDate: todayKST(), edition: editionNow(), section: "finance", title: "", summary: "", point: "", body: "", sourceName: "", sourceUrl: "", tier: "key", position: 0, takeaway: "", cards: "", short: "", pic: "", imageUrl: "", imageCredit: "", headline: false, published: false }}
       />
     </>
   );

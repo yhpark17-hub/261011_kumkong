@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
 import { ExternalLink, ImagePlus, Loader2, X } from "lucide-react";
 import { saveNews, type NewsFormState } from "@/app/admin/news-actions";
+import { CARD_LEN, PICS } from "@/lib/news-cards";
 import { EDITION_SCHEDULE, KIND_LABELS, NEWS_ONLY_SECTIONS, NEWS_SECTION_INFO, newsHref, type NewsEdition, type NewsItem, type NewsTier } from "@/lib/news-meta";
 import { uploadFile } from "@/lib/upload-client";
 import { cn } from "../ui";
@@ -24,6 +25,9 @@ export interface NewsFormInitial {
   takeaway: string;
   /** 카드뉴스 사이 장 JSON (비우면 요약을 나눠 글 카드로) */
   cards: string;
+  /** 시간표 짧은 이름 · 표지 그림 */
+  short: string;
+  pic: string;
   imageUrl: string;
   imageCredit: string;
   headline: boolean;
@@ -208,11 +212,32 @@ export function NewsForm({ initial }: { initial: NewsFormInitial }) {
       )}
 
       {kind === "news" && (
+        <div className="grid gap-3 sm:grid-cols-[200px_minmax(0,1fr)]">
+          <label className="block">
+            <span className="mb-1 block type-caption text-ink-secondary">시간표 이름 ({CARD_LEN.short}자 안)</span>
+            <input name="short" defaultValue={initial.short} maxLength={CARD_LEN.short} className="input w-full" placeholder="예: 가계대출" />
+          </label>
+          <label className="block">
+            <span className="mb-1 block type-caption text-ink-secondary">카드뉴스 표지 그림 — 비우면 제목·분야로 골라요</span>
+            <input name="pic" defaultValue={initial.pic} list="news-pics" maxLength={60} className="input w-full" placeholder="예: kong-banker, house, who:lee-jaemyung" />
+            <datalist id="news-pics">
+              {Object.entries(PICS).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </datalist>
+          </label>
+        </div>
+      )}
+
+      {kind === "news" && (
         <details open={Boolean(initial.cards)} className="rounded-lg border border-hairline px-4 py-3">
           <summary className="cursor-pointer type-caption text-ink-secondary">카드뉴스 사이 장 (선택 · JSON) — 표지와 &lsquo;왜 중요할까&rsquo; 사이에 넘겨 보는 2~4장</summary>
           <p className="mt-2 type-micro leading-relaxed text-ink-mute">
-            비우면 요약을 나눠 글 카드로 보여 줘요. 종류: text {"{title, text}"} · stat {"{value, label, note}"} · bars {"{title, bars: [{label, value, hi}], note}"} · change{" "}
-            {"{title, rows: [{label, from, to}], note}"} · flow {"{title, steps: []}"} · term {"{term, text}"}. 숫자는 요약에 있는 그대로만 써 주세요 — 막대 길이·오름내림은 적힌 숫자로 계산해요.
+            비우면 요약을 나눠 글 카드로 보여 줘요. 종류: text {"{title, text, pic}"} · stat {"{value, label, note, pic}"} · bars {"{title, bars: [{label, value, hi}], note}"} · change{" "}
+            {"{title, rows: [{label, from, to}], note}"} · flow {"{title, steps: []}"} · term {"{term, text}"} · quote {"{who, name, text, note}"} · versus{" "}
+            {"{title, left: {name, text}, right: {name, text}}"}. 숫자는 요약에 있는 그대로만 써 주세요 — 막대 길이·오름내림은 적힌 숫자로 계산해요.
           </p>
           <textarea
             name="cards"

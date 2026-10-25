@@ -383,6 +383,14 @@ const FACES: Record<string, Record<string, { svg: string; credit: string }>> = {
 };
 const photoOf = (a: A) => (a.who && a.look !== "cartoon" ? (FACES[a.who]?.[a.face ?? ""] ?? PHOTO[a.who]) : undefined);
 
+/** 등록 인물 이름들 (카드뉴스 'who:인물'·인물 초상 주소) */
+export const PHOTO_WHO = Object.keys(PHOTO);
+
+/** 등록 인물 초상 하나 — 480×560 상자 안쪽 그림과 원본 사진 출처 (없으면 null) */
+export function photoPortrait(who: string): { svg: string; credit: string } | null {
+  return Object.hasOwn(PHOTO, who) ? PHOTO[who] : null;
+}
+
 /** 이 초상이 쓰면 썸네일에 붙일 원본 사진 출처 (없으면 null) */
 export function portraitCredit(a: A): string | null {
   return photoOf(a)?.credit || null;
