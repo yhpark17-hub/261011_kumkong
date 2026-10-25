@@ -326,8 +326,8 @@ function custom(a: A, id: string): string {
 }
 
 /**
- * 자유 이용 사진을 밑그림 삼아 손으로 짠 일러스트 (scripts/portraits — 참고 사진 출처 표시)
- * lee-chanjin 은 출처 모를 사진을 생김새 참고로만 쓴 새 그림이라 출처 표시가 없어요
+ * 등록 인물 초상 (scripts/portraits) — 자유 이용 사진을 붓 칠·셀 명암·잉크 선으로 칠한 일러스트 (원본 사진 출처 표시)
+ * lee-chanjin 은 출처 모를 사진을 생김새 참고로만 보고 손으로 새로 그린 벡터 그림이라 출처 표시가 없어요
  */
 const PHOTO: Record<string, { svg: string; credit: string }> = {
   "shin-hyunsong": SHIN_HYUNSONG,

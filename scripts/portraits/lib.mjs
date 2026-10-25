@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
+import { PAINT } from "./paint.config.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "../..");
@@ -151,10 +152,18 @@ export async function build({ name, exportName, doc, credit, id, crop, body }) {
     `<defs><clipPath id="${id}-box"><rect width="480" height="560"/></clipPath></defs>` +
     `<g clip-path="url(#${id}-box)"><g transform="scale(${s}) translate(${-crop[0]} ${-crop[1]})">${body}</g></g>`
   ).replace(/\n\s*/g, "");
-  const ts =
-    `/**\n${doc.map((l) => ` * ${l}`).join("\n")}\n */\n` +
-    `export const ${exportName} = {\n  svg: ${JSON.stringify(svg)},\n  credit: ${JSON.stringify(credit)},\n};\n`;
-  fs.writeFileSync(path.join(ROOT, "src/lib/server/portraits", `${name}.ts`), ts);
+  // 벡터 그림은 늘 vector/<인물>.svg 에 — 사진 칠 그림(paint.mjs)이 실루엣·빈 곳 채우기에 써요
+  fs.mkdirSync(path.join(HERE, "vector"), { recursive: true });
+  fs.writeFileSync(path.join(HERE, "vector", `${name}.svg`), svg);
+  fs.writeFileSync(path.join(HERE, "vector", `${name}.json`), JSON.stringify({ exportName, doc, credit, id, crop }, null, 2) + "\n");
+  if (PAINT[name]) {
+    console.log(`${name}: 벡터 → scripts/portraits/vector/${name}.svg (썸네일 그림은 node scripts/portraits/paint.mjs ${name})`);
+  } else {
+    const ts =
+      `/**\n${doc.map((l) => ` * ${l}`).join("\n")}\n */\n` +
+      `export const ${exportName} = {\n  svg: ${JSON.stringify(svg)},\n  credit: ${JSON.stringify(credit)},\n};\n`;
+    fs.writeFileSync(path.join(ROOT, "src/lib/server/portraits", `${name}.ts`), ts);
+  }
 
   const out = path.join(HERE, "out");
   fs.mkdirSync(out, { recursive: true });
@@ -167,5 +176,5 @@ export async function build({ name, exportName, doc, credit, id, crop, body }) {
     const merged = await sharp(photo).composite([{ input: Buffer.from(over) }]).png().toBuffer();
     await sharp(merged).resize(640).png().toFile(path.join(out, `${name}-over.png`));
   }
-  console.log(`${name}: ${svg.length} bytes → src/lib/server/portraits/${name}.ts, scripts/portraits/out/${name}.png`);
+  if (!PAINT[name]) console.log(`${name}: ${svg.length} bytes → src/lib/server/portraits/${name}.ts, scripts/portraits/out/${name}.png`);
 }

@@ -1,15 +1,17 @@
 # 브리핑 썸네일 인물 초상 만들기
 
-데일리 브리핑 썸네일의 `<kk-portrait who="…"/>` 인물은 **자유 이용 사진(퍼블릭 도메인·CC BY)** 을 밑그림 삼아 손으로 짠 벡터 일러스트예요.
-사진 위에서 머리선·눈썹·눈동자·콧방울·입선·턱선 좌표를 재고, 그 자리에 깔끔한 면(피부·머리·정장 3단 명암)과 윤곽선을 그려요.
-사진을 그대로 단순화하면 얼룩지고 흐릿해 보여서, 위치만 사진에서 가져오고 그림은 디자인팀 일러스트처럼 새로 그려요.
+데일리 브리핑 썸네일의 `<kk-portrait who="…"/>` 인물은 **자유 이용 사진(퍼블릭 도메인·CC BY·공공누리 제1유형)을 칠한 일러스트**예요.
+손으로 짠 벡터만으로는 '누군지 알 것 같은데 어색한' 그림이 되기 쉬워서, 사진을 매끈한 붓 칠·정리된 명암·가는 잉크 선으로 바꿔
+그 사람 그대로의 생김새를 살리고, 배경은 떼어 내 썸네일 어디에나 놓을 수 있게 해요 (`paint.mjs`).
+벡터 그림(`<인물>.mjs`)은 실루엣(배경 떼기)과, 사진 배경이 비치는 가장자리·사진 밖(어깨 아래 등)을 메울 바탕으로 써요.
+자유 이용 사진이 없는 인물은 손으로 그린 벡터 그림을 그대로 써요 (`paint.config.mjs` 에 없는 인물).
 
 | 인물 | `who` | 그림 스크립트 | 참고 사진 | 라이선스 |
 | --- | --- | --- | --- | --- |
 | 신현송 한국은행 총재 | `shin-hyunsong` | `shin-hyunsong.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Hyun_Song_Shin,_deputy_del_Banco_de_Pagos_Internacionales_-_D%C3%ADa_2_-_3era_reuni%C3%B3n_de_ministros_de_Finanzas_y_Presidentes_de_Bancos_Centrales_(cropped).jpg) (G20 Argentina) | CC BY 2.0 — 출처 표시 필요 |
 | 케빈 워시 연준 의장 | `kevin-warsh` | `kevin-warsh.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Official_portrait_of_Kevin_M._Warsh_(cropped)2.jpg) (미국 연준 이사회) | 퍼블릭 도메인 |
 | 이재명 대통령 | `lee-jaemyung` | `lee-jaemyung.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Lee_Jae-myung%27s_Portrait_(2024.2).jpg) (대한민국 국회) | 공공누리 제1유형 — 출처 표시 필요 |
-| 도널드 트럼프 미국 대통령 | `donald-trump` | `donald-trump.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Official_Presidential_Portrait_of_President_Donald_J._Trump_(2025)_(3x4_close_cropped).jpg) (미국 백악관) | 퍼블릭 도메인 |
+| 도널드 트럼프 미국 대통령 | `donald-trump` | `donald-trump.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Donald_Trump_official_portrait.jpg) (미국 백악관, 2017 공식 초상 — 미소 띤 얼굴) | 퍼블릭 도메인 |
 | 이형일 부총리 겸 재정경제부 장관 | `lee-hyoungil` | `lee-hyoungil.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Lee_Hyoung-il%27s_portrait_(2026.10).jpg) (대한민국 국회) | 공공누리 제1유형 — 출처 표시 필요 |
 | 이억원 금융위원장 | `lee-eogweon` | `lee-eogweon.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Lee_Eog-weon%27s_portrait_(2025.09).jpg) (대한민국 대통령실, 188×241 작은 사진) | 공공누리 제1유형 — 출처 표시 필요 |
 | 스콧 베선트 미국 재무장관 | `scott-bessent` | `scott-bessent.mjs` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Official_portrait_of_Treasury_Secretary_Scott_Bessent_(cropped).jpg) (미국 재무부) | 퍼블릭 도메인 |
@@ -19,14 +21,17 @@
 
 ## 고치기
 
+사진(`photos/<인물>.jpg`, 표의 960px 판)은 저장소에 없으니 먼저 받아 두세요.
+
 ```bash
 node scripts/portraits/shin-hyunsong.mjs
+node scripts/portraits/paint.mjs shin-hyunsong
 ```
 
-스크립트가 `src/lib/server/portraits/<인물>.ts` 를 새로 쓰고, 확인용 그림을 `scripts/portraits/out/` 에 만들어요.
-
-- `out/<인물>.png` — 480×560 상자 그대로 (2배 크기)
-- `out/<인물>-over.png` — 사진 위에 그림을 반투명으로 겹친 것 (`photos/<인물>.jpg` 가 있을 때만). 머리선·눈·입이 사진과 어긋나지 않았는지 여기서 봐요.
+- `<인물>.mjs` — 벡터 그림을 `vector/<인물>.svg·json` 에 써요 (칠하지 않는 인물은 `src/lib/server/portraits/<인물>.ts` 까지)
+- `paint.mjs` — 사진을 칠해 `src/lib/server/portraits/<인물>.ts` 를 써요 (JPEG 그림 + PNG 마스크를 품은 svg, 한 명에 100~150KB)
+  - 칠하는 세기·지울 곳(국기·배지·명찰 줄)은 `paint.config.mjs` — 지울 곳은 원본 사진 좌표 `[cx, cy, rx, ry]`
+- 확인용: `out/<인물>-paint.png`(칠한 그림), `out/<인물>.png`(벡터), `out/<인물>-over.png`(사진 위에 벡터를 겹친 것 — 실루엣이 맞는지)
 
 ## 새 인물 추가
 
@@ -34,6 +39,7 @@ node scripts/portraits/shin-hyunsong.mjs
    언론사 사진·출처가 불분명한 사진은 밑그림으로 쓰지 않아요 (정부 누리집·정책브리핑 사진도 '변경 금지'인 경우가 많아요).
    그런 사진밖에 없으면 생김새 참고로만 보고 정면 구도로 새로 그리고, 출처 표시는 비워요 (`lee-chanjin.mjs`).
 2. 960px 판을 `scripts/portraits/photos/<인물>.jpg` 로 받아요 (사진 파일은 저장소에 올리지 않아요).
+   웃거나 편안한 표정의 정면 사진, 어깨까지 나온 사진이 좋아요 — 칠한 그림은 사진 표정이 그대로 나와요.
 3. 사진에 좌표 격자를 얹어 확대해 보며 머리 바깥선·머리선·눈썹·눈(눈동자 중심)·코·입·턱선·귀·목·옷깃·넥타이 좌표를 재요.
    머리선은 특히 정확히 — 너무 높거나 낮으면 머리가 모자처럼 보여요.
 4. 기존 스크립트를 복사해 좌표와 색을 바꿔요. 좌표는 모두 **원본 사진 픽셀 기준**이고,
@@ -44,7 +50,8 @@ node scripts/portraits/shin-hyunsong.mjs
    - 빛 방향을 하나 정해 얼굴 바탕은 그라데이션, 그늘·빛·홍조는 흐림 필터(`blurDefs()`)를 건 모양을 부위(clipPath) 안에 얹어요
    - 그라데이션·clipPath·필터 아이디가 서로 겹치면 엉뚱하게 그려져요 (clipPath 는 `<id>-c-…`)
    - 흐린 모양이 많을수록 썸네일 만드는 시간이 늘어요 — 인물 한 명에 0.5초 안쪽으로
-5. 실행해서 `out/` 의 두 그림을 보며 맞추고, `src/lib/server/thumb-portraits.ts` 의 `PHOTO` 에 등록해요.
+   - 칠할 인물은 벡터를 실루엣만 정확히 그려도 돼요 (`donald-trump.mjs` — 머리·얼굴·귀·목·셔츠·넥타이·정장 면만)
+5. `paint.config.mjs` 에 넣고 `paint.mjs` 로 칠해요. `out/` 그림을 보며 맞추고, `src/lib/server/thumb-portraits.ts` 의 `PHOTO` 에 등록해요.
 
 ## 닮게 만드는 포인트
 
