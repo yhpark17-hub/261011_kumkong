@@ -1,5 +1,6 @@
 /** 데일리 브리핑 공통 정보 — 서버·클라이언트 모두에서 사용 */
 
+import type { Note } from "./glossary";
 import type { NewsCard } from "./news-cards";
 import { parseArt, type ThumbArt } from "./thumb-art";
 
@@ -86,10 +87,12 @@ export interface NewsItem {
   takeaway: string;
   /** 아침판 카드뉴스의 사이 장들 (비어 있으면 요약을 나눠 글 카드로) */
   cards: NewsCard[];
-  /** 아침판 시간표에 쓰는 짧은 이름 (8자 안 — 비면 분야 이름) */
+  /** 아침판 시간표에 쓰는 한 줄 제목 (16자 안 — 비면 제목) */
   short: string;
   /** 카드뉴스 표지 그림 (news-cards PICS 이름 또는 'who:인물' — 비면 제목·분야로 골라요) */
   pic: string;
+  /** 카드뉴스 각주 — 이 기사의 어려운 말 풀이 (용어 사전 lib/glossary.ts 에 없는 말·이 기사에 맞춘 풀이) */
+  notes: Note[];
   headline: boolean;
   status: number;
   origin: string;

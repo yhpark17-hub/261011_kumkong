@@ -6,8 +6,9 @@ import { automationAuthorized, json, unauthorized } from "@/lib/server/automatio
 import { autoPublishOn, morningForAutomation, publishIssue } from "@/lib/server/briefing";
 import { db, dbConfigured } from "@/lib/server/db";
 import { checkArt, plainCorpus } from "@/lib/server/thumb-check";
-import { CARD_LEN, checkCards, isPicName, parseCards } from "@/lib/news-cards";
-import { photoPortrait } from "@/lib/server/thumb-portraits";
+import { parseNotes } from "@/lib/glossary";
+import { CARD_LEN, cardTexts, checkCards, parseCards } from "@/lib/news-cards";
+import { picExists } from "@/lib/server/card-pics";
 import { parseArt } from "@/lib/thumb-art";
 
 /**
@@ -15,9 +16,10 @@ import { parseArt } from "@/lib/thumb-art";
  * 관리자 화면에서 자동 발행을 끄면 '초안 · 자동'으로 들어가고 운영자가 확인 후 발행합니다.
  *
  * 아침판 { edition: "morning", title, lede, closing?, items: [기사 4~5건] } — 기사마다 옆으로 넘겨 보는 그림 카드뉴스 (퀴즈는 없어요, 보내면 빼고 warnings)
- *   - 기사: { section: finance|economy|policy|global|public, headline?: true, title, short, pic?, takeaway, summary, point, sourceName, sourceUrl, cards }
+ *   - 기사: { section: finance|economy|policy|global|public, headline?: true, title, short, pic?, takeaway, summary, point, sourceName, sourceUrl, cards, notes? }
  *     헤드라인(headline: true) 정확히 1건. 모든 기사에 원문 링크·한 줄 요약. point 는 카드 한 장에 들어가게 130자 안
- *     short = 시간표에 쓰는 짧은 이름 (8자 안, 예: "경상흑자") · pic = 표지 그림 (news-cards PICS 이름 또는 'who:인물')
+ *     short = 시간표에 쓰는 한 줄 제목 (16자 안, 예: "경상흑자, 독·일 합계 첫 추월") · pic = 표지 그림 (PICS 이름 · 'who:인물' · 'org:기관')
+ *     notes = 각주 [{ term, text }] — 생초보가 모를 말 풀이 (용어 사전 lib/glossary.ts 에 있는 말은 저절로 붙어요)
  *   - cards: 표지와 '왜 중요할까'(point) 장 사이에 들어갈 2~4장 — 카드마다 그림이 크게, 글은 짧게 (lib/news-cards.ts)
  *     { type: "text", title, text, pic? } · { type: "stat", value, label, note?, pic? } · { type: "bars", title, bars: [{ label, value, hi? }], note? }
  *     { type: "change", title, rows: [{ label, from, to }], note? } · { type: "flow", title, steps: [2~4개] } · { type: "term", term, text, pic? }
@@ -109,8 +111,9 @@ export async function POST(req: Request) {
       body: s(it.body, 8000),
       takeaway: s(it.takeaway, 160),
       cards: edition === "morning" ? parseCards(it.cards) : [],
-      short: s(it.short, 20),
+      short: s(it.short, 30),
       pic: s(it.pic, 60),
+      notes: edition === "morning" ? parseNotes(it.notes) : [],
       sourceName: s(it.sourceName, 60),
       sourceUrl: url(it.sourceUrl),
       headline: 0,
@@ -124,13 +127,20 @@ export async function POST(req: Request) {
       if (row.takeaway.length < 8) errors.push(`${where}: takeaway(한 줄 요약)가 필요해요`);
       if (row.point.length < 10) errors.push(`${where}: point(왜 중요할까·필기·면접 포인트)가 필요해요`);
       else if (row.point.length > CARD_LEN.point) errors.push(`${where}: point 는 카드 한 장에 들어가게 ${CARD_LEN.point}자 안으로 줄여 주세요 (지금 ${row.point.length}자)`);
-      if (!row.short) errors.push(`${where}: short(시간표에 쓰는 짧은 이름, ${CARD_LEN.short}자 안)가 필요해요`);
+      if (!row.short) errors.push(`${where}: short(시간표에 쓰는 한 줄 제목, ${CARD_LEN.short}자 안)가 필요해요`);
       else if (row.short.length > CARD_LEN.short) errors.push(`${where}: short "${row.short}" 를 ${CARD_LEN.short}자 안으로 줄여 주세요`);
-      if (row.pic && !(isPicName(row.pic) && (!row.pic.startsWith("who:") || photoPortrait(row.pic.slice(4)))))
-        errors.push(`${where}: pic "${row.pic}" 는 없는 그림이에요 (ROUTINE.md 그림 목록·인물 목록)`);
+      if (row.pic && !picExists(row.pic)) errors.push(`${where}: pic "${row.pic}" 는 없는 그림이에요 (ROUTINE.md 그림·인물·기관 목록)`);
       for (const [k, c] of row.cards.entries()) {
-        const who = c.type === "quote" ? c.who : c.type === "text" || c.type === "stat" || c.type === "term" ? (c.pic.startsWith("who:") ? c.pic.slice(4) : "") : "";
-        if (who && !photoPortrait(who)) errors.push(`${where} cards[${k}]: 등록되지 않은 인물 "${who}" 예요 (ROUTINE.md 인물 목록 — 없으면 비워 두세요)`);
+        const pic = c.type === "quote" ? (c.who ? `who:${c.who}` : "") : c.type === "text" || c.type === "stat" || c.type === "term" ? c.pic : "";
+        if (pic && !picExists(pic)) errors.push(`${where} cards[${k}]: "${pic}" 는 없는 그림·인물·기관이에요 (ROUTINE.md 목록 — 없으면 비워 두세요)`);
+      }
+      // 각주(notes) — 생초보가 모를 말 풀이. 말은 이 기사 글에 실제로 나와야 해요
+      const rawNotes = Array.isArray(it.notes) ? it.notes : [];
+      if (row.notes.length !== rawNotes.length) errors.push(`${where}: notes 는 [{ term, text }] 모양이에요`);
+      const cardText = row.cards.flatMap(cardTexts).join(" ");
+      for (const n of row.notes) {
+        if (n.term.length > CARD_LEN.noteTerm || n.text.length > CARD_LEN.noteText) errors.push(`${where}: notes "${n.term}" — 말 ${CARD_LEN.noteTerm}자·풀이 ${CARD_LEN.noteText}자 안으로`);
+        if (![row.title, row.takeaway, row.point, cardText].join(" ").includes(n.term)) errors.push(`${where}: notes "${n.term}" 가 이 기사 카드·제목에 나오지 않아요`);
       }
       // 카드뉴스 — 숫자는 이 기사 글에 실린 그대로만
       const corpus = plainCorpus([row.title, row.takeaway, row.summary, row.point].join(" "));
@@ -257,9 +267,9 @@ export async function POST(req: Request) {
         args: [date, edition, title, lede, closing, JSON.stringify(quiz), JSON.stringify(extras), thumbJson, now, now],
       },
       ...ok.map((r) => ({
-        sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, tier, position, takeaway, cards, short, pic, headline, status, origin, created_at, updated_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'key', ?, ?, ?, ?, ?, ?, 0, 'auto', ?, ?)`,
-        args: [date, edition, r.section, r.title, r.summary, r.point, r.body, r.sourceName, r.sourceUrl, r.position, r.takeaway, JSON.stringify(r.cards), r.short, r.pic, r.headline, now, now],
+        sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, tier, position, takeaway, cards, short, pic, notes, headline, status, origin, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'key', ?, ?, ?, ?, ?, ?, ?, 0, 'auto', ?, ?)`,
+        args: [date, edition, r.section, r.title, r.summary, r.point, r.body, r.sourceName, r.sourceUrl, r.position, r.takeaway, JSON.stringify(r.cards), r.short, r.pic, JSON.stringify(r.notes), r.headline, now, now],
       })),
     ],
     "write",

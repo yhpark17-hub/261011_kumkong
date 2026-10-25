@@ -28,6 +28,8 @@ export interface NewsFormInitial {
   /** 시간표 짧은 이름 · 표지 그림 */
   short: string;
   pic: string;
+  /** 각주 JSON [{ term, text }] */
+  notes: string;
   imageUrl: string;
   imageCredit: string;
   headline: boolean;
@@ -214,12 +216,12 @@ export function NewsForm({ initial }: { initial: NewsFormInitial }) {
       {kind === "news" && (
         <div className="grid gap-3 sm:grid-cols-[200px_minmax(0,1fr)]">
           <label className="block">
-            <span className="mb-1 block type-caption text-ink-secondary">시간표 이름 ({CARD_LEN.short}자 안)</span>
-            <input name="short" defaultValue={initial.short} maxLength={CARD_LEN.short} className="input w-full" placeholder="예: 가계대출" />
+            <span className="mb-1 block type-caption text-ink-secondary">시간표 한 줄 제목 ({CARD_LEN.short}자 안)</span>
+            <input name="short" defaultValue={initial.short} maxLength={CARD_LEN.short} className="input w-full" placeholder="예: 가계대출 한 달 만에 다시 증가" />
           </label>
           <label className="block">
             <span className="mb-1 block type-caption text-ink-secondary">카드뉴스 표지 그림 — 비우면 제목·분야로 골라요</span>
-            <input name="pic" defaultValue={initial.pic} list="news-pics" maxLength={60} className="input w-full" placeholder="예: kong-banker, house, who:lee-jaemyung" />
+            <input name="pic" defaultValue={initial.pic} list="news-pics" maxLength={60} className="input w-full" placeholder="예: kong-banker, house, who:lee-jaemyung, org:fss" />
             <datalist id="news-pics">
               {Object.entries(PICS).map(([key, label]) => (
                 <option key={key} value={key}>
@@ -247,6 +249,10 @@ export function NewsForm({ initial }: { initial: NewsFormInitial }) {
             placeholder={'[\n  { "type": "stat", "value": "2조6058억원", "label": "이달 늘어난 가계대출" }\n]'}
             className="input mt-3 w-full resize-y font-mono text-[13px] leading-relaxed"
           />
+          <p className="mt-3 type-micro leading-relaxed text-ink-mute">
+            각주 (선택 · JSON) — 생초보가 모를 말 풀이 {'[{ "term": "쇄신방안", "text": "잘못된 점을 고쳐 새롭게 바꾸려는 계획이에요." }]'}. 용어 사전에 있는 말(코픽스·은행채 등)은 저절로 붙어요.
+          </p>
+          <textarea name="notes" defaultValue={initial.notes} rows={4} maxLength={3000} className="input mt-1.5 w-full resize-y font-mono text-[13px] leading-relaxed" />
         </details>
       )}
 

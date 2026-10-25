@@ -3,7 +3,8 @@
 /**
  * 카드 그림 — 카드마다 위쪽 절반에 크게 들어가는 일러스트 (src/lib/server/card-pics.ts 가 그려요).
  * 금콩 마스코트 콩이의 변장과 썸네일 그림 부품(은행·동전·집·칩 …)으로 만들어서, 매번 그리지 않아도 디자인이 고르게 나와요.
- * 인물이 주인공이면 'who:인물' (등록된 인물 초상 — scripts/automation/ROUTINE.md 의 who 목록)
+ * 인물이 주인공이면 'who:인물' (등록된 인물 초상 — scripts/automation/ROUTINE.md 의 who 목록),
+ * 기관이 주인공이면 'org:기관' 또는 'org:기관+기관' (건물 + 로고 이름판 — 금콩 기관 id·정부 기관 키)
  */
 export const PICS = {
   "kong-banker": "금리·통화정책·중앙은행 — 안경 쓴 은행가 콩이",
@@ -38,7 +39,8 @@ export const PICS = {
 export type PicKey = keyof typeof PICS;
 export const isPicKey = (v: unknown): v is PicKey => typeof v === "string" && Object.hasOwn(PICS, v);
 /** 그림 이름 모양 — 정해진 그림 또는 'who:인물' (인물이 실제로 있는지는 서버가 확인) */
-export const isPicName = (v: unknown): v is string => isPicKey(v) || (typeof v === "string" && /^who:[a-z][a-z-]{1,40}$/.test(v));
+export const isPicName = (v: unknown): v is string =>
+  isPicKey(v) || (typeof v === "string" && (/^who:[a-z][a-z-]{1,40}$/.test(v) || /^org:[a-z0-9]{2,20}(\+[a-z0-9]{2,20})?$/.test(v)));
 
 /**
  * 기사 카드 한 장 — 맨 앞 표지(제목·한 줄 요약·기사 그림 pic)와 맨 뒤 '왜 중요할까'(point) 장은 기사에서 자동으로 만들고,
@@ -87,7 +89,9 @@ export const CARD_LEN = {
   vsName: 10,
   vsText: 36,
   point: 130,
-  short: 8,
+  short: 16,
+  noteTerm: 16,
+  noteText: 70,
 };
 
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");

@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ArrowRight, ChevronRight, ExternalLink } from "lucide-react";
+import { findNotes, noteIndex, termIndex, type Note } from "@/lib/glossary";
 import { amountOf, isMoneyUnit, type NewsCard } from "@/lib/news-cards";
 import { NEWS_SECTION_INFO, newsHref, type NewsItem, type NewsSection } from "@/lib/news-meta";
-import { PIC_H, PIC_W, SECTION_THEME, coinStack, defaultPic, picPerson, picSvg } from "@/lib/server/card-pics";
+import { PIC_H, PIC_W, SECTION_THEME, coinStack, defaultPic, findOrgs, picPerson, picSvg } from "@/lib/server/card-pics";
 import { cn } from "../ui";
 import { CardDeck, type TimetableItem } from "./CardDeck";
 import { SourceLink } from "./interactive";
@@ -10,7 +11,8 @@ import { NEWS_ICON } from "./news-icons";
 
 /**
  * 카드뉴스 — 아침판 기사 한 건 = 표지 + 사이 장들 + '왜 중요할까'.
- * 카드마다 위쪽 절반은 그림(콩이·그림 부품·인물 초상) 또는 도표(동전 탑·전후 막대), 아래는 큰 글 한두 줄.
+ * 카드마다 위쪽 절반은 그림(콩이·그림 부품·인물 초상·기관 로고) 또는 도표(동전 탑·전후 막대), 아래는 큰 글 한두 줄.
+ * 생초보가 모를 말은 카드 아래 각주(¹ ²)로 풀어 줘요 — 용어 사전(lib/glossary.ts) + 기사마다 붙은 notes.
  */
 
 type Theme = (typeof SECTION_THEME)[NewsSection];
@@ -36,8 +38,8 @@ function summaryChunks(text: string): string[] {
 /** 카드 장 수 — 표지 + 사이 장(카드, 없으면 요약 글) + '왜 중요할까' */
 export const deckSize = (n: NewsItem) => 1 + (n.cards.length || summaryChunks(n.summary).length) + (n.point ? 1 : 0);
 
-/** 시간표 한 칸 — 짧은 이름이 없으면 분야 이름 */
-export const timetableItem = (n: NewsItem): TimetableItem => ({ id: n.id, label: n.short || NEWS_SECTION_INFO[n.section].label, section: n.section, headline: n.headline });
+/** 시간표 한 칸 — 한 줄 제목이 없으면 기사 제목 */
+export const timetableItem = (n: NewsItem): TimetableItem => ({ id: n.id, label: n.short || n.title, section: n.section, headline: n.headline });
 
 /* ------------------------------------------------------------------ */
 /* 카드 뼈대                                                             */
@@ -85,6 +87,81 @@ function Panel({ theme, kicker, tall = false, children }: { theme: Theme; kicker
 const Caption = ({ children }: { children: React.ReactNode }) => <div className="flex flex-1 flex-col px-5 pt-4 pb-5">{children}</div>;
 
 /* ------------------------------------------------------------------ */
+/* 각주 — 카드 글 속 어려운 말에 작은 번호, 카드 아래에 풀이                   */
+/* ------------------------------------------------------------------ */
+
+type NoteIndex = ReturnType<typeof noteIndex>;
+interface Ann {
+  /** 글 → 각주 번호가 붙은 글 (카드 안에서 말마다 처음 한 번만) */
+  r: (s: string) => React.ReactNode;
+  notes: { n: number; note: Note }[];
+}
+const NO_NOTES: Ann = { r: (s) => s, notes: [] };
+
+/** 카드 한 장의 각주 — 이 묶음(기사)에서 아직 풀지 않은 말만, 한 장에 셋까지 */
+function annotate(strings: string[], index: NoteIndex, used: Set<string>, accent: string): Ann {
+  const hits = findNotes(strings.filter(Boolean).join("\n"), index)
+    .filter((h) => !used.has(h.note.term))
+    .slice(0, 3);
+  if (!hits.length) return NO_NOTES;
+  hits.forEach((h) => used.add(h.note.term));
+  const notes = hits.map((h, i) => ({ n: i + 1, note: h.note, find: h.find }));
+  const marked = new Set<string>();
+  let key = 0;
+  const r = (s: string): React.ReactNode => {
+    if (!s) return s;
+    const out: React.ReactNode[] = [];
+    let rest = s;
+    while (rest) {
+      let best: { at: number; f: (typeof notes)[number] } | null = null;
+      for (const f of notes) {
+        if (marked.has(f.note.term)) continue;
+        const at = termIndex(rest, f.find);
+        if (at >= 0 && (!best || at < best.at)) best = { at, f };
+      }
+      if (!best) {
+        out.push(rest);
+        break;
+      }
+      marked.add(best.f.note.term);
+      out.push(
+        rest.slice(0, best.at),
+        <span key={key++} className="underline decoration-current/40 decoration-dotted decoration-1 underline-offset-[3px]">
+          {best.f.find}
+          <sup className="ml-px text-[0.62em] font-extrabold" style={{ color: accent }}>
+            {best.f.n}
+          </sup>
+        </span>,
+      );
+      rest = rest.slice(best.at + best.f.find.length);
+    }
+    return out;
+  };
+  return { r, notes };
+}
+
+/** 카드 아래 각주 풀이 */
+function Footnotes({ a, accent, dark = false }: { a: Ann; accent: string; dark?: boolean }) {
+  if (!a.notes.length) return null;
+  return (
+    <div className="mt-auto pt-3">
+      <ol className={cn("space-y-1 border-t pt-2.5", dark ? "border-on-primary/20" : "border-hairline")}>
+        {a.notes.map(({ n, note }) => (
+          <li key={n} className={cn("flex gap-1.5 text-[12px] leading-snug [word-break:keep-all]", dark ? "text-on-primary/75" : "text-ink-mute")}>
+            <span className="shrink-0 font-extrabold" style={{ color: dark ? undefined : accent }}>
+              {n}
+            </span>
+            <span>
+              <b className={cn("font-bold", dark ? "text-on-primary" : "text-ink-secondary")}>{note.term}</b> {note.text}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* 도표                                                                  */
 /* ------------------------------------------------------------------ */
 
@@ -93,7 +170,7 @@ const TOWER_H = 200;
 const COIN_R = 24;
 
 /** 세로 막대 비교 — 돈이면 동전 탑(금색 = 강조), 아니면 둥근 막대. 높이는 적힌 숫자에서 계산 (가장 큰 값 = 가득) */
-function BarsChart({ c, theme }: { c: Extract<NewsCard, { type: "bars" }>; theme: Theme }) {
+function BarsChart({ c, theme, a }: { c: Extract<NewsCard, { type: "bars" }>; theme: Theme; a: Ann }) {
   const amounts = c.bars.map((b) => amountOf(b.value));
   const values = amounts.map((a) => a?.n ?? 0);
   const max = Math.max(...values, 0) || 1;
@@ -130,7 +207,7 @@ function BarsChart({ c, theme }: { c: Extract<NewsCard, { type: "bars" }>; theme
                 {b.value}
               </span>
             </div>
-            <span className={cn("mt-1.5 text-center text-[12px] leading-tight [word-break:keep-all]", strong ? "font-bold text-ink" : "text-ink-secondary")}>{b.label}</span>
+            <span className={cn("mt-1.5 text-center text-[12px] leading-tight [word-break:keep-all]", strong ? "font-bold text-ink" : "text-ink-secondary")}>{a.r(b.label)}</span>
           </div>
         );
       })}
@@ -139,7 +216,7 @@ function BarsChart({ c, theme }: { c: Extract<NewsCard, { type: "bars" }>; theme
 }
 
 /** 전 → 후 — 줄마다 두 막대(전 회색 · 후 분야색)와 오름(▲ 빨강)·내림(▼ 파랑). 높이는 그 줄의 큰 값 기준 */
-function ChangeChart({ c, theme }: { c: Extract<NewsCard, { type: "change" }>; theme: Theme }) {
+function ChangeChart({ c, theme, a: ann }: { c: Extract<NewsCard, { type: "change" }>; theme: Theme; a: Ann }) {
   // 줄이 하나면 막대를 넓고 글씨를 크게, 여럿이면 전·후 숫자가 겹치지 않게 작게
   const one = c.rows.length === 1;
   return (
@@ -175,7 +252,7 @@ function ChangeChart({ c, theme }: { c: Extract<NewsCard, { type: "change" }>; t
               {bar(a, r.from, false)}
               {bar(b, r.to, true)}
             </div>
-            <span className="mt-1.5 text-center text-[12px] leading-tight font-semibold text-ink [word-break:keep-all]">{r.label}</span>
+            <span className="mt-1.5 text-center text-[12px] leading-tight font-semibold text-ink [word-break:keep-all]">{ann.r(r.label)}</span>
           </div>
         );
       })}
@@ -187,10 +264,12 @@ function ChangeChart({ c, theme }: { c: Extract<NewsCard, { type: "change" }>; t
 /* 카드                                                                  */
 /* ------------------------------------------------------------------ */
 
-function Cover({ n, total, theme }: { n: NewsItem; total: number; theme: Theme }) {
+function Cover({ n, total, theme, a }: { n: NewsItem; total: number; theme: Theme; a: Ann }) {
   const info = NEWS_SECTION_INFO[n.section];
   const Icon = NEWS_ICON[n.section];
   const pic = n.pic || defaultPic(n.section, n.title);
+  // 인물 표지인데 제목에 기관도 나오면 그 기관 로고를 구석에
+  const org = picPerson(pic) ? findOrgs(n.title, 1)[0] : undefined;
   return (
     <div className="flex flex-col overflow-clip rounded-[22px] text-on-primary shadow-[0_14px_30px_-18px_rgba(28,30,84,0.6)]" style={{ background: `linear-gradient(165deg, ${theme.deep} 0%, ${theme.accent} 140%)` }}>
       <div className="relative aspect-[5/3] shrink-0 overflow-clip">
@@ -211,11 +290,22 @@ function Cover({ n, total, theme }: { n: NewsItem; total: number; theme: Theme }
           <Icon className="h-3.5 w-3.5" strokeWidth={2.2} />
           {info.label}
         </span>
+        {org && (
+          <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-canvas py-1 pr-2.5 pl-1 text-[12px] font-bold text-brand-dark shadow-[0_2px_6px_rgba(28,30,84,0.25)]">
+            {org.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element -- 기관 로고 (public/logos)
+              <img src={org.logo} alt="" className="h-5 w-5 rounded-full bg-canvas object-contain" />
+            ) : (
+              <span className="ml-1.5 h-1.5 w-1.5 rounded-full" style={{ background: theme.accent }} />
+            )}
+            {org.name}
+          </span>
+        )}
       </div>
       <div className="flex flex-1 flex-col px-5 pt-3.5 pb-5">
-        <h3 className="text-[21px] leading-[1.32] font-bold tracking-[-0.02em] [word-break:keep-all]">{n.title}</h3>
-        {n.takeaway && <p className="mt-2 text-[14px] leading-relaxed text-on-primary/85 [word-break:keep-all]">{n.takeaway}</p>}
-        <p className="mt-auto flex items-center gap-1 pt-3 text-[12px] font-semibold text-on-primary/75">
+        <p className="text-[19px] leading-[1.42] font-bold tracking-[-0.02em] [word-break:keep-all]">{a.r(n.takeaway || n.title)}</p>
+        <Footnotes a={a} accent={theme.accent} dark />
+        <p className={cn("flex items-center gap-1 pt-3 text-[12px] font-semibold text-on-primary/75", !a.notes.length && "mt-auto")}>
           카드 {total}장 · 옆으로 넘겨 보세요
           <ChevronRight className="h-4 w-4 motion-safe:animate-pulse" strokeWidth={2.4} />
         </p>
@@ -227,7 +317,7 @@ function Cover({ n, total, theme }: { n: NewsItem; total: number; theme: Theme }
 /** 속 장의 기본 그림 — 표지 그림(인물 초상이면 건너뛰고 제목 낱말·분야로) */
 const innerPic = (n: NewsItem) => (n.pic && !n.pic.startsWith("who:") ? n.pic : defaultPic(n.section, n.title, false));
 
-function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; id: string }) {
+function Middle({ c, n, theme, id, a }: { c: NewsCard; n: NewsItem; theme: Theme; id: string; a: Ann }) {
   const articlePic = innerPic(n);
   switch (c.type) {
     case "text":
@@ -238,8 +328,9 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
             <PicCredit name={c.pic || articlePic} />
           </Panel>
           <Caption>
-            {c.title && <h4 className={HEAD}>{c.title}</h4>}
-            <p className={BODY}>{c.text}</p>
+            {c.title && <h4 className={HEAD}>{a.r(c.title)}</h4>}
+            <p className={BODY}>{a.r(c.text)}</p>
+            <Footnotes a={a} accent={theme.accent} />
           </Caption>
         </div>
       );
@@ -254,8 +345,9 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
             <p className="tabular text-[clamp(30px,9.5vw,42px)] leading-[1.05] font-extrabold tracking-[-0.03em] [overflow-wrap:anywhere]" style={{ color: theme.accent }}>
               {c.value}
             </p>
-            <p className="mt-2 text-[17px] leading-snug font-bold text-ink [word-break:keep-all]">{c.label}</p>
-            {c.note && <p className="mt-1.5 text-[14px] leading-relaxed text-ink-secondary [word-break:keep-all]">{c.note}</p>}
+            <p className="mt-2 text-[17px] leading-snug font-bold text-ink [word-break:keep-all]">{a.r(c.label)}</p>
+            {c.note && <p className="mt-1.5 text-[14px] leading-relaxed text-ink-secondary [word-break:keep-all]">{a.r(c.note)}</p>}
+            <Footnotes a={a} accent={theme.accent} />
           </Caption>
         </div>
       );
@@ -263,11 +355,12 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
       return (
         <div className={SHELL}>
           <Panel theme={theme} kicker="비교해 보기" tall>
-            <BarsChart c={c} theme={theme} />
+            <BarsChart c={c} theme={theme} a={a} />
           </Panel>
           <Caption>
-            {c.title && <h4 className={HEAD}>{c.title}</h4>}
-            {c.note && <p className={BODY}>{c.note}</p>}
+            {c.title && <h4 className={HEAD}>{a.r(c.title)}</h4>}
+            {c.note && <p className={BODY}>{a.r(c.note)}</p>}
+            <Footnotes a={a} accent={theme.accent} />
           </Caption>
         </div>
       );
@@ -275,11 +368,12 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
       return (
         <div className={SHELL}>
           <Panel theme={theme} kicker="무엇이 바뀌었나" tall>
-            <ChangeChart c={c} theme={theme} />
+            <ChangeChart c={c} theme={theme} a={a} />
           </Panel>
           <Caption>
-            {c.title && <h4 className={HEAD}>{c.title}</h4>}
-            {c.note && <p className={BODY}>{c.note}</p>}
+            {c.title && <h4 className={HEAD}>{a.r(c.title)}</h4>}
+            {c.note && <p className={BODY}>{a.r(c.note)}</p>}
+            <Footnotes a={a} accent={theme.accent} />
           </Caption>
         </div>
       );
@@ -290,9 +384,9 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
             <span className="inline-block rounded-full bg-canvas/90 px-2.5 py-1 text-[12px] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.08)]" style={{ color: theme.accent }}>
               흐름으로 보기
             </span>
-            {c.title && <h4 className={cn(HEAD, "mt-2.5")}>{c.title}</h4>}
+            {c.title && <h4 className={cn(HEAD, "mt-2.5")}>{a.r(c.title)}</h4>}
           </div>
-          <ol className="relative flex flex-1 flex-col justify-center gap-2.5 px-5 pt-3 pb-5">
+          <ol className="relative flex flex-1 flex-col justify-center gap-2.5 px-5 pt-3 pb-4">
             <span aria-hidden className="absolute top-6 bottom-8 left-[33px] w-0.5 rounded-full" style={{ background: `${theme.accent}40` }} />
             {c.steps.map((s, i) => {
               const last = i === c.steps.length - 1;
@@ -305,12 +399,17 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
                     className={cn("min-w-0 flex-1 rounded-xl px-3.5 py-2.5 text-[15px] leading-snug font-semibold [word-break:keep-all]", last ? "text-on-primary" : "bg-canvas text-ink shadow-[0_1px_3px_rgba(28,30,84,0.1)]")}
                     style={last ? { background: theme.deep } : undefined}
                   >
-                    {s}
+                    {a.r(s)}
                   </span>
                 </li>
               );
             })}
           </ol>
+          {a.notes.length > 0 && (
+            <div className="flex flex-col px-5 pb-5">
+              <Footnotes a={a} accent={theme.accent} />
+            </div>
+          )}
         </div>
       );
     case "term":
@@ -324,7 +423,8 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
             <p className="w-fit rounded-xl px-3 py-1 text-[21px] leading-snug font-extrabold [word-break:keep-all]" style={{ background: theme.panel, color: theme.deep }}>
               {c.term}
             </p>
-            <p className={cn(BODY, "mt-3")}>{c.text}</p>
+            <p className={cn(BODY, "mt-3")}>{a.r(c.text)}</p>
+            <Footnotes a={a} accent={theme.accent} />
           </Caption>
         </div>
       );
@@ -339,12 +439,13 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
             </span>
             {person && <PicCredit name={who} />}
             <span className="absolute top-12 left-3 z-10 max-w-[58%] rounded-2xl rounded-bl-sm bg-canvas px-3.5 py-3 text-[17px] leading-snug font-extrabold text-ink shadow-[0_6px_16px_-8px_rgba(28,30,84,0.45)] [word-break:keep-all]">
-              &ldquo;{c.text}&rdquo;
+              &ldquo;{a.r(c.text)}&rdquo;
             </span>
           </Panel>
           <Caption>
-            <h4 className={HEAD}>{c.name}</h4>
-            {c.note && <p className={BODY}>{c.note}</p>}
+            <h4 className={HEAD}>{a.r(c.name)}</h4>
+            {c.note && <p className={BODY}>{a.r(c.note)}</p>}
+            <Footnotes a={a} accent={theme.accent} />
           </Caption>
         </div>
       );
@@ -356,16 +457,16 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
             <span className="inline-block rounded-full px-2.5 py-1 text-[12px] font-bold" style={{ background: theme.panel, color: theme.accent }}>
               둘을 비교
             </span>
-            {c.title && <h4 className={cn(HEAD, "mt-2.5")}>{c.title}</h4>}
+            {c.title && <h4 className={cn(HEAD, "mt-2.5")}>{a.r(c.title)}</h4>}
           </div>
           <div className="grid flex-1 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-1.5 px-4 pt-3 pb-4">
             {[c.left, null, c.right].map((side, i) =>
               side ? (
                 <div key={i} className="flex flex-col rounded-2xl px-3 py-4" style={{ background: i === 0 ? "#eef2f7" : theme.panel }}>
                   <p className="text-[19px] leading-tight font-extrabold [word-break:keep-all]" style={{ color: i === 0 ? "#273951" : theme.deep }}>
-                    {side.name}
+                    {a.r(side.name)}
                   </p>
-                  <p className="mt-2.5 text-[14px] leading-relaxed text-ink-secondary [word-break:keep-all]">{side.text}</p>
+                  <p className="mt-2.5 text-[14px] leading-relaxed text-ink-secondary [word-break:keep-all]">{a.r(side.text)}</p>
                 </div>
               ) : (
                 <span key={i} className="inline-flex h-8 w-8 items-center justify-center self-center rounded-full bg-brand-dark text-[11px] font-extrabold text-on-primary">
@@ -374,13 +475,18 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
               ),
             )}
           </div>
+          {a.notes.length > 0 && (
+            <div className="flex flex-col px-5 pb-5">
+              <Footnotes a={a} accent={theme.accent} />
+            </div>
+          )}
         </div>
       );
   }
 }
 
 /** 카드가 없는 예전 기사 — 요약 글을 나눠 담은 장 (그림은 기사 그림) */
-function SummarySlide({ n, text, first, theme, id }: { n: NewsItem; text: string; first: boolean; theme: Theme; id: string }) {
+function SummarySlide({ n, text, first, theme, id, a }: { n: NewsItem; text: string; first: boolean; theme: Theme; id: string; a: Ann }) {
   const pic = innerPic(n);
   return (
     <div className={SHELL}>
@@ -389,13 +495,14 @@ function SummarySlide({ n, text, first, theme, id }: { n: NewsItem; text: string
         <PicCredit name={pic} />
       </Panel>
       <Caption>
-        <p className="text-[15px] leading-[1.7] text-ink [word-break:keep-all]">{text}</p>
+        <p className="text-[15px] leading-[1.7] text-ink [word-break:keep-all]">{a.r(text)}</p>
+        <Footnotes a={a} accent={theme.accent} />
       </Caption>
     </div>
   );
 }
 
-function Point({ text, theme, id }: { text: string; theme: Theme; id: string }) {
+function Point({ text, theme, id, a }: { text: string; theme: Theme; id: string; a: Ann }) {
   return (
     <div className={SHELL}>
       <div className="relative aspect-[5/2.5] shrink-0 overflow-clip bg-linear-to-b from-[#ffe9bf] to-[#fff7e8]">
@@ -405,7 +512,8 @@ function Point({ text, theme, id }: { text: string; theme: Theme; id: string }) 
       </div>
       <Caption>
         <p className="text-[13px] font-bold text-lemon">필기·면접 포인트</p>
-        <p className="mt-1.5 text-[15px] leading-[1.7] text-ink [word-break:keep-all]">{text}</p>
+        <p className="mt-1.5 text-[15px] leading-[1.7] text-ink [word-break:keep-all]">{a.r(text)}</p>
+        <Footnotes a={a} accent={theme.accent} />
       </Caption>
     </div>
   );
@@ -426,38 +534,72 @@ function ReadMore({ n }: { n: NewsItem }) {
   );
 }
 
-/** 기사 머리 — 번호(01·02 …)와 분야 */
+/** 기사 머리 — 번호(01·02 …) 옆에 분야와 기사 제목 */
 function DeckHead({ n, no }: { n: NewsItem; no: number }) {
   const info = NEWS_SECTION_INFO[n.section];
   return (
-    <span className="flex min-w-0 flex-wrap items-center gap-1.5">
+    <div className="flex items-start gap-3">
       <span
         className={cn(
-          "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full tabular text-[15px] font-semibold md:h-10 md:w-10 md:text-[16px]",
+          "mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full tabular text-[16px] font-bold",
           n.headline ? "bg-brand-dark text-on-primary" : "border-2 border-brand-dark bg-canvas text-brand-dark",
         )}
       >
         {pad(no)}
       </span>
-      {n.headline && <span className="tag bg-brand-dark text-on-primary">오늘의 헤드라인</span>}
-      <span className={cn("tag", info.tone)}>{info.label}</span>
-    </span>
+      <div className="min-w-0 flex-1">
+        <p className="flex flex-wrap items-center gap-1.5">
+          {n.headline && <span className="tag bg-brand-dark text-on-primary">오늘의 헤드라인</span>}
+          <span className={cn("tag", info.tone)}>{info.label}</span>
+        </p>
+        <h3 className="mt-1 text-[18px] leading-[1.38] font-bold tracking-[-0.02em] text-ink [word-break:keep-all] md:text-[20px]">{n.title}</h3>
+      </div>
+    </div>
   );
 }
 
 /** 기사 한 건 카드뉴스 */
+/** 카드에서 각주를 찾을 글 */
+function cardStrings(c: NewsCard): string[] {
+  switch (c.type) {
+    case "text":
+      return [c.title, c.text];
+    case "stat":
+      return [c.label, c.note];
+    case "bars":
+      return [c.title, ...c.bars.map((b) => b.label), c.note];
+    case "change":
+      return [c.title, ...c.rows.map((r) => r.label), c.note];
+    case "flow":
+      return [c.title, ...c.steps];
+    case "term":
+      return [c.text];
+    case "quote":
+      return [c.text, c.name, c.note];
+    case "versus":
+      return [c.title, c.left.name, c.left.text, c.right.name, c.right.text];
+  }
+}
+
 export function NewsDeck({ n, no }: { n: NewsItem; no: number }) {
   const total = deckSize(n);
   const theme = SECTION_THEME[n.section];
   const id = (i: number) => `p${n.id}x${i}`;
+  // 각주는 기사 안에서 말마다 한 번 — 용어 카드로 따로 푸는 말은 빼요
+  const index = noteIndex(n.notes);
+  const used = new Set(n.cards.flatMap((c) => (c.type === "term" ? findNotes(c.term, index).map((h) => h.note.term).concat(c.term) : [])));
+  const ann = (strings: string[]) => annotate(strings, index, used, theme.accent);
+  const coverAnn = ann([n.takeaway || n.title]);
+  const middles = n.cards.length
+    ? n.cards.map((c, i) => <Middle key={i} c={c} n={n} theme={theme} id={id(i)} a={ann(cardStrings(c))} />)
+    : summaryChunks(n.summary).map((t, i) => <SummarySlide key={i} n={n} text={t} first={i === 0} theme={theme} id={id(i)} a={ann([t])} />);
+  const pointAnn = n.point ? ann([n.point]) : NO_NOTES;
   return (
     <div id={`item-${n.id}`} className="scroll-mt-32">
       <CardDeck id={n.id} label={`${pad(no)} ${n.title}`} head={<DeckHead n={n} no={no} />} foot={<ReadMore n={n} />}>
-        <Cover n={n} total={total} theme={theme} />
-        {n.cards.length
-          ? n.cards.map((c, i) => <Middle key={i} c={c} n={n} theme={theme} id={id(i)} />)
-          : summaryChunks(n.summary).map((t, i) => <SummarySlide key={i} n={n} text={t} first={i === 0} theme={theme} id={id(i)} />)}
-        {n.point && <Point text={n.point} theme={theme} id={id(9)} />}
+        <Cover n={n} total={total} theme={theme} a={coverAnn} />
+        {middles}
+        {n.point && <Point text={n.point} theme={theme} id={id(9)} a={pointAnn} />}
       </CardDeck>
     </div>
   );

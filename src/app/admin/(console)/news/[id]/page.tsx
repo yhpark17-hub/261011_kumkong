@@ -51,6 +51,7 @@ async function EditNews({ rawId }: { rawId: string }) {
           cards: n.cards.length ? JSON.stringify(n.cards, null, 2) : "",
           short: n.short,
           pic: n.pic,
+          notes: n.notes.length ? JSON.stringify(n.notes, null, 2) : "",
           imageUrl: n.imageUrl ?? "",
           imageCredit: n.imageCredit,
           headline: n.headline,

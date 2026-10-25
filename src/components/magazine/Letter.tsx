@@ -16,7 +16,7 @@ import { FeedbackButton } from "../feedback/Feedback";
 import { cn } from "../ui";
 import { MastheadMini } from "./BriefingBrand";
 import { BriefingQuiz } from "./BriefingQuiz";
-import { TimetableBar } from "./CardDeck";
+import { Timetable } from "./CardDeck";
 import { Markdown } from "./Markdown";
 import { ReadingProgress } from "./KongMascot";
 import { IssueLikeButton, ShareButton, ShareUrlSync, SourceLink } from "./interactive";
@@ -95,17 +95,19 @@ function Box({ children, className, id }: { children: React.ReactNode; className
 }
 
 /**
- * 아침판 — 화면 위에 붙는 한 줄 시간표 + 기사마다 옆으로 넘겨 보는 그림 카드뉴스 (기사는 MAX_STORIES 건까지).
+ * 아침판 — 오늘의 시간표(기사 목록 → 읽는 동안 한 줄로 접혀 위에 붙어요) + 기사마다 옆으로 넘겨 보는 그림 카드뉴스 (MAX_STORIES 건까지).
  * 읽은 정도는 시간표의 체크로 보여 줘요 (예전 호의 퀴즈는 싣지 않아요)
  */
 function MorningBody({ content }: { content: LetterContent }) {
   const { all } = content;
   if (!all.length) return null;
   return (
-    <div className="space-y-8 md:space-y-10">
-      <TimetableBar items={all.map(timetableItem)} />
+    <div>
+      <Timetable items={all.map(timetableItem)} />
       {all.map((n, i) => (
-        <NewsDeck key={n.id} n={n} no={i + 1} />
+        <div key={n.id} className="mt-9 md:mt-11">
+          <NewsDeck n={n} no={i + 1} />
+        </div>
       ))}
     </div>
   );

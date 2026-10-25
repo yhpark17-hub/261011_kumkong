@@ -1,5 +1,6 @@
 import "server-only";
 import type { InValue, Row } from "@libsql/client";
+import { parseNotes } from "../glossary";
 import { isPicName, parseCards } from "../news-cards";
 import { NEWS_PAGE_SIZE, isEdition, isNewsSection, isNewsTier, type NewsItem, type NewsSection } from "../news-meta";
 import { db } from "./db";
@@ -8,7 +9,7 @@ import { db } from "./db";
 
 export const PUBLIC = "status = 1 AND published_at <= ?";
 export const COLS =
-  "id, edition_date, edition, section, title, summary, body, point, source_name, source_url, image_url, image_credit, tier, position, takeaway, cards, short, pic, headline, status, origin, published_at, updated_at, views";
+  "id, edition_date, edition, section, title, summary, body, point, source_name, source_url, image_url, image_credit, tier, position, takeaway, cards, short, pic, notes, headline, status, origin, published_at, updated_at, views";
 
 export function toItem(r: Row): NewsItem {
   const publishedAt = r.published_at == null ? null : Number(r.published_at);
@@ -31,6 +32,7 @@ export function toItem(r: Row): NewsItem {
     cards: parseCards(r.cards),
     short: String(r.short ?? ""),
     pic: isPicName(r.pic) ? String(r.pic) : "",
+    notes: parseNotes(r.notes),
     headline: Boolean(r.headline),
     status: Number(r.status),
     origin: String(r.origin ?? "admin"),

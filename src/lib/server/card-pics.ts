@@ -1,4 +1,5 @@
 import "server-only";
+import { COMPANIES } from "@/lib/data";
 import { COSTUMES, type NewsSection } from "@/lib/news-meta";
 import { isPicKey, type PicKey } from "@/lib/news-cards";
 import { expandKit } from "./thumb-kit";
@@ -88,9 +89,138 @@ function scopeIds(svg: string, prefix: string): string {
   return out;
 }
 
-/** 그림 이름 → 400×240 상자 안 도형 (모르는 이름이면 기자 콩이) */
+/* ------------------------------------------------------------------ */
+/* 기관 — 'org:기관' 그림: 건물 + 로고 이름판 (로고 파일이 없는 정부 기관은 이름만)       */
+/* ------------------------------------------------------------------ */
+
+export interface Org {
+  key: string;
+  /** 이름판에 쓰는 이름 */
+  name: string;
+  /** public/logos 로고 (없으면 이름만) */
+  logo?: string;
+  /** 제목·한 줄 요약에서 찾는 말 */
+  find: string[];
+}
+
+/** 정부·해외 기관 (로고 파일 없음) */
+const GOV: Org[] = [
+  { key: "fsc", name: "금융위원회", find: ["금융위원회", "금융위"] },
+  { key: "mofe", name: "재정경제부", find: ["재정경제부", "재경부"] },
+  { key: "mosf", name: "기획재정부", find: ["기획재정부", "기재부"] },
+  { key: "mpb", name: "기획예산처", find: ["기획예산처"] },
+  { key: "ftc", name: "공정거래위원회", find: ["공정거래위원회", "공정위"] },
+  { key: "fed", name: "미국 연준", find: ["연방준비제도", "연준"] },
+  { key: "boj", name: "일본은행", find: ["일본은행"] },
+  { key: "ecb", name: "유럽중앙은행", find: ["유럽중앙은행", "ECB"] },
+  { key: "imf", name: "IMF", find: ["IMF", "국제통화기금"] },
+];
+/** 기관 짧은 이름 중 흔한 낱말과 겹쳐 잘못 잡히는 것 */
+const SHORT_SKIP = new Set(["우리", "하나", "신한", "거래소", "새마을", "신협", "수협", "군공", "교공", "경공", "건공"]);
+/** 기사에서 자주 쓰는 다른 이름 */
+const ALIAS: Record<string, string[]> = {
+  kexim: ["수출입은행"],
+  kdb: ["산업은행"],
+  ibk: ["기업은행"],
+  hf: ["주택금융공사"],
+  kamco: ["자산관리공사"],
+  ksure: ["무역보험공사"],
+  krx: ["한국거래소"],
+};
+
+const ORGS: Org[] = [
+  ...GOV,
+  ...COMPANIES.filter((c) => c.logo).map((c) => {
+    const short = c.shortName && c.shortName.length >= 2 && !SHORT_SKIP.has(c.shortName) ? c.shortName : "";
+    return {
+      key: c.id,
+      name: c.name.length > 7 && short ? short : c.name,
+      logo: c.logo,
+      find: [c.name, ...(ALIAS[c.id] ?? []), ...(short ? [short] : [])],
+    };
+  }),
+];
+const ORG_BY_KEY = new Map(ORGS.map((o) => [o.key, o]));
+
+/** 영문 이름이 낱말 가운데 있으면 빼요 (예: ECB 가 아닌 말 속) */
+function orgAt(text: string, f: string): number {
+  const at = text.indexOf(f);
+  if (at < 0) return -1;
+  if (/^[A-Za-z]+$/.test(f) && (/[A-Za-z]/.test(text[at - 1] ?? "") || /[A-Za-z]/.test(text[at + f.length] ?? ""))) return -1;
+  return at;
+}
+
+/** 글에 나온 기관 (나온 순서, 최대 n곳) */
+export function findOrgs(text: string, n = 2): Org[] {
+  const hits: { org: Org; at: number }[] = [];
+  for (const org of ORGS) {
+    const at = Math.min(...org.find.map((f) => orgAt(text, f)).map((a) => (a < 0 ? Infinity : a)));
+    if (Number.isFinite(at)) hits.push({ org, at });
+  }
+  const seen = new Set<string>();
+  return hits
+    .sort((a, b) => a.at - b.at)
+    .map((h) => h.org)
+    .filter((o) => {
+      if (seen.has(o.key)) return false;
+      seen.add(o.key);
+      return true;
+    })
+    .slice(0, n);
+}
+
+const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/** 이름판 한 장 — 가운데 cx, 위 y, 높이 h (로고 + 이름) */
+function plate(org: Org, cx: number, y: number, h: number, accent: string): string {
+  const font = Math.round(h * 0.38);
+  const logo = org.logo ? h - 16 : 0;
+  const textW = [...org.name].reduce((w, ch) => w + (/[A-Za-z0-9 ]/.test(ch) ? font * 0.62 : font), 0);
+  const w = Math.round(16 + (logo ? logo + 10 : 8) + textW + 18);
+  const x = Math.round(cx - w / 2);
+  const tx = x + 16 + (logo ? logo + 10 : 8);
+  return (
+    `<rect x="${x}" y="${y + 4}" width="${w}" height="${h}" rx="${h / 3}" fill="#1c1e54" opacity=".12"/>` +
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${h / 3}" fill="#ffffff" stroke="${accent}" stroke-opacity=".35" stroke-width="2"/>` +
+    (logo
+      ? `<image href="${org.logo}" x="${x + 14}" y="${y + 8}" width="${logo}" height="${logo}" preserveAspectRatio="xMidYMid meet"/>`
+      : `<circle cx="${x + 14}" cy="${y + h / 2}" r="4" fill="${accent}"/>`) +
+    `<text x="${tx}" y="${y + h / 2 + font * 0.36}" font-size="${font}" font-weight="800" fill="#1c1e54">${esc(org.name)}</text>`
+  );
+}
+
+/** 기관 장면 — 뒤에 건물, 앞에 이름판 1~2장 */
+function orgScene(orgs: Org[], accent: string): string {
+  if (orgs.length === 1) return `${stage(200, 130)}<kk-bank x="95" y="14" s="0.5" c="${accent}"/>${plate(orgs[0], 200, 150, 60, accent)}`;
+  return `${stage(200, 130)}<kk-bank x="116" y="6" s="0.4" c="${accent}"/>${plate(orgs[0], 200, 112, 50, accent)}${plate(orgs[1], 200, 172, 50, accent)}`;
+}
+
+/** 'org:a' · 'org:a+b' → 기관들 (모르는 기관은 빼요) */
+export const picOrgs = (name: string): Org[] =>
+  name.startsWith("org:")
+    ? name
+        .slice(4)
+        .split("+")
+        .map((k) => ORG_BY_KEY.get(k))
+        .filter((o): o is Org => Boolean(o))
+        .slice(0, 2)
+    : [];
+
+/** 그림 이름이 실제로 그릴 수 있는 것인지 (등록 인물·기관까지 확인) — 자동 점검 검사용 */
+export function picExists(name: string): boolean {
+  if (isPicKey(name)) return true;
+  if (name.startsWith("who:")) return Boolean(photoPortrait(name.slice(4)));
+  if (name.startsWith("org:")) {
+    const keys = name.slice(4).split("+");
+    return keys.length <= 2 && keys.every((k) => ORG_BY_KEY.has(k));
+  }
+  return false;
+}
+
+/** 그림 이름 → 400×240 상자 안 도형 ('org:기관' 포함, 모르는 이름이면 기자 콩이) */
 export function picSvg(name: PicKey | string, accent: string, prefix: string): string {
-  const scene = (isPicKey(name) ? SCENES[name] : SCENES["kong-reporter"])(accent);
+  const orgs = picOrgs(name);
+  const scene = orgs.length ? orgScene(orgs, accent) : (isPicKey(name) ? SCENES[name] : SCENES["kong-reporter"])(accent);
   return scopeIds(expandKit(scene), prefix);
 }
 
@@ -144,14 +274,18 @@ const PEOPLE: [RegExp, string][] = [
 
 /**
  * 표지 그림을 고르지 않은 기사 — 제목에 등록 인물 이름이 있으면 그 인물(가장 앞에 나온 사람),
- * 아니면 제목 낱말로 콩이 변장(썸네일 '자동'과 같은 낱말 목록), 그것도 없으면 분야 기본 그림.
- * people = false 면 인물은 건너뛰어요 (속 장마다 같은 초상이 되풀이되지 않게)
+ * 기관 이름이 있으면 그 기관(건물 + 로고 이름판, 두 곳까지), 아니면 제목 낱말로 콩이 변장(썸네일 '자동'과 같은 낱말 목록),
+ * 그것도 없으면 분야 기본 그림. people = false 면 인물·기관은 건너뛰어요 (속 장마다 같은 그림이 되풀이되지 않게)
  */
 export function defaultPic(section: NewsSection, title: string, people = true): string {
-  const person = !people ? undefined : PEOPLE.map(([re, who]) => ({ who, at: title.search(re) }))
-    .filter((p) => p.at >= 0 && photoPortrait(p.who))
-    .sort((x, y) => x.at - y.at)[0];
+  const person = !people
+    ? undefined
+    : PEOPLE.map(([re, who]) => ({ who, at: title.search(re) }))
+        .filter((p) => p.at >= 0 && photoPortrait(p.who))
+        .sort((x, y) => x.at - y.at)[0];
   if (person) return `who:${person.who}`;
+  const orgs = people ? findOrgs(title) : [];
+  if (orgs.length) return `org:${orgs.map((o) => o.key).join("+")}`;
   const hit = COSTUMES.filter((c) => c.match && c.key !== "uspresident")
     .map((c) => ({ key: c.key, at: c.match ? title.search(c.match) : -1 }))
     .filter((c) => c.at >= 0)

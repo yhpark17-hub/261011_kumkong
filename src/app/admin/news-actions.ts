@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isOwnFileUrl } from "@/lib/attachments";
+import { parseNotes } from "@/lib/glossary";
 import { CARD_LEN, isPicName, parseCards } from "@/lib/news-cards";
 import { isDateKey, isEdition, isNewsSection, isNewsTier, kindOf } from "@/lib/news-meta";
 import { db } from "@/lib/server/db";
@@ -44,6 +45,7 @@ export async function saveNews(_prev: NewsFormState, fd: FormData): Promise<News
   const short = str(fd, "short", CARD_LEN.short);
   const picRaw = str(fd, "pic", 60);
   const pic = isPicName(picRaw) ? picRaw : "";
+  const notesRaw = str(fd, "notes", 3000);
   const headlineAsked = fd.get("headline") === "on";
   const publish = fd.get("status") === "1";
 
@@ -73,6 +75,18 @@ export async function saveNews(_prev: NewsFormState, fd: FormData): Promise<News
     if (!Array.isArray(raw) || cards.length !== raw.length) return { ok: false, error: "카드뉴스에 모양이 틀린 장이 있어요. type 과 칸 이름을 확인해 주세요." };
     cardsJson = JSON.stringify(cards);
   }
+  let notesJson = "[]";
+  if (kind === "news" && notesRaw) {
+    let raw: unknown;
+    try {
+      raw = JSON.parse(notesRaw);
+    } catch {
+      return { ok: false, error: "각주 JSON 을 읽을 수 없어요. [{ \"term\": …, \"text\": … }] 모양인지 확인해 주세요." };
+    }
+    const notes = parseNotes(raw);
+    if (!Array.isArray(raw) || notes.length !== raw.length) return { ok: false, error: "각주에 모양이 틀린 줄이 있어요. term·text 를 확인해 주세요." };
+    notesJson = JSON.stringify(notes);
+  }
 
   const client = await db();
   const now = Date.now();
@@ -85,17 +99,17 @@ export async function saveNews(_prev: NewsFormState, fd: FormData): Promise<News
     const publishedAt = publish ? (Number(prev.status) === 1 && prev.published_at != null ? Number(prev.published_at) : now) : null;
     await client.execute({
       sql: `UPDATE news SET edition_date = ?, edition = ?, section = ?, title = ?, summary = ?, point = ?, body = ?, source_name = ?, source_url = ?,
-              image_url = ?, image_credit = ?, tier = ?, position = ?, takeaway = ?, cards = ?, short = ?, pic = ?, headline = ?, status = ?, published_at = ?, updated_at = ? WHERE id = ?`,
-      args: [editionDate, edition, section, title, summary, point, body, sourceName, sourceUrl, imageUrl, imageCredit, tier, position, takeaway, cardsJson, short, pic, headline, publish ? 1 : 0, publishedAt, now, id],
+              image_url = ?, image_credit = ?, tier = ?, position = ?, takeaway = ?, cards = ?, short = ?, pic = ?, notes = ?, headline = ?, status = ?, published_at = ?, updated_at = ? WHERE id = ?`,
+      args: [editionDate, edition, section, title, summary, point, body, sourceName, sourceUrl, imageUrl, imageCredit, tier, position, takeaway, cardsJson, short, pic, notesJson, headline, publish ? 1 : 0, publishedAt, now, id],
     });
     revalidateNews(id);
     return { ok: true, savedAt: now };
   }
 
   await client.execute({
-    sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, image_url, image_credit, tier, position, takeaway, cards, short, pic, headline, status, origin, published_at, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', ?, ?, ?)`,
-    args: [editionDate, edition, section, title, summary, point, body, sourceName, sourceUrl, imageUrl, imageCredit, tier, position, takeaway, cardsJson, short, pic, headline, publish ? 1 : 0, publish ? now : null, now, now],
+    sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, image_url, image_credit, tier, position, takeaway, cards, short, pic, notes, headline, status, origin, published_at, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', ?, ?, ?)`,
+    args: [editionDate, edition, section, title, summary, point, body, sourceName, sourceUrl, imageUrl, imageCredit, tier, position, takeaway, cardsJson, short, pic, notesJson, headline, publish ? 1 : 0, publish ? now : null, now, now],
   });
   revalidateNews();
   redirect(`/admin/news?date=${editionDate}`);
