@@ -36,7 +36,11 @@ node scripts/portraits/ai.mjs lee-jaemyung # 한 명
 | 샘 올트먼 오픈AI CEO | `sam-altman` | 없음 |
 | 다리오 아모데이 앤트로픽 CEO | `dario-amodei` | 없음 |
 | 마크 저커버그 메타 CEO | `mark-zuckerberg` | 없음 |
-| 이찬진 금융감독원장 | `lee-chanjin` | 없음 — 손으로 그린 벡터 `lee-chanjin.mjs` (출처 모를 사진은 생김새 참고로만) |
+| 이찬진 금융감독원장 | `lee-chanjin` | 없음 (예전 손그림 벡터 `lee-chanjin.mjs` 는 대비용) |
+| 권대영 금융위원회 부위원장 | `kwon-daeyoung` | 없음 |
+| 박홍근 기획예산처 장관 | `park-hongkeun` | 없음 |
+| 박상진 한국산업은행 회장 | `park-sangjin` | 없음 |
+| 우에다 가즈오 일본은행 총재 | `kazuo-ueda` | 없음 |
 
 일러스트는 `ai/<who>.webp`. 표정 바꾼 판은 `ai/<who>-<face>.webp` 로 넣고 `ai.mjs` 의 `AI` 목록과 `thumb-portraits.ts` 의 `FACES` 에 등록해요.
 

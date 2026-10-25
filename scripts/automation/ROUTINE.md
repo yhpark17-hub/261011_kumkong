@@ -329,9 +329,10 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 3. **사람 뉴스**(발언·인물이 주인공)는 `kk-portrait` 로 그 사람을 크게 그리고 말풍선(`kk-bubble`)을 달아요.
    - 등록된 인물은 `who` 로 불러요 (미리 만든 일러스트라 한눈에 알아봐요):
      - 경제·금융 당국: `lee-jaemyung`(이재명 대통령) · `lee-hyoungil`(이형일 부총리 겸 재정경제부 장관) · `shin-hyunsong`(신현송 한은 총재) ·
-       `lee-eogweon`(이억원 금융위원장) · `lee-chanjin`(이찬진 금감원장)
+       `lee-eogweon`(이억원 금융위원장) · `lee-chanjin`(이찬진 금감원장) · `kwon-daeyoung`(권대영 금융위 부위원장) ·
+       `park-hongkeun`(박홍근 기획예산처 장관) · `park-sangjin`(박상진 산업은행 회장)
      - 해외: `donald-trump`(트럼프 미국 대통령 — `face='speak'` 이면 말하는 얼굴) · `kevin-warsh`(케빈 워시 연준 의장) · `scott-bessent`(스콧 베선트 미 재무장관) ·
-       `xi-jinping`(시진핑 중국 국가주석) · `sanae-takaichi`(다카이치 사나에 일본 총리) · `andy-burnham`(앤디 버넘 영국 총리) ·
+       `kazuo-ueda`(우에다 가즈오 일본은행 총재) · `xi-jinping`(시진핑 중국 국가주석) · `sanae-takaichi`(다카이치 사나에 일본 총리) · `andy-burnham`(앤디 버넘 영국 총리) ·
        `emmanuel-macron`(마크롱 프랑스 대통령) · `friedrich-merz`(메르츠 독일 총리)
      - 기업: `lee-jaeyong`(이재용 삼성전자 회장) · `chung-euisun`(정의선 현대차그룹 회장) · `chey-taewon`(최태원 SK그룹 회장) ·
        `jensen-huang`(젠슨 황 엔비디아) · `elon-musk`(일론 머스크) · `sam-altman`(샘 올트먼 오픈AI) · `dario-amodei`(다리오 아모데이 앤트로픽) ·

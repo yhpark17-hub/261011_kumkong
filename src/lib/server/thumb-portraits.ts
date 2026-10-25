@@ -9,13 +9,17 @@ import { ELON_MUSK } from "./portraits/elon-musk";
 import { EMMANUEL_MACRON } from "./portraits/emmanuel-macron";
 import { FRIEDRICH_MERZ } from "./portraits/friedrich-merz";
 import { JENSEN_HUANG } from "./portraits/jensen-huang";
+import { KAZUO_UEDA } from "./portraits/kazuo-ueda";
 import { KEVIN_WARSH } from "./portraits/kevin-warsh";
+import { KWON_DAEYOUNG } from "./portraits/kwon-daeyoung";
 import { LEE_CHANJIN } from "./portraits/lee-chanjin";
 import { LEE_EOGWEON } from "./portraits/lee-eogweon";
 import { LEE_HYOUNGIL } from "./portraits/lee-hyoungil";
 import { LEE_JAEMYUNG } from "./portraits/lee-jaemyung";
 import { LEE_JAEYONG } from "./portraits/lee-jaeyong";
 import { MARK_ZUCKERBERG } from "./portraits/mark-zuckerberg";
+import { PARK_HONGKEUN } from "./portraits/park-hongkeun";
+import { PARK_SANGJIN } from "./portraits/park-sangjin";
 import { SAM_ALTMAN } from "./portraits/sam-altman";
 import { SANAE_TAKAICHI } from "./portraits/sanae-takaichi";
 import { SCOTT_BESSENT } from "./portraits/scott-bessent";
@@ -341,7 +345,7 @@ function custom(a: A, id: string): string {
 
 /**
  * 등록 인물 초상 (scripts/portraits) — 운영자가 만든 AI 일러스트에서 배경을 뗀 그림
- * 일러스트가 자유 이용 사진을 바탕으로 한 것이면 그 사진 출처가 붙어요 (credit). lee-chanjin 은 손으로 그린 벡터 그림
+ * 일러스트가 자유 이용 사진을 바탕으로 한 것이면 그 사진 출처가 붙어요 (credit)
  */
 const PHOTO: Record<string, { svg: string; credit: string }> = {
   // 경제·금융 당국
@@ -350,10 +354,14 @@ const PHOTO: Record<string, { svg: string; credit: string }> = {
   "shin-hyunsong": SHIN_HYUNSONG,
   "lee-eogweon": LEE_EOGWEON,
   "lee-chanjin": LEE_CHANJIN,
+  "kwon-daeyoung": KWON_DAEYOUNG,
+  "park-hongkeun": PARK_HONGKEUN,
+  "park-sangjin": PARK_SANGJIN,
   // 해외 정상·당국
   "donald-trump": DONALD_TRUMP,
   "kevin-warsh": KEVIN_WARSH,
   "scott-bessent": SCOTT_BESSENT,
+  "kazuo-ueda": KAZUO_UEDA,
   "xi-jinping": XI_JINPING,
   "sanae-takaichi": SANAE_TAKAICHI,
   "andy-burnham": ANDY_BURNHAM,

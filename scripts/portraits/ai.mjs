@@ -22,6 +22,11 @@ export const AI = {
   "lee-hyoungil": { who: "이형일 부총리 겸 재정경제부 장관", exportName: "LEE_HYOUNGIL", id: "lhi", credit: "인물 그림 원본 사진: 대한민국 국회 · 공공누리 제1유형 · 변형" },
   "lee-eogweon": { who: "이억원 금융위원장", exportName: "LEE_EOGWEON", id: "lew", credit: "인물 그림 원본 사진: 대한민국 대통령실 · 공공누리 제1유형 · 변형" },
   "scott-bessent": { who: "스콧 베선트 미국 재무장관", exportName: "SCOTT_BESSENT", id: "sbt", credit: "인물 그림 원본 사진: 미국 재무부 · 퍼블릭 도메인" },
+  "lee-chanjin": { who: "이찬진 금융감독원장", exportName: "LEE_CHANJIN", id: "lcj", credit: "" },
+  "kwon-daeyoung": { who: "권대영 금융위원회 부위원장", exportName: "KWON_DAEYOUNG", id: "kdy", credit: "" },
+  "park-hongkeun": { who: "박홍근 기획예산처 장관", exportName: "PARK_HONGKEUN", id: "phk", credit: "" },
+  "park-sangjin": { who: "박상진 한국산업은행 회장", exportName: "PARK_SANGJIN", id: "psj", credit: "" },
+  "kazuo-ueda": { who: "우에다 가즈오 일본은행 총재", exportName: "KAZUO_UEDA", id: "kue", credit: "" },
   "sanae-takaichi": { who: "다카이치 사나에 일본 총리", exportName: "SANAE_TAKAICHI", id: "stk", credit: "" },
   // 표정 바꾼 판 — <kk-portrait who="donald-trump" face="speak"/> 로 불러요 (thumb-portraits.ts 의 FACES)
   "donald-trump-speak": { who: "도널드 트럼프 미국 대통령 (말하는 얼굴)", exportName: "DONALD_TRUMP_SPEAK", id: "dts", credit: "" },
