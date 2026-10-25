@@ -97,23 +97,25 @@ export interface Org {
   key: string;
   /** 이름판에 쓰는 이름 */
   name: string;
-  /** public/logos 로고 (없으면 이름만) */
+  /** public/logos 로고 (없으면 badge 글자로 둥근 문장) */
   logo?: string;
+  /** 로고가 없을 때 둥근 문장에 넣는 짧은 이름 */
+  badge?: string;
   /** 제목·한 줄 요약에서 찾는 말 */
   find: string[];
 }
 
 /** 정부·해외 기관 (로고 파일 없음) */
 const GOV: Org[] = [
-  { key: "fsc", name: "금융위원회", find: ["금융위원회", "금융위"] },
-  { key: "mofe", name: "재정경제부", find: ["재정경제부", "재경부"] },
-  { key: "mosf", name: "기획재정부", find: ["기획재정부", "기재부"] },
-  { key: "mpb", name: "기획예산처", find: ["기획예산처"] },
-  { key: "ftc", name: "공정거래위원회", find: ["공정거래위원회", "공정위"] },
-  { key: "fed", name: "미국 연준", find: ["연방준비제도", "연준"] },
-  { key: "boj", name: "일본은행", find: ["일본은행"] },
-  { key: "ecb", name: "유럽중앙은행", find: ["유럽중앙은행", "ECB"] },
-  { key: "imf", name: "IMF", find: ["IMF", "국제통화기금"] },
+  { key: "fsc", name: "금융위원회", badge: "금융위", find: ["금융위원회", "금융위"] },
+  { key: "mofe", name: "재정경제부", badge: "재경부", find: ["재정경제부", "재경부"] },
+  { key: "mosf", name: "기획재정부", badge: "기재부", find: ["기획재정부", "기재부"] },
+  { key: "mpb", name: "기획예산처", badge: "예산처", find: ["기획예산처"] },
+  { key: "ftc", name: "공정거래위원회", badge: "공정위", find: ["공정거래위원회", "공정위"] },
+  { key: "fed", name: "미국 연준", badge: "Fed", find: ["연방준비제도", "연준"] },
+  { key: "boj", name: "일본은행", badge: "BOJ", find: ["일본은행"] },
+  { key: "ecb", name: "유럽중앙은행", badge: "ECB", find: ["유럽중앙은행", "ECB"] },
+  { key: "imf", name: "IMF", badge: "IMF", find: ["IMF", "국제통화기금"] },
 ];
 /** 기관 짧은 이름 중 흔한 낱말과 겹쳐 잘못 잡히는 것 */
 const SHORT_SKIP = new Set(["우리", "하나", "신한", "거래소", "새마을", "신협", "수협", "군공", "교공", "경공", "건공"]);
@@ -171,28 +173,84 @@ export function findOrgs(text: string, n = 2): Org[] {
 
 const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-/** 이름판 한 장 — 가운데 cx, 위 y, 높이 h (로고 + 이름) */
-function plate(org: Org, cx: number, y: number, h: number, accent: string): string {
-  const font = Math.round(h * 0.38);
-  const logo = org.logo ? h - 16 : 0;
-  const textW = [...org.name].reduce((w, ch) => w + (/[A-Za-z0-9 ]/.test(ch) ? font * 0.62 : font), 0);
-  const w = Math.round(16 + (logo ? logo + 10 : 8) + textW + 18);
-  const x = Math.round(cx - w / 2);
-  const tx = x + 16 + (logo ? logo + 10 : 8);
+/** 글자 폭 어림 (한글 1em, 영문·숫자 0.62em) */
+const textWidth = (t: string, font: number) => [...t].reduce((w, ch) => w + (/[A-Za-z0-9 ·.]/.test(ch) ? font * 0.62 : font), 0);
+
+/** 둥근 문장 — 흰 원 + 분야색 테두리 + 로고 (로고가 없으면 짧은 이름 글자) */
+function medallion(org: Org, cx: number, cy: number, r: number, accent: string): string {
+  const inner = org.logo
+    ? `<image href="${org.logo}" x="${cx - r * 0.66}" y="${cy - r * 0.66}" width="${r * 1.32}" height="${r * 1.32}" preserveAspectRatio="xMidYMid meet"/>`
+    : (() => {
+        const t = org.badge ?? org.name.slice(0, 3);
+        const font = Math.min(r * 0.62, (r * 1.5) / Math.max(1, textWidth(t, 1)));
+        return `<text x="${cx}" y="${cy + font * 0.36}" text-anchor="middle" font-size="${font.toFixed(1)}" font-weight="900" fill="${accent}">${esc(t)}</text>`;
+      })();
   return (
-    `<rect x="${x}" y="${y + 4}" width="${w}" height="${h}" rx="${h / 3}" fill="#1c1e54" opacity=".12"/>` +
-    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${h / 3}" fill="#ffffff" stroke="${accent}" stroke-opacity=".35" stroke-width="2"/>` +
-    (logo
-      ? `<image href="${org.logo}" x="${x + 14}" y="${y + 8}" width="${logo}" height="${logo}" preserveAspectRatio="xMidYMid meet"/>`
-      : `<circle cx="${x + 14}" cy="${y + h / 2}" r="4" fill="${accent}"/>`) +
-    `<text x="${tx}" y="${y + h / 2 + font * 0.36}" font-size="${font}" font-weight="800" fill="#1c1e54">${esc(org.name)}</text>`
+    `<circle cx="${cx}" cy="${cy + 5}" r="${r}" fill="#1c1e54" opacity=".16"/>` +
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#ffffff" stroke="${accent}" stroke-width="${Math.max(3, r * 0.1)}"/>` +
+    `<circle cx="${cx}" cy="${cy}" r="${r * 0.84}" fill="none" stroke="${accent}" stroke-opacity=".18" stroke-width="1.5"/>` +
+    inner
   );
 }
 
-/** 기관 장면 — 뒤에 건물, 앞에 이름판 1~2장 */
+/** 리본 이름띠 — 가운데 cx, 세로 가운데 cy (분야색 띠 + 양 끝 꼬리) */
+function ribbon(name: string, cx: number, cy: number, accent: string): string {
+  const font = 19;
+  const h = 38;
+  const w = Math.round(textWidth(name, font) + 40);
+  const x = cx - w / 2;
+  const y = cy - h / 2;
+  const tail = (side: -1 | 1) => {
+    const ex = side < 0 ? x + 10 : x + w - 10;
+    const ox = ex + side * 26;
+    return `<path d="M${ex} ${y + 8}H${ox}L${ox - side * 9} ${y + 8 + h / 2}L${ox} ${y + 8 + h}H${ex}Z" fill="${accent}" opacity=".55"/>`;
+  };
+  return (
+    tail(-1) +
+    tail(1) +
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${accent}"/>` +
+    `<rect x="${x}" y="${y}" width="${w}" height="${h / 2}" rx="8" fill="#ffffff" opacity=".12"/>` +
+    `<text x="${cx}" y="${cy + font * 0.36}" text-anchor="middle" font-size="${font}" font-weight="800" fill="#ffffff">${esc(name)}</text>`
+  );
+}
+
+/** 이름 알약 — 둥근 문장 아래 이름 (두 기관 장면) */
+function namePill(name: string, cx: number, cy: number, accent: string): string {
+  const font = 15;
+  const w = Math.round(textWidth(name, font) + 26);
+  return (
+    `<rect x="${cx - w / 2}" y="${cy - 15}" width="${w}" height="30" rx="15" fill="#ffffff" stroke="${accent}" stroke-opacity=".4" stroke-width="1.5"/>` +
+    `<text x="${cx}" y="${cy + font * 0.36}" text-anchor="middle" font-size="${font}" font-weight="800" fill="#1c1e54">${esc(name)}</text>`
+  );
+}
+
+/**
+ * 기관 장면 — 한 곳: 건물 지붕 위에 로고 문장, 앞에 리본 이름띠
+ * 두 곳: 로고 문장 둘을 ⇄ 화살표로 잇고 아래에 이름 (뒤에 흐린 건물 둘)
+ */
 function orgScene(orgs: Org[], accent: string): string {
-  if (orgs.length === 1) return `${stage(200, 130)}<kk-bank x="95" y="14" s="0.5" c="${accent}"/>${plate(orgs[0], 200, 150, 60, accent)}`;
-  return `${stage(200, 130)}<kk-bank x="116" y="6" s="0.4" c="${accent}"/>${plate(orgs[0], 200, 112, 50, accent)}${plate(orgs[1], 200, 172, 50, accent)}`;
+  if (orgs.length === 1) {
+    const [o] = orgs;
+    return (
+      `${stage(200, 140)}<kk-bank x="74" y="62" s="0.6" c="${accent}"/>` +
+      medallion(o, 200, 62, 40, accent) +
+      ribbon(o.name, 200, 186, accent)
+    );
+  }
+  const [a, b] = orgs;
+  const arrow = (d: string, hx: number, hy: number, dir: 1 | -1) =>
+    `<path d="${d}" fill="none" stroke="${accent}" stroke-width="5" stroke-linecap="round"/>` +
+    `<path d="M${hx} ${hy}l${-12 * dir} ${-7}v14z" fill="${accent}"/>`;
+  return (
+    `${stage(200, 160)}` +
+    `<g opacity=".5"><kk-bank x="22" y="104" s="0.38" c="${accent}"/><kk-bank x="218" y="104" s="0.38" c="${accent}"/></g>` +
+    arrow("M158 78Q200 56 238 76", 246, 79, 1) +
+    arrow("M242 118Q200 140 162 120", 154, 117, -1) +
+    medallion(a, 106, 98, 44, accent) +
+    medallion(b, 294, 98, 44, accent) +
+    namePill(a.name, 106, 172, accent) +
+    namePill(b.name, 294, 172, accent)
+  );
 }
 
 /** 'org:a' · 'org:a+b' → 기관들 (모르는 기관은 빼요) */

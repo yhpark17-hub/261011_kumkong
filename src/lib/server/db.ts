@@ -307,7 +307,7 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   // 아침판 시간표에 쓰는 짧은 이름 · 카드뉴스 표지 그림 — 2026-10 추가
   { table: "news", column: "short", ddl: "ALTER TABLE news ADD COLUMN short TEXT NOT NULL DEFAULT ''" },
   { table: "news", column: "pic", ddl: "ALTER TABLE news ADD COLUMN pic TEXT NOT NULL DEFAULT ''" },
-  // 카드뉴스 각주 — 이 기사의 어려운 말 풀이 [{ term, text }] — 2026-10 추가
+  // 카드뉴스 괄호 풀이 — 이 기사의 전문 용어 풀이 [{ term, text }] — 2026-10 추가
   { table: "news", column: "notes", ddl: "ALTER TABLE news ADD COLUMN notes TEXT NOT NULL DEFAULT '[]'" },
   // 금콩 스터디 코너(숫자로 보는 오늘·논술 한 문단) — 2026-10 추가
   { table: "briefing_issues", column: "extras", ddl: "ALTER TABLE briefing_issues ADD COLUMN extras TEXT NOT NULL DEFAULT '{}'" },

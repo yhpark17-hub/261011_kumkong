@@ -91,7 +91,7 @@ export const CARD_LEN = {
   point: 130,
   short: 16,
   noteTerm: 16,
-  noteText: 70,
+  noteText: 22,
 };
 
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");

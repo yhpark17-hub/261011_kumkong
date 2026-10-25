@@ -91,7 +91,7 @@ export interface NewsItem {
   short: string;
   /** 카드뉴스 표지 그림 (news-cards PICS 이름 또는 'who:인물' — 비면 제목·분야로 골라요) */
   pic: string;
-  /** 카드뉴스 각주 — 이 기사의 어려운 말 풀이 (용어 사전 lib/glossary.ts 에 없는 말·이 기사에 맞춘 풀이) */
+  /** 괄호 풀이 — 이 기사의 전문 용어 풀이 (용어 사전 lib/glossary.ts 에 없는 말·이 기사에 맞춘 풀이, 처음 나오는 자리 뒤에 녹여 넣어요) */
   notes: Note[];
   headline: boolean;
   status: number;

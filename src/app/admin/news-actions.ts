@@ -81,10 +81,10 @@ export async function saveNews(_prev: NewsFormState, fd: FormData): Promise<News
     try {
       raw = JSON.parse(notesRaw);
     } catch {
-      return { ok: false, error: "각주 JSON 을 읽을 수 없어요. [{ \"term\": …, \"text\": … }] 모양인지 확인해 주세요." };
+      return { ok: false, error: "괄호 풀이 JSON 을 읽을 수 없어요. [{ \"term\": …, \"text\": … }] 모양인지 확인해 주세요." };
     }
     const notes = parseNotes(raw);
-    if (!Array.isArray(raw) || notes.length !== raw.length) return { ok: false, error: "각주에 모양이 틀린 줄이 있어요. term·text 를 확인해 주세요." };
+    if (!Array.isArray(raw) || notes.length !== raw.length) return { ok: false, error: "괄호 풀이에 모양이 틀린 줄이 있어요. term·text 를 확인해 주세요." };
     notesJson = JSON.stringify(notes);
   }
 

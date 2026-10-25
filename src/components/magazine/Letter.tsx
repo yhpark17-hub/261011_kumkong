@@ -95,7 +95,7 @@ function Box({ children, className, id }: { children: React.ReactNode; className
 }
 
 /**
- * 아침판 — 오늘의 시간표(기사 목록 → 읽는 동안 한 줄로 접혀 위에 붙어요) + 기사마다 옆으로 넘겨 보는 그림 카드뉴스 (MAX_STORIES 건까지).
+ * 아침판 — 화면 위에 붙는 한 줄 시간표(펼치면 기사 목록) + 기사마다 옆으로 넘겨 보는 그림 카드뉴스 (MAX_STORIES 건까지).
  * 읽은 정도는 시간표의 체크로 보여 줘요 (예전 호의 퀴즈는 싣지 않아요)
  */
 function MorningBody({ content }: { content: LetterContent }) {

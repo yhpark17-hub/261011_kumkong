@@ -19,7 +19,7 @@ import { parseArt } from "@/lib/thumb-art";
  *   - 기사: { section: finance|economy|policy|global|public, headline?: true, title, short, pic?, takeaway, summary, point, sourceName, sourceUrl, cards, notes? }
  *     헤드라인(headline: true) 정확히 1건. 모든 기사에 원문 링크·한 줄 요약. point 는 카드 한 장에 들어가게 130자 안
  *     short = 시간표에 쓰는 한 줄 제목 (16자 안, 예: "경상흑자, 독·일 합계 첫 추월") · pic = 표지 그림 (PICS 이름 · 'who:인물' · 'org:기관')
- *     notes = 각주 [{ term, text }] — 생초보가 모를 말 풀이 (용어 사전 lib/glossary.ts 에 있는 말은 저절로 붙어요)
+ *     notes = 괄호 풀이 [{ term, text }] — 처음 공부하는 사람이 막힐 전문 용어만 (사전 lib/glossary.ts 에 있는 말은 저절로 붙어요, 기초 단어는 넣지 않아요)
  *   - cards: 표지와 '왜 중요할까'(point) 장 사이에 들어갈 2~4장 — 카드마다 그림이 크게, 글은 짧게 (lib/news-cards.ts)
  *     { type: "text", title, text, pic? } · { type: "stat", value, label, note?, pic? } · { type: "bars", title, bars: [{ label, value, hi? }], note? }
  *     { type: "change", title, rows: [{ label, from, to }], note? } · { type: "flow", title, steps: [2~4개] } · { type: "term", term, text, pic? }
@@ -134,7 +134,7 @@ export async function POST(req: Request) {
         const pic = c.type === "quote" ? (c.who ? `who:${c.who}` : "") : c.type === "text" || c.type === "stat" || c.type === "term" ? c.pic : "";
         if (pic && !picExists(pic)) errors.push(`${where} cards[${k}]: "${pic}" 는 없는 그림·인물·기관이에요 (ROUTINE.md 목록 — 없으면 비워 두세요)`);
       }
-      // 각주(notes) — 생초보가 모를 말 풀이. 말은 이 기사 글에 실제로 나와야 해요
+      // 괄호 풀이(notes) — 전문 용어만. 말은 이 기사 글에 실제로 나와야 해요
       const rawNotes = Array.isArray(it.notes) ? it.notes : [];
       if (row.notes.length !== rawNotes.length) errors.push(`${where}: notes 는 [{ term, text }] 모양이에요`);
       const cardText = row.cards.flatMap(cardTexts).join(" ");

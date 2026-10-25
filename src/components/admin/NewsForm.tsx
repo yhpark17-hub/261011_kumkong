@@ -28,7 +28,7 @@ export interface NewsFormInitial {
   /** 시간표 짧은 이름 · 표지 그림 */
   short: string;
   pic: string;
-  /** 각주 JSON [{ term, text }] */
+  /** 괄호 풀이 JSON [{ term, text }] */
   notes: string;
   imageUrl: string;
   imageCredit: string;
@@ -250,7 +250,7 @@ export function NewsForm({ initial }: { initial: NewsFormInitial }) {
             className="input mt-3 w-full resize-y font-mono text-[13px] leading-relaxed"
           />
           <p className="mt-3 type-micro leading-relaxed text-ink-mute">
-            각주 (선택 · JSON) — 생초보가 모를 말 풀이 {'[{ "term": "쇄신방안", "text": "잘못된 점을 고쳐 새롭게 바꾸려는 계획이에요." }]'}. 용어 사전에 있는 말(코픽스·은행채 등)은 저절로 붙어요.
+            괄호 풀이 (선택 · JSON) — 전문 용어가 처음 나오는 자리에 붙는 짧은 풀이 {'[{ "term": "역마진", "text": "빌린 이자가 번 이자보다 많은 것" }]'}. 용어 사전에 있는 말(코픽스·은행채 등)은 저절로 붙어요.
           </p>
           <textarea name="notes" defaultValue={initial.notes} rows={4} maxLength={3000} className="input mt-1.5 w-full resize-y font-mono text-[13px] leading-relaxed" />
         </details>

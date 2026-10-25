@@ -1,7 +1,7 @@
 "use client";
 
 import { Children, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { NEWS_SECTION_INFO, type NewsSection } from "@/lib/news-meta";
 import { cn } from "../ui";
 
@@ -135,14 +135,15 @@ export interface TimetableItem {
 }
 
 /**
- * 오늘의 시간표 — 처음에는 기사 목록(번호·분야·한 줄 제목)으로 보여 주고, 목록이 화면 위로 지나가면
- * 머리줄 아래에 붙는 한 줄 칩으로 접혀요. 칩은 지금 읽는 기사(진하게)·끝까지 넘겨 본 기사(체크)를 보여 주고, 누르면 그 기사로 가요.
+ * 오늘의 시간표 — 화면 위에 붙는 한 줄. 칩마다 번호·분야·한 줄 제목이 있어 이것만 봐도 오늘 무슨 기사가 있는지 알 수 있고,
+ * 지금 읽는 기사(진하게)·끝까지 넘겨 본 기사(체크)·읽은 정도(아래 가는 막대)를 보여 줘요.
+ * 누르면 그 기사로 가고, 오른쪽 '전체' 단추를 누르면 기사 목록이 펼쳐져요.
  */
 export function Timetable({ items }: { items: TimetableItem[] }) {
   const done = useSeen();
   const [active, setActive] = useState<number | null>(null);
-  const [folded, setFolded] = useState(false);
-  const listRef = useRef<HTMLElement>(null);
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLElement>(null);
   const chips = useRef<HTMLOListElement>(null);
   const ids = items.map((it) => it.id).join(",");
 
@@ -168,15 +169,6 @@ export function Timetable({ items }: { items: TimetableItem[] }) {
     return () => io.disconnect();
   }, [ids]);
 
-  // 목록이 머리줄 위로 지나가면 한 줄 칩으로 접기
-  useEffect(() => {
-    const el = listRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([e]) => setFolded(!e.isIntersecting && e.boundingClientRect.top < 80), { rootMargin: "-66px 0px 0px 0px" });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
   // 지금 칩이 줄 밖이면 옆으로 밀어 보여 주기
   useEffect(() => {
     const ol = chips.current;
@@ -185,78 +177,109 @@ export function Timetable({ items }: { items: TimetableItem[] }) {
     if (chip.offsetLeft < ol.scrollLeft || chip.offsetLeft + chip.offsetWidth > ol.scrollLeft + ol.clientWidth) ol.scrollTo({ left: chip.offsetLeft - 8, behavior: "smooth" });
   }, [active]);
 
+  // 펼친 목록은 바깥을 누르거나 Esc 로 닫기
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !box.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [open]);
+
   const count = items.filter((it) => done.has(it.id)).length;
   const no = (i: number) => String(i + 1).padStart(2, "0");
   return (
-    <>
-      {/* 접힌 한 줄 — 높이 0 칸에 붙여 두고, 목록이 지나간 뒤에만 보여요 */}
-      <div className="sticky top-[61px] z-20 h-0 md:top-[65px]">
-        <nav
-          aria-label="오늘의 시간표 (한 줄)"
-          inert={!folded}
-          className={cn(
-            "-mx-3 border-b border-brand-dark/10 bg-canvas-cream/95 px-3 py-2 backdrop-blur transition-opacity duration-200 sm:-mx-4 sm:px-4 md:-mx-7 md:px-7",
-            folded ? "opacity-100" : "pointer-events-none opacity-0",
-          )}
+    <nav
+      ref={box}
+      aria-label="오늘의 시간표"
+      className="sticky top-[61px] z-20 -mx-3 border-b border-brand-dark/10 bg-canvas-cream/95 px-3 pt-2 backdrop-blur sm:-mx-4 sm:px-4 md:top-[65px] md:-mx-7 md:px-7"
+    >
+      <div className="flex items-center gap-2.5">
+        <p className="shrink-0 leading-tight">
+          <span className="block text-[12px] font-extrabold text-ink">
+            오늘의
+            <br />
+            시간표
+          </span>
+          <span className="mt-0.5 block tabular text-[10.5px] font-semibold text-ink-mute">기사 {items.length}건</span>
+        </p>
+        <ol ref={chips} className="relative flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-0.5 no-scrollbar fade-x">
+          {items.map((it, i) => {
+            const now = active === it.id;
+            const read = done.has(it.id);
+            const info = NEWS_SECTION_INFO[it.section];
+            return (
+              <li key={it.id} className="shrink-0">
+                <a
+                  href={`#item-${it.id}`}
+                  aria-current={now ? "true" : undefined}
+                  className={cn(
+                    "flex h-12 max-w-[15.5em] items-center gap-2 rounded-2xl pr-3 pl-1.5 transition-colors",
+                    now
+                      ? "bg-brand-dark text-on-primary shadow-[0_4px_12px_-6px_rgba(28,30,84,0.6)]"
+                      : read
+                        ? "bg-[#e3f5e9] text-[#24683f]"
+                        : "bg-canvas text-ink ring-1 ring-hairline hover:ring-hairline-input",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full tabular text-[11px] font-bold",
+                      now ? "bg-on-primary/20" : read ? "bg-[#8fd6a8] text-brand-dark" : it.headline ? "bg-brand-dark text-on-primary" : "bg-canvas-soft text-ink-secondary",
+                    )}
+                  >
+                    {read && !now ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : no(i)}
+                  </span>
+                  <span className="min-w-0 text-left leading-tight">
+                    <span className={cn("block text-[10.5px] font-semibold", now ? "text-on-primary/70" : "text-ink-mute")}>
+                      {info.label}
+                      {it.headline && " · 헤드라인"}
+                    </span>
+                    <span className="block truncate text-[13px] font-bold">{it.label}</span>
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-label={open ? "기사 목록 닫기" : "기사 목록 펼치기"}
+          className="flex shrink-0 flex-col items-center gap-0.5 rounded-xl px-1.5 py-1 text-ink-secondary hover:bg-canvas"
         >
-          <div className="flex items-center gap-2.5">
-            <p className="shrink-0 text-[12px] leading-tight font-bold text-ink">
-              오늘의
-              <br />
-              시간표
-            </p>
-            <ol ref={chips} className="relative flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-0.5 no-scrollbar">
-              {items.map((it, i) => {
-                const now = active === it.id;
-                const read = done.has(it.id);
-                return (
-                  <li key={it.id} className="shrink-0">
-                    <a
-                      href={`#item-${it.id}`}
-                      aria-current={now ? "true" : undefined}
-                      className={cn(
-                        "inline-flex h-8 max-w-[13em] items-center gap-1.5 rounded-full pr-3 pl-1 text-[13px] font-semibold whitespace-nowrap transition-colors",
-                        now ? "bg-brand-dark text-on-primary" : read ? "bg-[#d9f2e2] text-[#24683f]" : "bg-canvas text-ink ring-1 ring-hairline hover:ring-hairline-input",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full tabular text-[11px] font-bold",
-                          now ? "bg-on-primary/20" : read ? "bg-[#8fd6a8] text-brand-dark" : "bg-canvas-soft text-ink-secondary",
-                        )}
-                      >
-                        {read && !now ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : no(i)}
-                      </span>
-                      <span className="truncate">{it.label}</span>
-                    </a>
-                  </li>
-                );
-              })}
-            </ol>
-            <span className="shrink-0 tabular text-[12px] font-semibold text-ink-mute" title="끝까지 넘겨 본 기사">
-              {count}/{items.length}
-            </span>
-          </div>
-        </nav>
+          <ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} strokeWidth={2.4} />
+          <span className="text-[10px] font-semibold">전체</span>
+        </button>
       </div>
 
-      {/* 펼친 목록 — 오늘 무슨 기사가 있는지 한눈에 */}
-      <section ref={listRef} aria-labelledby="timetable-title" className="rounded-2xl bg-canvas px-4 pt-3.5 pb-1.5 shadow-[0_1px_0_0_var(--color-hairline)] ring-1 ring-brand-dark/5">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-          <h3 id="timetable-title" className="type-heading-sm text-ink">
-            오늘의 시간표
-          </h3>
-          <p className="tabular type-caption text-ink-mute" aria-live="polite">
-            {count > 0 ? `다 본 기사 ${count} / ${items.length}` : `기사 ${items.length}건 · 누르면 그 기사로 가요`}
-          </p>
-        </div>
-        <ol className="mt-1.5 divide-y divide-hairline">
+      {/* 읽은 정도 — 끝까지 넘겨 본 기사 수 */}
+      <div className="mt-2 flex items-center gap-2 pb-2" title="끝까지 넘겨 본 기사">
+        <span className="h-1 flex-1 overflow-hidden rounded-full bg-brand-dark/10">
+          <span
+            className="block h-full rounded-full bg-linear-to-r from-[#ffb36b] to-primary transition-[width] duration-500"
+            style={{ width: `${(count / Math.max(1, items.length)) * 100}%` }}
+          />
+        </span>
+        <span className="shrink-0 tabular text-[10.5px] font-semibold text-ink-mute" aria-live="polite">
+          {count}/{items.length} 읽음
+        </span>
+      </div>
+
+      {open && (
+        <ol className="absolute inset-x-3 top-full mt-1.5 divide-y divide-hairline overflow-hidden rounded-2xl bg-canvas px-3 shadow-[0_18px_40px_-16px_rgba(28,30,84,0.45)] ring-1 ring-brand-dark/10 sm:inset-x-4 md:inset-x-7">
           {items.map((it, i) => {
             const info = NEWS_SECTION_INFO[it.section];
             const read = done.has(it.id);
             return (
               <li key={it.id}>
-                <a href={`#item-${it.id}`} className="group flex items-center gap-2.5 py-2.5">
+                <a href={`#item-${it.id}`} onClick={() => setOpen(false)} className="group flex items-center gap-2.5 py-2.5">
                   <span
                     className={cn(
                       "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full tabular text-[12px] font-bold",
@@ -266,20 +289,18 @@ export function Timetable({ items }: { items: TimetableItem[] }) {
                     {no(i)}
                   </span>
                   <span className={cn("tag shrink-0", info.tone)}>{info.label}</span>
-                  <span className="min-w-0 flex-1 text-[15px] leading-snug font-semibold text-ink [word-break:keep-all] group-hover:underline">{it.label}</span>
-                  {read ? (
-                    <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#8fd6a8] text-brand-dark" title="다 봤어요">
+                  <span className="min-w-0 flex-1 text-[14px] leading-snug font-semibold text-ink [word-break:keep-all] group-hover:underline">{it.label}</span>
+                  {read && (
+                    <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#8fd6a8] text-brand-dark">
                       <Check className="h-3 w-3" strokeWidth={3} />
                     </span>
-                  ) : (
-                    <ChevronRight className="h-4 w-4 shrink-0 text-ink-mute" strokeWidth={2.2} />
                   )}
                 </a>
               </li>
             );
           })}
         </ol>
-      </section>
-    </>
+      )}
+    </nav>
   );
 }
