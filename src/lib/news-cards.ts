@@ -48,7 +48,7 @@ export const isPicName = (v: unknown): v is string => isPicKey(v) || (typeof v =
  *   bars   비교해 보기 — 같은 단위 숫자 2~4개를 세로 막대로 (돈이면 동전 탑, 높이는 적힌 숫자에서 계산)
  *   change 무엇이 바뀌었나 — 전·후 막대 + 오름·내림 (숫자에서 계산)
  *   flow   흐름으로 보기 — 원인 → 결과 2~4단계
- *   term   용어 풀이 — 공부하는 콩이 + 낱말 카드
+ *   term   용어 풀이 — 그림(기본은 공부하는 콩이) + 낱말 카드
  *   quote  한마디 — 인물 초상 + 말풍선 (기사에 실린 말 그대로)
  *   versus 둘을 비교 — 왼쪽 vs 오른쪽 (헷갈리는 짝꿍)
  */
@@ -58,7 +58,7 @@ export type NewsCard =
   | { type: "bars"; title: string; bars: { label: string; value: string; hi: boolean }[]; note: string }
   | { type: "change"; title: string; rows: { label: string; from: string; to: string }[]; note: string }
   | { type: "flow"; title: string; steps: string[] }
-  | { type: "term"; term: string; text: string }
+  | { type: "term"; term: string; text: string; pic: string }
   | { type: "quote"; who: string; name: string; text: string; note: string }
   | { type: "versus"; title: string; left: { name: string; text: string }; right: { name: string; text: string } };
 
@@ -132,7 +132,7 @@ export function parseCards(raw: unknown): NewsCard[] {
       const steps = (Array.isArray(c.steps) ? c.steps : []).map((s) => str(s, 60)).filter(Boolean).slice(0, 4);
       if (steps.length >= 2) out.push({ type: "flow", title: str(c.title, 60), steps });
     } else if (c.type === "term") {
-      const card = { type: "term" as const, term: str(c.term, 40), text: str(c.text, 240) };
+      const card = { type: "term" as const, term: str(c.term, 40), text: str(c.text, 240), pic: pic(c.pic) };
       if (card.term && card.text) out.push(card);
     } else if (c.type === "quote") {
       const who = typeof c.who === "string" && /^[a-z][a-z-]{1,40}$/.test(c.who) ? c.who : "";

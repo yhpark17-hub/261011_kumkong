@@ -99,6 +99,8 @@ function BarsChart({ c, theme }: { c: Extract<NewsCard, { type: "bars" }>; theme
   const max = Math.max(...values, 0) || 1;
   const money = isMoneyUnit(amounts[0]?.unit ?? "");
   const anyHi = c.bars.some((b) => b.hi);
+  // 막대가 많으면 숫자 글씨를 줄여 옆 막대 숫자와 겹치지 않게
+  const valueSize = c.bars.length >= 4 ? "text-[11px]" : c.bars.length === 3 ? "text-[12px]" : "text-[14px]";
   return (
     <div className="absolute inset-x-3 top-11 bottom-2 flex items-stretch justify-around gap-1.5">
       {c.bars.map((b, i) => {
@@ -122,7 +124,7 @@ function BarsChart({ c, theme }: { c: Extract<NewsCard, { type: "bars" }>; theme
                 <span className="absolute bottom-0 left-1/2 w-[58%] max-w-[46px] -translate-x-1/2 rounded-t-[10px]" style={{ height: `${top}%`, background: strong ? theme.accent : "#c3ccd9" }} />
               )}
               <span
-                className="absolute left-1/2 -translate-x-1/2 tabular text-[13px] leading-none font-bold whitespace-nowrap"
+                className={cn("absolute left-1/2 -translate-x-1/2 tabular leading-none font-bold whitespace-nowrap", valueSize)}
                 style={{ bottom: `calc(${top}% + 6px)`, color: strong ? theme.deep : "#64748d" }}
               >
                 {b.value}
@@ -138,6 +140,8 @@ function BarsChart({ c, theme }: { c: Extract<NewsCard, { type: "bars" }>; theme
 
 /** 전 → 후 — 줄마다 두 막대(전 회색 · 후 분야색)와 오름(▲ 빨강)·내림(▼ 파랑). 높이는 그 줄의 큰 값 기준 */
 function ChangeChart({ c, theme }: { c: Extract<NewsCard, { type: "change" }>; theme: Theme }) {
+  // 줄이 하나면 막대를 넓고 글씨를 크게, 여럿이면 전·후 숫자가 겹치지 않게 작게
+  const one = c.rows.length === 1;
   return (
     <div className="absolute inset-x-3 top-11 bottom-2 flex items-stretch justify-around gap-2">
       {c.rows.map((r, i) => {
@@ -148,10 +152,13 @@ function ChangeChart({ c, theme }: { c: Extract<NewsCard, { type: "change" }>; t
         const bar = (v: number, label: string, after: boolean) => {
           const h = Math.max(6, (v / max) * 100);
           return (
-            <div className="relative h-full w-[34%] max-w-[44px]">
+            <div className={cn("relative h-full", one ? "w-[30%] max-w-[72px]" : "w-[36%] max-w-[44px]")}>
               <span className="absolute inset-x-0 bottom-0 rounded-t-[9px]" style={{ height: `${h}%`, background: after ? theme.accent : "#c3ccd9" }} />
               <span
-                className={cn("absolute left-1/2 -translate-x-1/2 tabular leading-none font-bold whitespace-nowrap", after ? "text-[14px]" : "text-[12px]")}
+                className={cn(
+                  "absolute left-1/2 -translate-x-1/2 tabular leading-none font-bold whitespace-nowrap",
+                  one ? (after ? "text-[17px]" : "text-[14px]") : after ? "text-[12px]" : "text-[10.5px]",
+                )}
                 style={{ bottom: `calc(${h}% + 5px)`, color: after ? theme.deep : "#64748d" }}
               >
                 {label}
@@ -164,7 +171,7 @@ function ChangeChart({ c, theme }: { c: Extract<NewsCard, { type: "change" }>; t
             {dir !== 0 && (
               <span className={cn("mb-1 rounded-full px-2 py-0.5 text-[11px] font-bold text-white", dir > 0 ? "bg-ruby" : "bg-[#2f6fd6]")}>{dir > 0 ? "▲ 오름" : "▼ 내림"}</span>
             )}
-            <div className="relative flex w-full flex-1 items-end justify-center gap-[10%] pt-5">
+            <div className={cn("relative flex w-full flex-1 items-end justify-center pt-5", one ? "gap-[14%]" : "gap-[12%]")}>
               {bar(a, r.from, false)}
               {bar(b, r.to, true)}
             </div>
@@ -307,7 +314,8 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
       return (
         <div className={SHELL}>
           <Panel theme={theme} kicker="용어 풀이">
-            <Pic name="kong-study" theme={theme} id={id} className="absolute inset-x-0 bottom-0 h-[92%] w-full" />
+            <Pic name={c.pic || "kong-study"} theme={theme} id={id} className="absolute inset-x-0 bottom-0 h-[92%] w-full" />
+            <PicCredit name={c.pic} />
           </Panel>
           <Caption>
             <p className="w-fit rounded-xl px-3 py-1 text-[21px] leading-snug font-extrabold [word-break:keep-all]" style={{ background: theme.panel, color: theme.deep }}>
@@ -347,16 +355,21 @@ function Middle({ c, n, theme, id }: { c: NewsCard; n: NewsItem; theme: Theme; i
             </span>
             {c.title && <h4 className={cn(HEAD, "mt-2.5")}>{c.title}</h4>}
           </div>
-          <div className="relative grid flex-1 grid-cols-2 gap-2 px-4 pt-3 pb-4">
-            {[c.left, c.right].map((side, i) => (
-              <div key={i} className="flex flex-col rounded-2xl px-3 py-4" style={{ background: i === 0 ? "#eef2f7" : theme.panel }}>
-                <p className="text-[19px] leading-tight font-extrabold [word-break:keep-all]" style={{ color: i === 0 ? "#273951" : theme.deep }}>
-                  {side.name}
-                </p>
-                <p className="mt-2.5 text-[14px] leading-relaxed text-ink-secondary [word-break:keep-all]">{side.text}</p>
-              </div>
-            ))}
-            <span className="absolute top-1/2 left-1/2 inline-flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-brand-dark text-[12px] font-extrabold text-white ring-4 ring-white">VS</span>
+          <div className="grid flex-1 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-1.5 px-4 pt-3 pb-4">
+            {[c.left, null, c.right].map((side, i) =>
+              side ? (
+                <div key={i} className="flex flex-col rounded-2xl px-3 py-4" style={{ background: i === 0 ? "#eef2f7" : theme.panel }}>
+                  <p className="text-[19px] leading-tight font-extrabold [word-break:keep-all]" style={{ color: i === 0 ? "#273951" : theme.deep }}>
+                    {side.name}
+                  </p>
+                  <p className="mt-2.5 text-[14px] leading-relaxed text-ink-secondary [word-break:keep-all]">{side.text}</p>
+                </div>
+              ) : (
+                <span key={i} className="inline-flex h-8 w-8 items-center justify-center self-center rounded-full bg-brand-dark text-[11px] font-extrabold text-white">
+                  VS
+                </span>
+              ),
+            )}
           </div>
         </div>
       );

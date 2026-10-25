@@ -20,7 +20,7 @@ import { parseArt } from "@/lib/thumb-art";
  *     short = 시간표에 쓰는 짧은 이름 (8자 안, 예: "경상흑자") · pic = 표지 그림 (news-cards PICS 이름 또는 'who:인물')
  *   - cards: 표지와 '왜 중요할까'(point) 장 사이에 들어갈 2~4장 — 카드마다 그림이 크게, 글은 짧게 (lib/news-cards.ts)
  *     { type: "text", title, text, pic? } · { type: "stat", value, label, note?, pic? } · { type: "bars", title, bars: [{ label, value, hi? }], note? }
- *     { type: "change", title, rows: [{ label, from, to }], note? } · { type: "flow", title, steps: [2~4개] } · { type: "term", term, text }
+ *     { type: "change", title, rows: [{ label, from, to }], note? } · { type: "flow", title, steps: [2~4개] } · { type: "term", term, text, pic? }
  *     { type: "quote", who?, name, text, note? } · { type: "versus", title, left: { name, text }, right: { name, text } }
  *     숫자·도표 카드(stat·bars·change·flow·quote·versus) 1장 이상. 카드 속 숫자는 전부 그 기사 글(제목·한 줄 요약·요약·포인트)에 있어야 하고,
  *     숫자+단위 칸(value·from·to)과 인물의 말(quote.text)은 글자 그대로 있어야 해요 — 아니면 거절
@@ -129,7 +129,7 @@ export async function POST(req: Request) {
       if (row.pic && !(isPicName(row.pic) && (!row.pic.startsWith("who:") || photoPortrait(row.pic.slice(4)))))
         errors.push(`${where}: pic "${row.pic}" 는 없는 그림이에요 (ROUTINE.md 그림 목록·인물 목록)`);
       for (const [k, c] of row.cards.entries()) {
-        const who = c.type === "quote" ? c.who : c.type === "text" || c.type === "stat" ? (c.pic.startsWith("who:") ? c.pic.slice(4) : "") : "";
+        const who = c.type === "quote" ? c.who : c.type === "text" || c.type === "stat" || c.type === "term" ? (c.pic.startsWith("who:") ? c.pic.slice(4) : "") : "";
         if (who && !photoPortrait(who)) errors.push(`${where} cards[${k}]: 등록되지 않은 인물 "${who}" 예요 (ROUTINE.md 인물 목록 — 없으면 비워 두세요)`);
       }
       // 카드뉴스 — 숫자는 이 기사 글에 실린 그대로만

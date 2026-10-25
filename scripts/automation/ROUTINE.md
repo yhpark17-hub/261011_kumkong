@@ -229,7 +229,7 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 
 - **그림이 주인공, 글은 짧게**: 한 장에 한 가지만. 어려운 말은 풀어서. 기사에 나온 어려운 용어 하나는 `term` 카드로 (공식 자료로 확인한 뜻만).
 - **숫자·도표 카드 1장 이상 필수**: `stat`·`bars`·`change`·`flow`·`quote`·`versus` 중에서. 숫자가 있으면 `stat`/`bars`/`change`, 숫자가 없으면 원인 → 결과를 `flow`, 헷갈리는 두 개념은 `versus`, 인물 발언이 핵심이면 `quote`.
-- `text`·`stat` 카드는 `pic` 으로 내용에 맞는 그림을 고릅니다 (비우면 표지 그림). 같은 기사 안에서 그림이 겹치지 않게.
+- `text`·`stat`·`term` 카드는 `pic` 으로 내용에 맞는 그림을 고릅니다 (비우면 표지 그림 · 용어는 공부하는 콩이). 같은 기사 안에서 그림이 겹치지 않게.
 - **숫자는 그 기사의 title·takeaway·summary·point 에 있는 그대로만.** 숫자+단위 칸(stat value, 막대 value, change from·to)은 **글자 그대로** 있어야 하고, `quote.text` 도 기사에 실린 말 그대로여야 해요 — 아니면 사이트가 브리핑 전체를 거절해요. 숫자를 새로 계산(합·차·비율)해 넣지 않습니다.
 - 글 길이(넘으면 거절): 소제목 22자 · 설명 70자 · stat value 14자 · label 24자 · note 40자 · flow 한 단계 24자 · 막대 이름 10자(막대 2~4개) · change 이름 12자 · 용어 14자 · 용어 풀이 80자 · quote 50자 · 이름 20자 · versus 이름 10자 / 설명 36자 · point 130자
 
@@ -240,11 +240,11 @@ node scripts/automation/api.mjs proposals /tmp/kk/payload.json
 | `bars` | `title`, `bars: [{ label, value, hi? }]` 2~4개, `note`? | 세로 막대 (돈 단위면 동전 탑) | 같은 단위 숫자 비교 — 높이는 value 에서 사이트가 계산. 주인공 하나만 `"hi": true` |
 | `change` | `title`, `rows: [{ label, from, to }]` 1~3줄, `note`? | 전·후 막대 + ▲오름/▼내림 | 금리·요율·금액이 바뀐 것 (방향은 사이트가 계산) |
 | `flow` | `title`, `steps: [2~4개]` | 번호 붙은 단계 그림 | 원인 → 결과, 절차 순서 |
-| `term` | `term`, `text` | 공부하는 콩이 + 낱말 | 기사 속 어려운 말 하나 |
+| `term` | `term`, `text`, `pic`? | 그림(기본: 공부하는 콩이) + 낱말 | 기사 속 어려운 말 하나 — 뜻에 맞는 그림이 있으면 `pic` 으로 |
 | `quote` | `who`?(인물), `name`(예: `신현송 한은 총재`), `text`(기사에 실린 말 그대로), `note`? | 인물 초상 + 말풍선 | 인물 발언이 핵심일 때. 등록 인물이 아니면 `who` 를 비워요 (연단 그림) |
 | `versus` | `title`, `left: { name, text }`, `right: { name, text }` | 왼쪽 VS 오른쪽 | 헷갈리는 짝꿍 (예: 변동금리 vs 고정금리) |
 
-**카드 그림 (`pic`)** — 표지 `pic` 과 `text`·`stat` 카드에 써요:
+**카드 그림 (`pic`)** — 표지 `pic` 과 `text`·`stat`·`term` 카드에 써요:
 `kong-banker`(금리·통화정책) · `kong-trader`(증시) · `kong-builder`(부동산·건설·일자리) · `kong-shopper`(물가·소비) · `kong-money`(환율·외환) · `kong-oil`(유가·원자재) · `kong-chip`(반도체·AI) · `kong-security`(감독·제재·조사) · `kong-president`(정부·정책 발표) · `kong-reporter`(뉴스 일반) · `kong-study`(용어·공부) · `kong-worried`(위험·불안) · `kong-happy`(좋은 소식) · `kong-note`(정리) ·
 `bank`(은행·중앙은행) · `coins`(돈·흑자·예금) · `dollar`(외화·수출) · `house`(주택·주담대) · `chip`(반도체) · `oil`(유가) · `stocks-up`·`stocks-down`(주가) · `doc`(보고서·법안·통계) · `gavel`(제재·판결) · `lock`(보안·규제) · `up`·`down`(늘어남·줄어듦 — 숫자 방향과 맞을 때만) · `podium`(발표·기자회견) ·
 `who:인물` — 아래 '썸네일 그리기' 3번의 등록 인물(`who`) 목록과 같아요 (예: `who:shin-hyunsong`). 인물 그림은 그 사람이 기사의 주인공일 때만.
