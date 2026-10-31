@@ -182,6 +182,7 @@ export const articleHref = (id: number) => `/magazine/${id}`;
 export const ARTICLE_SCENES = [
   { key: "company", label: "기관 본사 건물 + 로고" },
   { key: "fund", label: "돈의 흐름 (펀드·기금 통)" },
+  { key: "journey", label: "돈의 여행 (채권 증서 → 다섯 정거장)" },
   { key: "exam", label: "필기 시험지 · 시계" },
   { key: "interview", label: "면접장" },
   { key: "knowledge", label: "금융 지식 (책 · 차트)" },

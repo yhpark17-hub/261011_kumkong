@@ -645,12 +645,137 @@ function fund(): string {
   return `${d}${body}`;
 }
 
+/* ------------------------------------------------------------------ */
+/* 돈의 여행 — 채권 증서에서 출발한 금빛 길이 다섯 정거장을 지나요 (짙은 청록)   */
+/* ------------------------------------------------------------------ */
+
+type Pt = [number, number];
+const ROAD: [Pt, Pt, Pt, Pt][] = [
+  [[985, 236], [985, 296], [760, 276], [760, 336]],
+  [[760, 336], [760, 398], [1092, 374], [1092, 442]],
+  [[1092, 442], [1092, 510], [822, 488], [822, 550]],
+  [[822, 550], [822, 594], [930, 604], [1000, 652]],
+];
+
+const bez = ([a, b, c, d]: [Pt, Pt, Pt, Pt], t: number): Pt => {
+  const u = 1 - t;
+  return [u * u * u * a[0] + 3 * u * u * t * b[0] + 3 * u * t * t * c[0] + t * t * t * d[0], u * u * u * a[1] + 3 * u * u * t * b[1] + 3 * u * t * t * c[1] + t * t * t * d[1]];
+};
+
+/** 다섯 정거장 자리 — article-og 가 여기에 번호를 얹어요 */
+export const JOURNEY_STOPS: Pt[] = [bez(ROAD[0], 0.5), bez(ROAD[1], 0), bez(ROAD[1], 1), bez(ROAD[2], 0.5), bez(ROAD[2], 1)].map(([x, y]) => [Math.round(x), Math.round(y)]);
+
+/** 채권 증서 위 발행 기관 간판 · 증서 이름 자리 */
+export const BOND_SIGN = { x: 884, y: 82, w: 202, h: 52 } as const;
+export const BOND_TITLE = { x: 862, y: 146, w: 246 } as const;
+
+const STOP_COLORS: [string, string][] = [
+  ["#ffd45c", "#e09a00"],
+  ["#7cc4ff", "#2f7be0"],
+  ["#a99bff", "#5b44f0"],
+  ["#ff9d86", "#e5533c"],
+  ["#6ee7b7", "#0f9f6e"],
+];
+
+function stopIcon(i: number, cx: number, cy: number, ink: string): string {
+  switch (i) {
+    case 0: // 돈을 모은다 — 동전 더미
+      return [10, 2, -6]
+        .map((dy, k) => `<ellipse cx="${cx}" cy="${cy + dy + 3}" rx="14" ry="5.5" fill="#a86f00" opacity=".55"/><ellipse cx="${cx}" cy="${cy + dy}" rx="14" ry="5.5" fill="${k === 2 ? "#ffe9a3" : "#ffc93d"}"/>`)
+        .join("");
+    case 1: // 따진다 — 돋보기
+      return `<circle cx="${cx - 4}" cy="${cy - 4}" r="10" fill="#e8f3ff" stroke="${ink}" stroke-width="5"/><path d="M${cx + 4} ${cy + 4}L${cx + 13} ${cy + 13}" stroke="${ink}" stroke-width="6" stroke-linecap="round"/>`;
+    case 2: // 내보낸다 — 공장
+      return `<path d="M${cx - 16} ${cy + 13}V${cy - 1}l8 -6v6l8 -6v6l8 -6V${cy - 14}h6V${cy + 13}z" fill="${ink}"/><rect x="${cx - 11}" y="${cy + 3}" width="5" height="5" rx="1" fill="#ffffff"/><rect x="${cx - 2}" y="${cy + 3}" width="5" height="5" rx="1" fill="#ffffff"/><rect x="${cx + 7}" y="${cy + 3}" width="5" height="5" rx="1" fill="#ffffff"/>`;
+    case 3: // 다룬다 — 스패너
+      return `<path d="M${cx - 11} ${cy + 11}L${cx + 3} ${cy - 3}" stroke="${ink}" stroke-width="7" stroke-linecap="round"/><circle cx="${cx + 6}" cy="${cy - 6}" r="9" fill="${ink}"/><path d="M${cx + 6} ${cy - 6}l7 -7" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>`;
+    default: // 설계하고 감시한다 — 방패 + 체크
+      return `<path d="M${cx} ${cy - 15}l13 5v10c0 9 -6 14 -13 17c-7 -3 -13 -8 -13 -17v-10z" fill="${ink}"/><path d="M${cx - 6} ${cy + 1}l4 4 8 -9" stroke="#ffffff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }
+}
+
+function journey(): string {
+  const d = new Defs();
+  const sky = d.lin("sky", [[0, "#04222e"], [0.55, "#073a4a"], [1, "#0d2a63"]], 0, 0, 1, 1);
+  const soft = d.blur("soft", 60);
+  const sh = d.blur("sh", 10);
+  const road = d.lin("rd", [[0, "#ffe08a"], [1, "#f0a91a"]], 0, 0, 0, 1);
+  const paper = d.lin("pa", [[0, "#fffaf0"], [1, "#f6ead2"]]);
+  const band = d.lin("bd", [[0, "#1d2470"], [1, "#2a3590"]], 0, 0, 1, 0);
+  const seal = d.rad("se", [[0, "#ffe9a3"], [0.7, "#ffc93d"], [1, "#d58f00"]], 0.35, 0.3, 0.8);
+
+  let grid = "";
+  for (let x = 30; x <= 1200; x += 40) for (let y = 30; y <= 630; y += 40) grid += `<circle cx="${x}" cy="${y}" r="1.4" fill="#ffffff" opacity=".07"/>`;
+
+  const path = `M${ROAD[0][0][0]} ${ROAD[0][0][1]}` + ROAD.map(([, b, c, e]) => `C${b[0]} ${b[1]} ${c[0]} ${c[1]} ${e[0]} ${e[1]}`).join("");
+
+  // 증서 (발행 기관 간판·이름은 article-og 가 얹어요)
+  const X0 = 852;
+  const X1 = 1118;
+  const Y0 = 60;
+  const Y1 = 232;
+  const cert =
+    `<rect x="${X0 + 6}" y="${Y0 + 14}" width="${X1 - X0}" height="${Y1 - Y0}" rx="18" fill="#010d14" opacity=".45" filter="${sh}"/>` +
+    `<rect x="${X0}" y="${Y0}" width="${X1 - X0}" height="${Y1 - Y0}" rx="18" fill="${paper}"/>` +
+    `<path d="M${X0} ${Y0 + 18}a18 18 0 0 1 18 -18h${X1 - X0 - 36}a18 18 0 0 1 18 18v${76 - 18}h${-(X1 - X0)}z" fill="${band}"/>` +
+    `<rect x="${X0 + 9}" y="${Y0 + 85}" width="${X1 - X0 - 18}" height="${Y1 - Y0 - 94}" rx="10" fill="none" stroke="#d9a63a" stroke-width="2" stroke-dasharray="2 5"/>` +
+    `<rect x="${X0 + 28}" y="${Y0 + 136}" width="120" height="8" rx="4" fill="#e3d3b2"/>` +
+    `<rect x="${X0 + 28}" y="${Y0 + 152}" width="84" height="8" rx="4" fill="#e3d3b2"/>` +
+    // 금빛 도장 + 리본
+    `<path d="M${X1 - 58} ${Y1 - 30}l-10 34 13 -7 8 12 7 -36zM${X1 - 40} ${Y1 - 30}l10 34 -13 -7 -8 12 -7 -36z" fill="#e5533c"/>` +
+    `<circle cx="${X1 - 49}" cy="${Y1 - 38}" r="22" fill="${seal}"/>` +
+    `<circle cx="${X1 - 49}" cy="${Y1 - 38}" r="15" fill="none" stroke="#ffffff" stroke-opacity=".7" stroke-width="2" stroke-dasharray="3 3"/>`;
+
+  // 정거장
+  const stops = JOURNEY_STOPS.map(([cx, cy], i) => {
+    const [c0, c1] = STOP_COLORS[i];
+    const ring = d.lin(`st${i}`, [[0, c0], [1, c1]]);
+    return (
+      `<circle cx="${cx + 3}" cy="${cy + 8}" r="33" fill="#010d14" opacity=".5" filter="${sh}"/>` +
+      `<circle cx="${cx}" cy="${cy}" r="33" fill="${ring}"/>` +
+      `<circle cx="${cx}" cy="${cy}" r="26" fill="#ffffff"/>` +
+      stopIcon(i, cx, cy, c1)
+    );
+  }).join("");
+
+  // 길 위를 가는 동전 (2 → 3 정거장 사이)
+  const [tx, ty] = bez(ROAD[1], 0.48);
+  const trail = [0.26, 0.34, 0.41]
+    .map((t, k) => {
+      const [x, y] = bez(ROAD[1], t);
+      return `<circle cx="${x}" cy="${y}" r="${5 + k * 2}" fill="#fff3c4" opacity="${0.25 + k * 0.2}"/>`;
+    })
+    .join("");
+
+  const body =
+    bg(sky) +
+    grid +
+    blob(985, 150, 170, "#ffc93d", soft, 0.2) +
+    blob(1150, 520, 170, "#1fd1a5", soft, 0.18) +
+    blob(760, 600, 200, "#533afd", soft, 0.3) +
+    // 길
+    `<path d="${path}" stroke="#010d14" stroke-opacity=".45" stroke-width="40" fill="none" stroke-linecap="round" filter="${sh}" transform="translate(0 8)"/>` +
+    `<path d="${path}" stroke="${road}" stroke-width="30" fill="none" stroke-linecap="round"/>` +
+    `<path d="${path}" stroke="#ffffff" stroke-opacity=".75" stroke-width="3" fill="none" stroke-dasharray="12 14" stroke-linecap="round"/>` +
+    cert +
+    trail +
+    coin(d, tx, ty, 30, "won", "tc") +
+    stops +
+    // 반짝임
+    `<path d="M1150 300l6 14 14 6-14 6-6 14-6-14-14-6 14-6z" fill="#ffd84d"/>` +
+    `<path d="M730 110l4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="#ffffff" opacity=".7"/>` +
+    `<path d="M1160 110l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#ffffff" opacity=".6"/>`;
+  return `${d}${body}`;
+}
+
 export function articleSceneSvg(key: ArticleSceneKey, prop: ScenePropKey = "doc", tone: ArticleTone = "day"): string {
   const inner =
     key === "company"
       ? company(prop, tone)
       : key === "fund"
         ? fund()
+        : key === "journey"
+          ? journey()
         : key === "exam"
           ? exam()
           : key === "interview"

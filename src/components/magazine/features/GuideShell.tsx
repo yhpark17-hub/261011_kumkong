@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, Check, ChevronLeft, ChevronRight, MousePointerClick, RotateCcw } from "lucide-react";
 import { cn } from "../../ui";
 import { KongMascot } from "../KongMascot";
@@ -11,6 +11,10 @@ import { KongMascot } from "../KongMascot";
  */
 
 export const anim = "transition-all duration-300 ease-out motion-reduce:transition-none";
+
+/** 다른 장으로 가기 — 표지·본문 속 '몇 장 보기' 버튼이 써요 (가이드 밖에선 아무 일도 안 해요) */
+const GoContext = createContext<(i: number) => void>(() => {});
+export const useGuideGo = () => useContext(GoContext);
 
 /** 눌러 보라는 작은 안내 */
 export function TryHint({ children }: { children: ReactNode }) {
@@ -207,84 +211,86 @@ export function GuideShell({
   const nextLabel = ch < chapters.length - 1 ? `다음 장 · ${chapters[ch + 1].short}` : "마지막 장";
 
   return (
-    <div id="article-body" className="theme-light bg-canvas text-ink">
-      {/* 표지 */}
-      <section className={cn("relative overflow-hidden bg-linear-to-b to-canvas", coverClass)}>
-        <span aria-hidden className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#ffd9ae]/60 blur-3xl" />
-        <span aria-hidden className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-[#bfe9cf]/60 blur-3xl" />
-        <div className="relative mx-auto flex max-w-[960px] flex-col items-center gap-6 px-5 pt-10 pb-8 text-center md:flex-row md:gap-10 md:px-8 md:pt-14 md:text-left">
-          {mascot}
-          <div>
-            <p className="type-micro-cap text-primary-text">{eyebrow}</p>
-            <h1 className="mt-2 type-heading-lg font-bold text-ink [word-break:keep-all] md:type-display-md">{heading}</h1>
-            <p className="mt-2 type-body-lg text-ink-secondary [word-break:keep-all]">{sub}</p>
+    <GoContext.Provider value={go}>
+      <div id="article-body" className="theme-light bg-canvas text-ink">
+        {/* 표지 */}
+        <section className={cn("relative overflow-hidden bg-linear-to-b to-canvas", coverClass)}>
+          <span aria-hidden className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#ffd9ae]/60 blur-3xl" />
+          <span aria-hidden className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-[#bfe9cf]/60 blur-3xl" />
+          <div className="relative mx-auto flex max-w-[960px] flex-col items-center gap-6 px-5 pt-10 pb-8 text-center md:flex-row md:gap-10 md:px-8 md:pt-14 md:text-left">
+            {mascot}
+            <div>
+              <p className="type-micro-cap text-primary-text">{eyebrow}</p>
+              <h1 className="mt-2 type-heading-lg font-bold text-ink [word-break:keep-all] md:type-display-md">{heading}</h1>
+              <p className="mt-2 type-body-lg text-ink-secondary [word-break:keep-all]">{sub}</p>
+            </div>
+          </div>
+          {cover && <div className="relative mx-auto max-w-[960px] px-5 pb-8 md:px-8">{cover}</div>}
+          {srTitle && <h2 className="sr-only">{srTitle}</h2>}
+        </section>
+
+        {/* 장 고르기 */}
+        <div ref={top} className="sticky top-[61px] z-20 border-y border-hairline bg-canvas/95 backdrop-blur md:top-[65px]">
+          <div className="mx-auto max-w-[960px] px-3 md:px-8">
+            <div role="tablist" aria-label={tabsLabel} className="no-scrollbar flex gap-1.5 overflow-x-auto py-2.5">
+              {chapters.map((x, i) => (
+                <button
+                  key={x.short}
+                  ref={(el) => {
+                    tabs.current[i] = el;
+                  }}
+                  type="button"
+                  role="tab"
+                  aria-selected={ch === i}
+                  onClick={() => go(i)}
+                  className={cn(
+                    "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 type-caption font-semibold whitespace-nowrap",
+                    anim,
+                    ch === i ? "bg-brand-dark text-on-primary" : i < ch ? "bg-ev-written-soft text-primary-text" : "text-ink-secondary hover:bg-canvas-soft",
+                  )}
+                >
+                  <span className={cn("inline-flex h-5 w-5 items-center justify-center rounded-full tabular text-[11px]", ch === i ? "bg-on-primary text-brand-dark" : i < ch ? "bg-primary text-on-primary" : "bg-canvas-soft")}>
+                    {i < ch ? <Check className="h-3 w-3" strokeWidth={3} /> : i + 1}
+                  </span>
+                  {x.short}
+                </button>
+              ))}
+            </div>
+            <div aria-hidden className="h-1 overflow-hidden rounded-full bg-canvas-soft">
+              <div className={cn("h-full rounded-full bg-primary", anim)} style={{ width: `${((ch + 1) / chapters.length) * 100}%` }} />
+            </div>
           </div>
         </div>
-        {cover && <div className="relative mx-auto max-w-[960px] px-5 pb-8 md:px-8">{cover}</div>}
-        {srTitle && <h2 className="sr-only">{srTitle}</h2>}
-      </section>
 
-      {/* 장 고르기 */}
-      <div ref={top} className="sticky top-[61px] z-20 border-y border-hairline bg-canvas/95 backdrop-blur md:top-[65px]">
-        <div className="mx-auto max-w-[960px] px-3 md:px-8">
-          <div role="tablist" aria-label={tabsLabel} className="no-scrollbar flex gap-1.5 overflow-x-auto py-2.5">
-            {chapters.map((x, i) => (
-              <button
-                key={x.short}
-                ref={(el) => {
-                  tabs.current[i] = el;
-                }}
-                type="button"
-                role="tab"
-                aria-selected={ch === i}
-                onClick={() => go(i)}
-                className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 type-caption font-semibold whitespace-nowrap",
-                  anim,
-                  ch === i ? "bg-brand-dark text-on-primary" : i < ch ? "bg-ev-written-soft text-primary-text" : "text-ink-secondary hover:bg-canvas-soft",
-                )}
-              >
-                <span className={cn("inline-flex h-5 w-5 items-center justify-center rounded-full tabular text-[11px]", ch === i ? "bg-on-primary text-brand-dark" : i < ch ? "bg-primary text-on-primary" : "bg-canvas-soft")}>
-                  {i < ch ? <Check className="h-3 w-3" strokeWidth={3} /> : i + 1}
-                </span>
-                {x.short}
-              </button>
-            ))}
-          </div>
-          <div aria-hidden className="h-1 overflow-hidden rounded-full bg-canvas-soft">
-            <div className={cn("h-full rounded-full bg-primary", anim)} style={{ width: `${((ch + 1) / chapters.length) * 100}%` }} />
-          </div>
-        </div>
-      </div>
+        {/* 지금 장 */}
+        <section ref={panel} role="tabpanel" aria-label={c.title} className={cn("relative min-h-[70svh]", c.bg)}>
+          <div className="relative">
+            {/* 넓은 화면: 본문 양옆 큰 화살표 — 화면 세로 가운데에 붙어 따라오다 장 끝 버튼 위에서 멈춰요 */}
+            <div className="pointer-events-none absolute inset-0 z-10 hidden md:block">
+              <div className="sticky top-[calc(50svh-2.5rem)] mx-auto flex max-w-[1040px] justify-between px-2">
+                <SideArrow dir="prev" disabled={ch === 0} onClick={() => go(ch - 1)} label={prevLabel} />
+                <SideArrow dir="next" disabled={ch === chapters.length - 1} onClick={() => go(ch + 1)} label={nextLabel} nudge={!moved} />
+              </div>
+            </div>
 
-      {/* 지금 장 */}
-      <section ref={panel} role="tabpanel" aria-label={c.title} className={cn("relative min-h-[70svh]", c.bg)}>
-        <div className="relative">
-          {/* 넓은 화면: 본문 양옆 큰 화살표 — 화면 세로 가운데에 붙어 따라오다 장 끝 버튼 위에서 멈춰요 */}
-          <div className="pointer-events-none absolute inset-0 z-10 hidden md:block">
-            <div className="sticky top-[calc(50svh-2.5rem)] mx-auto flex max-w-[1040px] justify-between px-2">
-              <SideArrow dir="prev" disabled={ch === 0} onClick={() => go(ch - 1)} label={prevLabel} />
-              <SideArrow dir="next" disabled={ch === chapters.length - 1} onClick={() => go(ch + 1)} label={nextLabel} nudge={!moved} />
+            <div key={ch} className="mx-auto max-w-[1040px] px-5 pt-8 pb-6 motion-safe:animate-[kk-fade-in_.35s_ease-out] sm:px-6 md:px-24 md:pt-12">
+              <ChapterContent chapters={chapters} i={ch} />
             </div>
           </div>
 
-          <div key={ch} className="mx-auto max-w-[1040px] px-5 pt-8 pb-6 motion-safe:animate-[kk-fade-in_.35s_ease-out] sm:px-6 md:px-24 md:pt-12">
-            <ChapterContent chapters={chapters} i={ch} />
-          </div>
-        </div>
+          <ChapterNav chapters={chapters} ch={ch} go={go} nudge={!moved} />
+        </section>
 
-        <ChapterNav chapters={chapters} ch={ch} go={go} nudge={!moved} />
-      </section>
-
-      {/* 검색엔진용 — 지금 장이 아닌 장의 글도 HTML 에 (화면에는 안 보이고, 장을 고르면 위에서 새로 열려요) */}
-      {chapters.map((x, i) =>
-        i === ch ? null : (
-          <section key={x.short} hidden>
-            <ChapterContent chapters={chapters} i={i} />
-          </section>
-        ),
-      )}
-    </div>
+        {/* 검색엔진용 — 지금 장이 아닌 장의 글도 HTML 에 (화면에는 안 보이고, 장을 고르면 위에서 새로 열려요) */}
+        {chapters.map((x, i) =>
+          i === ch ? null : (
+            <section key={x.short} hidden>
+              <ChapterContent chapters={chapters} i={i} />
+            </section>
+          ),
+        )}
+      </div>
+    </GoContext.Provider>
   );
 }
 

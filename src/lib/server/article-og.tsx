@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 import type { CSSProperties, ReactNode } from "react";
 import type { ArticleSummary, ArticleThumb, ThumbScale } from "@/lib/magazine-meta";
 import { captionFit, fitText, headlineFit } from "../og-text";
-import { FUND_BADGE, SIGN, articleSceneSvg } from "./article-scenes";
+import { BOND_SIGN, BOND_TITLE, FUND_BADGE, JOURNEY_STOPS, SIGN, articleSceneSvg } from "./article-scenes";
 import { articleThumbPlan, type ArticleThumbPlan } from "./article-thumb";
 import { C, OG_SIZE, companyLogo, ogFonts, svgUri } from "./og";
 
@@ -133,6 +133,25 @@ function SceneLayer({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }) {
       <img src={svgUri(articleSceneSvg(plan.scene, plan.prop, plan.tone))} width={1200} height={630} alt="" style={{ position: "absolute", left: 0, top: 0 }} />
       {plan.scene === "company" && plan.company && <CompanySign name={plan.company.name} logo={logo} />}
       {plan.scene === "fund" && plan.company && <CompanySign name={plan.company.name} logo={logo} box={FUND_BADGE} />}
+      {plan.scene === "journey" && <JourneyMarks plan={plan} logo={logo} />}
+    </>
+  );
+}
+
+/** 돈의 여행 — 증서의 발행 기관 간판 · 증서 이름 · 정거장 번호 */
+function JourneyMarks({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }) {
+  return (
+    <>
+      {plan.company && <CompanySign name={plan.company.name} logo={logo} box={BOND_SIGN} />}
+      <Abs style={{ left: BOND_TITLE.x, top: BOND_TITLE.y, width: BOND_TITLE.w, justifyContent: "center", fontSize: 25, fontWeight: 800, color: "#5a3b00", letterSpacing: -0.8 }}>산업금융채권</Abs>
+      {JOURNEY_STOPS.map(([x, y], i) => (
+        <Abs
+          key={i}
+          style={{ left: x + 16, top: y - 42, width: 30, height: 30, alignItems: "center", justifyContent: "center", borderRadius: 99, background: C.ink, border: "2.5px solid #ffffff", fontSize: 17, fontWeight: 800, color: C.white }}
+        >
+          {String(i + 1)}
+        </Abs>
+      ))}
     </>
   );
 }
@@ -180,7 +199,7 @@ function BoldView({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }) {
   const em = splitEmphasis(plan.headline);
   const giant = em && [...em.big].length <= 7 ? em : null;
   const cap = plan.sub ? fitText(plan.sub, [28, 26, 24, 22], 600, 1) : null;
-  const dark = plan.scene === "fund";
+  const dark = plan.scene === "fund" || plan.scene === "journey";
   const shadow = "0 4px 18px rgba(0,0,0,0.35)";
 
   let block: ReactNode;
@@ -240,7 +259,7 @@ function BoldView({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }) {
  */
 export async function articleOgImage(a: ArticleSummary, { thumb = a.thumb, headers, scale = 1 }: { thumb?: ArticleThumb; headers?: HeadersInit; scale?: ThumbScale } = {}) {
   const plan = articleThumbPlan(a, thumb);
-  const needsLogo = (plan.scene === "company" || plan.scene === "fund") && plan.company;
+  const needsLogo = (plan.scene === "company" || plan.scene === "fund" || plan.scene === "journey") && plan.company;
   const [fonts, logo] = await Promise.all([ogFonts(), needsLogo && plan.company ? companyLogo(plan.company.id) : Promise.resolve(null)]);
   const view = plan.layout === "bold" ? <BoldView plan={plan} logo={logo} /> : <CardView plan={plan} logo={logo} />;
   if (scale === 1) return new ImageResponse(view, { ...OG_SIZE, fonts, headers });
