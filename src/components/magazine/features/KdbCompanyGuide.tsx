@@ -159,6 +159,76 @@ function Tabs<T extends string>({ items, value, onChange, label }: { items: { ke
   );
 }
 
+/* 사진 — 재사용이 허락된 사진만 (CC BY·CC0·공공누리 제1유형), 사진마다 출처를 그대로 */
+const PHOTOS = {
+  hq: {
+    src: "/magazine/kdb/kdb-hq.webp",
+    w: 1200,
+    h: 960,
+    alt: "서울 여의도에 있는 한국산업은행 본점 건물",
+    credit: "사진: Narubaru7 / Wikimedia Commons, CC BY 4.0 (일부 잘라냄)",
+    href: "https://commons.wikimedia.org/wiki/File:KDB%EC%82%B0%EC%97%85%EC%9D%80%ED%96%89_%EC%97%AC%EC%9D%98%EB%8F%84.jpg",
+  },
+  yeouido: {
+    src: "/magazine/kdb/yeouido.webp",
+    w: 1200,
+    h: 900,
+    alt: "한강 건너에서 본 여의도 고층 빌딩과 국회의사당",
+    credit: "사진: Kimhs5400 / Wikimedia Commons, CC BY 4.0",
+    href: "https://commons.wikimedia.org/wiki/File:Yeouido2025.jpg",
+  },
+  yeosu: {
+    src: "/magazine/kdb/yeosu.webp",
+    w: 1200,
+    h: 663,
+    alt: "불이 켜진 여수 국가산업단지 석유화학 공장들의 밤 풍경",
+    credit: "출처: 전라남도(사진 여수시 제공), 공공누리 제1유형",
+    href: "https://www.jeonnam.go.kr/M7116/boardView.do?seq=1961144&menuId=jeonnam0202000000&boardId=M7116",
+  },
+  hmm: {
+    src: "/magazine/kdb/hmm.webp",
+    w: 1200,
+    h: 800,
+    alt: "컨테이너를 가득 실은 HMM 알헤시라스호가 부두 크레인 옆으로 들어오는 모습",
+    credit: "사진: Tim Sheerman-Chase / Wikimedia Commons, CC BY 4.0",
+    href: "https://commons.wikimedia.org/wiki/File:HMM_Algeciras_Arriving_in_DP_World_Southampton_9.jpg",
+  },
+  wind: {
+    src: "/magazine/kdb/wind.webp",
+    w: 1200,
+    h: 799,
+    alt: "바다 위 해상풍력 발전기와 설치 작업선",
+    credit: "출처: 전라남도, 공공누리 제1유형 (Wikimedia Commons)",
+    href: "https://commons.wikimedia.org/wiki/File:Jeonnam_Offshore_Wind_Power_Shinan_Blue_Jaeun_20241217_(02).jpg",
+  },
+  shipyard: {
+    src: "/magazine/kdb/shipyard.webp",
+    w: 1200,
+    h: 675,
+    alt: "바닷가를 따라 골리앗 크레인이 늘어선 조선소 전경",
+    credit: "사진: Wvdp / Wikimedia Commons, CC0",
+    href: "https://commons.wikimedia.org/wiki/File:Hyundai_Heavy_Industries_Ulsan_Shipyard_from_Jujeon_Beacon_Mound_-_2023-07-24.jpg",
+  },
+} as const;
+
+type PhotoKey = keyof typeof PHOTOS;
+
+function Photo({ k, caption, className }: { k: PhotoKey; caption: ReactNode; className?: string }) {
+  const x = PHOTOS[k];
+  return (
+    <figure className={cn("overflow-hidden rounded-2xl bg-canvas shadow-level-1", className)}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- 정적 사진 (public/magazine/kdb) */}
+      <img src={x.src} width={x.w} height={x.h} alt={x.alt} loading="lazy" decoding="async" className="block h-auto w-full" />
+      <figcaption className="px-4 py-2.5">
+        <p className="type-body-md text-ink [word-break:keep-all]">{caption}</p>
+        <a href={x.href} target="_blank" rel="noopener noreferrer" className="mt-0.5 block type-caption text-ink-mute hover:underline [word-break:keep-all]">
+          {x.credit}
+        </a>
+      </figcaption>
+    </figure>
+  );
+}
+
 /** 숫자 한 칸 — 비교 대상과 함께 */
 function Stat({ label, value, vs, kind }: { label: string; value: string; vs: ReactNode; kind: Kind }) {
   return (
@@ -395,7 +465,7 @@ function FundingBar() {
             style={{ width: `${x.share}%` }}
             className={cn("flex min-w-0 items-center justify-center px-1 text-on-primary", x.cls, anim, sel === i ? "opacity-100" : "opacity-55 hover:opacity-80")}
           >
-            <span className="truncate tabular type-body-md font-bold">{x.share}원</span>
+            <span className={cn("truncate tabular font-bold", x.share >= 20 ? "type-body-md" : "text-[12px]")}>{x.share >= 20 ? `${x.share}원` : x.share}</span>
           </button>
         ))}
       </div>
@@ -418,7 +488,7 @@ function FundingBar() {
 }
 
 const COMPARE = [
-  { row: "돈은 어디서", bank: "예금이 대부분", kdb: "채권 62.7% · 예금 24.1%", so: "그래서 동네마다 창구를 낼 필요가 적어요. 지점이 수십 곳이에요." },
+  { row: "돈은 어디서", bank: "예금이 대부분", kdb: "채권 62.7% · 예금 24.1%", so: "그래서 동네마다 창구를 낼 필요가 적어요. 국내 영업점이 59곳이에요." },
   { row: "주인", bank: "주주 (대개 금융지주)", kdb: "정부 100%", so: "그래서 나라와 같은 신용등급으로 싸게 빌리고, 정부 정책을 맡아요." },
   { row: "고객", bank: "개인 + 기업", kdb: "기업·산업 중심 (개인은 소수)", so: "그래서 창구에 줄 서는 은행이 아니에요. 다만 연금·신탁처럼 개인을 상대하는 일도 조금 있어요." },
   { row: "국내 영업점", bank: "수백 곳 (국민은행 771곳)", kdb: "59곳", so: "그래서 작은 기업은 다른 은행 손을 빌려 지원해요(온렌딩, 4장)." },
@@ -474,6 +544,7 @@ function NotABank() {
   return (
     <div className="space-y-5">
       <P>은행이라고 하면 예금을 받아 그 돈으로 대출해 주는 곳을 떠올려요. 산은도 예금을 받긴 해요. 그런데 비중이 작아요. 산은이 쓰는 돈의 대부분은 시장에서 채권을 팔아 마련해요.</P>
+      <Photo k="hq" caption="서울 영등포구 은행로 14, 산은 본점. 이름은 은행이지만 번호표를 뽑는 창구보다 기업을 상대하는 일이 훨씬 많아요." />
       <TermBox
         term="정책금융기관"
         def="돈을 버는 것보다 정책 목적(산업 육성·위기 대응·지역 균형)을 위해 정부가 만들고 소유한 금융기관이에요."
@@ -489,7 +560,7 @@ function NotABank() {
       <Line kind="view">비싸게 빌려 오면, 빌려준 이자와 빌려 온 이자의 차이(순이자마진)가 얇아지기 쉬워요. 산은이 ‘수익성’을 자주 말하는 이유가 여기 있어요. 이 차이 하나에서 지점이 적은 이유, 개인 고객이 드문 이유, 정책 일을 맡는 이유가 다 따라 나와요.</Line>
       <TryHint>줄을 눌러 ‘그래서’를 이어 보세요</TryHint>
       <CompareTable />
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid gap-2.5 sm:grid-cols-2">
         <Stat kind="official" label="총자산 (2025년 말, 은행 별도)" value="346.3조원" vs="국민은행(563.6조원)의 약 60%. 자회사까지 합친 연결로는 384.6조원이에요" />
         <Stat kind="official" label="임직원 정원 (2026년 9월 말)" value="3,419명" vs="국민은행 직원(1만 5,389명, 2025년 말)의 약 5분의 1이에요" />
         <Stat kind="official" label="국내 영업점 (2026년 6월 말)" value="59곳" vs="국민은행(771곳)의 13분의 1 수준이에요. 본점 영업부를 포함한 숫자예요" />
@@ -537,6 +608,7 @@ function History() {
           </li>
         ))}
       </ol>
+      <Photo k="shipyard" caption="조선·해운은 산은 70년에서 구조조정이 가장 길게 이어진 업종이에요. 사진은 울산의 한 조선소(2023년)예요." />
       <Line kind="view">한 줄로 줄이면, 쓰러진 회사를 살리던 은행에서 쓰러지기 전에 키우는 은행으로 간판을 바꾸는 중이에요. 다만 구조조정도 여전히 진행형이에요(석유화학·HMM·KDB생명). ‘둘 다 하는 은행’이 정확한 표현이에요.</Line>
       <p className="type-heading-sm text-ink">회사가 스스로 급하다고 말하는 것</p>
       <div className="grid gap-3 md:grid-cols-2">
@@ -685,7 +757,7 @@ function Journey() {
       )}
       <Card>
         <CardTitle kind="official">10개 부문을 다섯 정거장에 올리면</CardTitle>
-        <p className="mt-1 type-caption text-ink-mute">산은 홈페이지 조직도 (2026년 10월 31일 확인) · 부문 밖 조직(준법·검사·소비자보호)은 5번에 함께</p>
+        <p className="mt-1 type-caption text-ink-mute">산은 홈페이지 조직도 (2026년 10월 31일 확인) · 점선은 부문 아래·밖에 있는 조직</p>
         <ul className="mt-3 space-y-2">
           {STATIONS.map((x) => (
             <li key={x.key} className="flex flex-wrap items-center gap-1.5">
@@ -693,6 +765,11 @@ function Journey() {
               {DIVISIONS.filter((d) => d.station === x.key).map((d) => (
                 <span key={d.name} className="rounded-lg bg-canvas-soft px-2 py-1 type-caption font-semibold text-ink">
                   {d.name}
+                </span>
+              ))}
+              {(OUTSIDE[x.key] ?? []).map((u) => (
+                <span key={u} className="rounded-lg border border-dashed border-hairline-input px-2 py-1 type-caption font-semibold text-ink-secondary">
+                  {u}
                 </span>
               ))}
             </li>
@@ -707,6 +784,12 @@ function Journey() {
     </div>
   );
 }
+
+/* 부문이 아닌데 정거장에 꼭 있는 조직 (점선 칩) */
+const OUTSIDE: Partial<Record<StationKey, string[]>> = {
+  fix: ["기업개선본부 (기업금융부문 안)"],
+  plan: ["KDB미래전략연구소", "IT·AI본부 (리스크관리부문 안)", "준법감시인·검사부·소비자보호부 (부문 밖)"],
+};
 
 /* 10개 부문 — 하는 일 한 줄과 올해 한 일 (11장 요약표도 이걸 써요) */
 const DIVISIONS: { name: string; station: StationKey; does: string; year: string }[] = [
@@ -869,6 +952,7 @@ function Bosses() {
         {b.text}
       </Explain>
       <Line kind="view">비유하면 금융위는 감독, 정부는 구단주, 국회는 심판이에요. 산은 회장은 이 셋을 동시에 상대해요.</Line>
+      <Photo k="yeouido" caption="산은 본점이 있는 여의도와 국회의사당(가운데 초록 지붕). 매년 10월, 산은 회장은 이 건물로 국정감사를 받으러 가요." />
 
       <TermBox
         term="생산적 금융"
@@ -920,7 +1004,7 @@ function Bosses() {
 /* 6. 올해 10장면                                                        */
 /* ------------------------------------------------------------------ */
 
-const SCENES: { when: string; title: string; st: StationKey; unit: string; text: string; use: string; href?: string }[] = [
+const SCENES: { when: string; title: string; st: StationKey; unit: string; text: string; use: string; href?: string; photo?: { k: PhotoKey; caption: string } }[] = [
   {
     when: "2월 · 7월",
     title: "석유화학 사업재편 — 전통 역할의 2026년판",
@@ -928,6 +1012,7 @@ const SCENES: { when: string; title: string; st: StationKey; unit: string; text:
     unit: "기업금융부문 기업개선본부",
     text: "대산 1호(HD현대케미칼·롯데케미칼)는 2월 채권단 회의에 올라 3월 결의됐어요. 채권기관들이 7.9조원 상환을 3년 미뤄 주고, 신규 자금 최대 1조원 중 약 4,300억원을 산은이 맡았어요. 7월 여수 1호(여천NCC·롯데케미칼)는 산은이 혼자 신규 최대 4,500억원을 대고, 기존 대출 4.4조원은 2029년 말까지 미뤄 줘요. 대신 에틸렌 설비를 멈춰요. 두 곳을 합친 감축(249만t)은 최소 목표(270만t)의 92%이고, 울산은 아직이에요.",
     use: "‘구조조정의 의미’를 물으면 10년 전 조선업 대신 이 사례로. 돈을 넣는 조건이 ‘설비 감축’이라는 점이 핵심이에요.",
+    photo: { k: "yeosu", caption: "여수 국가산업단지. 여수 1호 재편의 무대예요." },
   },
   {
     when: "1년 내내",
@@ -945,6 +1030,7 @@ const SCENES: { when: string; title: string; st: StationKey; unit: string; text:
     unit: "기업개선본부 투자관리실",
     text: "산은(35.42%)과 해양진흥공사(35.08%)가 대주주인 HMM의 매각 방식 검토에 들어갔어요. 다만 10월 말까지 매각 공고나 매각 주관사 선정은 없어요. 박 회장은 2월에 ‘부산 이전이 먼저’라는 입장을 밝혔고, 2024년 초 하림그룹과의 매각 협상은 결렬된 전례가 있어요.",
     use: "‘구조조정의 성공이 뭔가’에는 살린 것보다 민간에 돌려준 것. 왜 팔기 어려운지(덩치·가격·노조·지역)까지 말하면 한 걸음 더 가요.",
+    photo: { k: "hmm", caption: "HMM의 2만4천TEU급 컨테이너선 알헤시라스호 (2026년 9월, 영국 사우샘프턴)." },
   },
   {
     when: "1월 · 2월",
@@ -977,6 +1063,7 @@ const SCENES: { when: string; title: string; st: StationKey; unit: string; text:
     unit: "자본시장부문 PF본부",
     text: "전남 신안 앞바다 해상풍력에 총사업비 3.4조원, 자기자본 5,100억원에 차입 2.89조원을 모았어요. 약정식은 산은 본점에서 열렸고, 금융주선은 산은과 KB국민은행이 공동으로 맡았어요(공동 대표금융주간사).",
     use: "PF를 설명해 보라면 이 사례로. ‘발전소가 벌 돈을 믿고 빌려주는 것’.",
+    photo: { k: "wind", caption: "신안 자은도 앞바다의 해상풍력 (2024년). 신안우이 사업과는 다른 단지예요." },
   },
   {
     when: "8월 · 2월",
@@ -1042,6 +1129,7 @@ function TenScenes() {
               </span>
             </div>
             <p className="mt-1.5 type-heading-sm text-ink [word-break:keep-all]">{x.title}</p>
+            {x.photo && <Photo k={x.photo.k} caption={x.photo.caption} className="mt-2.5 shadow-none ring-1 ring-hairline" />}
             <p className="mt-1.5 type-body-md text-ink-secondary ko-justify">{x.text}</p>
             <p className="mt-2 type-caption font-semibold text-ink-mute">맡은 곳 · {x.unit}</p>
             <p className="mt-2 flex items-start gap-2 rounded-xl bg-[#e3f5ea] px-3 py-2 type-body-md text-ink [word-break:keep-all]">
@@ -1535,7 +1623,7 @@ function Wrap() {
       </div>
       <Card>
         <CardTitle kind="official">10개 부문 한눈에</CardTitle>
-        <p className="mt-1 type-caption text-ink-mute">2026년 11월 조직도 기준 · 올해 한 일은 언론 보도</p>
+        <p className="mt-1 type-caption text-ink-mute">홈페이지 조직도 기준 (10월 31일 확인) · 올해 한 일은 언론 보도·공시</p>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full min-w-[34rem] text-left type-caption">
             <thead>
