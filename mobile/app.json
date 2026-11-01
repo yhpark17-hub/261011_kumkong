@@ -50,6 +50,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8f48df2c-4945-46a6-91e7-deeeff79a821"
+      }
+    },
+    "owner": "kumkong"
   }
 }
