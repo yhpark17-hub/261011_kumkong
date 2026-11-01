@@ -38,6 +38,8 @@ await Promise.all([
   render(svg("", NAVY), 1024, "android-icon-background.png"),
   render(svg(place(`${body} fill="#fff"/>`, 0.9)), 1024, "android-icon-monochrome.png"),
   render(svg(place(bean, 1.6)), 512, "splash-icon.png"),
+  // Android 알림 아이콘: 흰색 실루엣 + 투명 바탕 (96×96)
+  render(svg(place(`${body} fill="#fff"/>`, 1.25)), 96, "notification-icon.png"),
   render(site, 64, "favicon.png"),
 ]);
 console.log("아이콘을 만들었어요: assets/images/");

@@ -2,6 +2,7 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { AlertSettings } from '@/components/alert-settings';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Radius, Spacing } from '@/constants/theme';
@@ -29,9 +30,7 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.group}>
           <ThemedText type="small">알림</ThemedText>
-          <ThemedView type="canvasSoft" style={[styles.card, styles.notice]}>
-            <ThemedText type="small">관심 기관 일정 알림은 준비 중이에요.</ThemedText>
-          </ThemedView>
+          <AlertSettings />
         </View>
 
         <View style={styles.group}>
@@ -78,7 +77,6 @@ const styles = StyleSheet.create({
   content: { padding: Spacing.four, gap: Spacing.five },
   group: { gap: Spacing.two },
   card: { borderRadius: Radius.lg, paddingHorizontal: Spacing.four, paddingVertical: Spacing.one },
-  notice: { paddingVertical: Spacing.four },
   row: {
     minHeight: 48,
     flexDirection: 'row',

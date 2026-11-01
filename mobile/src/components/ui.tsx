@@ -1,11 +1,12 @@
 import { Image } from 'expo-image';
 import { Link, type Href } from 'expo-router';
 import { type ReactNode } from 'react';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Alert, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { avatarColor, EVENT_COLOR, PHASE_COLOR } from '@/constants/events';
 import { Fonts, Radius, Spacing, type ThemeColor } from '@/constants/theme';
+import { useAlerts } from '@/hooks/alerts';
 import { useFavorites } from '@/hooks/favorites';
 import { useTheme } from '@/hooks/use-theme';
 import { ddayLabel, diffDays } from '@/shared/date';
@@ -96,10 +97,21 @@ export function CompanyAvatar({
 export function FavoriteStar({ companyId, size = 22 }: { companyId: string; size?: number }) {
   const c = useTheme();
   const { isFavorite, toggle } = useFavorites();
+  const alerts = useAlerts();
   const on = isFavorite(companyId);
+  const press = () => {
+    toggle(companyId);
+    // 처음 ★를 누를 때 한 번만 — 알림 받을지 물어봐요 (나중에 설정에서도 켤 수 있어요)
+    if (!on && !alerts.prefs.asked && alerts.permission !== 'unsupported') {
+      Alert.alert('관심 기관 일정을 알려 드릴까요?', '서류 마감·필기·면접·발표 전날 오전 9시와 당일 오전 8시에 알려 드려요.', [
+        { text: '나중에', style: 'cancel', onPress: alerts.markAsked },
+        { text: '알림 받기', onPress: () => void alerts.enable() },
+      ]);
+    }
+  };
   return (
     <Pressable
-      onPress={() => toggle(companyId)}
+      onPress={press}
       hitSlop={10}
       accessibilityRole="button"
       accessibilityLabel={on ? '관심 기관에서 빼기' : '관심 기관에 추가'}

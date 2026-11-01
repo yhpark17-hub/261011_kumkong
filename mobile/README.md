@@ -15,6 +15,10 @@
   - 앱에 같은 화면이 있는 링크(캘린더·기관·아침판)는 앱 화면으로, 바깥 링크는 인앱 브라우저로 (`src/lib/site-links.ts`)
   - 사이트의 '차단' → 글쓴이 열쇠(data-ak)를 이 기기에 저장(`src/hooks/blocks.tsx`)하고 가리는 CSS를 넣음. 설정에서 모두 풀기
 - 콩밭·필기 후기는 처음 열 때 이용 규칙 동의 (`src/components/community-gate.tsx`)
+- 일정 알림 (`src/hooks/alerts.tsx`): 첫 ★ 때 한 번 묻고, 허락하면 Expo 푸시 토큰 + 관심 기관 + 설정을 사이트 `/api/app/v1/devices`에 등록.
+  사이트 크론(`vercel.json`)이 전날 9시·당일 8시에 보내요. 누르면 그 기관 화면 (`src/components/notification-router.tsx`)
+  - 토큰을 받으려면 EAS 프로젝트(`eas init` → app.json `extra.eas.projectId`)와 iOS APNs·Android FCM 자격 증명이 필요해요
+  - 사이트 Vercel 환경변수 `CRON_SECRET`이 있어야 크론이 보내요
 - `src/shared/`: 사이트 `src/lib`의 순수 모듈 복사본 — 사이트에서 고친 뒤 `node scripts/sync-shared.mjs`
 
 ## 실행
