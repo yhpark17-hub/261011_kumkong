@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ArrowRight, ChevronRight, ExternalLink } from "lucide-react";
-import { findNotes, noteIndex, termIndex } from "@/lib/glossary";
 import { amountOf, isMoneyUnit, type NewsCard } from "@/lib/news-cards";
+import { deckGlosser, deckSize, proseStrings, summaryChunks, type Glosser } from "@/lib/news-gloss";
 import { NEWS_SECTION_INFO, newsHref, type NewsItem, type NewsSection } from "@/lib/news-meta";
-import { PIC_H, PIC_W, SECTION_THEME, coinStack, defaultPic, findOrgs, picPerson, picPicker, picSvg } from "@/lib/server/card-pics";
+import { PIC_H, PIC_W, SECTION_THEME, coinStack, deckPics, findOrgs, picPerson, picSvg } from "@/lib/server/card-pics";
 import { cn } from "../ui";
 import { CardDeck, type TimetableItem } from "./CardDeck";
 import { SourceLink } from "./interactive";
@@ -19,24 +19,7 @@ type Theme = (typeof SECTION_THEME)[NewsSection];
 
 const pad = (no: number) => String(no).padStart(2, "0");
 
-/** 사이 장이 없는 예전 기사 — 요약을 한두 문장씩 나눠 글 카드로 (한 장 120자 안쪽) */
-function summaryChunks(text: string): string[] {
-  const sentences = text
-    .split(/\n+/)
-    .flatMap((b) => b.split(/(?<=[.!?]["'”’)]?)\s+/))
-    .map((t) => t.trim())
-    .filter(Boolean);
-  const out: string[] = [];
-  for (const s of sentences) {
-    const last = out.length - 1;
-    if (last >= 0 && out[last].length + s.length < 120) out[last] = `${out[last]} ${s}`;
-    else out.push(s);
-  }
-  return out.slice(0, 4);
-}
-
-/** 카드 장 수 — 표지 + 사이 장(카드, 없으면 요약 글) + '왜 중요할까' */
-export const deckSize = (n: NewsItem) => 1 + (n.cards.length || summaryChunks(n.summary).length) + (n.point ? 1 : 0);
+export { deckSize };
 
 /** 시간표 한 칸 — 한 줄 제목이 없으면 기사 제목 */
 export const timetableItem = (n: NewsItem): TimetableItem => ({ id: n.id, label: n.short || n.title, section: n.section, headline: n.headline });
@@ -91,74 +74,27 @@ function Panel({ theme, kicker, tall = false, compact = false, children }: { the
 const Caption = ({ children }: { children: React.ReactNode }) => <div className="flex flex-1 flex-col px-5 pt-4 pb-5">{children}</div>;
 
 /* ------------------------------------------------------------------ */
-/* 괄호 풀이 — 전문 용어가 기사에서 처음 나오는 자리 바로 뒤에 짧은 풀이를 녹여 넣어요   */
+/* 괄호 풀이 — 계산은 lib/news-gloss.ts (앱 API와 같이 씀), 여기서는 풀이 글씨만 작게   */
 /* ------------------------------------------------------------------ */
 
-type NoteIndex = ReturnType<typeof noteIndex>;
 interface Ann {
   /** 글 → 처음 나온 전문 용어 뒤에 (풀이)를 넣은 글 */
   r: (s: string) => React.ReactNode;
 }
-const PLAIN: Ann = { r: (s) => s };
 
-/** 괄호 풀이를 넣어도 되는 자리 — 말 뒤가 끝·띄어쓰기·문장부호·조사일 때만 (예: '홍콩ELS식'처럼 붙은 말 가운데는 안 넣어요) */
-const PARTICLE = /[은는이가을를의에와과로으도만까부처보며나랑]/;
-function glossAt(text: string, find: string): number {
-  let at = termIndex(text, find);
-  while (at >= 0) {
-    const next = text[at + find.length] ?? "";
-    if (next === "(") return -2;
-    if (!next || !/[가-힣A-Za-z0-9]/.test(next) || PARTICLE.test(next)) return at;
-    at = termIndex(text, find, at + 1);
-  }
-  return -1;
-}
-
-/**
- * 카드 한 장의 괄호 풀이 — 이 묶음(기사)에서 아직 풀지 않은 말만, 설명하는 글(prose)에만.
- * 글쓴이가 이미 바로 뒤에 괄호로 풀어 썼으면 그대로 두고 푼 것으로 쳐요. 넣을 자리가 없으면 다음 장에서 풀어요.
- */
-function annotate(prose: string[], index: NoteIndex, used: Set<string>): Ann {
-  const joined = prose.filter(Boolean).join("\n");
-  const todo: { find: string; text: string; term: string }[] = [];
-  for (const h of findNotes(joined, index)) {
-    if (used.has(h.note.term)) continue;
-    const at = glossAt(joined, h.find);
-    if (at === -1) continue;
-    used.add(h.note.term);
-    if (at >= 0) todo.push({ find: h.find, text: h.note.text, term: h.note.term });
-  }
-  if (!todo.length) return PLAIN;
-  const done = new Set<string>();
-  let key = 0;
-  const r = (s: string): React.ReactNode => {
-    if (!s) return s;
-    const out: React.ReactNode[] = [];
-    let rest = s;
-    while (rest) {
-      let best: { at: number; h: (typeof todo)[number] } | null = null;
-      for (const h of todo) {
-        if (done.has(h.term)) continue;
-        const at = glossAt(rest, h.find);
-        if (at >= 0 && (!best || at < best.at)) best = { at, h };
-      }
-      if (!best) {
-        out.push(rest);
-        break;
-      }
-      done.add(best.h.term);
-      const end = best.at + best.h.find.length;
-      out.push(
-        rest.slice(0, end),
-        <span key={key++} className="text-[0.88em] font-medium opacity-75">
-          ({best.h.text})
-        </span>,
-      );
-      rest = rest.slice(end);
-    }
-    return out;
+function toAnn(g: Glosser): Ann {
+  return {
+    r: (s) =>
+      g.r(s).map((p, i) =>
+        typeof p === "string" ? (
+          p
+        ) : (
+          <span key={i} className="text-[0.88em] font-medium opacity-75">
+            ({p.gloss})
+          </span>
+        ),
+      ),
   };
-  return { r };
 }
 
 /* ------------------------------------------------------------------ */
@@ -552,55 +488,27 @@ function DeckHead({ n, no }: { n: NewsItem; no: number }) {
 }
 
 /** 기사 한 건 카드뉴스 */
-/** 카드에서 괄호 풀이를 넣을 설명 글 (제목·이름표·인물의 말·단계는 그대로) */
-function proseStrings(c: NewsCard): string[] {
-  switch (c.type) {
-    case "background":
-    case "text":
-      return [c.text];
-    case "stat":
-      return [c.note];
-    case "bars":
-    case "change":
-      return [c.note];
-    case "term":
-      return [c.text];
-    case "quote":
-      return [c.note];
-    case "versus":
-      return [c.left.text, c.right.text];
-    case "flow":
-      return [];
-  }
-}
-
 export function NewsDeck({ n, no }: { n: NewsItem; no: number }) {
   const total = deckSize(n);
   const theme = SECTION_THEME[n.section];
   const id = (i: number) => `p${n.id}x${i}`;
-  // 괄호 풀이는 기사 안에서 말마다 한 번 — 배경·용어 카드가 이미 풀어 쓴 말은 빼요
-  const index = noteIndex(n.notes);
-  const explained = n.cards
-    .filter((c) => c.type === "term" || c.type === "background")
-    .flatMap((c) => findNotes(c.type === "term" ? `${c.term} ${c.text}` : `${c.title} ${c.text}`, index).map((h) => h.note.term));
-  const used = new Set(explained);
-  const ann = (strings: string[]) => annotate(strings, index, used);
+  // 괄호 풀이는 기사 안에서 말마다 한 번 (표지 → 사이 장 → '왜 중요할까' 차례로)
+  const gloss = deckGlosser(n);
+  const ann = (strings: string[]) => toAnn(gloss(strings));
   // 그림 — 표지부터 장마다 다른 그림 (같은 그림이 오면 기사에 어울리는 다른 그림으로)
-  const coverPic = n.pic || defaultPic(n.section, n.title);
-  const pick = picPicker(`${n.title} ${n.takeaway} ${n.summary}`, [coverPic, "kong-note"]);
-  const cardPic = (c: NewsCard) =>
-    c.type === "text" || c.type === "stat" || c.type === "background" ? pick(c.pic || undefined) : c.type === "term" ? pick(c.pic || "kong-study") : "";
+  const pics = deckPics(n);
+  const coverPic = pics.cover;
   const coverAnn = ann([n.takeaway || n.title]);
   const middles = n.cards.length
-    ? n.cards.map((c, i) => <Middle key={i} c={c} theme={theme} id={id(i)} a={ann(proseStrings(c))} pic={cardPic(c)} />)
-    : summaryChunks(n.summary).map((t, i) => <SummarySlide key={i} text={t} first={i === 0} theme={theme} id={id(i)} a={ann([t])} pic={pick()} />);
-  const pointAnn = n.point ? ann([n.point]) : PLAIN;
+    ? n.cards.map((c, i) => <Middle key={i} c={c} theme={theme} id={id(i)} a={ann(proseStrings(c))} pic={pics.card(c)} />)
+    : summaryChunks(n.summary).map((t, i) => <SummarySlide key={i} text={t} first={i === 0} theme={theme} id={id(i)} a={ann([t])} pic={pics.summary()} />);
+  const pointAnn = n.point ? ann([n.point]) : null;
   return (
     <div id={`item-${n.id}`} className="scroll-mt-32">
       <CardDeck id={n.id} label={`${pad(no)} ${n.title}`} head={<DeckHead n={n} no={no} />} foot={<ReadMore n={n} />}>
         <Cover n={n} total={total} theme={theme} a={coverAnn} pic={coverPic} />
         {middles}
-        {n.point && <Point text={n.point} theme={theme} id={id(9)} a={pointAnn} />}
+        {n.point && pointAnn && <Point text={n.point} theme={theme} id={id(9)} a={pointAnn} />}
       </CardDeck>
     </div>
   );

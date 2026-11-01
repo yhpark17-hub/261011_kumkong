@@ -1,7 +1,7 @@
 import "server-only";
 import { COMPANIES } from "@/lib/data";
-import { COSTUMES, type NewsSection } from "@/lib/news-meta";
-import { isPicKey, type PicKey } from "@/lib/news-cards";
+import { COSTUMES, type NewsItem, type NewsSection } from "@/lib/news-meta";
+import { isPicKey, type NewsCard, type PicKey } from "@/lib/news-cards";
 import { expandKit } from "./thumb-kit";
 import { photoPortrait } from "./thumb-portraits";
 
@@ -398,5 +398,22 @@ export function picPicker(articleText: string, taken: string[] = []) {
     const k = pool.find((p) => !used.has(p)) ?? "kong-reporter";
     used.add(k);
     return k;
+  };
+}
+
+/**
+ * 기사 한 건의 카드 그림 — 웹 카드뉴스와 앱 API가 같이 써요.
+ * card()·summary()는 장 차례대로 불러야 해요 (앞에서 쓴 그림은 뒤에서 피함).
+ */
+export function deckPics(n: Pick<NewsItem, "pic" | "section" | "title" | "takeaway" | "summary">) {
+  const cover = n.pic || defaultPic(n.section, n.title);
+  const pick = picPicker(`${n.title} ${n.takeaway} ${n.summary}`, [cover, "kong-note"]);
+  return {
+    cover,
+    /** 사이 장 그림 (그림이 없는 장은 "") */
+    card: (c: NewsCard): string =>
+      c.type === "text" || c.type === "stat" || c.type === "background" ? pick(c.pic || undefined) : c.type === "term" ? pick(c.pic || "kong-study") : "",
+    /** 카드가 없는 예전 기사의 요약 장 그림 */
+    summary: (): string => pick(),
   };
 }

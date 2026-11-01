@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
     "/magazine/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./public/logos/**/*.png"],
     "/admin/news/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./public/logos/**/*.png"],
     "/api/automation/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf"],
+    // 앱 카드 그림 PNG (그림 속 이름띠 글자·기관 로고)
+    "/api/app/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./public/logos/**/*.png"],
   },
   // 필기 가이드는 매거진으로 옮김 — 예전 링크·검색 결과가 끊기지 않게
   redirects() {
