@@ -6,6 +6,9 @@
 - 화면: `src/app/` (탭 다섯 칸은 `src/app/(tabs)/`, 사이트 하단 탭과 같음)
 - 색·글자: `src/constants/theme.ts` (사이트 `src/app/globals.css` 값을 옮김) · 글꼴 Pretendard(OFL, `assets/fonts`)
 - 사이트 주소: `EXPO_PUBLIC_SITE_URL` (기본 `https://kumkong.vercel.app`)
+- 데이터: 사이트 `/api/app/v1/catalog`(전체 일정)·`/companies/[id]`(기관 상세) → `src/api/` (마지막 응답은 기기에 저장해 먼저 보여 줌)
+- 관심 기관: 기기에만 저장 (`kumkong:favorites`, 계정 없음)
+- `src/shared/`: 사이트 `src/lib`의 순수 모듈 복사본 — 사이트에서 고친 뒤 `node scripts/sync-shared.mjs`
 
 ## 실행
 
