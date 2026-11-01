@@ -284,6 +284,24 @@ CREATE TABLE IF NOT EXISTS kv (
   value TEXT NOT NULL,
   updated_at INTEGER NOT NULL
 );
+
+-- 금콩 앱 알림: 휴대폰 푸시 토큰 + 그 기기의 관심 기관·알림 설정 (계정 없음)
+CREATE TABLE IF NOT EXISTS app_devices (
+  token TEXT PRIMARY KEY,
+  platform TEXT NOT NULL,
+  favorites TEXT NOT NULL DEFAULT '[]',
+  prefs TEXT NOT NULL DEFAULT '{}',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+-- 보낸 알림 (같은 일정을 두 번 보내지 않게 — 크론이 겹쳐 돌아도)
+CREATE TABLE IF NOT EXISTS app_push_log (
+  token TEXT NOT NULL,
+  event_key TEXT NOT NULL,
+  sent_at INTEGER NOT NULL,
+  PRIMARY KEY (token, event_key)
+);
 `;
 
 /** 이미 만들어진 DB 에 나중에 추가한 열 (없으면 ALTER TABLE 로 붙입니다) */
