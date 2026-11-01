@@ -10,8 +10,11 @@ import { Colors, Fonts, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatShort } from '@/shared/date';
 
+/** 아침판은 앱 카드뉴스, 금콩 스터디(점심판)는 웹 화면 */
 export const openIssue = (i: Pick<IssueInfo, 'date' | 'edition'>) =>
-  router.push({ pathname: '/briefing', params: { date: i.date, edition: i.edition } });
+  i.edition === 'morning'
+    ? router.push({ pathname: '/briefing', params: { date: i.date, edition: i.edition } })
+    : router.push({ pathname: '/web', params: { path: `/magazine/letter/${i.date}/noon`, title: '금콩 스터디' } });
 
 const EDITION = { morning: { name: '아침판', fg: 'onPrimary', bg: 'primary' }, noon: { name: '점심판', fg: 'onPrimary', bg: 'lemon' } } as const;
 

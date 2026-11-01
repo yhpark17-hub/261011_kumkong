@@ -1,5 +1,4 @@
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { openBrowserAsync } from 'expo-web-browser';
 import { useRef, useState } from 'react';
 import {
   Pressable,
@@ -18,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { briefingPath, type AppStory, type BriefingResponse, type Edition, type NearIssue } from '@/api/briefing';
 import { useApi } from '@/api/use-api';
 import { Deck } from '@/components/briefing/deck';
+import { openIssue } from '@/components/briefing/issue-card';
 import { LoadState } from '@/components/screen';
 import { Colors, Fonts, MaxContentWidth, Spacing } from '@/constants/theme';
 import { keepAll } from '@/lib/keep-all';
@@ -103,8 +103,12 @@ export default function BriefingScreen() {
               storiesY.current = e.nativeEvent.layout.y;
             }}>
             {stories.length === 0 ? (
-              <Pressable onPress={() => openBrowserAsync(data.issue.webUrl)} style={styles.webButton}>
-                <Text style={styles.webButtonText}>{edition === 'noon' ? '금콩 스터디 열기 ↗' : '웹에서 보기 ↗'}</Text>
+              <Pressable
+                onPress={() =>
+                  router.push({ pathname: '/web', params: { path: new URL(data.issue.webUrl).pathname, title: data.issue.label } })
+                }
+                style={styles.webButton}>
+                <Text style={styles.webButtonText}>{edition === 'noon' ? '금콩 스터디 열기' : '웹에서 보기'}</Text>
               </Pressable>
             ) : (
               stories.map((s) => (
@@ -175,7 +179,7 @@ function Timetable({
 
 function Near({ label, issue }: { label: string; issue: NearIssue }) {
   if (!issue) return <View style={styles.flex} />;
-  const open = () => router.push({ pathname: '/briefing', params: { date: issue.date, edition: issue.edition } });
+  const open = () => openIssue(issue);
   return (
     <Pressable onPress={open} style={[styles.near, styles.flex]}>
       <Text style={styles.nearLabel}>

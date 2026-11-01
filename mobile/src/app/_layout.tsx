@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 
 import { CatalogProvider } from '@/api/catalog';
 import { Colors, FONT_FILES, Fonts } from '@/constants/theme';
+import { BlocksProvider } from '@/hooks/blocks';
 import { FavoritesProvider } from '@/hooks/favorites';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -33,19 +34,22 @@ export default function RootLayout() {
     <ThemeProvider value={navTheme}>
       <CatalogProvider>
         <FavoritesProvider>
-          <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-          <Stack
-            screenOptions={{
-              headerTintColor: c.primaryText,
-              headerTitleStyle: { fontFamily: Fonts.bold, color: c.ink },
-              headerBackButtonDisplayMode: 'minimal',
-            }}>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="companies" options={{ title: '기관 정보' }} />
-            <Stack.Screen name="company/[id]" options={{ title: '' }} />
-            <Stack.Screen name="briefing" options={{ title: '금콩 브리핑' }} />
-            <Stack.Screen name="settings" options={{ title: '설정' }} />
-          </Stack>
+          <BlocksProvider>
+            <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+            <Stack
+              screenOptions={{
+                headerTintColor: c.primaryText,
+                headerTitleStyle: { fontFamily: Fonts.bold, color: c.ink },
+                headerBackButtonDisplayMode: 'minimal',
+              }}>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="companies" options={{ title: '기관 정보' }} />
+              <Stack.Screen name="company/[id]" options={{ title: '' }} />
+              <Stack.Screen name="briefing" options={{ title: '금콩 브리핑' }} />
+              <Stack.Screen name="web" options={{ title: '금콩' }} />
+              <Stack.Screen name="settings" options={{ title: '설정' }} />
+            </Stack>
+          </BlocksProvider>
         </FavoritesProvider>
       </CatalogProvider>
     </ThemeProvider>

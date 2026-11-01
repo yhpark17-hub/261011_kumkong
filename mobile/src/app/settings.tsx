@@ -1,11 +1,11 @@
 import Constants from 'expo-constants';
-import { openBrowserAsync } from 'expo-web-browser';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { router } from 'expo-router';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { siteUrl } from '@/constants/site';
 import { Radius, Spacing } from '@/constants/theme';
+import { useBlocks } from '@/hooks/blocks';
 import { useTheme } from '@/hooks/use-theme';
 
 const LINKS = [
@@ -16,6 +16,13 @@ const LINKS = [
 
 export default function SettingsScreen() {
   const c = useTheme();
+  const { blocked, clear } = useBlocks();
+
+  const confirmClear = () =>
+    Alert.alert('차단을 모두 풀까요?', '가렸던 글·댓글·후기·톡이 다시 보여요.', [
+      { text: '취소', style: 'cancel' },
+      { text: '모두 풀기', style: 'destructive', onPress: clear },
+    ]);
 
   return (
     <ThemedView style={styles.fill}>
@@ -28,12 +35,28 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.group}>
+          <ThemedText type="small">커뮤니티</ThemedText>
+          <ThemedView type="canvasSoft" style={styles.card}>
+            <View style={styles.row}>
+              <ThemedText>차단한 사용자 {blocked.length}명</ThemedText>
+              {blocked.length > 0 && (
+                <Pressable onPress={confirmClear} hitSlop={8}>
+                  <ThemedText type="label" themeColor="ruby">
+                    모두 풀기
+                  </ThemedText>
+                </Pressable>
+              )}
+            </View>
+          </ThemedView>
+        </View>
+
+        <View style={styles.group}>
           <ThemedText type="small">정보</ThemedText>
           <ThemedView type="canvasSoft" style={styles.card}>
             {LINKS.map((l, i) => (
               <Pressable
                 key={l.path}
-                onPress={() => openBrowserAsync(siteUrl(l.path))}
+                onPress={() => router.push({ pathname: '/web', params: { path: l.path, title: l.label } })}
                 style={[styles.row, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.hairline }]}>
                 <ThemedText>{l.label}</ThemedText>
                 <ThemedText type="small">›</ThemedText>

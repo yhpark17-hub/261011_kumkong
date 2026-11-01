@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import type { BriefingListResponse } from '@/api/briefing';
 import { useApi } from '@/api/use-api';
 import { IssueHero, IssueRow } from '@/components/briefing/issue-card';
-import { ComingSoon } from '@/components/coming-soon';
+import { MagazineList } from '@/components/magazine-list';
 import { LoadState, Screen } from '@/components/screen';
 import { SectionHeader } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -45,7 +45,7 @@ export default function NewsScreen() {
           )}
         </>
       )}
-      <ComingSoon title="매거진" desc="필기·면접·기관 딥다이브 글이 여기에 모여요." />
+      <MagazineList />
     </Screen>
   );
 }

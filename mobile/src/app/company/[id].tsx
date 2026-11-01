@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { openBrowserAsync } from 'expo-web-browser';
 import { type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -13,7 +13,6 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Card, CompanyAvatar, DDayBadge, FavoriteStar, PhaseTag, Tag } from '@/components/ui';
 import { BLIND_COLOR, EVENT_COLOR } from '@/constants/events';
-import { siteUrl } from '@/constants/site';
 import { Fonts, Radius, Spacing, type ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useToday } from '@/hooks/use-today';
@@ -152,10 +151,10 @@ export default function CompanyScreen() {
                 </Pressable>
               )}
               <Pressable
-                onPress={() => openBrowserAsync(siteUrl(`/companies/${id}`))}
+                onPress={() => router.push({ pathname: '/web', params: { path: `/companies/${id}`, title: brief?.shortName ?? '기관' } })}
                 style={[styles.button, { backgroundColor: c.canvasSoft }]}>
                 <ThemedText type="label" themeColor="inkSecondary">
-                  금콩 웹에서 보기
+                  응시자 톡·콩밭 글 보기
                 </ThemedText>
               </Pressable>
             </View>

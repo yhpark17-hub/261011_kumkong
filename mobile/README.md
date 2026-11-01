@@ -10,6 +10,11 @@
 - 관심 기관: 기기에만 저장 (`kumkong:favorites`, 계정 없음)
 - 아침 브리핑: 사이트 `/api/app/v1/briefing`이 카드 장 목록(그림 주소·괄호 풀이·막대 높이)까지 계산해 주고, 앱은 그리기만 (`src/components/briefing/`). 카드 그림은 `/api/app/v1/pic/[name]` PNG
 - 한글 줄바꿈: iOS는 `lineBreakStrategyIOS="hangul-word"`, Android·웹은 `src/lib/keep-all.ts`
+- 웹 화면(콩밭·필기 후기·매거진 글·금콩 스터디): `src/components/site-web-view.tsx`
+  - user-agent 끝 `KumkongApp/버전` → 사이트가 머리·탭·푸터·광고를 숨김 (사이트 `src/lib/app-view.ts`, 웹에서 확인할 땐 `?kk_app=1`)
+  - 앱에 같은 화면이 있는 링크(캘린더·기관·아침판)는 앱 화면으로, 바깥 링크는 인앱 브라우저로 (`src/lib/site-links.ts`)
+  - 사이트의 '차단' → 글쓴이 열쇠(data-ak)를 이 기기에 저장(`src/hooks/blocks.tsx`)하고 가리는 CSS를 넣음. 설정에서 모두 풀기
+- 콩밭·필기 후기는 처음 열 때 이용 규칙 동의 (`src/components/community-gate.tsx`)
 - `src/shared/`: 사이트 `src/lib`의 순수 모듈 복사본 — 사이트에서 고친 뒤 `node scripts/sync-shared.mjs`
 
 ## 실행
