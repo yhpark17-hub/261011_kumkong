@@ -2,8 +2,10 @@ import { Link } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import type { BriefingListResponse } from '@/api/briefing';
 import { useCatalog } from '@/api/catalog';
-import { ComingSoon } from '@/components/coming-soon';
+import { useApi } from '@/api/use-api';
+import { IssueHero } from '@/components/briefing/issue-card';
 import { openCompany, UrgentCard } from '@/components/events';
 import { LoadState, Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -42,13 +44,26 @@ export default function HomeScreen() {
         <LoadState loading={catalog.loading} error={catalog.error} onRetry={catalog.refresh} />
       ) : (
         <>
+          <TodayBriefing />
           <Favorites today={today} ids={favorites} />
           <Urgent today={today} />
           <NewPostings today={today} />
-          <ComingSoon title="오늘의 브리핑" desc="매일 아침 금콩 브리핑이 여기에 올라와요." />
         </>
       )}
     </Screen>
+  );
+}
+
+/** 가장 최근 아침판 — 누르면 카드뉴스 */
+function TodayBriefing() {
+  const { data } = useApi<BriefingListResponse>('/briefings');
+  const morning = data?.items.find((i) => i.edition === 'morning');
+  if (!morning) return null;
+  return (
+    <View style={styles.section}>
+      <SectionHeader title="오늘의 브리핑" href="/news" more="지난 브리핑" />
+      <IssueHero issue={morning} />
+    </View>
   );
 }
 

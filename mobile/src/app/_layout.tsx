@@ -43,6 +43,7 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="companies" options={{ title: '기관 정보' }} />
             <Stack.Screen name="company/[id]" options={{ title: '' }} />
+            <Stack.Screen name="briefing" options={{ title: '금콩 브리핑' }} />
             <Stack.Screen name="settings" options={{ title: '설정' }} />
           </Stack>
         </FavoritesProvider>

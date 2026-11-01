@@ -2,6 +2,7 @@ import { StyleSheet, Text, type TextProps } from 'react-native';
 
 import { Fonts, ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { keepAll } from '@/lib/keep-all';
 
 export type ThemedTextProps = TextProps & {
   type?: 'title' | 'section' | 'heading' | 'default' | 'read' | 'small' | 'caption' | 'label';
@@ -10,11 +11,16 @@ export type ThemedTextProps = TextProps & {
 
 const MUTED = new Set(['small', 'caption']);
 
-export function ThemedText({ style, type = 'default', themeColor, ...rest }: ThemedTextProps) {
+export function ThemedText({ style, type = 'default', themeColor, children, ...rest }: ThemedTextProps) {
   const theme = useTheme();
   const color = theme[themeColor ?? (MUTED.has(type) ? 'inkMute' : 'ink')];
 
-  return <Text style={[{ color }, styles[type], style]} {...rest} />;
+  // 한글은 낱말 단위로 줄바꿈 (사이트 word-break: keep-all)
+  return (
+    <Text style={[{ color }, styles[type], style]} lineBreakStrategyIOS="hangul-word" {...rest}>
+      {typeof children === 'string' ? keepAll(children) : children}
+    </Text>
+  );
 }
 
 const styles = StyleSheet.create({
