@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { isAppView } from "@/lib/app-view";
 import { ADSENSE_CLIENT } from "@/lib/site";
 
 declare global {
@@ -34,7 +35,8 @@ export function AdSlot({ slot, variant, className = "" }: Props) {
   useEffect(() => {
     const el = ref.current;
     // 같은 <ins>에 두 번 push하면 AdSense가 오류를 냅니다 (페이지 복귀 시 effect 재실행 대비).
-    if (!enabled || !el || el.dataset.adsbygoogleStatus) return;
+    // 앱 웹뷰에서는 광고를 요청하지 않아요 (자리도 CSS로 숨김)
+    if (!enabled || !el || el.dataset.adsbygoogleStatus || isAppView()) return;
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch {
@@ -46,7 +48,7 @@ export function AdSlot({ slot, variant, className = "" }: Props) {
   if (!enabled) return null;
 
   return (
-    <div className={className}>
+    <div className={className} data-app-hide>
       <div className="mb-1 text-right type-micro-cap text-ink-mute">광고</div>
       <ins
         ref={ref}

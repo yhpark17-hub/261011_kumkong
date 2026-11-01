@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState, useTransition } from "react";
-import { Flag, ThumbsUp } from "lucide-react";
+import { Ban, Flag, ThumbsUp } from "lucide-react";
 import {
   addComment,
   deleteComment,
@@ -12,6 +12,8 @@ import {
   type ActionState,
   type ReportTarget,
 } from "@/app/board/actions";
+import { postToApp } from "@/lib/app-view";
+import { useAppView } from "../app-view";
 import { cn } from "../ui";
 
 /** 조회수 기록 (같은 탭에서 새로고침해도 한 번만) */
@@ -53,29 +55,53 @@ export function LikeButton({ postId, initial }: { postId: number; initial: numbe
   );
 }
 
-export function ReportButton({ type, id, small = false }: { type: ReportTarget; id: number; small?: boolean }) {
+export function ReportButton({ type, id, small = false, author }: { type: ReportTarget; id: number; small?: boolean; author?: string }) {
   const [done, setDone] = useState<string | null>(null);
   const [pending, start] = useTransition();
   if (done) return <span className="type-micro text-ink-mute">{done}</span>;
   return (
+    <>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() => {
+          const reason = window.prompt("신고 사유를 적어 주세요 (예: 욕설, 광고, 개인정보, 문제 원문 유출)");
+          if (reason === null) return;
+          start(async () => {
+            const res = await reportItem(type, id, reason);
+            setDone(res.already ? "이미 신고했어요" : "신고가 접수됐어요");
+          });
+        }}
+        className={cn(
+          "inline-flex items-center gap-1 text-ink-mute hover:text-ruby",
+          small ? "type-micro" : "type-caption",
+        )}
+      >
+        <Flag className={small ? "h-3 w-3" : "h-3.5 w-3.5"} strokeWidth={1.75} />
+        신고
+      </button>
+      {author && <BlockButton author={author} small={small} />}
+    </>
+  );
+}
+
+/**
+ * 이 사용자 차단 — 금콩 앱 안에서만 보여요. 차단 목록은 앱이 휴대폰에 두고, 이 글쓴이 열쇠(data-ak)가 붙은 글·댓글·후기·톡을 가려요.
+ */
+function BlockButton({ author, small }: { author: string; small: boolean }) {
+  const app = useAppView();
+  if (!app) return null;
+  return (
     <button
       type="button"
-      disabled={pending}
       onClick={() => {
-        const reason = window.prompt("신고 사유를 적어 주세요 (예: 욕설, 광고, 개인정보, 문제 원문 유출)");
-        if (reason === null) return;
-        start(async () => {
-          const res = await reportItem(type, id, reason);
-          setDone(res.already ? "이미 신고했어요" : "신고가 접수됐어요");
-        });
+        if (!window.confirm("이 사용자의 글·댓글·후기·톡을 이 기기에서 모두 가릴까요?\n앱 설정에서 다시 보이게 할 수 있어요.")) return;
+        postToApp({ type: "block", author });
       }}
-      className={cn(
-        "inline-flex items-center gap-1 text-ink-mute hover:text-ruby",
-        small ? "type-micro" : "type-caption",
-      )}
+      className={cn("inline-flex items-center gap-1 text-ink-mute hover:text-ruby", small ? "type-micro" : "type-caption")}
     >
-      <Flag className={small ? "h-3 w-3" : "h-3.5 w-3.5"} strokeWidth={1.75} />
-      신고
+      <Ban className={small ? "h-3 w-3" : "h-3.5 w-3.5"} strokeWidth={1.75} />
+      차단
     </button>
   );
 }

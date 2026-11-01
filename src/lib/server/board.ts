@@ -2,9 +2,10 @@ import "server-only";
 import type { Row } from "@libsql/client";
 import { PAGE_SIZE, isBoardCategory, type BoardCategory, type CommentItem, type PostDetail, type PostSummary } from "../board-meta";
 import { parseAttachments } from "../attachments";
+import { authorKey } from "./author-key";
 import { STATUS, db } from "./db";
 
-const SUMMARY_COLS = `id, category, company_id, title, nickname, ip_prefix, is_admin, is_notice, views, likes, comment_count, status, created_at,
+const SUMMARY_COLS = `id, category, company_id, title, nickname, ip_prefix, ip_hash, is_admin, is_notice, views, likes, comment_count, status, created_at,
   instr(attachments, '"kind":"image"') > 0 AS has_image, instr(attachments, '"kind":"file"') > 0 AS has_file`;
 
 function toSummary(r: Row): PostSummary {
@@ -15,6 +16,7 @@ function toSummary(r: Row): PostSummary {
     title: String(r.title),
     nickname: String(r.nickname),
     ipPrefix: String(r.ip_prefix),
+    authorKey: authorKey(r.ip_hash, Boolean(r.is_admin)),
     isAdmin: Boolean(r.is_admin),
     isNotice: Boolean(r.is_notice),
     views: Number(r.views),
@@ -97,7 +99,7 @@ export async function getPostSecret(id: number): Promise<{ pwHash: string | null
 export async function listComments(postId: number, includeHidden: boolean): Promise<CommentItem[]> {
   const client = await db();
   const res = await client.execute({
-    sql: `SELECT id, body, nickname, ip_prefix, is_admin, status, created_at FROM comments
+    sql: `SELECT id, body, nickname, ip_prefix, ip_hash, is_admin, status, created_at FROM comments
           WHERE post_id = ? AND status ${includeHidden ? "!= 2" : "= 0"} ORDER BY id`,
     args: [postId],
   });
@@ -106,6 +108,7 @@ export async function listComments(postId: number, includeHidden: boolean): Prom
     body: String(r.body),
     nickname: String(r.nickname),
     ipPrefix: String(r.ip_prefix),
+    authorKey: authorKey(r.ip_hash, Boolean(r.is_admin)),
     isAdmin: Boolean(r.is_admin),
     status: Number(r.status),
     createdAt: Number(r.created_at),

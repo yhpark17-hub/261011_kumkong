@@ -592,3 +592,8 @@
     animation: none;
   }
 }
+
+/* 금콩 앱 웹뷰 — 머리·하단 탭·푸터·광고는 앱이 따로 그리거나 쓰지 않아요 (html[data-app]: lib/app-view.ts 의 APP_MODE_SCRIPT) */
+html[data-app] [data-app-hide] {
+  display: none !important;
+}

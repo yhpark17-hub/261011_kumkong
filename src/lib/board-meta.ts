@@ -50,6 +50,8 @@ export interface PostSummary {
   title: string;
   nickname: string;
   ipPrefix: string;
+  /** 글쓴이 열쇠 (앱의 '이 사용자 차단'용 — 운영자 글은 "") */
+  authorKey: string;
   isAdmin: boolean;
   isNotice: boolean;
   views: number;
@@ -74,6 +76,8 @@ export interface CommentItem {
   body: string;
   nickname: string;
   ipPrefix: string;
+  /** 글쓴이 열쇠 (앱의 '이 사용자 차단'용) */
+  authorKey: string;
   isAdmin: boolean;
   status: number;
   createdAt: number;

@@ -81,7 +81,7 @@ export async function CompanyCommunity({ companyId, companyName }: { companyId: 
           ) : (
             <ul className="mt-2 divide-y divide-hairline">
               {posts.map((p) => (
-                <li key={p.id}>
+                <li key={p.id} data-ak={p.authorKey || undefined}>
                   <Link href={`/board/${p.id}`} className="group flex items-center gap-2 py-3">
                     <CategoryTag category={p.category} />
                     <span className="min-w-0 flex-1 truncate type-body-md text-ink group-hover:underline">{p.title}</span>

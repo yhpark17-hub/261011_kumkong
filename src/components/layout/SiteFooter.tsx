@@ -26,7 +26,7 @@ const GROUPS = [
 /** footer-light: canvas, ink-mute, caption, 64px 24px */
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-hairline bg-canvas type-caption text-ink-mute">
+    <footer data-app-hide className="mt-24 border-t border-hairline bg-canvas type-caption text-ink-mute">
       <div className="mx-auto grid max-w-[1200px] gap-8 px-6 py-16 md:grid-cols-[2fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-2">

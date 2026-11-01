@@ -13,6 +13,7 @@ import {
   type ReviewStats,
   type UnsolvedStat,
 } from "../review-meta";
+import { authorKey } from "./author-key";
 import { STATUS, db } from "./db";
 import { voterToken } from "./security";
 
@@ -309,7 +310,7 @@ export async function reviewStats(exam: ExamInfo): Promise<ReviewStats> {
 export async function reviewComments(examId: string, includeHidden = false): Promise<ReviewComment[]> {
   const client = await db();
   const res = await client.execute({
-    sql: `SELECT id, one_liner, detail, track, overall, status, created_at FROM exam_reviews
+    sql: `SELECT id, one_liner, detail, track, overall, status, ip_hash, created_at FROM exam_reviews
           WHERE exam_id = ? AND status ${includeHidden ? "!= 2" : "= 0"} AND (one_liner IS NOT NULL OR detail IS NOT NULL)
           ORDER BY id DESC LIMIT 60`,
     args: [examId],
@@ -321,6 +322,7 @@ export async function reviewComments(examId: string, includeHidden = false): Pro
     track: (r.track as string | null) ?? null,
     overall: Number(r.overall),
     status: Number(r.status),
+    authorKey: authorKey(r.ip_hash),
     createdAt: Number(r.created_at),
   }));
 }

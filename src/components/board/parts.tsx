@@ -123,7 +123,7 @@ function PostRow({ post: p, todayKey, pinned = false }: { post: PostSummary; tod
   const time = formatPostTime(p.createdAt, todayKey);
   const company = p.companyId ? getCompany(p.companyId) : undefined;
   return (
-    <li className={cn("border-b border-hairline", pinned && "bg-canvas-soft", !pinned && p.isAdmin && "bg-canvas-cream/50")}>
+    <li data-ak={p.authorKey || undefined} className={cn("border-b border-hairline", pinned && "bg-canvas-soft", !pinned && p.isAdmin && "bg-canvas-cream/50")}>
       {/* 데스크톱 */}
       <div className={cn("hidden min-h-11 py-2 text-center type-body-md", COLS)}>
         <span className="tabular type-caption text-ink-mute">

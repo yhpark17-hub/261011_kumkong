@@ -126,7 +126,7 @@ async function PostView({ rawId }: { rawId: string }) {
   return (
     <>
       <ViewCounter postId={id} />
-      <article className={cn("card overflow-hidden shadow-level-1", post.isAdmin && "!border-brand-dark")}>
+      <article data-ak={post.authorKey || undefined} className={cn("card overflow-hidden shadow-level-1", post.isAdmin && "!border-brand-dark")}>
         {post.isAdmin && (
           <div className="flex items-center gap-2 bg-brand-dark px-6 py-2.5 type-caption text-on-primary md:px-8">
             <BadgeCheck className="h-4 w-4" strokeWidth={1.75} />
@@ -177,7 +177,7 @@ async function PostView({ rawId }: { rawId: string }) {
         </div>
 
         <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline px-6 py-4 md:px-8">
-          <ReportButton type="post" id={post.id} />
+          <ReportButton type="post" id={post.id} author={post.authorKey} />
           <div className="flex flex-wrap items-center gap-2">
             {canEdit && (
               <Link href={`/board/${post.id}/edit`} className="btn btn-sm btn-toggle">
@@ -212,6 +212,7 @@ async function PostView({ rawId }: { rawId: string }) {
             {comments.map((c) => (
               <li
                 key={c.id}
+                data-ak={c.authorKey || undefined}
                 className={cn(
                   "border-b border-hairline py-4",
                   c.isAdmin && "-mx-3 rounded-md bg-canvas-cream/60 px-3",
@@ -223,7 +224,7 @@ async function PostView({ rawId }: { rawId: string }) {
                   <span className="tabular text-ink-mute">{formatPostDateTime(c.createdAt)}</span>
                   {c.status !== 0 && <span className="tag bg-ev-doc-soft text-ev-doc">숨김</span>}
                   <span className="ml-auto flex items-center gap-3">
-                    <ReportButton type="comment" id={c.id} small />
+                    <ReportButton type="comment" id={c.id} small author={c.authorKey} />
                     <DeleteCommentButton commentId={c.id} admin={admin} isAdminComment={c.isAdmin} />
                   </span>
                 </div>

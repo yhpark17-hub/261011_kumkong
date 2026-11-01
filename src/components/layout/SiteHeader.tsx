@@ -89,6 +89,7 @@ export function SiteHeader() {
 
   return (
     <header
+      data-app-hide
       className={cn(
         "sticky top-0 z-30 transition-colors duration-200",
         scrolled || menuOpen ? "border-b border-hairline bg-canvas" : "border-b border-transparent bg-transparent",

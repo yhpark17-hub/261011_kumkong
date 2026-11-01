@@ -1,5 +1,6 @@
 import "server-only";
 import type { Row } from "@libsql/client";
+import { authorKey } from "./author-key";
 import { TALK_ADMIN_NAME, TALK_PAGE, talkName, type TalkItem } from "../talk-meta";
 import { parseKey } from "../date";
 import { STATUS, db } from "./db";
@@ -28,6 +29,7 @@ function toItem(r: Row, room: string, voter: string | null, reviewers: Set<strin
     body: hidden && !admin ? "" : String(r.body),
     createdAt: Number(r.created_at),
     mine: voter != null && v === voter,
+    authorKey: authorKey(r.ip_hash, isAdmin),
     reviewed: !isAdmin && reviewers.has(v),
     admin: isAdmin,
     examId,
@@ -60,7 +62,7 @@ export async function listTalk(
   }
   const newest = !after;
   const res = await client.execute({
-    sql: `SELECT id, exam_id, voter, body, status, reports, is_admin, created_at FROM exam_talk WHERE ${where.join(" AND ")}
+    sql: `SELECT id, exam_id, voter, body, status, reports, is_admin, ip_hash, created_at FROM exam_talk WHERE ${where.join(" AND ")}
           ORDER BY id ${newest ? "DESC" : "ASC"} LIMIT ?`,
     args: [...args, TALK_PAGE + 1],
   });

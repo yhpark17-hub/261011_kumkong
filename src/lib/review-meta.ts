@@ -151,6 +151,8 @@ export interface ReviewComment {
   track: string | null;
   overall: number;
   status: number;
+  /** 글쓴이 열쇠 (앱의 '이 사용자 차단'용) */
+  authorKey: string;
   createdAt: number;
 }
 

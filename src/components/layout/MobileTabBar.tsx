@@ -23,6 +23,7 @@ function Tabs({ pathname }: { pathname: string | null }) {
   if (pathname?.startsWith("/admin")) return null;
   return (
     <nav
+      data-app-hide
       aria-label="하단 메뉴"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-canvas/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
     >
@@ -56,7 +57,7 @@ export function MobileTabBar() {
   return (
     <>
       {/* 탭에 가려지지 않게 페이지 끝에 같은 높이만큼 여백 */}
-      <div aria-hidden className="h-[calc(3.5rem+env(safe-area-inset-bottom))] md:hidden" />
+      <div aria-hidden data-app-hide className="h-[calc(3.5rem+env(safe-area-inset-bottom))] md:hidden" />
       <Suspense fallback={<Tabs pathname={null} />}>
         <ActiveTabs />
       </Suspense>

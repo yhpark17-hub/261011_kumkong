@@ -241,7 +241,7 @@ export function ExamTalk({
               {items.map((m) => {
                 const hiddenForMe = Boolean(m.hidden) && !admin;
                 return (
-                  <li key={m.id} className={cn("flex", m.mine && "justify-end")}>
+                  <li key={m.id} data-ak={m.authorKey || undefined} className={cn("flex", m.mine && "justify-end")}>
                     <div className={cn("max-w-[85%]", m.mine && "text-right")}>
                       <p className={cn("flex flex-wrap items-center gap-1.5 type-micro text-ink-mute", m.mine && "justify-end")}>
                         {m.admin ? (
@@ -299,7 +299,7 @@ export function ExamTalk({
                         !m.admin &&
                         !hiddenForMe && (
                           <span className="mt-0.5 block">
-                            <ReportButton type="talk" id={m.id} small />
+                            <ReportButton type="talk" id={m.id} small author={m.authorKey} />
                           </span>
                         )
                       )}

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -8,6 +7,8 @@ import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { GradientMesh } from "@/components/layout/GradientMesh";
 import { FeedbackFab, FeedbackHost } from "@/components/feedback/Feedback";
 import { Tracker } from "@/components/analytics/Tracker";
+import { AdsenseScript } from "@/components/app-view";
+import { APP_MODE_SCRIPT } from "@/lib/app-view";
 import { ADSENSE_CLIENT, OG_IMAGE, SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -66,8 +67,11 @@ const jsonLd = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ko" className="h-full antialiased">
+    // suppressHydrationWarning: 금콩 앱 웹뷰에서만 아래 스크립트가 data-app 을 붙여요
+    <html lang="ko" className="h-full antialiased" suppressHydrationWarning>
       <body className="relative isolate flex min-h-full flex-col">
+        {/* 앱 웹뷰 표시 — 그리기 전에 붙여야 머리·탭이 깜빡이지 않아요 */}
+        <script dangerouslySetInnerHTML={{ __html: APP_MODE_SCRIPT }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -80,15 +84,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <FeedbackFab />
         <FeedbackHost />
         <Tracker />
-        {ADSENSE_CLIENT && (
-          <Script
-            id="adsbygoogle-init"
-            async
-            strategy="afterInteractive"
-            crossOrigin="anonymous"
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-          />
-        )}
+        {ADSENSE_CLIENT && <AdsenseScript client={ADSENSE_CLIENT} />}
       </body>
     </html>
   );

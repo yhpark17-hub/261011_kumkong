@@ -18,6 +18,8 @@ export interface TalkItem {
   createdAt: number;
   /** 내가 쓴 글 */
   mine: boolean;
+  /** 글쓴이 열쇠 (앱의 '이 사용자 차단'용 — 운영자 글은 "") */
+  authorKey: string;
   /** 이 시험에 후기를 남긴 사람 */
   reviewed: boolean;
   /** 운영자가 쓴 글 ('금콩 운영자' 표시) */

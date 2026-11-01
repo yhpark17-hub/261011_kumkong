@@ -268,7 +268,7 @@ async function ExamLive({ exam, asVisitor }: { exam: ExamInfo; asVisitor: Promis
             ) : (
               <ul className="mt-4 border-t border-hairline">
                 {comments.map((c) => (
-                  <li key={c.id} className={cn("border-b border-hairline py-4", c.status !== 0 && "opacity-60")}>
+                  <li key={c.id} data-ak={c.authorKey || undefined} className={cn("border-b border-hairline py-4", c.status !== 0 && "opacity-60")}>
                     <div className="flex flex-wrap items-center gap-2 type-caption">
                       <span className={cn("tag", c.overall >= 4 ? "bg-ev-doc-soft text-ev-doc" : c.overall <= 2 ? "bg-ev-final-soft text-ev-final" : "bg-canvas-soft text-ink-secondary")}>
                         {OVERALL_OPTIONS.find((o) => o.value === c.overall)?.label}
@@ -277,7 +277,7 @@ async function ExamLive({ exam, asVisitor }: { exam: ExamInfo; asVisitor: Promis
                       <span className="tabular text-ink-mute">{formatPostDateTime(c.createdAt)}</span>
                       {c.status !== 0 && <span className="tag bg-ev-doc-soft text-ev-doc">숨김</span>}
                       <span className="ml-auto">
-                        <ReportButton type="review" id={c.id} small />
+                        <ReportButton type="review" id={c.id} small author={c.authorKey} />
                       </span>
                     </div>
                     {c.oneLiner && <p className="mt-2 type-body-md !font-normal text-ink">{c.oneLiner}</p>}
