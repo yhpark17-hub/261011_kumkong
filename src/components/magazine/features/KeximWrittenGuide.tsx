@@ -79,7 +79,7 @@ function Tabs<T extends string>({ items, value, onChange, label }: { items: { ke
           role="tab"
           aria-selected={value === x.key}
           onClick={() => onChange(x.key)}
-          className={cn("min-w-0 flex-1 rounded-lg px-2.5 py-2 type-body-md font-semibold whitespace-nowrap", anim, value === x.key ? "bg-canvas text-ink shadow-level-1" : "text-ink-secondary hover:text-ink")}
+          className={cn("min-w-0 flex-1 rounded-lg px-2 py-2 type-body-md font-semibold [word-break:keep-all]", anim, value === x.key ? "bg-canvas text-ink shadow-level-1" : "text-ink-secondary hover:text-ink")}
         >
           {x.label}
         </button>
@@ -119,14 +119,14 @@ function Hook() {
         </ol>
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
-        <button type="button" onClick={() => go(3)} className={cn("flex items-center justify-between gap-3 rounded-xl bg-brand-dark px-4 py-3 text-left text-on-primary", anim, "hover:shadow-level-2")}>
+        <button type="button" onClick={() => go(3, true)} className={cn("flex items-center justify-between gap-3 rounded-xl bg-brand-dark px-4 py-3 text-left text-on-primary", anim, "hover:shadow-level-2")}>
           <span>
             <span className="block type-caption text-on-primary/75">11월 7일 2차를 본다면</span>
             <span className="block type-body-md font-bold">2차(전공) 장으로 바로 가기</span>
           </span>
           <ArrowRight className="h-5 w-5 shrink-0" strokeWidth={2.2} />
         </button>
-        <button type="button" onClick={() => go(1)} className={cn("flex items-center justify-between gap-3 rounded-xl border-2 border-brand-dark/25 bg-canvas px-4 py-3 text-left text-ink", anim, "hover:border-brand-dark")}>
+        <button type="button" onClick={() => go(1, true)} className={cn("flex items-center justify-between gap-3 rounded-xl border-2 border-brand-dark/25 bg-canvas px-4 py-3 text-left text-ink", anim, "hover:border-brand-dark")}>
           <span>
             <span className="block type-caption text-ink-mute">다음에 수은을 쓸 거라면</span>
             <span className="block type-body-md font-bold">구조부터 보기</span>
@@ -680,10 +680,10 @@ const SUBJECTS: Record<SubjectKey, { label: string; notice: string[]; talk?: str
     topics: ["직무특성모형", "공정성이론", "직무충실화"],
   },
   exim: {
-    label: "수은다운 것",
+    label: "수출금융",
     notice: ["해외진출전략, 외환·국제금융 이론 및 국제금융시장에 대한 이해", "결제방식 및 관련 금융상품에 관한 지식"],
     rumor: "2025년엔 턴키 계약 같은 수출금융 용어가 나왔다는 후기가 있어요.",
-    kong: "경영학 교과서 밖의 말이 섞일 수 있다는 정도만 기억해 두세요.",
+    kong: "교과서 밖의 수출금융 용어가 섞일 수 있다는 정도만 기억해 두세요.",
     topics: ["턴키 계약"],
   },
 };
@@ -978,7 +978,7 @@ function Languages() {
 
       <Card title="그래서 몇 점이면 될까요?">
         <div className="space-y-2.5">
-          <Fact kind="talk">‘수은까지 볼 거면 토익 900은 해 두라’는 말이 돌아요. ‘어학 따잇’이라는 별명도 여기서 나왔어요.</Fact>
+          <Fact kind="talk">‘수은까지 볼 거면 토익 900은 해 두라’는 말이 돌아요. ‘어학 따잇’이라는 말까지 돌아요.</Fact>
           <Fact kind="notice">점수별 계산법은 공고에 없어요. 그래서 ‘몇 점이면 안전하다’고 단정할 수 없어요.</Fact>
           <Fact kind="notice">접수 마감까지 취득하고 12월 28일에 유효한 성적만 인정돼요. 국내 정기 시험만 돼요.</Fact>
         </div>
@@ -993,7 +993,10 @@ function Languages() {
             </li>
           ))}
         </ul>
-        <p className="mt-3 type-body-md text-ink-secondary ko-justify">실무경력은 필요 없고, 최종합격자만 우대해요. 가점 크기는 공고에 없어요. 인턴 출신도 면접에서 떨어졌다는 후기가 있으니 우대를 보장으로 읽진 마세요.</p>
+        <p className="mt-3 type-body-md text-ink-secondary ko-justify">실무경력은 필요 없고, 최종합격자만 우대해요. 가점 크기는 공고에 없어요.</p>
+        <div className="mt-3">
+          <Fact kind="talk">인턴 출신도 면접에서 떨어졌다는 후기가 있어요. 우대를 보장으로 읽진 마세요.</Fact>
+        </div>
       </Card>
 
       <Card title="제2외국어와 그 밖의 우대" kind="notice">
@@ -1023,7 +1026,7 @@ const LENSES = {
 } as const;
 
 const PLAN = {
-  early: { label: "1차 다음 날~D-8", items: ["직무설명서 필요지식을 한 줄씩 내 단원에 연결하기", "세 과목 핵심 단원을 손으로 서술해 보기"] },
+  early: { label: "D-13~D-8", items: ["직무설명서 필요지식을 한 줄씩 내 단원에 연결하기", "세 과목 핵심 단원을 손으로 서술해 보기"] },
   late: { label: "D-7~D-2", items: ["시간을 재고 큰 문제 하나를 끝까지 쓰기", "논술은 주장·근거·결론 개요만 빠르게 잡기"] },
   eve: { label: "D-1", items: ["새 단원은 펴지 않기", "장소·시간·수험표 안내를 다시 읽기", "자주 쓰는 정의 몇 개만 손으로 풀기"] },
 } as const;

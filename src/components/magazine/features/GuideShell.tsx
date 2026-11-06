@@ -13,7 +13,7 @@ import { KongMascot } from "../KongMascot";
 export const anim = "transition-all duration-300 ease-out motion-reduce:transition-none";
 
 /** 다른 장으로 가기 — 표지·본문 속 '몇 장 보기' 버튼이 써요 (가이드 밖에선 아무 일도 안 해요) */
-const GoContext = createContext<(i: number) => void>(() => {});
+const GoContext = createContext<(i: number, reveal?: boolean) => void>(() => {});
 export const useGuideGo = () => useContext(GoContext);
 
 /** 눌러 보라는 작은 안내 */
@@ -183,14 +183,15 @@ export function GuideShell({
     bar.scrollTo({ left: t.offsetLeft - bar.clientWidth / 2 + t.clientWidth / 2, behavior: "smooth" });
   }, [ch]);
   const go = useCallback(
-    (i: number) => {
+    (i: number, reveal = false) => {
       if (i < 0 || i >= chapters.length) return;
       setCh(i);
       setMoved(true);
-      // 장을 바꾸면 새 장 머리가 목차 줄 바로 아래에 오게
+      // 장을 바꾸면 새 장 머리가 목차 줄 바로 아래에 오게 (reveal: 표지에서 누르면 아래로도 내려가요)
       const bar = top.current?.getBoundingClientRect().bottom ?? 0;
       const p = panel.current?.getBoundingClientRect().top ?? 0;
       if (p < bar) window.scrollTo({ top: window.scrollY + p - bar, behavior: "smooth" });
+      else if (reveal && top.current) window.scrollTo({ top: window.scrollY + p - parseFloat(getComputedStyle(top.current).top) - top.current.offsetHeight, behavior: "smooth" });
     },
     [chapters.length],
   );
