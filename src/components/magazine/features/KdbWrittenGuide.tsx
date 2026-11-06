@@ -13,6 +13,7 @@ import { Explain, GuideShell, KongSays, TryHint, anim, type GuideChapter } from 
  */
 
 const REVIEW_HREF = "/reviews/kdb-2026-10-24";
+const NEXT_HREF = "/magazine/9";
 const NOTICE_URL = "https://job.alio.go.kr/recruitview.do?idx=304398";
 
 /* ------------------------------------------------------------------ */
@@ -956,7 +957,10 @@ function Wrap() {
         <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-0.5" strokeWidth={2} />
       </Link>
 
-      <p className="type-body-md text-ink-secondary">다음 편은 한국거래소 경영 필기예요.</p>
+      <Link href={NEXT_HREF} className="flex items-center justify-between gap-3 rounded-xl border-2 border-brand-dark/20 bg-canvas px-4 py-3 type-body-md font-semibold text-ink hover:border-brand-dark">
+        <span className="[word-break:keep-all]">2편 · 수은 경영 필기 보기</span>
+        <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.2} />
+      </Link>
 
       <div className="border-t border-hairline pt-4 type-caption text-ink-mute [word-break:keep-all]">
         <p>공고로 확인한 내용과 준비생 후기를 구분해 썼어요.</p>
@@ -1047,7 +1051,7 @@ export function KdbWrittenGuide({ title }: { title: string }) {
   return (
     <GuideShell
       chapters={CHAPTERS}
-      eyebrow="금콩 인터랙티브 · 산은 필기"
+      eyebrow="금콩 인터랙티브 · 기관별 필기 완전정리 #1"
       heading={title}
       sub="10월 24일 산은 경영 필기, 범위·시간·컷을 공고와 후기로 나눠 한 장씩 정리했어요."
       mascot={<KongMascot hold="pencil" sweat className="h-24 w-24 shrink-0 md:h-32 md:w-32" />}
