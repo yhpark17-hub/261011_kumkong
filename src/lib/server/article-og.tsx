@@ -1,9 +1,11 @@
 import "server-only";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import type { CSSProperties, ReactNode } from "react";
 import type { ArticleSummary, ArticleThumb, ThumbScale } from "@/lib/magazine-meta";
 import { captionFit, fitText, headlineFit } from "../og-text";
-import { BOND_SIGN, BOND_TITLE, DOC_TAG, FUND_BADGE, JOURNEY_STOPS, ROUND_SHEETS, SHIP_SIGN, SIGN, articleSceneSvg } from "./article-scenes";
+import { BOND_SIGN, BOND_TITLE, CROSSING_SIGN, DOC_TAG, FUND_BADGE, JOURNEY_STOPS, ROUND_SHEETS, SHIP_SIGN, SIGN, articleSceneSvg } from "./article-scenes";
 import { articleThumbPlan, type ArticleThumbPlan } from "./article-thumb";
 import { C, OG_SIZE, companyLogo, ogFonts, svgUri } from "./og";
 
@@ -126,15 +128,18 @@ function BrandPill({ kicker }: { kicker: string }) {
 }
 
 /** 그림 + 간판·통 이름표 */
-function SceneLayer({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }) {
+function SceneLayer({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; photo: string | null }) {
   return (
     <>
+      {/* eslint-disable-next-line @next/next/no-img-element -- 바탕 사진(서버 렌더) */}
+      {photo && <img src={photo} width={1200} height={630} alt="" style={{ position: "absolute", left: 0, top: 0 }} />}
       {/* eslint-disable-next-line @next/next/no-img-element -- 썸네일 그림(서버 렌더) */}
       <img src={svgUri(articleSceneSvg(plan.scene, plan.prop, plan.tone))} width={1200} height={630} alt="" style={{ position: "absolute", left: 0, top: 0 }} />
       {plan.scene === "company" && plan.company && <CompanySign name={plan.company.name} logo={logo} />}
       {plan.scene === "fund" && plan.company && <CompanySign name={plan.company.name} logo={logo} box={FUND_BADGE} />}
       {plan.scene === "journey" && <JourneyMarks plan={plan} logo={logo} />}
       {plan.scene === "tworounds" && <RoundMarks plan={plan} logo={logo} />}
+      {plan.scene === "crossing" && plan.company && <CompanySign name={plan.company.name} logo={logo} box={CROSSING_SIGN} />}
     </>
   );
 }
@@ -174,13 +179,13 @@ function JourneyMarks({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }) {
 }
 
 /** 카드형 — 그림이 칸을 채우고 왼쪽 아래 흰 제목 카드 */
-function CardView({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }) {
+function CardView({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; photo: string | null }) {
   const head = headlineFit(plain(plan.headline));
   const cap = plan.sub ? captionFit(plan.sub) : null;
   const em = splitEmphasis(plan.headline)?.big ?? null;
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", fontFamily: "Pretendard" }}>
-      <SceneLayer plan={plan} logo={logo} />
+      <SceneLayer plan={plan} logo={logo} photo={photo} />
       <BrandPill kicker={plan.kicker} />
       <Abs style={{ left: 52, bottom: 52, width: 640, background: C.white, borderRadius: 28, overflow: "hidden", border: "1.5px solid rgba(28,30,84,0.08)", boxShadow: "0 12px 28px rgba(12,16,48,0.2)" }}>
         <div style={{ display: "flex", width: 10, background: C.primary }} />
@@ -212,11 +217,11 @@ const BOLD_TOP = 118;
 const BOLD_H = 384;
 
 /** 큰 글씨형 — 유튜브 썸네일처럼 왼쪽에 큰 글씨, 숫자·강조 말은 노랗게 크게 */
-function BoldView({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }) {
+function BoldView({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; photo: string | null }) {
   const em = splitEmphasis(plan.headline);
   const giant = em && [...em.big].length <= 7 ? em : null;
   const cap = plan.sub ? fitText(plan.sub, [28, 26, 24, 22], 600, 1) : null;
-  const dark = plan.scene === "fund" || plan.scene === "journey" || plan.scene === "tworounds";
+  const dark = plan.scene === "fund" || plan.scene === "journey" || plan.scene === "tworounds" || plan.scene === "crossing";
   const shadow = "0 4px 18px rgba(0,0,0,0.35)";
 
   let block: ReactNode;
@@ -245,7 +250,7 @@ function BoldView({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }) {
 
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", fontFamily: "Pretendard" }}>
-      <SceneLayer plan={plan} logo={logo} />
+      <SceneLayer plan={plan} logo={logo} photo={photo} />
       {/* 왼쪽을 어둡게 — 그림 위에서도 글씨가 또렷하게 */}
       <Abs
         style={{
@@ -270,15 +275,25 @@ function BoldView({ plan, logo }: { plan: ArticleThumbPlan; logo: Logo }) {
   );
 }
 
+/** 사진을 까는 장면의 바탕 (next.config 의 outputFileTracingIncludes 로 함께 배포) */
+const SCENE_PHOTO: Partial<Record<ArticleThumbPlan["scene"], string>> = { crossing: "public/magazine/thumbs/crossing.jpg" };
+
+async function scenePhoto(scene: ArticleThumbPlan["scene"]): Promise<string | null> {
+  const path = SCENE_PHOTO[scene];
+  if (!path) return null;
+  const buf = await readFile(join(process.cwd(), path));
+  return `data:image/jpeg;base64,${buf.toString("base64")}`;
+}
+
 /**
  * 글 한 편의 썸네일 — thumb 를 주면 저장된 값 대신 그걸로 (관리자 미리보기).
  * scale 은 같은 그림을 그 배율 크기로 그려요 (모두 도형·글자라 크기를 바꿔도 깨지지 않고, 그 크기에서 바로 그려 또렷해요).
  */
 export async function articleOgImage(a: ArticleSummary, { thumb = a.thumb, headers, scale = 1 }: { thumb?: ArticleThumb; headers?: HeadersInit; scale?: ThumbScale } = {}) {
   const plan = articleThumbPlan(a, thumb);
-  const needsLogo = (plan.scene === "company" || plan.scene === "fund" || plan.scene === "journey" || plan.scene === "tworounds") && plan.company;
-  const [fonts, logo] = await Promise.all([ogFonts(), needsLogo && plan.company ? companyLogo(plan.company.id) : Promise.resolve(null)]);
-  const view = plan.layout === "bold" ? <BoldView plan={plan} logo={logo} /> : <CardView plan={plan} logo={logo} />;
+  const needsLogo = (plan.scene === "company" || plan.scene === "fund" || plan.scene === "journey" || plan.scene === "tworounds" || plan.scene === "crossing") && plan.company;
+  const [fonts, logo, photo] = await Promise.all([ogFonts(), needsLogo && plan.company ? companyLogo(plan.company.id) : Promise.resolve(null), scenePhoto(plan.scene)]);
+  const view = plan.layout === "bold" ? <BoldView plan={plan} logo={logo} photo={photo} /> : <CardView plan={plan} logo={logo} photo={photo} />;
   if (scale === 1) return new ImageResponse(view, { ...OG_SIZE, fonts, headers });
   return new ImageResponse(
     <div style={{ display: "flex", width: OG_SIZE.width * scale, height: OG_SIZE.height * scale }}>

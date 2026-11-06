@@ -5,7 +5,7 @@ import { Defs, SCENE_H, SCENE_W, arrowBadge, bg, blob, coin, shadow } from "./og
 /**
  * 금융 블로그 글 썸네일 그림 — 1200×630 전체를 채우는 장면 (브리핑 썸네일과 같은 디자인팀 일러스트 느낌)
  * 왼쪽 위(금콩 이름표)와 왼쪽 아래(제목 카드)는 비워 두고, 주인공 그림은 오른쪽에 크게.
- * 사진은 쓰지 않고 모두 직접 그린 도형이에요. 기관 로고는 그림 위 간판 자리에 따로 얹어요(article-og).
+ * 모두 직접 그린 도형이에요 ('crossing' 만 사진 위에 그려요). 기관 로고는 그림 위 간판 자리에 따로 얹어요(article-og).
  */
 
 /** 기관 건물 장면 앞에 띄우는 작은 소품 — 글 주제(카테고리)에 맞춰 */
@@ -901,6 +901,40 @@ function tworounds(): string {
   return `${d}${body}`;
 }
 
+/* ------------------------------------------------------------------ */
+/* 바다를 건너는 돈 — 사진(article-og 가 아래에 깔아요) 위의 금빛 항로 · 동전           */
+/* ------------------------------------------------------------------ */
+
+/** 배 아래 기관 이름표 자리 */
+export const CROSSING_SIGN = { x: 914, y: 526, w: 238, h: 58 } as const;
+
+function crossing(): string {
+  const d = new Defs();
+  const shade = d.lin("sd", [[0, "#060a2b", 0.6], [0.28, "#060a2b", 0.06], [0.68, "#060a2b", 0], [1, "#060a2b", 0.74]]);
+  const glow = d.blur("gw", 8);
+  const route = "M618 300C690 120 900 26 1148 88";
+  const gold = (cx: number, cy: number, r: number, id: string) => {
+    const face = d.rad(id, [[0, "#fff3b8"], [0.7, "#ffc93d"], [1, "#e09a00"]], 0.35, 0.3, 0.8);
+    const k = r / 70;
+    return (
+      `<circle cx="${cx}" cy="${cy + 6 * k}" r="${r}" fill="#7a4a00" opacity=".6"/>` +
+      `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${face}"/>` +
+      `<circle cx="${cx}" cy="${cy}" r="${r - 10 * k}" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="${3 * k}"/>` +
+      `<path d="M${cx + 22 * k} ${cy - 22 * k}c${-10 * k} ${-11 * k} ${-44 * k} ${-11 * k} ${-44 * k} ${9 * k}c0 ${18 * k} ${44 * k} ${8 * k} ${44 * k} ${28 * k}c0 ${20 * k} ${-36 * k} ${22 * k} ${-46 * k} ${9 * k}M${cx} ${cy - 42 * k}v${84 * k}" stroke="#8a5200" stroke-width="${9 * k}" stroke-linecap="round" fill="none"/>`
+    );
+  };
+  const body =
+    `<rect x="0" y="0" width="${SCENE_W}" height="${SCENE_H}" fill="${shade}"/>` +
+    `<path d="${route}" stroke="#ffc93d" stroke-opacity=".55" stroke-width="10" fill="none" filter="${glow}"/>` +
+    `<path d="${route}" stroke="#ffe08a" stroke-width="4" stroke-dasharray="3 15" stroke-linecap="round" fill="none"/>` +
+    gold(692, 158, 21, "c1") +
+    gold(952, 58, 30, "c2") +
+    gold(1148, 88, 46, "c3") +
+    `<path d="M1072 160l4 11 11 4-11 4-4 11-4-11-11-4 11-4z" fill="#ffe08a"/>` +
+    `<path d="M790 66l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="#ffffff" opacity=".8"/>`;
+  return `${d}${body}`;
+}
+
 export function articleSceneSvg(key: ArticleSceneKey, prop: ScenePropKey = "doc", tone: ArticleTone = "day"): string {
   const inner =
     key === "company"
@@ -911,6 +945,8 @@ export function articleSceneSvg(key: ArticleSceneKey, prop: ScenePropKey = "doc"
           ? journey()
         : key === "tworounds"
           ? tworounds()
+        : key === "crossing"
+          ? crossing()
         : key === "exam"
           ? exam()
           : key === "interview"
