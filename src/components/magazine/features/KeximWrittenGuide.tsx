@@ -19,6 +19,7 @@ const NOTICE_URL =
 const REVIEW_1 = "/reviews/kexim-2026-10-24";
 const REVIEW_2 = "/reviews/kexim-2026-11-07";
 const KDB_HREF = "/magazine/6";
+const ESSAY_HREF = "/magazine/10";
 
 /* ------------------------------------------------------------------ */
 /* 공통 — 꼬리표 · 1차/2차 표시                                           */
@@ -774,6 +775,10 @@ function MajorRound() {
           <Fact kind="kong">공고와 후기가 부딪히면 공고를 따르세요. 논술 한 편 쓸 시간은 비워 두는 게 안전해요.</Fact>
           <Fact kind="talk">수은 간행물을 다 뒤졌는데 지난 논술 주제와 겹치는 게 없었다는 사례도 있어요. 간행물만 파는 건 답이 아닐 수 있어요.</Fact>
         </div>
+        <Link href={ESSAY_HREF} className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-brand-dark px-4 py-3 type-body-md font-semibold text-on-primary">
+          <span className="[word-break:keep-all]">수은 논술 종합: 대미투자·방산·공급망·EDCF 보기</span>
+          <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.2} />
+        </Link>
       </Card>
 
       <figure className="flex gap-3 rounded-2xl bg-canvas px-4 py-4 shadow-level-1">
@@ -1205,6 +1210,10 @@ function Wrap() {
       </Link>
 
       <div className="grid gap-2 sm:grid-cols-2">
+        <Link href={ESSAY_HREF} className="flex items-center justify-between gap-3 rounded-xl border-2 border-brand-dark/20 bg-canvas px-4 py-3 type-body-md font-semibold text-ink hover:border-brand-dark sm:col-span-2">
+          <span className="[word-break:keep-all]">수은 논술 종합 보기</span>
+          <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.2} />
+        </Link>
         <Link href={KDB_HREF} className="flex items-center justify-between gap-3 rounded-xl border-2 border-brand-dark/20 bg-canvas px-4 py-3 type-body-md font-semibold text-ink hover:border-brand-dark">
           <span className="[word-break:keep-all]">1편 · 산은 경영 필기 보기</span>
           <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.2} />
