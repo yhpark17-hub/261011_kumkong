@@ -3,6 +3,7 @@ import type { ArticleFeatureKey } from "@/lib/article-widgets";
 import { GrowthFundGuide } from "./GrowthFundGuide";
 import { KdbCompanyGuide } from "./KdbCompanyGuide";
 import { KdbWrittenGuide } from "./KdbWrittenGuide";
+import { KeximWrittenGuide } from "./KeximWrittenGuide";
 import { WrittenExamGuide } from "./WrittenExamGuide";
 
 /**
@@ -19,5 +20,7 @@ export function ArticleFeature({ name, title }: { name: ArticleFeatureKey; title
       return <GrowthFundGuide title={title} />;
     case "feature:kdb-company":
       return <KdbCompanyGuide title={title} />;
+    case "feature:kexim-written":
+      return <KeximWrittenGuide title={title} />;
   }
 }

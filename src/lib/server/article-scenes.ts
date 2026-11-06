@@ -768,6 +768,139 @@ function journey(): string {
   return `${d}${body}`;
 }
 
+/* ------------------------------------------------------------------ */
+/* 시험 두 번 — OMR 1차 · 서술형 2차 시험지 + 지워진 서류 + 노을 바다의 수출 화물선 */
+/* ------------------------------------------------------------------ */
+
+/** 시험지 두 장 자리 — article-og 가 머리띠에 '1차 NCS' · '2차 전공'을 얹어요 */
+export const ROUND_SHEETS = [
+  { x: 748, y: 58, w: 212, h: 256, rot: -6, round: "1차", what: "NCS" },
+  { x: 950, y: 104, w: 212, h: 256, rot: 5, round: "2차", what: "전공" },
+] as const;
+
+/** 지워진 서류 자리 · 화물선 옆구리 간판 자리 */
+export const DOC_TAG = { x: 664, y: 296, w: 96, h: 116, rot: -12 } as const;
+export const SHIP_SIGN = { x: 866, y: 472, w: 236, h: 54 } as const;
+
+function tworounds(): string {
+  const d = new Defs();
+  const sky = d.lin("sky", [[0, "#160f4a"], [0.42, "#47207a"], [0.6, "#a93a7e"], [0.71, "#ff8a5c"], [1, "#ffb36b"]]);
+  const soft = d.blur("soft", 60);
+  const sh = d.blur("sh", 10);
+  const sea = d.lin("se", [[0, "#3b2470"], [0.45, "#1c1c5c"], [1, "#0d1140"]]);
+  const sun = d.rad("su", [[0, "#fff3c4"], [0.6, "#ffd873"], [1, "#ff9e5c"]], 0.5, 0.5, 0.5);
+  const hull = d.lin("hl", [[0, "#26307f"], [1, "#101652"]]);
+  const head1 = d.lin("h1", [[0, "#8f7bff"], [1, "#533afd"]], 0, 0, 1, 0);
+  const head2 = d.lin("h2", [[0, "#ffa94d"], [1, "#e8591c"]], 0, 0, 1, 0);
+  const wood = d.lin("pw", [[0, "#ffe27a"], [1, "#e9a600"]]);
+  const horizon = d.clip("hz", `<rect x="0" y="0" width="${SCENE_W}" height="440"/>`);
+  const fade = d.lin("fd", [[0, "#160f4a"], [0.72, "#160f4a"], [1, "#160f4a", 0]], 0, 0, 1, 0);
+
+  const paper = (s: (typeof ROUND_SHEETS)[number], head: string, inner: string) => {
+    const r = 18;
+    return (
+      `<g transform="rotate(${s.rot} ${s.x + s.w / 2} ${s.y + s.h / 2})">` +
+      `<rect x="${s.x + 5}" y="${s.y + 13}" width="${s.w}" height="${s.h}" rx="${r}" fill="#0a0730" opacity=".42" filter="${sh}"/>` +
+      `<rect x="${s.x}" y="${s.y}" width="${s.w}" height="${s.h}" rx="${r}" fill="#ffffff"/>` +
+      `<path d="M${s.x} ${s.y + r}a${r} ${r} 0 0 1 ${r} -${r}h${s.w - r * 2}a${r} ${r} 0 0 1 ${r} ${r}v50h-${s.w}z" fill="${head}"/>` +
+      inner +
+      `</g>`
+    );
+  };
+
+  // 1차 — OMR 칸 (고른 답은 까맣게)
+  const [s1, s2] = ROUND_SHEETS;
+  const picks = [1, 3, 0, 2, 4, 2];
+  let omr = "";
+  picks.forEach((p, r) => {
+    const y = s1.y + 92 + r * 28;
+    omr += `<rect x="${s1.x + 16}" y="${y - 7}" width="20" height="14" rx="5" fill="#eceaff"/>`;
+    for (let c = 0; c < 5; c++) {
+      const on = p === c;
+      omr += `<circle cx="${s1.x + 58 + c * 31}" cy="${y}" r="10" fill="${on ? "#1c1e54" : "#ffffff"}" stroke="${on ? "#1c1e54" : "#c9c3ff"}" stroke-width="2.5"/>`;
+    }
+  });
+
+  // 2차 — 손으로 쓴 답안 (물결 줄) + 연필
+  let hand = "";
+  for (let i = 0; i < 6; i++) {
+    const y = s2.y + 90 + i * 28;
+    const len = i === 5 ? 92 : 172 - ((i * 37) % 44);
+    let path = `M${s2.x + 18} ${y}`;
+    for (let x = 0; x < len; x += 16) path += `q4 ${x % 32 === 0 ? -7 : 7} 8 0t8 0`;
+    hand += `<path d="${path}" stroke="${i % 2 ? "#8d8fb8" : "#3b3f7a"}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  }
+  const pencil =
+    `<g transform="translate(1128 290) rotate(-42)">` +
+    `<rect x="-58" y="-9" width="114" height="20" rx="4" fill="#0a0730" opacity=".3" transform="translate(4 7)"/>` +
+    `<path d="M-58 -10L-86 0L-58 10Z" fill="#f3d3a5"/><path d="M-76 -3.5L-86 0L-76 3.5Z" fill="#1c1e54"/>` +
+    `<rect x="-58" y="-10" width="96" height="20" fill="${wood}"/>` +
+    `<rect x="38" y="-10" width="11" height="20" fill="#c7cbe2"/><rect x="49" y="-10" width="15" height="20" rx="5" fill="#ff8fb0"/>` +
+    `</g>`;
+
+  // 지워진 서류 (글자는 article-og 가 얹어요)
+  const t = DOC_TAG;
+  const doc =
+    `<g transform="rotate(${t.rot} ${t.x + t.w / 2} ${t.y + t.h / 2})">` +
+    `<rect x="${t.x + 3}" y="${t.y + 8}" width="${t.w}" height="${t.h}" rx="12" fill="#0a0730" opacity=".35" filter="${sh}"/>` +
+    `<rect x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" rx="12" fill="#e9e7f6"/>` +
+    [0, 1, 2].map((i) => `<rect x="${t.x + 16}" y="${t.y + 58 + i * 15}" width="${t.w - 32 - i * 12}" height="6" rx="3" fill="#c4c1dc"/>`).join("") +
+    `<path d="M${t.x - 6} ${t.y + 8}L${t.x + t.w + 6} ${t.y + t.h - 8}M${t.x + t.w + 6} ${t.y + 8}L${t.x - 6} ${t.y + t.h - 8}" stroke="#ff3d68" stroke-width="10" stroke-linecap="round"/>` +
+    `</g>`;
+
+  // 화물선 — 뱃머리는 오른쪽(수출), 조타실은 뒤쪽
+  const colors = ["#ff8f5c", "#46c7c0", "#ffd166", "#8f7bff", "#ff6f91", "#5cc8ff"];
+  let boxes = "";
+  for (let row = 0; row < 2; row++)
+    for (let col = 0; col < 7; col++) {
+      const c = colors[(row * 2 + col * 3) % colors.length];
+      const x = 884 + col * 38;
+      const y = 424 - row * 24;
+      if (row === 1 && col === 6) continue;
+      boxes += `<rect x="${x}" y="${y}" width="35" height="21" rx="2.5" fill="${c}"/><path d="M${x + 9} ${y + 3}v15M${x + 18} ${y + 3}v15M${x + 27} ${y + 3}v15" stroke="#10163f" stroke-opacity=".22" stroke-width="2"/>`;
+    }
+  const ship =
+    `<ellipse cx="962" cy="552" rx="238" ry="12" fill="#070a2c" opacity=".55" filter="${sh}"/>` +
+    // 조타실
+    `<rect x="800" y="388" width="62" height="60" rx="5" fill="#f5f4fb"/>` +
+    `<rect x="808" y="398" width="46" height="10" rx="2" fill="#26307f"/><rect x="808" y="416" width="46" height="4" rx="2" fill="#c8cbe3"/><rect x="808" y="426" width="46" height="4" rx="2" fill="#c8cbe3"/>` +
+    `<rect x="818" y="366" width="20" height="24" rx="3" fill="#e8591c"/><rect x="818" y="372" width="20" height="5" fill="#ffffff" opacity=".85"/>` +
+    boxes +
+    // 선체
+    `<path d="M746 446H1176Q1168 496 1136 552H780Q756 500 746 446Z" fill="${hull}"/>` +
+    `<path d="M746 446H1176L1173 458H749Z" fill="#ffffff" opacity=".85"/>` +
+    `<path d="M774 538H1144L1136 552H780Z" fill="#c23a5a"/>`;
+
+  let stars = "";
+  for (const [x, y, r] of [[700, 46, 1.8], [1180, 40, 1.6], [640, 120, 1.3], [730, 210, 1.2], [1186, 200, 1.4], [980, 30, 1.5]]) stars += `<circle cx="${x}" cy="${y}" r="${r}" fill="#ffffff" opacity=".8"/>`;
+
+  const waves = [[790, 572, 90], [950, 590, 120], [1090, 568, 70], [700, 600, 60], [860, 612, 80]]
+    .map(([x, y, w]) => `<path d="M${x} ${y}q${w / 4} -7 ${w / 2} 0t${w / 2} 0" stroke="#ffffff" stroke-opacity=".3" stroke-width="3" fill="none" stroke-linecap="round"/>`)
+    .join("");
+
+  const body =
+    bg(sky) +
+    stars +
+    blob(1040, 400, 210, "#ffb36b", soft, 0.55) +
+    blob(720, 120, 190, "#533afd", soft, 0.35) +
+    `<g clip-path="${horizon}"><circle cx="1042" cy="440" r="118" fill="${sun}"/></g>` +
+    `<rect x="0" y="440" width="${SCENE_W}" height="${SCENE_H - 440}" fill="${sea}"/>` +
+    `<path d="M980 442h124l26 16h-176zM1006 470h72l18 12h-108z" fill="#ffd873" opacity=".28"/>` +
+    // 글씨 자리에는 수평선이 비치지 않게
+    `<rect x="0" y="0" width="760" height="${SCENE_H}" fill="${fade}"/>` +
+    waves +
+    ship +
+    doc +
+    paper(s1, head1, omr) +
+    paper(s2, head2, hand + pencil) +
+    // 1차에서 2차로
+    `<circle cx="952" cy="212" r="27" fill="#0a0730" opacity=".3" filter="${sh}"/>` +
+    `<circle cx="951" cy="208" r="27" fill="#ffd84d"/>` +
+    `<path d="M938 208H962M954 199L963 208L954 217" stroke="#1c1e54" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>` +
+    `<path d="M1180 96l5 12 12 5-12 5-5 12-5-12-12-5 12-5z" fill="#ffd84d"/>`;
+  return `${d}${body}`;
+}
+
 export function articleSceneSvg(key: ArticleSceneKey, prop: ScenePropKey = "doc", tone: ArticleTone = "day"): string {
   const inner =
     key === "company"
@@ -776,6 +909,8 @@ export function articleSceneSvg(key: ArticleSceneKey, prop: ScenePropKey = "doc"
         ? fund()
         : key === "journey"
           ? journey()
+        : key === "tworounds"
+          ? tworounds()
         : key === "exam"
           ? exam()
           : key === "interview"
