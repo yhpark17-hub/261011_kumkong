@@ -5,7 +5,7 @@ import { ImageResponse } from "next/og";
 import type { CSSProperties, ReactNode } from "react";
 import type { ArticleSummary, ArticleThumb, ThumbScale } from "@/lib/magazine-meta";
 import { captionFit, fitText, headlineFit } from "../og-text";
-import { BOND_SIGN, BOND_TITLE, CROSSING_SIGN, DOC_TAG, FUND_BADGE, JOURNEY_STOPS, ROUND_SHEETS, SHIP_SIGN, SIGN, articleSceneSvg } from "./article-scenes";
+import { BOND_SIGN, BOND_TITLE, CROSSING_SIGN, CROSSING_STOPS, DOC_TAG, FUND_BADGE, JOURNEY_STOPS, ROUND_SHEETS, SHIP_SIGN, SIGN, articleSceneSvg } from "./article-scenes";
 import { articleThumbPlan, type ArticleThumbPlan } from "./article-thumb";
 import { C, OG_SIZE, companyLogo, ogFonts, svgUri } from "./og";
 
@@ -139,7 +139,16 @@ function SceneLayer({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo;
       {plan.scene === "fund" && plan.company && <CompanySign name={plan.company.name} logo={logo} box={FUND_BADGE} />}
       {plan.scene === "journey" && <JourneyMarks plan={plan} logo={logo} />}
       {plan.scene === "tworounds" && <RoundMarks plan={plan} logo={logo} />}
-      {plan.scene === "crossing" && plan.company && <CompanySign name={plan.company.name} logo={logo} box={CROSSING_SIGN} />}
+      {plan.scene === "crossing" && (
+        <>
+          {CROSSING_STOPS.map((s) => (
+            <Abs key={s.label} style={{ left: s.x - 54, top: s.y + 38, width: 108, height: 30, alignItems: "center", justifyContent: "center", borderRadius: 99, background: "rgba(8,11,42,0.78)", border: "1.5px solid rgba(255,224,138,0.55)", fontSize: 19, fontWeight: 800, color: C.white, letterSpacing: -0.4 }}>
+              {s.label}
+            </Abs>
+          ))}
+          {plan.company && <CompanySign name={plan.company.name} logo={logo} box={CROSSING_SIGN} />}
+        </>
+      )}
     </>
   );
 }
@@ -256,7 +265,7 @@ function BoldView({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; p
         style={{
           left: 0,
           top: 0,
-          width: 900,
+          width: plan.scene === "crossing" ? 700 : 900,
           height: 630,
           backgroundImage: dark
             ? "linear-gradient(90deg, rgba(8,11,42,0.8) 0%, rgba(8,11,42,0.55) 55%, rgba(8,11,42,0) 100%)"

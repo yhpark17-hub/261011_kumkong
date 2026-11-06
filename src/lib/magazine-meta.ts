@@ -184,7 +184,7 @@ export const ARTICLE_SCENES = [
   { key: "fund", label: "돈의 흐름 (펀드·기금 통)" },
   { key: "journey", label: "돈의 여행 (채권 증서 → 다섯 정거장)" },
   { key: "tworounds", label: "시험 두 번 (1차·2차 시험지 + 수출 화물선)" },
-  { key: "crossing", label: "바다를 건너는 돈 (함정 사진 + 금빛 항로)" },
+  { key: "crossing", label: "항로 위 네 주제 (함정 사진 + 금빛 항로 · 메달 넷)" },
   { key: "exam", label: "필기 시험지 · 시계" },
   { key: "interview", label: "면접장" },
   { key: "knowledge", label: "금융 지식 (책 · 차트)" },

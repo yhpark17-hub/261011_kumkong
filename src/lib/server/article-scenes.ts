@@ -902,36 +902,45 @@ function tworounds(): string {
 }
 
 /* ------------------------------------------------------------------ */
-/* 바다를 건너는 돈 — 사진(article-og 가 아래에 깔아요) 위의 금빛 항로 · 동전           */
+/* 항로 위 네 주제 — 사진(article-og 가 아래에 깔아요) 위의 금빛 항로 · 메달                */
 /* ------------------------------------------------------------------ */
 
 /** 배 아래 기관 이름표 자리 */
 export const CROSSING_SIGN = { x: 914, y: 526, w: 238, h: 58 } as const;
 
+/** 항로 위 메달 자리 — article-og 가 메달 아래에 이름을 얹어요 */
+export const CROSSING_STOPS = [
+  { x: 670, y: 212, label: "대미투자" },
+  { x: 790, y: 116, label: "방산" },
+  { x: 951, y: 71, label: "공급망" },
+  { x: 1136, y: 86, label: "EDCF" },
+] as const;
+
+const STOP_R = 33;
+
+/** 메달 속 그림 — 배 · 방패 · 사슬 · 지구 */
+const STOP_ICONS = [
+  `<path d="M-19 3h38l-7 13h-24zM-2 3v-20l13 14" stroke="#6b3f00" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round" fill="none"/>`,
+  `<path d="M0-18l15 5v11c0 9-6 15-15 20c-9-5-15-11-15-20v-11z" stroke="#6b3f00" stroke-width="3.6" stroke-linejoin="round" fill="none"/><path d="M-6 0l4.500 4.500l8-8.500" stroke="#6b3f00" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`,
+  `<g stroke="#6b3f00" stroke-width="3.6" fill="none" transform="rotate(-45)"><rect x="-20" y="-6.500" width="23" height="13" rx="6.500"/><rect x="-3" y="-6.500" width="23" height="13" rx="6.500"/></g>`,
+  `<g stroke="#6b3f00" stroke-width="3.200" fill="none"><circle r="16.500"/><ellipse rx="7.500" ry="16.500"/><path d="M-16.500 0h33"/></g>`,
+];
+
 function crossing(): string {
   const d = new Defs();
   const shade = d.lin("sd", [[0, "#060a2b", 0.6], [0.28, "#060a2b", 0.06], [0.68, "#060a2b", 0], [1, "#060a2b", 0.74]]);
   const glow = d.blur("gw", 8);
+  const face = d.rad("md", [[0, "#fff3b8"], [0.7, "#ffc93d"], [1, "#e09a00"]], 0.35, 0.3, 0.8);
   const route = "M618 300C690 120 900 26 1148 88";
-  const gold = (cx: number, cy: number, r: number, id: string) => {
-    const face = d.rad(id, [[0, "#fff3b8"], [0.7, "#ffc93d"], [1, "#e09a00"]], 0.35, 0.3, 0.8);
-    const k = r / 70;
-    return (
-      `<circle cx="${cx}" cy="${cy + 6 * k}" r="${r}" fill="#7a4a00" opacity=".6"/>` +
-      `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${face}"/>` +
-      `<circle cx="${cx}" cy="${cy}" r="${r - 10 * k}" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="${3 * k}"/>` +
-      `<path d="M${cx + 22 * k} ${cy - 22 * k}c${-10 * k} ${-11 * k} ${-44 * k} ${-11 * k} ${-44 * k} ${9 * k}c0 ${18 * k} ${44 * k} ${8 * k} ${44 * k} ${28 * k}c0 ${20 * k} ${-36 * k} ${22 * k} ${-46 * k} ${9 * k}M${cx} ${cy - 42 * k}v${84 * k}" stroke="#8a5200" stroke-width="${9 * k}" stroke-linecap="round" fill="none"/>`
-    );
-  };
+  const stops = CROSSING_STOPS.map(
+    (s, i) =>
+      `<g transform="translate(${s.x} ${s.y})"><circle cy="3" r="${STOP_R}" fill="#4a2c00" opacity=".55"/><circle r="${STOP_R}" fill="${face}"/><circle r="${STOP_R - 5}" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="1.600"/>${STOP_ICONS[i]}</g>`,
+  ).join("");
   const body =
     `<rect x="0" y="0" width="${SCENE_W}" height="${SCENE_H}" fill="${shade}"/>` +
     `<path d="${route}" stroke="#ffc93d" stroke-opacity=".55" stroke-width="10" fill="none" filter="${glow}"/>` +
     `<path d="${route}" stroke="#ffe08a" stroke-width="4" stroke-dasharray="3 15" stroke-linecap="round" fill="none"/>` +
-    gold(692, 158, 21, "c1") +
-    gold(952, 58, 30, "c2") +
-    gold(1148, 88, 46, "c3") +
-    `<path d="M1072 160l4 11 11 4-11 4-4 11-4-11-11-4 11-4z" fill="#ffe08a"/>` +
-    `<path d="M790 66l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="#ffffff" opacity=".8"/>`;
+    stops;
   return `${d}${body}`;
 }
 
