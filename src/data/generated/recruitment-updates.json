@@ -1044,7 +1044,10 @@
     "title": "2027년 KB캐피탈 신입사원 공개채용",
     "period": "2026 하반기(2027년 입사)",
     "status": "confirmed",
-    "tracks": [],
+    "tracks": [
+      "일반(리테일금융·기업/투자금융·재무기획 등)",
+      "디지털(AI 사업·IT/플랫폼 기획·정보보호 등)"
+    ],
     "events": [
       {
         "type": "posting",
@@ -1058,11 +1061,11 @@
       }
     ],
     "essayQuestions": [],
-    "postingUrl": "https://jrs.jobkorea.co.kr/kbcapital/kbcapital26/Agi/Invite",
-    "sourceUrl": "https://jrs.jobkorea.co.kr/kbcapital/Main/AgiList",
+    "postingUrl": "https://jrs.jobkorea.co.kr/kbcapital/kbcapital26/Agi/Index",
+    "sourceUrl": "https://jrs.jobkorea.co.kr/kbcapital/kbcapital26/Agi/Index",
     "confidence": "high",
-    "updatedAt": "2026-10-23",
-    "note": "공식 채용 사이트 모집요강에는 공고명·접수기간만 텍스트로 확인됨(세부 요강은 이미지/지원서 내부). 링커리어 기준 전형: 서류→필기→1차면접→2차면접→채용검진·서류제출→최종합격, 모집 분야 일반(리테일금융·기업투자금융·재무기획 등)·디지털(AI 사업·IT플랫폼기획·정보보호 등) — 공식 원문 미확인. 필기·면접 날짜, 모집 인원 미확인."
+    "updatedAt": "2026-11-07",
+    "note": "공식 모집요강(이미지) 전형 일정 — 모두 시기만 표기: 서류 발표 11월 중순 → 필기(온라인 인적성 검사) 시험·발표 11월 중순 → 1차 면접 11월 말(일반: 직무 PT 면접 등 / 디지털: 직무·전공지식 구술면접), 발표 12월 초 → 2차 종합면접 12월 초, 발표 12월 중순 → 채용검진·서류제출 12월 말 → 최종 발표 12월 말. 입사 2027년 1월 중. 모집 인원 '0명'(비공개), 근무지 본사·영업점(서울/수도권), 블라인드 전형. 세부 일정은 개별 안내."
   },
   {
     "companyId": "kbstar",
