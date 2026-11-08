@@ -3,7 +3,7 @@ import { ArrowDown, ArrowRight, ChevronRight, ExternalLink } from "lucide-react"
 import { formatDayHeading } from "@/lib/date";
 import { amountOf, type NewsCard } from "@/lib/news-cards";
 import { deckGlosser, deckSize, proseStrings, type Glosser } from "@/lib/news-gloss";
-import { NEWS_SECTION_INFO, newsHref, volLabel, type BriefingIssue, type IssueStory, type NewsItem, type NewsSection, type StoryItem } from "@/lib/news-meta";
+import { NEWS_SECTION_INFO, newsHref, volLabel, type BriefingIssue, type FlagCode, type IssueStory, type NewsItem, type NewsSection, type StoryBadge, type StoryItem } from "@/lib/news-meta";
 import type { LetterContent } from "@/lib/server/briefing";
 import { cn } from "../ui";
 import { MastheadMini, jua } from "./BriefingBrand";
@@ -74,6 +74,119 @@ function Emph({ text, color }: { text: string; color: string }) {
 const pad = (no: number) => String(no).padStart(2, "0");
 
 /* ------------------------------------------------------------------ */
+/* 국기 — 비율·색·별 자리를 규격대로 (그림 AI 에 맡기면 줄·별이 틀려서 화면에서 직접 그려요)        */
+/* ------------------------------------------------------------------ */
+
+/** 오각별 꼭짓점 — 중심·바깥 반지름·한 꼭짓점이 향하는 각(도, 0 = 위) */
+function star(cx: number, cy: number, r: number, deg = 0): string {
+  return Array.from({ length: 10 }, (_, i) => {
+    const a = ((deg + i * 36) * Math.PI) / 180;
+    const rr = i % 2 ? r * 0.382 : r;
+    return `${(cx + rr * Math.sin(a)).toFixed(3)},${(cy - rr * Math.cos(a)).toFixed(3)}`;
+  }).join(" ");
+}
+
+function Flag({ code, className }: { code: FlagCode; className?: string }) {
+  switch (code) {
+    case "us": {
+      // 19:10 · 줄 13개 · 파란 칸 = 줄 7개 높이 × 폭 0.76 · 별 50개 (6개·5개 줄을 번갈아 9줄)
+      const stars: [number, number][] = [];
+      for (let r = 0; r < 9; r++) for (let c = 0; c < (r % 2 ? 5 : 6); c++) stars.push([0.063 * (r % 2 ? 2 * c + 2 : 2 * c + 1), 0.054 * (r + 1)]);
+      return (
+        <svg viewBox="0 0 1.9 1" className={className} aria-hidden>
+          <rect width="1.9" height="1" fill="#b22234" />
+          {[1, 3, 5, 7, 9, 11].map((i) => (
+            <rect key={i} y={i / 13} width="1.9" height={1 / 13} fill="#ffffff" />
+          ))}
+          <rect width="0.76" height={7 / 13} fill="#3c3b6e" />
+          {stars.map(([x, y], i) => (
+            <polygon key={i} points={star(x, y, 0.0308)} fill="#ffffff" />
+          ))}
+        </svg>
+      );
+    }
+    case "jp":
+      // 3:2 · 빨간 원 지름 = 세로의 3/5
+      return (
+        <svg viewBox="0 0 3 2" className={className} aria-hidden>
+          <rect width="3" height="2" fill="#ffffff" />
+          <circle cx="1.5" cy="1" r="0.6" fill="#bc002d" />
+        </svg>
+      );
+    case "cn": {
+      // 3:2 (30×20 칸) · 큰 별 (5,5) 반지름 3 · 작은 별 4개는 반지름 1, 한 꼭짓점이 큰 별 가운데를 향해요
+      const small: [number, number][] = [
+        [10, 2],
+        [12, 4],
+        [12, 7],
+        [10, 9],
+      ];
+      return (
+        <svg viewBox="0 0 30 20" className={className} aria-hidden>
+          <rect width="30" height="20" fill="#ee1c25" />
+          <polygon points={star(5, 5, 3)} fill="#ffff00" />
+          {small.map(([x, y], i) => (
+            <polygon key={i} points={star(x, y, 1, (Math.atan2(5 - x, -(5 - y)) * 180) / Math.PI)} fill="#ffff00" />
+          ))}
+        </svg>
+      );
+    }
+    case "eu":
+      // 3:2 · 별 12개가 세로의 1/3 반지름 원 위에, 별 반지름은 세로의 1/18
+      return (
+        <svg viewBox="0 0 3 2" className={className} aria-hidden>
+          <rect width="3" height="2" fill="#003399" />
+          {Array.from({ length: 12 }, (_, i) => {
+            const a = (i * Math.PI) / 6;
+            return <polygon key={i} points={star(1.5 + (2 / 3) * Math.sin(a), 1 - (2 / 3) * Math.cos(a), 1 / 9)} fill="#ffcc00" />;
+          })}
+        </svg>
+      );
+  }
+}
+
+/** 표지 그림 위 표시 — 나라 국기·지수 시세·기관 로고·짧은 메모 */
+function Badge({ b }: { b: StoryBadge }) {
+  const base = "inline-flex items-center gap-1.5 rounded-full py-1 text-[12px] leading-none font-bold whitespace-nowrap shadow-[0_2px_8px_-2px_rgba(43,58,122,0.4)]";
+  switch (b.kind) {
+    case "flag":
+      return (
+        <span className={cn(base, "bg-[#ffffff] pr-2.5 pl-1.5")} style={{ color: C.ink }}>
+          <Flag code={b.code} className="h-[15px] w-auto rounded-[2px] ring-1 ring-[#000000]/10" />
+          {b.label}
+        </span>
+      );
+    case "ticker": {
+      // 우리 시세판처럼 오름은 빨강·내림은 파랑
+      const up = b.dir === "up";
+      return (
+        <span className={cn(base, "px-2.5 tabular")} style={{ background: C.ink, color: "#ffffff" }}>
+          <span className="tracking-[0.04em]">{b.label}</span>
+          <span style={{ color: up ? "#ff9db0" : "#9db8ff" }}>
+            {up ? "▲" : "▼"} {b.value.replace(/^[-+▲▼\s]+/, "")}
+          </span>
+        </span>
+      );
+    }
+    case "logo":
+      return (
+        <span className={cn(base, "bg-[#ffffff] pr-2.5 pl-1")} style={{ color: C.ink }}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- 기관 로고 (public/logos) */}
+          <img src={b.src} alt="" className="h-5 w-5 rounded-full object-contain" />
+          {b.label}
+        </span>
+      );
+    case "note":
+      return (
+        <span className={cn(base, "bg-[#ffffff] px-2.5")} style={{ color: C.ink }}>
+          <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ background: C.orange }} />
+          {b.label}
+        </span>
+      );
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* 머리 — 큰 그림 + 두 줄 글 + 제목 + 여는 글                              */
 /* ------------------------------------------------------------------ */
 
@@ -101,7 +214,11 @@ export function StoryHeader({ issue, story, minutes, count }: { issue: BriefingI
         {lines.length > 0 && (
           <p
             aria-hidden
-            className={cn(jua.className, "absolute bottom-[7%] left-[4.5%] text-[clamp(22px,6.6vw,42px)] leading-[1.22] tracking-[-0.01em] text-[#ffffff]")}
+            className={cn(
+              jua.className,
+              "absolute left-[4.5%] text-[clamp(22px,6.6vw,42px)] leading-[1.22] tracking-[-0.01em] text-[#ffffff]",
+              story.hookPos === "top" ? "top-[8%]" : "bottom-[7%]",
+            )}
             style={{ textShadow: OUTLINE }}
           >
             {lines.map((l, i) => (
@@ -168,7 +285,7 @@ function Art({ src, className }: { src: string; className?: string }) {
 }
 
 /** 표지 — 큰 그림 + 한 줄 요약 */
-function Cover({ n, art, total, g }: { n: NewsItem; art: string; total: number; g: Glosser }) {
+function Cover({ n, art, badges, total, g }: { n: NewsItem; art: string; badges: StoryBadge[]; total: number; g: Glosser }) {
   const tone = SECTION_TONE[n.section];
   return (
     <div className={SHELL}>
@@ -177,6 +294,13 @@ function Cover({ n, art, total, g }: { n: NewsItem; art: string; total: number; 
         <span className="absolute top-3 left-3 rounded-full px-2.5 py-1 text-[12px] font-bold shadow-[0_2px_6px_-2px_rgba(43,58,122,0.35)]" style={{ background: tone.soft, color: tone.ink }}>
           {NEWS_SECTION_INFO[n.section].label}
         </span>
+        {badges.length > 0 && (
+          <span className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+            {badges.map((b, i) => (
+              <Badge key={i} b={b} />
+            ))}
+          </span>
+        )}
       </div>
       <div className="flex flex-1 flex-col px-5 pt-4 pb-4">
         <Kicker>무슨 일이에요?</Kicker>
@@ -514,7 +638,7 @@ function Chapter({ n, no, item, pointArt }: { n: NewsItem; no: number; item: Sto
         }
         foot={<ReadMore n={n} />}
       >
-        <Cover n={n} art={item.art} total={deckSize(n)} g={coverG} />
+        <Cover n={n} art={item.art} badges={item.badges} total={deckSize(n)} g={coverG} />
         {middles}
         {n.point && pointG && <Point text={n.point} art={pointArt} g={pointG} />}
       </CardDeck>

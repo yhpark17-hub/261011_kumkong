@@ -183,6 +183,8 @@ export interface IssueStory {
   hero: string;
   /** 큰 그림 위 두 줄 글 — '/'로 줄 나눔, *강조* (영상 썸네일 글씨) */
   hook: string;
+  /** 두 줄 글 자리 — 그림에서 비워 둔 쪽 (위 왼쪽 / 아래 왼쪽) */
+  hookPos: "top" | "bottom";
   /** 기사마다 (기사 순서대로) */
   items: StoryItem[];
   /** '필기·면접 포인트' 장 그림 (기사 공통) */
@@ -200,7 +202,19 @@ export interface StoryItem {
   cards: string[];
   /** 다음 기사로 넘어가는 다리 — label 은 'A → B' 한 줄, text 는 한두 문장 */
   bridge: { label: string; text: string } | null;
+  /** 표지 그림 위 한눈에 보는 표시 — 나라 국기·지수 시세·기관 로고·짧은 메모 (무슨 뉴스인지 그림만 봐도 알게) */
+  badges: StoryBadge[];
 }
+
+/** 표지 표시 — flag: 나라(국기는 화면에서 정확히 그려요) · ticker: 지수와 등락 · logo: public/logos 로고 · note: 짧은 글 */
+export type StoryBadge =
+  | { kind: "flag"; code: FlagCode; label: string }
+  | { kind: "ticker"; label: string; value: string; dir: "up" | "down" }
+  | { kind: "logo"; src: string; label: string }
+  | { kind: "note"; label: string };
+
+export const FLAG_CODES = ["us", "jp", "cn", "eu"] as const;
+export type FlagCode = (typeof FLAG_CODES)[number];
 
 /** 호마다 붙는 코너 (숫자·논술은 금콩 스터디, story 는 그림 이야기 아침판) */
 export interface IssueExtras {
@@ -213,6 +227,17 @@ const clip = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s
 /** 이야기 그림 주소 — 사이트 안 /magazine/brief/ 그림만 */
 const artPath = (v: unknown) => (typeof v === "string" && /^\/magazine\/brief\/[\w-]+\/[\w-]+\.(webp|png|jpg)$/.test(v) ? v : "");
 
+function parseBadge(v: unknown): StoryBadge | null {
+  const b = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
+  const label = clip(b.label, 20);
+  if (!label) return null;
+  if (b.kind === "flag" && (FLAG_CODES as readonly string[]).includes(String(b.code))) return { kind: "flag", code: b.code as FlagCode, label };
+  if (b.kind === "ticker" && clip(b.value, 16)) return { kind: "ticker", label, value: clip(b.value, 16), dir: b.dir === "up" ? "up" : "down" };
+  if (b.kind === "logo" && typeof b.src === "string" && /^\/logos\/[\w-]+\.png$/.test(b.src)) return { kind: "logo", src: b.src, label };
+  if (b.kind === "note") return { kind: "note", label };
+  return null;
+}
+
 function parseStory(v: unknown): IssueStory | null {
   const o = (v && typeof v === "object" ? v : null) as Record<string, unknown> | null;
   if (!o || !artPath(o.hero)) return null;
@@ -221,13 +246,15 @@ function parseStory(v: unknown): IssueStory | null {
     .map((x) => {
       const b = (x.bridge && typeof x.bridge === "object" ? x.bridge : null) as Record<string, unknown> | null;
       const bridge = b && clip(b.label, 40) && clip(b.text, 300) ? { label: clip(b.label, 40), text: clip(b.text, 300) } : null;
-      return { id: Number(x.id), art: artPath(x.art), cards: (Array.isArray(x.cards) ? x.cards : []).map(artPath).slice(0, 10), bridge };
+      const badges = (Array.isArray(x.badges) ? x.badges : []).map(parseBadge).filter((b): b is StoryBadge => b !== null).slice(0, 3);
+      return { id: Number(x.id), art: artPath(x.art), cards: (Array.isArray(x.cards) ? x.cards : []).map(artPath).slice(0, 10), bridge, badges };
     })
     .filter((x) => Number.isInteger(x.id) && x.id > 0)
     .slice(0, 8);
   return {
     hero: artPath(o.hero),
     hook: clip(o.hook, 60),
+    hookPos: o.hookPos === "top" ? "top" : "bottom",
     items,
     pointArt: artPath(o.pointArt),
     recap: (Array.isArray(o.recap) ? o.recap : []).map((x) => clip(x, 80)).filter(Boolean).slice(0, 8),
