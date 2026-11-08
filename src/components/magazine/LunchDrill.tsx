@@ -277,7 +277,7 @@ function Result({ total, done, score, streak, sharePath, shareTitle }: { total: 
         style={{ background: C.navy }}
       >
         <Share2 className="h-4 w-4" strokeWidth={2.2} />
-        {copied ? "링크를 복사했어요" : "단톡방에 문제 보내기"}
+        {copied ? "링크를 복사했어요" : "친구와 공유하기"}
       </button>
     </section>
   );
