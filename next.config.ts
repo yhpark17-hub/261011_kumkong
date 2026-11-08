@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
     "/reviews/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./public/logos/**/*.png"],
     "/magazine/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./public/logos/**/*.png", "./public/magazine/thumbs/*.jpg", "./public/magazine/brief/**/*.jpg", "./src/lib/server/fonts/Jua-Regular.ttf"],
     "/admin/news/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./public/logos/**/*.png", "./public/magazine/brief/**/*.jpg", "./src/lib/server/fonts/Jua-Regular.ttf"],
-    "/api/automation/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./src/lib/server/art/style-ref.jpg"],
+    "/api/automation/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./src/lib/server/art/style-ref.jpg", "./public/logos/**/*.png"],
     // 앱 카드 그림 PNG (그림 속 이름띠 글자·기관 로고)
     "/api/app/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./public/logos/**/*.png"],
   },

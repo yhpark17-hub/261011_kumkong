@@ -179,10 +179,12 @@ export interface EssayItem {
  * 있으면 아침판을 '이야기' 화면(components/magazine/StoryLetter.tsx)으로 보여 줘요. 그림은 public/magazine/brief/<날짜>/ 에 둬요.
  */
 export interface IssueStory {
-  /** 맨 위 큰 그림 */
+  /** 공유 썸네일 바탕 그림 (왼쪽을 비운 그림 — 화면에는 안 나와요) */
   hero: string;
-  /** 큰 그림 위 두 줄 글 — '/'로 줄 나눔, *강조* (영상 썸네일 글씨) */
+  /** 썸네일 큰 글 두 줄 — ' / '로 줄 나눔, *강조* (영상 썸네일 글씨) */
   hook: string;
+  /** 썸네일 맨 위 주황 이름표 (예: 11월 첫째 주 코스피) — 비우면 없음 */
+  tag: string;
   /** 두 줄 글 자리 — 그림에서 비워 둔 쪽 (위 왼쪽 / 아래 왼쪽) */
   hookPos: "top" | "bottom";
   /** 기사마다 (기사 순서대로) */
@@ -349,12 +351,14 @@ const clip = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s
 const coverPath = (v: unknown) =>
   typeof v === "string" && (/^\/api\/files\/magazine\/\d{8}\/[a-f0-9]{24}\.(png|jpg)$/.test(v) || /^\/magazine\/brief\/[\w-]+\/[\w-]+\.(png|jpg)$/.test(v)) ? v : "";
 
-/** 이야기 그림 주소 — 사이트 안 /magazine/brief/ 그림만 */
-const artPath = (v: unknown) => (typeof v === "string" && /^\/magazine\/brief\/[\w-]+\/[\w-]+\.(webp|png|jpg)$/.test(v) ? v : "");
+/** 이야기 그림 주소 — 사이트 안 /magazine/brief/ 그림, 또는 그림 그리기 API 가 저장한 파일(/api/files/magazine/…) */
+export const isArtPath = (v: unknown): v is string =>
+  typeof v === "string" && (/^\/magazine\/brief\/[\w-]+\/[\w-]+\.(webp|png|jpg)$/.test(v) || /^\/api\/files\/magazine\/\d{8}\/[a-f0-9]{24}\.(png|jpg|webp)$/.test(v));
+const artPath = (v: unknown) => (isArtPath(v) ? v : "");
 
 const logoPath = (v: unknown) => (typeof v === "string" && /^\/logos\/(news\/)?[\w-]+\.png$/.test(v) ? v : "");
 
-function parseBadge(v: unknown): StoryBadge | null {
+export function parseBadge(v: unknown): StoryBadge | null {
   const b = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
   const label = clip(b.label, 20);
   if (b.kind === "logo" && logoPath(b.src)) return { kind: "logo", src: logoPath(b.src), label };
@@ -388,6 +392,7 @@ function parseStory(v: unknown): IssueStory | null {
   return {
     hero: artPath(o.hero),
     hook: clip(o.hook, 60),
+    tag: clip(o.tag, 20),
     hookPos: o.hookPos === "top" ? "top" : "bottom",
     items,
     pointArt: artPath(o.pointArt),

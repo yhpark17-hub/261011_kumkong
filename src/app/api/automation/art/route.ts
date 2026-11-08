@@ -8,13 +8,13 @@ import { saveFile, storageConfigured } from "@/lib/server/storage";
 /** 그림 한 장에 10~40초 */
 export const maxDuration = 120;
 
-/** 하루(호 날짜)에 그릴 수 있는 그림 수 — 비용 상한 */
-const DAILY_CAP = 8;
+/** 24시간 동안 그릴 수 있는 그림 수 — 비용 상한 (아침판 10~14장 + 점심 1~3장 + 다시 그리기) */
+const DAILY_CAP = 40;
 
 /**
  * 데일리 브리핑 그림 그리기 (자동 점검용) — 그날 문제·기사에 맞춘 새 그림 한 장
  *
- * POST { edition: "noon"|"morning", date?: 오늘(기본)·어제, name: "cover", scene: "장면 설명(영어)", layout?: "thumb"|"full", id?: true }
+ * POST { edition: "noon"|"morning", date?: 오늘(기본)·어제·내일, name: "cover"|"hero"|"a1"…, scene: "장면 설명(영어)", layout?: "thumb"|"full", id?: true }
  *   → { ok, url } — url 을 점심 3문제 drill.cover 등에 넣어요. 그림체·색·선은 서버가 붙여요 (scene 에는 무엇을 그릴지만)
  *   layout "thumb"(기본) = 왼쪽 절반을 비운 썸네일 바탕 · id: true = 장면에 적은 국기·짧은 영어 낱말만 그려도 됨
  *   GEMINI_API_KEY 가 없으면 503 — 그때는 기본 점심 그림(art)으로 대신해요
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   if (!isIssueEdition(edition)) return json({ ok: false, errors: ['edition 은 "morning" 또는 "noon" 이에요'] }, 400);
   const today = todayKST();
   const date = isDateKey(b.date) ? b.date : today;
-  if (date !== today && date !== addDays(today, -1)) return json({ ok: false, errors: ["오늘·어제 호 그림만 그려요"] }, 400);
+  if (![addDays(today, -1), today, addDays(today, 1)].includes(date)) return json({ ok: false, errors: ["어제·오늘·내일 호 그림만 그려요"] }, 400);
   const name = typeof b.name === "string" && /^[a-z0-9-]{1,24}$/.test(b.name) ? b.name : "";
   if (!name) return json({ ok: false, errors: ["name 은 영어 소문자·숫자·- 24자 안 (예: cover)"] }, 400);
   const scene = typeof b.scene === "string" ? b.scene.replace(/\s+/g, " ").trim() : "";
@@ -39,8 +39,8 @@ export async function POST(req: Request) {
   const layout = b.layout === "full" ? "full" : "thumb";
 
   const client = await db();
-  const used = Number((await client.execute({ sql: "SELECT COUNT(*) AS n FROM briefing_art WHERE issue_date = ?", args: [date] })).rows[0]?.n ?? 0);
-  if (used >= DAILY_CAP) return json({ ok: false, errors: [`${date} 그림은 ${DAILY_CAP}장까지예요 — 이미 그린 그림을 써 주세요`] }, 429);
+  const used = Number((await client.execute({ sql: "SELECT COUNT(*) AS n FROM briefing_art WHERE created_at > ?", args: [Date.now() - 24 * 3600_000] })).rows[0]?.n ?? 0);
+  if (used >= DAILY_CAP) return json({ ok: false, errors: [`24시간에 ${DAILY_CAP}장까지예요 — 이미 그린 그림을 써 주세요`] }, 429);
 
   let img: Buffer;
   try {

@@ -20,6 +20,7 @@ import {
   type CostumeKey,
   type IssueDrill,
   type IssueLayout,
+  type IssueStory,
   type IssueThumb,
   type NoonArt,
   type SceneKey,
@@ -625,6 +626,9 @@ type NoonBg = { src: string; wide: boolean };
 /** 형식은 파일 이름이 아니라 내용(첫 바이트)으로 — 그림 서비스가 PNG 대신 JPG 를 줄 때가 있어요 */
 const dataUri = (buf: Uint8Array) => `data:image/${buf[0] === 0xff && buf[1] === 0xd8 ? "jpeg" : "png"};base64,${Buffer.from(buf).toString("base64")}`;
 
+/** webp 는 썸네일 그리개가 못 읽어요 (11/8 시범판 그림) — 그때는 null */
+const isWebp = (buf: Uint8Array) => buf[0] === 0x52 && buf[1] === 0x49 && buf[8] === 0x57 && buf[9] === 0x45;
+
 /** 그날 그린 그림 — 그림 그리기 API 가 저장한 파일(/api/files/…) 또는 사이트 안 /magazine/brief/… (next.config 로 함께 배포) */
 async function coverData(src: string): Promise<string | null> {
   try {
@@ -632,9 +636,10 @@ async function coverData(src: string): Promise<string | null> {
       const body = await readStoredFile(src.slice("/api/files/".length));
       if (!body) return null;
       const buf = body instanceof Uint8Array ? body : new Uint8Array(await new Response(body).arrayBuffer());
-      return dataUri(buf);
+      return isWebp(buf) ? null : dataUri(buf);
     }
-    return dataUri(await readFile(join(process.cwd(), "public", src)));
+    const buf = await readFile(join(process.cwd(), "public", src));
+    return isWebp(buf) ? null : dataUri(buf);
   } catch {
     return null;
   }
@@ -841,6 +846,87 @@ function NoonDrillView({ issue, drill, radar, bg }: { issue: BriefingIssue; dril
 }
 
 /* ------------------------------------------------------------------ */
+/* 그림 이야기 아침판 — 그날 그린 큰 그림 위에 주황 이름표 + 주아체 큰 글 두 줄 + 날짜 이름표       */
+/* ------------------------------------------------------------------ */
+
+/** 한 줄 안의 *강조* 를 노랗게 — 여러 군데 가능 */
+function EmSpans({ line, em }: { line: string; em: string | null }) {
+  const parts = line.split(/(\*[^*]+\*)/).filter(Boolean);
+  return (
+    <div style={{ display: "flex", whiteSpace: "pre" }}>
+      {parts.map((p, i) =>
+        p.startsWith("*") && p.endsWith("*") ? (
+          <span key={i} style={{ whiteSpace: "pre", ...(em ? { color: em } : {}) }}>
+            {p.slice(1, -1)}
+          </span>
+        ) : (
+          <span key={i} style={{ whiteSpace: "pre" }}>
+            {p}
+          </span>
+        ),
+      )}
+    </div>
+  );
+}
+
+/** 영상 썸네일 글씨 (흰 글자 · 굵은 남색 테두리 · 오른쪽 아래 그림자) — *강조* 여러 군데 */
+function JuaHeadline({ lines, size, left, top }: { lines: string[]; size: number; left: number; top: number }) {
+  const base: CSSProperties = { fontFamily: "Jua", fontSize: size, fontWeight: 400, lineHeight: 1.2, WebkitTextStrokeWidth: size * 0.31, WebkitTextStrokeColor: LUNCH.navy };
+  const shade = "rgba(39,50,95,0.43)";
+  return (
+    <>
+      <Abs style={{ left: left + size * 0.077, top: top + size * 0.096, flexDirection: "column", ...base, color: shade, WebkitTextStrokeColor: shade }}>
+        {lines.map((l, i) => (
+          <EmSpans key={i} line={l} em={null} />
+        ))}
+      </Abs>
+      <Abs style={{ left, top, flexDirection: "column", ...base, color: "#ffffff" }}>
+        {lines.map((l, i) => (
+          <EmSpans key={i} line={l} em={GOLD} />
+        ))}
+      </Abs>
+    </>
+  );
+}
+
+function MorningStoryView({ issue, story, hero }: { issue: BriefingIssue; story: IssueStory; hero: string }) {
+  const { m, d } = parseKey(issue.date);
+  const lines = (story.hook || splitTitle(issue.title)[0]).split(/\s+\/\s+/).slice(0, 2);
+  const W = 680;
+  const size = [104, 96, 88, 80, 72, 64].find((s) => lines.every((l) => juaWidth(l.replace(/\*/g, ""), s) <= W)) ?? 64;
+  const top = story.tag ? 134 : 60;
+  return (
+    <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", fontFamily: "Pretendard", background: "#dfe6fb" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- satori 그림 (16:9 → 위아래 조금 잘라 채움) */}
+      <img src={hero} width={1200} height={675} alt="" style={{ position: "absolute", left: 0, top: -22, width: 1200, height: 675 }} />
+      {story.tag && (
+        <Abs style={{ left: NOON_LEFT - 4, top: 40, alignItems: "center", padding: "5px 22px 8px", borderRadius: 22, background: LUNCH.orange, border: `5px solid ${LUNCH.navy}` }}>
+          <div style={{ display: "flex", fontFamily: "Jua", fontSize: 42, color: "#ffffff", WebkitTextStrokeWidth: 6, WebkitTextStrokeColor: LUNCH.navy, whiteSpace: "nowrap" }}>{story.tag}</div>
+        </Abs>
+      )}
+      <JuaHeadline lines={lines} size={size} left={NOON_LEFT} top={top} />
+      <Abs style={{ left: NOON_LEFT - 4, bottom: 38, alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            padding: "7px 22px 9px",
+            borderRadius: 30,
+            background: LUNCH.cream,
+            border: `4px solid ${LUNCH.navy}`,
+            fontFamily: "Jua",
+            fontSize: 32,
+            color: LUNCH.navy,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {`${m}월 ${d}일 금콩 데일리 브리핑`}
+        </div>
+      </Abs>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 
 /**
  * 한 호의 공유 썸네일 — thumb 를 주면 저장된 값 대신 그걸로 (관리자 미리보기).
@@ -861,6 +947,12 @@ export async function briefingOgImage(
   }
   // 그날 뉴스에 맞춰 직접 그린 그림 — 정해진 틀 대신
   if (thumb.art) return artOgImage(issue, thumb.art, { headers, scale });
+  // 그림 이야기 아침판 — 그날 그린 큰 그림 + 이름표 + 큰 글 (그림을 못 읽으면 아래 예전 틀로)
+  const story = issue.edition === "morning" ? issue.extras.story : null;
+  if (story?.hero) {
+    const [base, jua, hero] = await Promise.all([ogFonts(), juaFont(), coverData(story.hero)]);
+    if (hero) return render(<MorningStoryView issue={issue} story={story} hero={hero} />, { fonts: [...base, jua], headers, scale });
+  }
   const fonts = await ogFonts();
   let view: ReactElement;
   const items = await issueItems(issue.date, issue.edition, { admin }).catch(() => []);

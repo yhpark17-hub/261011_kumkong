@@ -7,6 +7,7 @@ import { autoPublishOn, morningForAutomation, publishIssue } from "@/lib/server/
 import { db, dbConfigured } from "@/lib/server/db";
 import { checkArt, plainCorpus } from "@/lib/server/thumb-check";
 import { checkDrill } from "@/lib/server/drill-check";
+import { checkStory } from "@/lib/server/story-check";
 import { parseNotes } from "@/lib/glossary";
 import { CARD_LEN, cardTexts, checkCards, parseCards } from "@/lib/news-cards";
 import { picExists } from "@/lib/server/card-pics";
@@ -54,7 +55,9 @@ import { parseArt } from "@/lib/thumb-art";
  *     bubble = 큰 글(44자 안) — speech 면 기사에 실린 발언 그대로만(이 판 기사 본문에 없으면 빼고 warnings), 아니면 썸네일 제목
  *     caption = 무슨 일인지 사실 한 줄(64자 안)
  *   - 금콩 스터디 thumb: { topic? } — 논술 주제가 길 때 썸네일용으로 뜻이 바뀌지 않게 줄인 것(120자 안). 주제가 둘이면 더 중요한 하나만
- * 그날 그 판이 이미 있으면 아무것도 바꾸지 않고 skipped. 하나라도 틀리면 아무것도 저장하지 않고 errors.
+ * 아침판 그림 이야기 story (권장 — ROUTINE.md): { hero, tag, hook, items: [{ item: 기사 번호(0부터), art, cards: [카드 그림|""], bridge, badges, cardBadges }], pointArt?, recap }
+ *   그림은 /api/automation/art 가 돌려준 주소만. 있으면 썸네일도 hero + tag + hook 으로 저절로 (thumb 는 안 보내도 돼요)
+ * 그날 그 판이 이미 있으면 아무것도 바꾸지 않고 skipped (운영자 예시판 — origin 'preview' 초안 — 은 갈아 끼워요). 하나라도 틀리면 아무것도 저장하지 않고 errors.
  */
 
 type Raw = Record<string, unknown>;
@@ -191,6 +194,13 @@ export async function POST(req: Request) {
   );
   const where = edition === "noon" ? "금콩 스터디 본문(숫자·용어·논술·면접 질문)" : "오늘 기사(제목·한 줄 요약·요약·포인트)";
 
+  // 아침판 그림 이야기 — 그날 새로 그린 그림 + 썸네일 글 + 다리 글 (숫자는 기사·카드 글에 있는 것만)
+  const storyCheck =
+    edition === "morning" && b.story && typeof b.story === "object"
+      ? checkStory(b.story, ok, plain(ok.map((r) => [r.title, r.takeaway, r.summary, r.point, ...r.cards.flatMap(cardTexts)].join(" ")).join(" ")))
+      : null;
+  if (storyCheck) errors.push(...storyCheck.errors);
+
   // 썸네일 — 틀려도 브리핑은 저장하고, 빼고 알려 줘요 (운영자가 발행 전에 확인)
   const warnings: string[] = [];
   if (edition === "morning" && sentQuiz.length) warnings.push("quiz: 아침판은 이제 퀴즈를 싣지 않아 뺐어요");
@@ -269,8 +279,10 @@ export async function POST(req: Request) {
   }
 
   const client = await db();
-  const existing = await client.execute({ sql: "SELECT id FROM briefing_issues WHERE issue_date = ? AND edition = ?", args: [date, edition] });
-  if (existing.rows.length) return json({ date, edition, skipped: true, issueId: Number(existing.rows[0].id), reason: "오늘 이 판이 이미 있어요" });
+  const existing = await client.execute({ sql: "SELECT id, status, origin FROM briefing_issues WHERE issue_date = ? AND edition = ?", args: [date, edition] });
+  // 운영자에게 미리 보여 준 예시판(origin 'preview', 초안)은 이번 호로 갈아 끼워요
+  const previewId = existing.rows.length && Number(existing.rows[0].status) === 0 && existing.rows[0].origin === "preview" ? Number(existing.rows[0].id) : 0;
+  if (existing.rows.length && !previewId) return json({ date, edition, skipped: true, issueId: Number(existing.rows[0].id), reason: "오늘 이 판이 이미 있어요" });
 
   for (const t of ok.filter((r) => r.section === "term")) {
     const dup = await client.execute({
@@ -282,8 +294,16 @@ export async function POST(req: Request) {
   if (errors.length) return json({ date, edition, ok: false, errors }, 400);
 
   const now = Date.now();
+  const clearPreview = previewId
+    ? [
+        { sql: "DELETE FROM news WHERE edition_date = ? AND edition = ? AND origin = 'preview'", args: [date, edition] },
+        { sql: "DELETE FROM drill_answers WHERE issue_id = ?", args: [previewId] },
+        { sql: "DELETE FROM briefing_issues WHERE id = ?", args: [previewId] },
+      ]
+    : [];
   const res = await client.batch(
     [
+      ...clearPreview,
       {
         sql: "INSERT INTO briefing_issues (issue_date, edition, title, lede, closing, quiz, extras, thumb, status, origin, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'auto', ?, ?)",
         args: [date, edition, title, lede, closing, JSON.stringify(drillMode ? [] : quiz), JSON.stringify(extras), thumbJson, now, now],
@@ -296,7 +316,14 @@ export async function POST(req: Request) {
     ],
     "write",
   );
-  const issueId = Number(res[0].lastInsertRowid);
+  const at = clearPreview.length;
+  const issueId = Number(res[at].lastInsertRowid);
+  // 그림 이야기 — 기사 번호를 방금 저장한 기사 id 로 바꿔 끼워요
+  if (storyCheck) {
+    const ids = ok.map((_, i) => Number(res[at + 1 + i].lastInsertRowid));
+    const withStory = parseExtras({ ...extras, story: storyCheck.build(ids) });
+    await client.execute({ sql: "UPDATE briefing_issues SET extras = ? WHERE id = ?", args: [JSON.stringify(withStory), issueId] });
+  }
   // 자동 발행 — 검사를 다 통과한 호만 여기까지 와요
   const published = (await autoPublishOn()) && (await publishIssue(issueId));
   revalidatePath("/admin/news");
@@ -306,5 +333,5 @@ export async function POST(req: Request) {
     revalidatePath("/magazine/letter/[date]/[edition]", "page");
     revalidatePath("/");
   }
-  return json({ date, edition, ok: true, issueId, published, items: ok.length, quiz: quiz.length, ...(warnings.length ? { warnings } : {}) });
+  return json({ date, edition, ok: true, issueId, published, items: ok.length, quiz: quiz.length, story: Boolean(storyCheck), ...(previewId ? { replacedPreview: previewId } : {}), ...(warnings.length ? { warnings } : {}) });
 }
