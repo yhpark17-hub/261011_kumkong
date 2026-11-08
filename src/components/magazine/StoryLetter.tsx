@@ -46,7 +46,7 @@ const SECTION_TONE: Record<NewsSection, { soft: string; ink: string }> = {
 
 /** 영상 썸네일 글씨 — 흰 글자 + 두꺼운 남색 테두리 + 아래로 비킨 그림자 (테두리는 글자 그림자 16방향으로 — 어느 브라우저에서나 같게) */
 const OUTLINE = (() => {
-  const r = 0.085;
+  const r = 0.1;
   const ring = Array.from({ length: 16 }, (_, k) => {
     const a = (k * Math.PI) / 8;
     return `${(Math.cos(a) * r).toFixed(3)}em ${(Math.sin(a) * r).toFixed(3)}em 0 ${C.navy}`;
@@ -101,7 +101,7 @@ export function StoryHeader({ issue, story, minutes, count }: { issue: BriefingI
         {lines.length > 0 && (
           <p
             aria-hidden
-            className={cn(jua.className, "absolute bottom-[7%] left-[4.5%] text-[clamp(20px,6.2vw,40px)] leading-[1.22] tracking-[-0.01em] text-[#ffffff]")}
+            className={cn(jua.className, "absolute bottom-[7%] left-[4.5%] text-[clamp(22px,6.6vw,42px)] leading-[1.22] tracking-[-0.01em] text-[#ffffff]")}
             style={{ textShadow: OUTLINE }}
           >
             {lines.map((l, i) => (
@@ -362,12 +362,13 @@ function Middle({ c, art, g }: { c: NewsCard; art: string; g: Glosser }) {
           <Change c={c} />
         </ChartCard>
       );
-    case "flow":
+    case "flow": {
+      // 단계가 모두 날짜로 시작하면 일정표 (마지막 장을 결론처럼 칠하지 않아요)
+      const calendar = c.steps.every((st) => /^\d{1,2}일/.test(st));
       return (
         <div className={cn(SHELL, "bg-[linear-gradient(180deg,#eef1fd_0%,#fffdf8_100%)]")}>
           <div className="px-5 pt-5">
-            {/* 단계가 모두 날짜로 시작하면 일정표 */}
-            <Kicker tone="sky">{c.steps.every((st) => /^\d{1,2}일/.test(st)) ? "이번 주 달력" : "흐름으로 보기"}</Kicker>
+            <Kicker tone="sky">{calendar ? "이번 주 달력" : "흐름으로 보기"}</Kicker>
             {c.title && (
               <h4 className={cn(TITLE, "mt-2")} style={{ color: C.ink }}>
                 {c.title}
@@ -377,7 +378,7 @@ function Middle({ c, art, g }: { c: NewsCard; art: string; g: Glosser }) {
           <ol className="relative flex flex-1 flex-col justify-center gap-2.5 px-5 pt-3 pb-5">
             <span aria-hidden className="absolute top-8 bottom-10 left-[35px] w-0 border-l-2 border-dashed border-[#a3baf6]" />
             {c.steps.map((s, i) => {
-              const last = i === c.steps.length - 1;
+              const last = !calendar && i === c.steps.length - 1;
               return (
                 <li key={i} className="relative flex items-center gap-3">
                   <span
@@ -398,6 +399,7 @@ function Middle({ c, art, g }: { c: NewsCard; art: string; g: Glosser }) {
           </ol>
         </div>
       );
+    }
     case "quote":
       return (
         <PicCard art={art} long={c.note.length > 80}>
