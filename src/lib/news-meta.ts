@@ -174,13 +174,65 @@ export interface EssayItem {
   evidence: string[];
 }
 
-/** 호마다 붙는 코너 (지금은 금콩 스터디만 씀) */
+/**
+ * 그림 이야기 아침판 (2026-11-08 시범) — 유튜브 영상과 같은 파스텔 그림체로 호마다 그린 그림 + 기사와 기사를 잇는 다리 글.
+ * 있으면 아침판을 '이야기' 화면(components/magazine/StoryLetter.tsx)으로 보여 줘요. 그림은 public/magazine/brief/<날짜>/ 에 둬요.
+ */
+export interface IssueStory {
+  /** 맨 위 큰 그림 */
+  hero: string;
+  /** 큰 그림 위 두 줄 글 — '/'로 줄 나눔, *강조* (영상 썸네일 글씨) */
+  hook: string;
+  /** 기사마다 (기사 순서대로) */
+  items: StoryItem[];
+  /** '필기·면접 포인트' 장 그림 (기사 공통) */
+  pointArt: string;
+  /** 맺음 '오늘 흐름 한 번 더' — 기사 순서대로 한 줄씩 */
+  recap: string[];
+}
+
+export interface StoryItem {
+  /** 기사 id */
+  id: number;
+  /** 표지 그림 */
+  art: string;
+  /** 사이 장 그림 — 카드 순서대로 (그림이 없는 장은 "") */
+  cards: string[];
+  /** 다음 기사로 넘어가는 다리 — label 은 'A → B' 한 줄, text 는 한두 문장 */
+  bridge: { label: string; text: string } | null;
+}
+
+/** 호마다 붙는 코너 (숫자·논술은 금콩 스터디, story 는 그림 이야기 아침판) */
 export interface IssueExtras {
   numbers: NumberItem[];
   essay: EssayItem | null;
+  story: IssueStory | null;
 }
 
 const clip = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
+/** 이야기 그림 주소 — 사이트 안 /magazine/brief/ 그림만 */
+const artPath = (v: unknown) => (typeof v === "string" && /^\/magazine\/brief\/[\w-]+\/[\w-]+\.(webp|png|jpg)$/.test(v) ? v : "");
+
+function parseStory(v: unknown): IssueStory | null {
+  const o = (v && typeof v === "object" ? v : null) as Record<string, unknown> | null;
+  if (!o || !artPath(o.hero)) return null;
+  const items = (Array.isArray(o.items) ? o.items : [])
+    .map((x) => (x && typeof x === "object" ? (x as Record<string, unknown>) : {}))
+    .map((x) => {
+      const b = (x.bridge && typeof x.bridge === "object" ? x.bridge : null) as Record<string, unknown> | null;
+      const bridge = b && clip(b.label, 40) && clip(b.text, 300) ? { label: clip(b.label, 40), text: clip(b.text, 300) } : null;
+      return { id: Number(x.id), art: artPath(x.art), cards: (Array.isArray(x.cards) ? x.cards : []).map(artPath).slice(0, 10), bridge };
+    })
+    .filter((x) => Number.isInteger(x.id) && x.id > 0)
+    .slice(0, 8);
+  return {
+    hero: artPath(o.hero),
+    hook: clip(o.hook, 60),
+    items,
+    pointArt: artPath(o.pointArt),
+    recap: (Array.isArray(o.recap) ? o.recap : []).map((x) => clip(x, 80)).filter(Boolean).slice(0, 8),
+  };
+}
 
 export function parseExtras(raw: unknown): IssueExtras {
   let v: unknown = raw;
@@ -208,7 +260,7 @@ export function parseExtras(raw: unknown): IssueExtras {
           evidence: (Array.isArray(e.evidence) ? e.evidence : []).map((x) => clip(x, 200)).filter(Boolean).slice(0, 5),
         }
       : null;
-  return { numbers, essay };
+  return { numbers, essay, story: parseStory(o.story) };
 }
 
 /* ------------------------------------------------------------------ */
@@ -377,7 +429,8 @@ export const EMPTY_THUMB: IssueThumb = { scene: "", costume: "", kong: "auto", m
 /** 올린 그림 주소 — 우리 파일 주소(/api/files/…)나 https 만 */
 const imageUrl = (v: unknown) => {
   const u = typeof v === "string" ? v.trim().slice(0, 500) : "";
-  return /^(https:\/\/[^\s"'<>]+|\/api\/files\/[^\s"'<>]+)$/.test(u) ? u : "";
+  // 올린 그림(https·/api/files) 또는 그림 이야기 아침판의 썸네일(/magazine/brief/<날짜>/…)
+  return /^(https:\/\/[^\s"'<>]+|\/api\/files\/[^\s"'<>]+|\/magazine\/brief\/[\w-]+\/[\w-]+\.(jpg|png|webp))$/.test(u) ? u : "";
 };
 
 export function parseThumb(raw: unknown): IssueThumb {

@@ -32,7 +32,23 @@ const useSeen = () =>
  * 카드는 서버에서 그린 것을 children 으로 받고, 여기서는 넘기기·몇 번째 장인지만 다뤄요.
  * 카드는 카드뉴스처럼 4:5 — 한 묶음 안에서 가장 긴 장에 맞춰 높이가 같아요 (글이 길면 그만큼 늘어나요). 넓은 화면은 여러 장이 나란히 보여요.
  */
-export function CardDeck({ id, label, head, foot, children }: { id: number; label: string; head: ReactNode; foot?: ReactNode; children: ReactNode }) {
+export function CardDeck({
+  id,
+  label,
+  head,
+  foot,
+  look,
+  children,
+}: {
+  id: number;
+  label: string;
+  head: ReactNode;
+  foot?: ReactNode;
+  /** story = 그림 이야기 아침판 (파스텔 색 넘김 막대·단추) */
+  look?: "story";
+  children: ReactNode;
+}) {
+  const story = look === "story";
   const slides = Children.toArray(children);
   const total = slides.length;
   const ref = useRef<HTMLDivElement>(null);
@@ -74,8 +90,9 @@ export function CardDeck({ id, label, head, foot, children }: { id: number; labe
     el.scrollTo({ left: target.offsetLeft - (items[0] as HTMLElement).offsetLeft, behavior: reduce ? "auto" : "smooth" });
   };
 
-  const arrow =
-    "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-brand-dark bg-canvas text-brand-dark transition-colors hover:bg-brand-dark hover:text-on-primary disabled:pointer-events-none disabled:border-brand-dark/15 disabled:text-brand-dark/25";
+  const arrow = story
+    ? "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#eef1fd] text-[#2b3a7a] transition-colors hover:bg-[#2b3a7a] hover:text-[#ffffff] disabled:pointer-events-none disabled:bg-[#f4f5fb] disabled:text-[#2b3a7a]/25"
+    : "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-brand-dark bg-canvas text-brand-dark transition-colors hover:bg-brand-dark hover:text-on-primary disabled:pointer-events-none disabled:border-brand-dark/15 disabled:text-brand-dark/25";
 
   return (
     <section aria-roledescription="carousel" aria-label={label}>
@@ -86,12 +103,17 @@ export function CardDeck({ id, label, head, foot, children }: { id: number; labe
         <div className="flex flex-1 gap-1">
           {slides.map((_, i) => (
             <button key={i} type="button" onClick={() => go(i)} aria-label={`${i + 1}번째 카드`} aria-current={i === index ? "true" : undefined} className="flex-1 py-1.5">
-              <span className={cn("block h-1 rounded-full transition-colors", i <= index ? "bg-brand-dark" : "bg-brand-dark/15")} />
+              <span
+                className={cn(
+                  "block h-1 rounded-full transition-colors",
+                  story ? (i <= index ? "bg-[#7f96e8]" : "bg-[#7f96e8]/20") : i <= index ? "bg-brand-dark" : "bg-brand-dark/15",
+                )}
+              />
             </button>
           ))}
         </div>
-        <span className="shrink-0 tabular type-caption font-semibold text-ink-mute">
-          <span className="text-ink">{index + 1}</span> / {total}
+        <span className={cn("shrink-0 tabular type-caption font-semibold", story ? "text-[#7a86b8]" : "text-ink-mute")}>
+          <span className={story ? "text-[#27325f]" : "text-ink"}>{index + 1}</span> / {total}
         </span>
       </div>
 
@@ -132,6 +154,8 @@ export interface TimetableItem {
   label: string;
   section: NewsSection;
   headline: boolean;
+  /** 그림 이야기 아침판 — 칩 동그라미에 들어가는 기사 그림 */
+  art?: string;
 }
 
 /**
@@ -139,7 +163,8 @@ export interface TimetableItem {
  * 지금 읽는 기사(진하게)·끝까지 넘겨 본 기사(체크)·읽은 정도(아래 가는 막대)를 보여 줘요.
  * 누르면 그 기사로 가고, 오른쪽 '전체' 단추를 누르면 기사 목록이 펼쳐져요.
  */
-export function Timetable({ items }: { items: TimetableItem[] }) {
+export function Timetable({ items, look }: { items: TimetableItem[]; look?: "story" }) {
+  const story = look === "story";
   const done = useSeen();
   const [active, setActive] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
@@ -197,14 +222,17 @@ export function Timetable({ items }: { items: TimetableItem[] }) {
     <nav
       ref={box}
       aria-label="오늘의 시간표"
-      className="sticky top-[61px] z-20 -mx-3 border-b border-brand-dark/10 bg-canvas-cream/95 px-3 pt-2 backdrop-blur sm:-mx-4 sm:px-4 md:top-[65px] md:-mx-7 md:px-7"
+      className={cn(
+        "sticky top-[61px] z-20 -mx-3 border-b px-3 pt-2 backdrop-blur sm:-mx-4 sm:px-4 md:top-[65px] md:-mx-7 md:px-7",
+        story ? "border-[#2b3a7a]/8 bg-[#fffdf8]/95" : "border-brand-dark/10 bg-canvas-cream/95",
+      )}
     >
       <div className="flex items-center gap-2.5">
         <p className="shrink-0 leading-tight">
-          <span className="block text-[12px] font-extrabold text-ink">
+          <span className={cn("block text-[12px] font-extrabold", story ? "text-[#27325f]" : "text-ink")}>
             오늘의
             <br />
-            시간표
+            {story ? "흐름" : "시간표"}
           </span>
           <span className="mt-0.5 block tabular text-[10.5px] font-semibold text-ink-mute">기사 {items.length}건</span>
         </p>
@@ -214,29 +242,51 @@ export function Timetable({ items }: { items: TimetableItem[] }) {
             const read = done.has(it.id);
             const info = NEWS_SECTION_INFO[it.section];
             return (
-              <li key={it.id} className="shrink-0">
+              <li key={it.id} className="flex shrink-0 items-center gap-1">
+                {story && i > 0 && <ChevronRight aria-hidden className="h-3.5 w-3.5 shrink-0 text-[#a3baf6]" strokeWidth={2.6} />}
                 <a
                   href={`#item-${it.id}`}
                   aria-current={now ? "true" : undefined}
                   className={cn(
                     "flex h-12 max-w-[15.5em] items-center gap-2 rounded-2xl pr-3 pl-1.5 transition-colors",
-                    now
-                      ? "bg-brand-dark text-on-primary shadow-[0_4px_12px_-6px_rgba(28,30,84,0.6)]"
-                      : read
-                        ? "bg-[#e3f5e9] text-[#24683f]"
-                        : "bg-canvas text-ink ring-1 ring-hairline hover:ring-hairline-input",
+                    story
+                      ? now
+                        ? "bg-[#2b3a7a] text-[#ffffff] shadow-[0_6px_14px_-8px_rgba(43,58,122,0.8)]"
+                        : read
+                          ? "bg-[#eaf4e8] text-[#3d6b3a]"
+                          : "bg-[#ffffff] text-[#27325f] ring-1 ring-[#2b3a7a]/10 hover:ring-[#2b3a7a]/25"
+                      : now
+                        ? "bg-brand-dark text-on-primary shadow-[0_4px_12px_-6px_rgba(28,30,84,0.6)]"
+                        : read
+                          ? "bg-[#e3f5e9] text-[#24683f]"
+                          : "bg-canvas text-ink ring-1 ring-hairline hover:ring-hairline-input",
                   )}
                 >
-                  <span
-                    className={cn(
-                      "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full tabular text-[11px] font-bold",
-                      now ? "bg-on-primary/20" : read ? "bg-[#8fd6a8] text-brand-dark" : it.headline ? "bg-brand-dark text-on-primary" : "bg-canvas-soft text-ink-secondary",
-                    )}
-                  >
-                    {read && !now ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : no(i)}
-                  </span>
+                  {story && it.art ? (
+                    <span className="relative h-9 w-9 shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- 그날 그린 기사 그림 */}
+                      <img src={it.art} alt="" className="h-9 w-9 rounded-full object-cover ring-2 ring-[#ffffff]" />
+                      <span
+                        className={cn(
+                          "absolute -right-1 -bottom-1 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-0.5 tabular text-[10px] font-bold ring-2 ring-[#ffffff]",
+                          read && !now ? "bg-[#8fbf8a] text-[#ffffff]" : "bg-[#f7a14a] text-[#27325f]",
+                        )}
+                      >
+                        {read && !now ? <Check className="h-2.5 w-2.5" strokeWidth={3.4} /> : i + 1}
+                      </span>
+                    </span>
+                  ) : (
+                    <span
+                      className={cn(
+                        "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full tabular text-[11px] font-bold",
+                        now ? "bg-on-primary/20" : read ? "bg-[#8fd6a8] text-brand-dark" : it.headline ? "bg-brand-dark text-on-primary" : "bg-canvas-soft text-ink-secondary",
+                      )}
+                    >
+                      {read && !now ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : no(i)}
+                    </span>
+                  )}
                   <span className="min-w-0 text-left leading-tight">
-                    <span className={cn("block text-[10.5px] font-semibold", now ? "text-on-primary/70" : "text-ink-mute")}>
+                    <span className={cn("block text-[10.5px] font-semibold", now ? (story ? "text-[#ffffff]/70" : "text-on-primary/70") : story ? "text-[#7a86b8]" : "text-ink-mute")}>
                       {info.label}
                       {it.headline && " · 헤드라인"}
                     </span>
@@ -261,9 +311,9 @@ export function Timetable({ items }: { items: TimetableItem[] }) {
 
       {/* 읽은 정도 — 끝까지 넘겨 본 기사 수 */}
       <div className="mt-2 flex items-center gap-2 pb-2" title="끝까지 넘겨 본 기사">
-        <span className="h-1 flex-1 overflow-hidden rounded-full bg-brand-dark/10">
+        <span className={cn("h-1 flex-1 overflow-hidden rounded-full", story ? "bg-[#7f96e8]/15" : "bg-brand-dark/10")}>
           <span
-            className="block h-full rounded-full bg-linear-to-r from-[#ffb36b] to-primary transition-[width] duration-500"
+            className={cn("block h-full rounded-full bg-linear-to-r transition-[width] duration-500", story ? "from-[#f7a14a] to-[#7f96e8]" : "from-[#ffb36b] to-primary")}
             style={{ width: `${(count / Math.max(1, items.length)) * 100}%` }}
           />
         </span>

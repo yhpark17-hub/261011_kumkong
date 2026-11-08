@@ -5,7 +5,7 @@ import { cn } from "../ui";
 import { KongMascot } from "./KongMascot";
 
 /** 브리핑 로고 글씨 — 둥글고 귀여운 한글 글꼴 (로고·표지에만) */
-const jua = Jua({ weight: "400", subsets: ["latin"], preload: false, display: "swap" });
+export const jua = Jua({ weight: "400", subsets: ["latin"], preload: false, display: "swap" });
 
 export function Sparkle({ className }: { className?: string }) {
   return (

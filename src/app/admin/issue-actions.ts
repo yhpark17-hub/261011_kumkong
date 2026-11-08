@@ -66,7 +66,7 @@ export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<Is
   // 아침판은 이제 퀴즈를 싣지 않아요 — 예전 호에 저장된 퀴즈는 그대로 둬요
   const { quiz, error } = edition === "noon" ? readQuiz(fd) : { quiz: [], error: undefined };
   if (error) return { ok: false, error };
-  const extras = edition === "noon" ? readExtras(fd) : parseExtras({});
+  let extras = edition === "noon" ? readExtras(fd) : parseExtras({});
 
   const client = await db();
   const now = Date.now();
@@ -74,8 +74,10 @@ export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<Is
   if (clash.rows.length) return { ok: false, error: "그 날짜·판에는 이미 브리핑이 있어요. 하루에 금콩 브리핑·금콩 스터디 한 호씩만 낼 수 있어요." };
 
   if (id) {
-    const prev = (await client.execute({ sql: "SELECT id FROM briefing_issues WHERE id = ?", args: [id] })).rows[0];
+    const prev = (await client.execute({ sql: "SELECT id, extras FROM briefing_issues WHERE id = ?", args: [id] })).rows[0];
     if (!prev) return { ok: false, error: "이미 지워진 브리핑이에요." };
+    // 그림 이야기(story)는 이 화면에서 고치지 않으니 저장된 것을 그대로 둬요
+    extras = { ...extras, story: parseExtras(prev.extras).story };
     await client.execute(
       edition === "noon"
         ? {

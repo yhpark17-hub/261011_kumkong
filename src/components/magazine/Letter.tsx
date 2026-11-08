@@ -21,6 +21,7 @@ import { Markdown } from "./Markdown";
 import { ReadingProgress } from "./KongMascot";
 import { IssueLikeButton, ShareButton, ShareUrlSync, SourceLink } from "./interactive";
 import { NewsDeck, timetableItem } from "./NewsDeck";
+import { StoryBody, StoryHeader } from "./StoryLetter";
 
 const anchor = (n: NewsItem) => `item-${n.id}`;
 /** 긴 글은 양쪽 맞춤 */
@@ -308,14 +309,14 @@ function NoonBody({ issue, content }: { issue: BriefingIssue; content: LetterCon
 }
 
 /** 맺음의 앞뒤 호 카드 — 누르면 바로 그 브리핑으로 */
-function NearIssue({ issue, dir }: { issue: BriefingIssue; dir: "prev" | "next" }) {
+function NearIssue({ issue, dir, box }: { issue: BriefingIssue; dir: "prev" | "next"; box?: string }) {
   const morning = issue.edition === "morning";
   const Icon = morning ? Sunrise : Soup;
   const Arrow = dir === "prev" ? ChevronLeft : ChevronRight;
   return (
     <Link
       href={letterHref(issue.date, issue.edition)}
-      className={cn("group flex items-center gap-3 rounded-2xl bg-canvas px-4 py-3.5 transition-shadow hover:shadow-level-1", dir === "next" && "flex-row-reverse text-right")}
+      className={cn("group flex items-center gap-3 rounded-2xl bg-canvas px-4 py-3.5 transition-shadow hover:shadow-level-1", dir === "next" && "flex-row-reverse text-right", box)}
     >
       <Arrow className="h-5 w-5 shrink-0 text-ink-mute transition-colors group-hover:text-ink" strokeWidth={2} />
       <span className="min-w-0 flex-1">
@@ -332,11 +333,11 @@ function NearIssue({ issue, dir }: { issue: BriefingIssue; dir: "prev" | "next" 
 }
 
 /** 맺음의 '지난 브리핑 전체 보기' 카드 — 앞뒤 호가 없는 쪽에 */
-function ArchiveCard({ side }: { side: "left" | "right" }) {
+function ArchiveCard({ side, box }: { side: "left" | "right"; box?: string }) {
   return (
     <Link
       href={BRIEFING_ARCHIVE}
-      className={cn("group flex items-center gap-3 rounded-2xl bg-canvas px-4 py-3.5 transition-shadow hover:shadow-level-1", side === "right" && "flex-row-reverse text-right")}
+      className={cn("group flex items-center gap-3 rounded-2xl bg-canvas px-4 py-3.5 transition-shadow hover:shadow-level-1", side === "right" && "flex-row-reverse text-right", box)}
     >
       <Mail className="h-5 w-5 shrink-0 text-ink-mute transition-colors group-hover:text-ink" strokeWidth={1.75} />
       <span className="min-w-0 flex-1">
@@ -344,6 +345,47 @@ function ArchiveCard({ side }: { side: "left" | "right" }) {
         <span className="mt-1 block type-body-md font-semibold text-ink group-hover:underline">지난 브리핑 전체 보기</span>
       </span>
     </Link>
+  );
+}
+
+/** 맺음 — ① 앞뒤 브리핑 바로 가기 ② 의견·공유와 원문 확인 안내 */
+function LetterFooter({ issue, around, box }: { issue: BriefingIssue; around: { prev: BriefingIssue | null; next: BriefingIssue | null }; /** 카드 테두리 (종이색 바탕에서) */ box?: string }) {
+  return (
+    <footer className="space-y-4">
+      {/* 앞뒤 호가 있으면 그 호로, 빈 쪽에는 '지난 브리핑 전체 보기' (한 번만) */}
+      <nav aria-label="이전·다음 브리핑" className="grid gap-3 sm:grid-cols-2">
+        {around.prev ? <NearIssue issue={around.prev} dir="prev" box={box} /> : <ArchiveCard side="left" box={box} />}
+        {around.next ? <NearIssue issue={around.next} dir="next" box={box} /> : around.prev && <ArchiveCard side="right" box={box} />}
+      </nav>
+
+      <div className={cn("rounded-2xl bg-canvas px-4 py-5 sm:px-5", box)}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="type-heading-sm text-ink">오늘 브리핑은 어땠나요?</p>
+            <p className="mt-0.5 type-caption text-ink-mute">좋았던 점, 아쉬운 점을 알려 주시면 다음 브리핑에 반영할게요.</p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <IssueLikeButton id={issue.id} initialLikes={issue.likes} disabled={!issue.live} />
+            <FeedbackButton kind="site" className="btn btn-sm btn-primary">
+              의견 보내기
+            </FeedbackButton>
+            <ShareButton title={`${EDITION_LABEL[issue.edition]} ${formatDayHeading(issue.date)}`} path={letterShareHref(issue)} />
+          </div>
+        </div>
+        <p className="mt-4 flex gap-2 border-t border-hairline pt-4 type-caption leading-relaxed text-ink-secondary [word-break:keep-all]">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink-mute" strokeWidth={2} />
+          <span>
+            브리핑은 기사 원문을 짧게 요약한 글이에요. 수치·날짜 같은 <strong className="font-semibold text-ink">정확한 정보는 꼭 &lsquo;자세히 보기&rsquo;로 원문 기사를 확인해 주세요.</strong>
+          </span>
+        </p>
+      </div>
+
+      <div className="text-right">
+        <a href="#top" className="inline-flex items-center gap-1 type-caption text-ink-mute hover:underline">
+          <ArrowDown className="h-3.5 w-3.5 rotate-180" strokeWidth={2} />맨 위로
+        </a>
+      </div>
+    </footer>
   );
 }
 
@@ -360,6 +402,20 @@ export function Letter({
 }) {
   const minutes = briefingMinutes(issue, [...content.all, ...content.terms, ...content.questions]);
   const morning = issue.edition === "morning";
+  const story = morning ? issue.extras.story : null;
+
+  // 그림 이야기 아침판 (시범) — 영상 그림체 그림 + 주아체 + 기사 사이 다리 글
+  if (story)
+    return (
+      <article className="theme-light overflow-clip rounded-3xl bg-[#fffdf8] ring-1 ring-[#2b3a7a]/[0.06]">
+        {issue.live && <ShareUrlSync path={letterShareHref(issue)} />}
+        <StoryHeader issue={issue} story={story} minutes={minutes} count={content.all.length} />
+        <div className="space-y-8 px-3 pt-6 pb-10 sm:px-4 md:space-y-10 md:px-7">
+          <StoryBody content={content} story={story} />
+          <LetterFooter issue={issue} around={around} box="ring-1 ring-[#2b3a7a]/10" />
+        </div>
+      </article>
+    );
 
   return (
     <article className="theme-light overflow-clip rounded-3xl bg-canvas-cream">
@@ -394,42 +450,7 @@ export function Letter({
         {/* 끝까지 읽으면 — 바가 다 차고 정장 입은 합격 콩이 (금콩 스터디만 — 아침판은 시간표가 읽은 정도를 보여 줘요) */}
         {!morning && <ReadingProgress progress={1} say="오늘 스터디 끝까지 마쳤콩!" />}
 
-        {/* 맺음 — ① 앞뒤 브리핑 바로 가기 ② 의견·공유와 원문 확인 안내 */}
-        <footer className="space-y-4">
-          {/* 앞뒤 호가 있으면 그 호로, 빈 쪽에는 '지난 브리핑 전체 보기' (한 번만) */}
-          <nav aria-label="이전·다음 브리핑" className="grid gap-3 sm:grid-cols-2">
-            {around.prev ? <NearIssue issue={around.prev} dir="prev" /> : <ArchiveCard side="left" />}
-            {around.next ? <NearIssue issue={around.next} dir="next" /> : around.prev && <ArchiveCard side="right" />}
-          </nav>
-
-          <div className="rounded-2xl bg-canvas px-4 py-5 sm:px-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="type-heading-sm text-ink">오늘 브리핑은 어땠나요?</p>
-                <p className="mt-0.5 type-caption text-ink-mute">좋았던 점, 아쉬운 점을 알려 주시면 다음 브리핑에 반영할게요.</p>
-              </div>
-              <div className="flex shrink-0 flex-wrap gap-2">
-                <IssueLikeButton id={issue.id} initialLikes={issue.likes} disabled={!issue.live} />
-                <FeedbackButton kind="site" className="btn btn-sm btn-primary">
-                  의견 보내기
-                </FeedbackButton>
-                <ShareButton title={`${EDITION_LABEL[issue.edition]} ${formatDayHeading(issue.date)}`} path={letterShareHref(issue)} />
-              </div>
-            </div>
-            <p className="mt-4 flex gap-2 border-t border-hairline pt-4 type-caption leading-relaxed text-ink-secondary [word-break:keep-all]">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink-mute" strokeWidth={2} />
-              <span>
-                브리핑은 기사 원문을 짧게 요약한 글이에요. 수치·날짜 같은 <strong className="font-semibold text-ink">정확한 정보는 꼭 &lsquo;자세히 보기&rsquo;로 원문 기사를 확인해 주세요.</strong>
-              </span>
-            </p>
-          </div>
-
-          <div className="text-right">
-            <a href="#top" className="inline-flex items-center gap-1 type-caption text-ink-mute hover:underline">
-              <ArrowDown className="h-3.5 w-3.5 rotate-180" strokeWidth={2} />맨 위로
-            </a>
-          </div>
-        </footer>
+        <LetterFooter issue={issue} around={around} />
       </div>
     </article>
   );
