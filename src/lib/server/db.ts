@@ -207,6 +207,16 @@ CREATE TABLE IF NOT EXISTS drill_answers (
   PRIMARY KEY (issue_id, q, voter)
 );
 
+CREATE TABLE IF NOT EXISTS briefing_art (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  issue_date TEXT NOT NULL,
+  edition TEXT NOT NULL,
+  name TEXT NOT NULL,
+  url TEXT NOT NULL,
+  prompt TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
 -- 자동 점검(클라우드 에이전트)이 올린 제안 — 운영자가 승인·거절해야 사이트에 반영
 -- status: 0 = 검토 대기, 1 = 승인(반영 대기), 2 = 반영 완료, 3 = 거절, 4 = 반영 실패
 CREATE TABLE IF NOT EXISTS proposals (

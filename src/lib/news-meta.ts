@@ -289,11 +289,16 @@ export function noonArt(q: Pick<DrillQuestion, "art" | "subject" | "stem" | "kin
 
 export const noonArtSrc = (key: NoonArt, ext: "webp" | "jpg" = "webp") => `/magazine/brief/noon/${key}.${ext}`;
 
-/** 점심 3문제 묶음 — share = 공유 썸네일에 싣는 문제 번호, hook = 공유 썸네일 큰 글(20자 안, *강조* 한 군데는 노랗게, 비우면 기본 문구) */
+/**
+ * 점심 3문제 묶음 — share = 공유 썸네일에 싣는 문제 번호, hook = 공유 썸네일 큰 글(20자 안, *강조* 한 군데는 노랗게, 비우면 기본 문구)
+ * ask = 썸네일 문제 카드에 싣는 짧은 문제 한 문장(필요한 숫자 포함, 비우면 문제 글 끝 문장), cover = 그날 새로 그린 썸네일 바탕 그림 주소(비우면 기본 점심 그림)
+ */
 export interface IssueDrill {
   questions: DrillQuestion[];
   share: number;
   hook: string;
+  ask: string;
+  cover: string;
 }
 
 /** 호마다 붙는 코너 (숫자·논술은 예전 금콩 스터디, story 는 그림 이야기 아침판, drill 은 점심 3문제) */
@@ -336,10 +341,14 @@ function parseDrill(v: unknown): IssueDrill | null {
     .slice(0, 4);
   if (!questions.length) return null;
   const share = Number(o.share);
-  return { questions, share: Number.isInteger(share) && share >= 0 && share < questions.length ? share : 0, hook: clip(o.hook, 24) };
+  return { questions, share: Number.isInteger(share) && share >= 0 && share < questions.length ? share : 0, hook: clip(o.hook, 24), ask: clip(o.ask, 80), cover: coverPath(o.cover) };
 }
 
 const clip = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
+/** 점심 3문제 썸네일 바탕 — 그림 그리기 API 가 저장한 파일(/api/files/magazine/…) 또는 사이트 안 /magazine/brief/ 그림(jpg·png) */
+const coverPath = (v: unknown) =>
+  typeof v === "string" && (/^\/api\/files\/magazine\/\d{8}\/[a-f0-9]{24}\.(png|jpg)$/.test(v) || /^\/magazine\/brief\/[\w-]+\/[\w-]+\.(png|jpg)$/.test(v)) ? v : "";
+
 /** 이야기 그림 주소 — 사이트 안 /magazine/brief/ 그림만 */
 const artPath = (v: unknown) => (typeof v === "string" && /^\/magazine\/brief\/[\w-]+\/[\w-]+\.(webp|png|jpg)$/.test(v) ? v : "");
 

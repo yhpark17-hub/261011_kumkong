@@ -1,21 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CalendarCheck2, ChevronDown, ExternalLink, FileClock, Megaphone } from "lucide-react";
 import { formatDayHeading, parseKey, weekdayLabel } from "@/lib/date";
-import {
-  DRILL_KINDS,
-  EDITION_LABEL,
-  NEWS_SECTION_INFO,
-  NOON_ART,
-  letterHref,
-  letterShareHref,
-  noonArt,
-  noonArtSrc,
-  volLabel,
-  type BriefingIssue,
-  type IssueStory,
-  type NewsItem,
-  type NoonArt,
-} from "@/lib/news-meta";
+import { DRILL_KINDS, EDITION_LABEL, NEWS_SECTION_INFO, letterHref, letterShareHref, volLabel, type BriefingIssue, type IssueStory, type NewsItem } from "@/lib/news-meta";
 import type { LetterContent } from "@/lib/server/briefing";
 import { weekRadar, type RadarItem, type WeekRadar } from "@/lib/week-radar";
 import { cn } from "../ui";
@@ -164,10 +150,10 @@ export function WeekRadarCard({ radar }: { radar: WeekRadar }) {
 /* 문제 위 그림·해설 아래 짝꿍                                             */
 /* ------------------------------------------------------------------ */
 
-/** 문제 위 그림 — 아침판 그림 이야기에 그 기사 그림이 있으면 그것, 없으면 같은 그림체의 점심 그림(fallback) */
-function QuestionHead({ date, from, no, story, fallback }: { date: string; from: NewsItem | undefined; no: number; story: IssueStory | null; fallback: string }) {
-  const item = from ? story?.items.find((x) => x.id === from.id) : undefined;
-  const art = item?.art || fallback;
+function QuestionHead({ date, from, no, story }: { date: string; from: NewsItem | undefined; no: number; story: IssueStory | null }) {
+  if (!from) return null;
+  const item = story?.items.find((x) => x.id === from.id);
+  const art = item?.art ?? "";
   const badges = item?.badges ?? [];
   return (
     <>
@@ -183,9 +169,8 @@ function QuestionHead({ date, from, no, story, fallback }: { date: string; from:
           )}
         </div>
       )}
-      {from && (
-        <Link
-          href={letterHref(date, "morning", from.id)}
+      <Link
+        href={letterHref(date, "morning", from.id)}
         className={cn("-mb-1 flex items-center gap-1.5 px-4 text-[12.5px] font-semibold hover:underline sm:px-6", art && badges.length ? "pt-5" : "pt-4")}
         style={{ color: C.mute }}
       >
@@ -193,8 +178,7 @@ function QuestionHead({ date, from, no, story, fallback }: { date: string; from:
         <span className="min-w-0 truncate">
           {NEWS_SECTION_INFO[from.section].label} · {from.short || from.title}
         </span>
-        </Link>
-      )}
+      </Link>
     </>
   );
 }
@@ -332,14 +316,6 @@ export function LunchBody({ issue, content, morning }: { issue: BriefingIssue; c
   if (!drill) return null;
   const radar = weekRadar(issue.date);
   const order = morning.items.map((n) => n.id);
-  // 점심 그림은 문제마다 다르게 — 겹치면 아직 안 쓴 그림으로
-  const used = new Set<NoonArt>();
-  const fallback = drill.questions.map((q) => {
-    const want = noonArt(q);
-    const key = used.has(want) ? (NOON_ART.find((k) => !used.has(k)) ?? want) : want;
-    used.add(key);
-    return noonArtSrc(key);
-  });
   const views: DrillView[] = drill.questions.map((q, i) => {
     const from = morning.items.find((n) => n.id === q.from);
     const term = content.terms.find((t) => t.title === q.term);
@@ -351,7 +327,7 @@ export function LunchBody({ issue, content, morning }: { issue: BriefingIssue; c
       options: q.options,
       answer: q.answer,
       explain: q.explain,
-      head: <QuestionHead date={issue.date} from={from} no={order.indexOf(q.from) + 1} story={morning.story} fallback={fallback[i]} />,
+      head: <QuestionHead date={issue.date} from={from} no={order.indexOf(q.from) + 1} story={morning.story} />,
       extra: <PairNote term={term} />,
     };
   });

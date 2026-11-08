@@ -5,6 +5,8 @@
  *   node scripts/automation/api.mjs proposals <payload.json>    → 제안 올리기
  *   node scripts/automation/api.mjs issue <briefing.json>        → 데일리 브리핑 한 호(아침판 또는 점심 3문제=점심판) 올리기
  *   node scripts/automation/api.mjs today                      → 오늘 아침판 기사 보기 (점심 3문제 만들 때 — 기사 id 포함)
+ *   node scripts/automation/api.mjs art <scene.json>             → 그날 그림 한 장 새로 그리기 ({ edition, name, scene, layout?, id? } → { url })
+ *   node scripts/automation/api.mjs art-recent                 → 최근 그림 장면 설명 (어제·그제와 다른 그림을 고르게)
  *   node scripts/automation/api.mjs thumb-preview <art.json> <out.png> → 썸네일 그림 미리보기 (저장 안 함, PNG 로 받아 눈으로 확인)
  *   node scripts/automation/api.mjs thumb <art.json>            → 이미 올린 호의 썸네일 그림 바꾸기
  *   node scripts/automation/api.mjs articles <draft.json>       → 금융 블로그 자동 초안 올리기
@@ -34,6 +36,8 @@ const routes = {
   today: ["GET", "/api/automation/issue"],
   applied: ["POST", "/api/automation/applied"],
   thumb: ["POST", "/api/automation/thumb"],
+  art: ["POST", "/api/automation/art"],
+  "art-recent": ["GET", "/api/automation/art"],
   "thumb-preview": ["POST", "/api/automation/thumb"],
 };
 const route = routes[cmd];

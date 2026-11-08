@@ -30,6 +30,7 @@ import type { ThumbArt } from "@/lib/thumb-art";
 import { weekRadar, type RadarItem, type WeekRadar } from "@/lib/week-radar";
 import { juaWidth, VideoHeadline } from "./article-og";
 import { arrangeLetter, issueItems } from "./briefing";
+import { readStoredFile } from "./storage";
 import { TOPIC_W, captionFit, fitText, headlineFit, speechFit, topicFit } from "../og-text";
 import { BRAND_LOGO as LOGO, C, COSTUME_LOOK, OG_SIZE, juaFont, kongSvg, ogFonts, svgUri, type OgKong } from "./og";
 import { GAUGE, sceneSvg } from "./og-scenes";
@@ -39,7 +40,7 @@ import { ArtView } from "./thumb-art";
  * 데일리 브리핑 공유 썸네일(og:image) 그리기 — 공유 미리보기 경로와 관리자 미리보기가 같이 써요.
  * - 금콩 브리핑(아침판): 그날 뉴스 주제 그림이 칸 대부분을 채우고, 제목은 왼쪽 아래 상자에.
  *   인물 발언 뉴스만 콩이가 그 인물로 변장해 연단에서 말풍선으로 (발언은 기사에 실린 말 그대로)
- * - 점심 3문제(점심판): 아침판 그림과 같은 그림체의 점심 그림 위에 주아체 큰 글 + 보기 + 이번 주 금공
+ * - 점심 3문제(점심판): 그날 새로 그린 그림(아침판과 같은 그림체) 위에 주아체 큰 글 + 문제 카드(문제·보기) + 이번 주 금공
  * - 예전 금콩 스터디(점심판): 공책 템플릿은 그대로, 오늘의 논술 주제 글자만 바뀜
  */
 
@@ -613,27 +614,47 @@ function NoonStudy({ issue, topic, terms }: { issue: BriefingIssue; topic: strin
 }
 
 /* ------------------------------------------------------------------ */
-/* 점심 3문제 — 아침판 그림 이야기와 같은 그림체: 점심 그림 위에 주아체 큰 글 + 보기 + 이번 주 금공   */
+/* 점심 3문제 — 아침판 그림 이야기와 같은 그림체: 그날 새로 그린 그림 위에 큰 글 + 문제 카드 + 이번 주 금공 */
 /* ------------------------------------------------------------------ */
 
-const LUNCH = { navy: "#2b3a7a", orange: "#f7a14a", cream: "#fffdf8" } as const;
+const LUNCH = { navy: "#2b3a7a", ink: "#27325f", body: "#3d4778", orange: "#f7a14a", cream: "#fffdf8" } as const;
 
-/** 점심 그림 바탕 (public/magazine/brief/noon/*.jpg — next.config 의 outputFileTracingIncludes 로 함께 배포) */
+/** 바탕 그림 — wide = 16:9 그림(그날 그린 그림)이라 위아래를 조금 잘라 채워요, 아니면 1200×630 그대로 */
+type NoonBg = { src: string; wide: boolean };
+
+const dataUri = (buf: Uint8Array, path: string) => `data:image/${/\.jpe?g$/.test(path) ? "jpeg" : "png"};base64,${Buffer.from(buf).toString("base64")}`;
+
+/** 그날 그린 그림 — 그림 그리기 API 가 저장한 파일(/api/files/…) 또는 사이트 안 /magazine/brief/… (next.config 로 함께 배포) */
+async function coverData(src: string): Promise<string | null> {
+  try {
+    if (src.startsWith("/api/files/")) {
+      const body = await readStoredFile(src.slice("/api/files/".length));
+      if (!body) return null;
+      const buf = body instanceof Uint8Array ? body : new Uint8Array(await new Response(body).arrayBuffer());
+      return dataUri(buf, src);
+    }
+    return dataUri(await readFile(join(process.cwd(), "public", src)), src);
+  } catch {
+    return null;
+  }
+}
+
+/** 기본 점심 그림 (그날 그림이 없을 때만 — public/magazine/brief/noon/*.jpg) */
 async function noonArtData(key: NoonArt): Promise<string | null> {
   const buf = await readFile(join(process.cwd(), "public", noonArtSrc(key, "jpg"))).catch(() => null);
-  return buf ? `data:image/jpeg;base64,${buf.toString("base64")}` : null;
+  return buf ? dataUri(buf, ".jpg") : null;
 }
 
 /** 큰 글 줄 나누기 — ' / ' 가 있으면 거기서, 쉼표가 있으면 쉼표 뒤에서, 아니면 가운데 띄어쓰기에서 */
 function hookLines(text: string, width: number): { size: number; lines: string[] } {
-  const sizes = [100, 92, 86, 80, 72, 66];
+  const sizes = [84, 78, 72, 66, 60];
   let lines: string[];
   if (/\s\/\s/.test(text)) lines = text.split(/\s+\/\s+/).filter(Boolean);
+  else if (juaWidth(text, 78) <= width) lines = [text];
   else if (/,\s/.test(text)) {
     const i = text.search(/,\s/);
     lines = [text.slice(0, i + 1), text.slice(i + 2)];
-  } else if (juaWidth(text, 96) <= width) lines = [text];
-  else {
+  } else {
     const mid = text.length / 2;
     const spaces = [...text.matchAll(/ /g)].map((m) => m.index ?? 0);
     const at = spaces.sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid))[0];
@@ -646,6 +667,16 @@ function hookLines(text: string, width: number): { size: number; lines: string[]
 /** Pretendard 굵은 글 대충 폭 (보기 칸 고르기용) */
 const optWidth = (t: string, size: number) =>
   [...t].reduce((w, ch) => w + (/[가-힣]/.test(ch) ? 0.98 : ch === " " ? 0.28 : /[0-9]/.test(ch) ? 0.6 : /[A-Z]/.test(ch) ? 0.7 : 0.55), 0) * size;
+
+/** 썸네일 문제 문장 — ask 가 있으면 그것. 없으면 문제 글이 세 줄에 들면 전체, 아니면 끝 문장('이·그·위·다음'으로 시작하지 않을 때) */
+function askText(drill: IssueDrill, stem: string, width: number): string {
+  if (drill.ask) return drill.ask;
+  const whole = fitText(stem, [25, 23], width, 3);
+  if (!whole.lines[whole.lines.length - 1]?.endsWith("…")) return stem;
+  const parts = stem.split(/(?<=[.?!])\s+/);
+  const last = parts[parts.length - 1] ?? stem;
+  return [...last].length >= 25 && !/^(이|그|위|다음|이런|이러한)\s/.test(last) ? last : stem;
+}
 
 /** 이번 주 금공 한 줄 — 있는 것만 두 가지까지 (서류 마감 > 새 공고 > 필기 > 면접), 기관 수 */
 function radarLine(radar: WeekRadar): string {
@@ -662,85 +693,123 @@ function radarLine(radar: WeekRadar): string {
 }
 
 const NOON_LEFT = 46;
-const NOON_W = 610;
+const NOON_W = 640;
+/** 문제 카드가 내려올 수 있는 맨 아래 (아래 이름표 위) */
+const CARD_FLOOR = 516;
 
-function NoonDrillView({ issue, drill, radar, art }: { issue: BriefingIssue; drill: IssueDrill; radar: WeekRadar; art: string | null }) {
+function NoonDrillView({ issue, drill, radar, bg }: { issue: BriefingIssue; drill: IssueDrill; radar: WeekRadar; bg: NoonBg | null }) {
   const q = drill.questions[drill.share] ?? drill.questions[0];
   const k = DRILL_KINDS[q.kind];
-  const raw = drill.hook || "이 문제, 풀 수 있어요?";
+  const raw = drill.hook || "오늘의 문제, 풀어 볼까요?";
   const em = raw.match(/\*([^*]+)\*/)?.[1] ?? null;
   const hook = hookLines(raw.replace(/\*/g, ""), NOON_W);
   const { m, d } = parseKey(issue.date);
   const tag = `점심 3문제 · ${(q.subject || k.label).replace(/\s*·\s*/g, " ")}`;
   const radarText = radarLine(radar);
 
-  // 보기가 짧으면 두 칸 네모 (풀어 보고 싶게) — 길면 문제 글 두 줄을 하얀 상자에
-  // 한 칸 안쪽 폭 = 칸(300) - 여백·테두리(34) - 번호(글자 + 10)
-  const optSize = q.options.length <= 4 ? ([25, 24, 23, 22].find((s) => q.options.every((o) => optWidth(o, s) <= 266 - (s + 10))) ?? 0) : 0;
-  const twoCol = optSize > 0;
-  const hookTop = 124;
-  const hookBottom = hookTop + hook.lines.length * hook.size * 1.2;
-  const stem = twoCol ? null : fitText(q.stem, [27, 25, 23], NOON_W - 44, 2);
+  // 문제 카드: 문제 문장 + 보기 (보기만 있는 일은 없게 — 들어갈 자리가 없으면 보기를 빼고 문제만)
+  const hookTop = 118;
+  const cardTop = Math.round(hookTop + hook.lines.length * hook.size * 1.2 + 10);
+  const PAD = 18;
+  const textW = NOON_W - 44 - 54; // 여백 + 'Q' 동그라미
+  const ask = fitText(askText(drill, q.stem, textW), [27, 25, 23], textW, 3);
+  const askH = ask.lines.length * ask.size * 1.36;
+  const room = CARD_FLOOR - cardTop - PAD * 2 - askH - 10;
+  // 보기 — 두 칸(짧을 때) → 한 줄씩(들어가면) → 없음
+  const colW = (NOON_W - 44) / 2 - 12;
+  const twoSize = q.options.length <= 4 ? [24, 23, 22].find((s) => q.options.every((o) => optWidth(o, s) + s + 12 <= colW) && Math.ceil(q.options.length / 2) * s * 1.5 <= room) : undefined;
+  const oneSize = twoSize ? undefined : [23, 22, 21].find((s) => q.options.every((o) => optWidth(o, s) + s + 12 <= NOON_W - 44) && q.options.length * s * 1.45 <= room);
+  const optSize = twoSize ?? oneSize ?? 0;
 
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", fontFamily: "Pretendard", background: "#dfe6fb" }}>
-      {art && (
+      {bg && (
         // eslint-disable-next-line @next/next/no-img-element -- satori 그림
-        <img src={art} width={1200} height={630} alt="" style={{ position: "absolute", left: 0, top: 0, width: 1200, height: 630 }} />
+        <img src={bg.src} width={1200} height={bg.wide ? 675 : 630} alt="" style={{ position: "absolute", left: 0, top: bg.wide ? -22 : 0, width: 1200, height: bg.wide ? 675 : 630 }} />
       )}
 
       {/* 맨 위 주황 이름표 — 아침판 썸네일과 같은 모양 */}
-      <Abs style={{ left: NOON_LEFT - 4, top: 40, alignItems: "center", padding: "6px 22px 8px", borderRadius: 22, background: LUNCH.orange, border: `5px solid ${LUNCH.navy}` }}>
-        <div style={{ display: "flex", fontFamily: "Jua", fontSize: 40, color: "#ffffff", WebkitTextStrokeWidth: 6, WebkitTextStrokeColor: LUNCH.navy, whiteSpace: "nowrap" }}>{tag}</div>
+      <Abs style={{ left: NOON_LEFT - 4, top: 36, alignItems: "center", padding: "5px 20px 7px", borderRadius: 20, background: LUNCH.orange, border: `5px solid ${LUNCH.navy}` }}>
+        <div style={{ display: "flex", fontFamily: "Jua", fontSize: 36, color: "#ffffff", WebkitTextStrokeWidth: 6, WebkitTextStrokeColor: LUNCH.navy, whiteSpace: "nowrap" }}>{tag}</div>
       </Abs>
 
       <VideoHeadline lines={hook.lines} em={em} size={hook.size} left={NOON_LEFT} top={hookTop} />
 
-      {/* 보기 — 두 칸 네모 */}
-      {twoCol && (
-        <Abs style={{ left: NOON_LEFT - 4, top: hookBottom + 14, width: NOON_W + 10, flexWrap: "wrap" }}>
-          {q.options.map((o, i) => (
-            <div key={i} style={{ display: "flex", width: "50%", paddingRight: 10, paddingBottom: 10 }}>
+      {/* 문제 카드 — 시험지처럼: Q + 문제 문장, 아래 보기 */}
+      <Abs
+        style={{
+          left: NOON_LEFT - 4,
+          top: cardTop,
+          width: NOON_W,
+          flexDirection: "column",
+          padding: `${PAD}px 22px`,
+          borderRadius: 24,
+          background: LUNCH.cream,
+          border: `4px solid ${LUNCH.navy}`,
+          boxShadow: "6px 8px 0 rgba(39,50,95,0.25)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "flex-start" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+              marginRight: 14,
+              marginTop: 1,
+              borderRadius: 99,
+              background: LUNCH.navy,
+              color: "#ffffff",
+              fontFamily: "Jua",
+              fontSize: 26,
+              flexShrink: 0,
+            }}
+          >
+            Q
+          </div>
+          <Lines lines={ask.lines} style={{ fontSize: ask.size, fontWeight: 800, color: LUNCH.ink, lineHeight: 1.36, letterSpacing: -0.7 }} />
+        </div>
+        {optSize > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", marginTop: 10, paddingTop: 8, borderTop: "2px dashed rgba(43,58,122,0.25)" }}>
+            {q.options.map((o, i) => (
               <div
+                key={i}
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  width: "100%",
-                  padding: "8px 14px",
-                  borderRadius: 16,
-                  background: LUNCH.cream,
-                  border: `3px solid ${LUNCH.navy}`,
+                  width: twoSize ? "50%" : "100%",
+                  paddingTop: 4,
                   fontSize: optSize,
-                  fontWeight: 800,
-                  color: LUNCH.navy,
+                  lineHeight: 1.3,
+                  fontWeight: 700,
+                  color: LUNCH.body,
                   whiteSpace: "nowrap",
                 }}
               >
-                <span style={{ color: LUNCH.orange, marginRight: 8, fontSize: optSize + 2 }}>{CIRCLED[i]}</span>
+                <span style={{ color: LUNCH.orange, fontWeight: 800, marginRight: 8 }}>{CIRCLED[i]}</span>
                 {o}
               </div>
-            </div>
-          ))}
-        </Abs>
-      )}
-      {/* 보기가 길면 — 문제 글 두 줄 */}
-      {stem && (
-        <Abs style={{ left: NOON_LEFT - 4, top: hookBottom + 16, width: NOON_W, padding: "14px 20px", borderRadius: 18, background: LUNCH.cream, border: `3px solid ${LUNCH.navy}` }}>
-          <Lines lines={stem.lines} style={{ fontSize: stem.size, fontWeight: 800, color: LUNCH.navy, lineHeight: 1.35, letterSpacing: -0.6 }} />
-        </Abs>
-      )}
+            ))}
+          </div>
+        )}
+        {optSize === 0 && (
+          <div style={{ display: "flex", marginTop: 8, marginLeft: 54, fontSize: 20, fontWeight: 700, color: "#7a86b8" }}>{`보기 ${q.options.length}개 · 정답과 해설은 금콩에서`}</div>
+        )}
+      </Abs>
 
       {/* 아래 — 날짜·이름 + 이번 주 금공 */}
-      <Abs style={{ left: NOON_LEFT - 4, bottom: 38, alignItems: "center" }}>
+      <Abs style={{ left: NOON_LEFT - 4, bottom: 34, alignItems: "center" }}>
         <div
           style={{
             display: "flex",
-            padding: "8px 20px 10px",
+            padding: "7px 20px 9px",
             borderRadius: 30,
             background: LUNCH.cream,
             border: `4px solid ${LUNCH.navy}`,
             fontFamily: "Jua",
-            fontSize: 30,
+            fontSize: 28,
             color: LUNCH.navy,
             whiteSpace: "nowrap",
           }}
@@ -752,12 +821,12 @@ function NoonDrillView({ issue, drill, radar, art }: { issue: BriefingIssue; dri
             style={{
               display: "flex",
               marginLeft: 10,
-              padding: "8px 18px 10px",
+              padding: "7px 18px 9px",
               borderRadius: 30,
               background: LUNCH.navy,
               border: `4px solid ${LUNCH.navy}`,
               fontFamily: "Jua",
-              fontSize: 26,
+              fontSize: 25,
               color: "#ffffff",
               whiteSpace: "nowrap",
             }}
@@ -780,11 +849,14 @@ export async function briefingOgImage(
   issue: BriefingIssue,
   { thumb = issue.thumb, admin = false, headers, scale = 1 }: { thumb?: IssueThumb; admin?: boolean; headers?: HeadersInit; scale?: number } = {},
 ) {
-  // 점심 3문제 — 점심 그림 위에 그날 문제 + 이번 주 금공 (직접 그린 그림보다 먼저: 단톡방에서 문제가 보여야 해요)
+  // 점심 3문제 — 그날 그림 위에 문제 카드 + 이번 주 금공 (친구에게 공유했을 때 문제가 바로 보이게)
   if (issue.edition === "noon" && issue.extras.drill) {
     const drill = issue.extras.drill;
-    const [base, jua, art] = await Promise.all([ogFonts(), juaFont(), noonArtData(noonArt(drill.questions[drill.share] ?? drill.questions[0]))]);
-    return render(<NoonDrillView issue={issue} drill={drill} radar={weekRadar(issue.date)} art={art} />, { fonts: [...base, jua], headers, scale });
+    // 그날 새로 그린 그림이 먼저, 없거나 못 읽으면 기본 점심 그림
+    const [base, jua, cover] = await Promise.all([ogFonts(), juaFont(), drill.cover ? coverData(drill.cover) : null]);
+    const fallback = cover ? null : await noonArtData(noonArt(drill.questions[drill.share] ?? drill.questions[0]));
+    const bg: NoonBg | null = cover ? { src: cover, wide: true } : fallback ? { src: fallback, wide: false } : null;
+    return render(<NoonDrillView issue={issue} drill={drill} radar={weekRadar(issue.date)} bg={bg} />, { fonts: [...base, jua], headers, scale });
   }
   // 그날 뉴스에 맞춰 직접 그린 그림 — 정해진 틀 대신
   if (thumb.art) return artOgImage(issue, thumb.art, { headers, scale });

@@ -31,6 +31,10 @@ export async function checkDrill(
   const hook = typeof o.hook === "string" ? o.hook : "";
   if ([...hook.replace(/\*/g, "").replace(/\s+\/\s+/g, " ").replace(/\s+/g, " ").trim()].length > 20) errors.push("drill.hook: 썸네일 큰 글은 20자 안이에요 (*강조*·' / ' 표시는 빼고 셈)");
   if ((hook.match(/\*/g) ?? []).length > 2) errors.push("drill.hook: *강조* 는 한 군데만");
+  // 썸네일 문제 카드 문장 · 그날 그림
+  const ask = typeof o.ask === "string" ? o.ask.replace(/\s+/g, " ").trim() : "";
+  if ([...ask].length > 70) errors.push("drill.ask: 썸네일 문제 문장은 70자 안이에요 (필요한 숫자만 넣어 한 문장으로)");
+  if (typeof o.cover === "string" && o.cover && !drill.cover) errors.push("drill.cover: 그림 그리기(art)가 돌려준 url 을 그대로 넣어 주세요");
   rawQs.forEach((x, i) => {
     if (x.art !== undefined && x.art !== "" && !(NOON_ART as readonly unknown[]).includes(x.art))
       errors.push(`drill.questions[${i}].art: 점심 그림은 ${NOON_ART.join("·")} 중 하나예요 (비우면 저절로)`);
