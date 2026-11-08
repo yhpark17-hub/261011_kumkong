@@ -80,7 +80,8 @@ async function BriefingFront({ sp }: { sp: SP }) {
   await connection();
   const asked = one(sp.view);
   const saved = (await cookies()).get(NEWS_VIEW_COOKIE)?.value;
-  const view: NewsView = asked === "card" || asked === "list" ? asked : saved === "card" ? "card" : "list";
+  // 기본은 카드 (목록을 고른 적이 있으면 목록)
+  const view: NewsView = asked === "card" || asked === "list" ? asked : saved === "list" ? "list" : "card";
   const today = todayKST();
 
   const [counts, latest, popular, all] = await Promise.all([
@@ -96,9 +97,9 @@ async function BriefingFront({ sp }: { sp: SP }) {
   const noon = arrangeLetter(noonItems);
   const [term, question] = await Promise.all([noon.terms[0] ?? latestInSection("term"), noon.questions[0] ?? latestInSection("question")]);
 
-  // 아래 목록: 위 브리핑 날 기준 앞의 이틀 (16일이면 15·14일)
+  // 아래 목록: 위 브리핑 날(오늘)과 그 앞 이틀 (16일이면 16·15·14일)
   const from = addDays(heroDate, -2);
-  const to = addDays(heroDate, -1);
+  const to = heroDate;
   const recent = await issuesBetween(from, to);
   const sideAd = adEnabled(AD_SLOTS.sidebar);
 
@@ -155,7 +156,7 @@ async function BriefingFront({ sp }: { sp: SP }) {
                 <span className="ml-2 tabular type-body-md text-ink-mute">{recent.length}호</span>
               </h2>
               <p className="mt-0.5 type-caption text-ink-mute">
-                최근 이틀 동안의 브리핑만 보여 드려요. 이전 브리핑은 아래 ‘지난 브리핑 전체 보기’를 눌러 확인해 주세요.
+                오늘을 포함해 최근 사흘 동안의 브리핑이에요. 이전 브리핑은 아래 ‘지난 브리핑 전체 보기’를 눌러 확인해 주세요.
               </p>
             </div>
             <ViewToggle view={view} cookie={NEWS_VIEW_COOKIE} hrefs={{ card: "/magazine?view=card", list: "/magazine?view=list" }} />
@@ -163,7 +164,7 @@ async function BriefingFront({ sp }: { sp: SP }) {
 
           {recent.length === 0 ? (
             <div className="mt-8">
-              <EmptyLine text="이 이틀 동안 올라온 브리핑이 없어요. 지난 브리핑은 아래에서 찾아보세요." />
+              <EmptyLine text="최근 사흘 동안 올라온 브리핑이 없어요. 지난 브리핑은 아래에서 찾아보세요." />
             </div>
           ) : (
             byDate(recent).map((g) => (

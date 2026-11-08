@@ -204,13 +204,19 @@ export interface StoryItem {
   bridge: { label: string; text: string } | null;
   /** 표지 그림 위 한눈에 보는 표시 — 나라 국기·지수 시세·기관 로고·짧은 메모 (무슨 뉴스인지 그림만 봐도 알게) */
   badges: StoryBadge[];
+  /** 사이 장 그림 위 표시 — 카드 순서대로 (예: 노무라 이야기 장에 노무라 로고) */
+  cardBadges: StoryBadge[][];
 }
 
-/** 표지 표시 — flag: 나라(국기는 화면에서 정확히 그려요) · ticker: 지수와 등락 · logo: public/logos 로고 · note: 짧은 글 */
+/**
+ * 표지 표시 — flag: 나라(국기는 화면에서 정확히 그려요) · ticker: 지수와 등락 · logo: 회사·기관 로고 하나(글자 로고면 label 비워도 돼요)
+ * · logos: 심볼 로고 여럿을 겹쳐서 + 이름 (예: 5대 금융지주) · note: 짧은 글. 로고 파일은 public/logos(/news) — news 쪽 출처는 SOURCES.md
+ */
 export type StoryBadge =
   | { kind: "flag"; code: FlagCode; label: string }
   | { kind: "ticker"; label: string; value: string; dir: "up" | "down" }
   | { kind: "logo"; src: string; label: string }
+  | { kind: "logos"; srcs: string[]; label: string }
   | { kind: "note"; label: string };
 
 export const FLAG_CODES = ["us", "jp", "cn", "eu"] as const;
@@ -227,13 +233,19 @@ const clip = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s
 /** 이야기 그림 주소 — 사이트 안 /magazine/brief/ 그림만 */
 const artPath = (v: unknown) => (typeof v === "string" && /^\/magazine\/brief\/[\w-]+\/[\w-]+\.(webp|png|jpg)$/.test(v) ? v : "");
 
+const logoPath = (v: unknown) => (typeof v === "string" && /^\/logos\/(news\/)?[\w-]+\.png$/.test(v) ? v : "");
+
 function parseBadge(v: unknown): StoryBadge | null {
   const b = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
   const label = clip(b.label, 20);
+  if (b.kind === "logo" && logoPath(b.src)) return { kind: "logo", src: logoPath(b.src), label };
+  if (b.kind === "logos") {
+    const srcs = (Array.isArray(b.srcs) ? b.srcs : []).map(logoPath).filter(Boolean).slice(0, 6);
+    return srcs.length ? { kind: "logos", srcs, label } : null;
+  }
   if (!label) return null;
   if (b.kind === "flag" && (FLAG_CODES as readonly string[]).includes(String(b.code))) return { kind: "flag", code: b.code as FlagCode, label };
   if (b.kind === "ticker" && clip(b.value, 16)) return { kind: "ticker", label, value: clip(b.value, 16), dir: b.dir === "up" ? "up" : "down" };
-  if (b.kind === "logo" && typeof b.src === "string" && /^\/logos\/[\w-]+\.png$/.test(b.src)) return { kind: "logo", src: b.src, label };
   if (b.kind === "note") return { kind: "note", label };
   return null;
 }
@@ -247,7 +259,10 @@ function parseStory(v: unknown): IssueStory | null {
       const b = (x.bridge && typeof x.bridge === "object" ? x.bridge : null) as Record<string, unknown> | null;
       const bridge = b && clip(b.label, 40) && clip(b.text, 300) ? { label: clip(b.label, 40), text: clip(b.text, 300) } : null;
       const badges = (Array.isArray(x.badges) ? x.badges : []).map(parseBadge).filter((b): b is StoryBadge => b !== null).slice(0, 3);
-      return { id: Number(x.id), art: artPath(x.art), cards: (Array.isArray(x.cards) ? x.cards : []).map(artPath).slice(0, 10), bridge, badges };
+      const cardBadges = (Array.isArray(x.cardBadges) ? x.cardBadges : [])
+        .slice(0, 10)
+        .map((list) => (Array.isArray(list) ? list : []).map(parseBadge).filter((b): b is StoryBadge => b !== null).slice(0, 2));
+      return { id: Number(x.id), art: artPath(x.art), cards: (Array.isArray(x.cards) ? x.cards : []).map(artPath).slice(0, 10), bridge, badges, cardBadges };
     })
     .filter((x) => Number.isInteger(x.id) && x.id > 0)
     .slice(0, 8);

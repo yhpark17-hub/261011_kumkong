@@ -409,8 +409,8 @@ export function Letter({
     return (
       <article className="theme-light overflow-clip rounded-3xl bg-[#fffdf8] ring-1 ring-[#2b3a7a]/[0.06]">
         {issue.live && <ShareUrlSync path={letterShareHref(issue)} />}
-        <StoryHeader issue={issue} story={story} minutes={minutes} count={content.all.length} />
-        <div className="space-y-8 px-3 pt-6 pb-10 sm:px-4 md:space-y-10 md:px-7">
+        <StoryHeader issue={issue} minutes={minutes} count={content.all.length} />
+        <div className="space-y-8 px-3 pt-3 pb-10 sm:px-4 md:space-y-10 md:px-7">
           <StoryBody content={content} story={story} />
           <LetterFooter issue={issue} around={around} box="ring-1 ring-[#2b3a7a]/10" />
         </div>

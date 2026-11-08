@@ -44,33 +44,6 @@ const SECTION_TONE: Record<NewsSection, { soft: string; ink: string }> = {
   question: { soft: "#eef1fd", ink: "#2b3a7a" },
 };
 
-/** 영상 썸네일 글씨 — 흰 글자 + 두꺼운 남색 테두리 + 아래로 비킨 그림자 (테두리는 글자 그림자 16방향으로 — 어느 브라우저에서나 같게) */
-const OUTLINE = (() => {
-  const r = 0.1;
-  const ring = Array.from({ length: 16 }, (_, k) => {
-    const a = (k * Math.PI) / 8;
-    return `${(Math.cos(a) * r).toFixed(3)}em ${(Math.sin(a) * r).toFixed(3)}em 0 ${C.navy}`;
-  });
-  return [...ring, `0.1em 0.14em 0 rgba(39,50,95,0.42)`].join(",");
-})();
-
-/** '*말*' → 노란 강조 */
-function Emph({ text, color }: { text: string; color: string }) {
-  return (
-    <>
-      {text.split(/(\*[^*]+\*)/).map((p, i) =>
-        p.startsWith("*") && p.endsWith("*") ? (
-          <span key={i} style={{ color }}>
-            {p.slice(1, -1)}
-          </span>
-        ) : (
-          p
-        ),
-      )}
-    </>
-  );
-}
-
 const pad = (no: number) => String(no).padStart(2, "0");
 
 /* ------------------------------------------------------------------ */
@@ -168,11 +141,26 @@ function Badge({ b }: { b: StoryBadge }) {
         </span>
       );
     }
-    case "logo":
+    case "logo": {
+      // 심볼(-mark)은 동그라미, 글자 로고는 낮고 길게
+      const mark = b.src.endsWith("-mark.png");
+      return (
+        <span className={cn(base, "bg-[#ffffff]", b.label ? "pr-2.5 pl-1.5" : "px-2.5")} style={{ color: C.ink }} title={b.label || undefined}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- 회사·기관 로고 (public/logos) */}
+          <img src={b.src} alt={b.label ? "" : "로고"} className={mark ? "h-5 w-5 object-contain" : "h-[14px] w-auto max-w-[96px] object-contain"} />
+          {b.label}
+        </span>
+      );
+    }
+    case "logos":
       return (
         <span className={cn(base, "bg-[#ffffff] pr-2.5 pl-1")} style={{ color: C.ink }}>
-          {/* eslint-disable-next-line @next/next/no-img-element -- 기관 로고 (public/logos) */}
-          <img src={b.src} alt="" className="h-5 w-5 rounded-full object-contain" />
+          <span className="flex -space-x-1.5">
+            {b.srcs.map((src) => (
+              // eslint-disable-next-line @next/next/no-img-element -- 회사·기관 심볼 로고 (public/logos)
+              <img key={src} src={src} alt="" className="h-[22px] w-[22px] rounded-full bg-[#ffffff] object-contain p-[2px] ring-1 ring-[#2b3a7a]/10" />
+            ))}
+          </span>
           {b.label}
         </span>
       );
@@ -190,12 +178,15 @@ function Badge({ b }: { b: StoryBadge }) {
 /* 머리 — 큰 그림 + 두 줄 글 + 제목 + 여는 글                              */
 /* ------------------------------------------------------------------ */
 
-export function StoryHeader({ issue, story, minutes, count }: { issue: BriefingIssue; story: IssueStory; minutes: number; count: number }) {
-  const lines = story.hook.split(/\s*\/\s*/).filter(Boolean);
+/**
+ * 머리 — 작은 로고·날짜 한 줄만. 썸네일(목록·공유 그림)은 이미 보고 들어왔으니 다시 싣지 않고, 요약도 빼서 바로 '오늘의 흐름'부터 보여요.
+ * 제목은 화면에 안 보이게 두되 읽기 프로그램·검색에는 남겨요.
+ */
+export function StoryHeader({ issue, minutes, count }: { issue: BriefingIssue; minutes: number; count: number }) {
   return (
     <header className="relative px-3 pt-4 sm:px-4 md:px-7 md:pt-6">
       {/* 위쪽은 영상 하늘색이 종이색으로 번지게 */}
-      <span aria-hidden className="absolute inset-x-0 top-0 h-[420px] bg-[linear-gradient(180deg,#dfe5fd_0%,#f3ecfb_55%,rgba(255,253,248,0)_100%)]" />
+      <span aria-hidden className="absolute inset-x-0 top-0 h-[150px] bg-[linear-gradient(180deg,#dfe5fd_0%,#f3ecfb_55%,rgba(255,253,248,0)_100%)]" />
       <div className="relative flex items-center justify-between gap-3 px-1">
         <MastheadMini edition={issue.edition} />
         <p className="text-right tabular text-[12.5px] leading-snug" style={{ color: C.mute }}>
@@ -207,37 +198,7 @@ export function StoryHeader({ issue, story, minutes, count }: { issue: BriefingI
           </span>
         </p>
       </div>
-
-      <figure className="relative mt-4 overflow-clip rounded-[22px] shadow-[0_18px_36px_-24px_rgba(43,58,122,0.7)] ring-1 ring-[#2b3a7a]/10">
-        {/* eslint-disable-next-line @next/next/no-img-element -- 그날 그린 그림 (public/magazine/brief) */}
-        <img src={story.hero} alt="" fetchPriority="high" decoding="async" className="aspect-[16/9] w-full object-cover" />
-        {lines.length > 0 && (
-          <p
-            aria-hidden
-            className={cn(
-              jua.className,
-              "absolute left-[4.5%] text-[clamp(22px,6.6vw,42px)] leading-[1.22] tracking-[-0.01em] text-[#ffffff]",
-              story.hookPos === "top" ? "top-[8%]" : "bottom-[7%]",
-            )}
-            style={{ textShadow: OUTLINE }}
-          >
-            {lines.map((l, i) => (
-              <span key={i} className="block whitespace-nowrap">
-                <Emph text={l} color={C.yellow} />
-              </span>
-            ))}
-          </p>
-        )}
-      </figure>
-
-      <h2 className={cn(jua.className, "relative mt-5 px-1 text-[24px] leading-[1.36] font-normal [word-break:keep-all] md:text-[31px]")} style={{ color: C.ink }}>
-        {issue.title}
-      </h2>
-      {issue.lede && (
-        <p className="relative mt-3 px-1 text-[15.5px] leading-[1.8] ko-justify md:text-[16.5px]" style={{ color: C.body }}>
-          {issue.lede}
-        </p>
-      )}
+      <h2 className="sr-only">{issue.title}</h2>
     </header>
   );
 }
@@ -320,11 +281,22 @@ function Cover({ n, art, badges, total, g }: { n: NewsItem; art: string; badges:
 }
 
 /** 그림이 있는 글 카드 (알고 가기·쉽게 말하면·용어·숫자) — 글이 길면 그림 칸을 낮춰요 */
-function PicCard({ art, long, children }: { art: string; long: boolean; children: React.ReactNode }) {
+function PicCard({ art, long, badges = [], children }: { art: string; long: boolean; badges?: StoryBadge[]; children: React.ReactNode }) {
   return (
     <div className={SHELL}>
-      {art && <Art src={art} className={long ? "aspect-[5/2.5]" : "aspect-[5/3]"} />}
-      <div className="flex flex-1 flex-col px-5 pt-4 pb-5">{children}</div>
+      {art && (
+        <div className="relative">
+          <Art src={art} className={long ? "aspect-[5/2.5]" : "aspect-[5/3]"} />
+          {badges.length > 0 && (
+            <span className="absolute right-3 bottom-0 flex translate-y-1/2 gap-1.5">
+              {badges.map((b, i) => (
+                <Badge key={i} b={b} />
+              ))}
+            </span>
+          )}
+        </div>
+      )}
+      <div className={cn("flex flex-1 flex-col px-5 pb-5", art && badges.length ? "pt-5" : "pt-4")}>{children}</div>
     </div>
   );
 }
@@ -431,12 +403,12 @@ function ChartCard({ kicker, title, note, g, children }: { kicker: string; title
   );
 }
 
-function Middle({ c, art, g }: { c: NewsCard; art: string; g: Glosser }) {
+function Middle({ c, art, badges, g }: { c: NewsCard; art: string; badges: StoryBadge[]; g: Glosser }) {
   switch (c.type) {
     case "background":
     case "text":
       return (
-        <PicCard art={art} long={c.text.length > 120}>
+        <PicCard art={art} long={c.text.length > 120} badges={badges}>
           <Kicker>{c.type === "background" ? "알고 가기" : "쉽게 말하면"}</Kicker>
           {c.title && (
             <h4 className={cn(TITLE, "mt-2")} style={{ color: C.ink }}>
@@ -450,7 +422,7 @@ function Middle({ c, art, g }: { c: NewsCard; art: string; g: Glosser }) {
       );
     case "term":
       return (
-        <PicCard art={art} long={c.text.length > 120}>
+        <PicCard art={art} long={c.text.length > 120} badges={badges}>
           <Kicker>용어 풀이</Kicker>
           <p className="mt-2 text-[20px] leading-snug font-extrabold [word-break:keep-all]" style={{ color: C.navy }}>
             {c.term}
@@ -462,7 +434,7 @@ function Middle({ c, art, g }: { c: NewsCard; art: string; g: Glosser }) {
       );
     case "stat":
       return (
-        <PicCard art={art} long={c.note.length > 80}>
+        <PicCard art={art} long={c.note.length > 80} badges={badges}>
           <Kicker>숫자로 보기</Kicker>
           <p className={cn(jua.className, "mt-2.5 w-fit tabular text-[clamp(34px,10vw,44px)] leading-[1.05] [overflow-wrap:anywhere]")} style={{ color: C.navy }}>
             <span className="bg-[linear-gradient(transparent_62%,#ffd84d_62%)] px-0.5">{c.value}</span>
@@ -529,7 +501,7 @@ function Middle({ c, art, g }: { c: NewsCard; art: string; g: Glosser }) {
     }
     case "quote":
       return (
-        <PicCard art={art} long={c.note.length > 80}>
+        <PicCard art={art} long={c.note.length > 80} badges={badges}>
           <Kicker>한마디</Kicker>
           <p className="mt-2 text-[18px] leading-snug font-extrabold [word-break:keep-all]" style={{ color: C.ink }}>
             &ldquo;{c.text}&rdquo;
@@ -611,7 +583,7 @@ function Chapter({ n, no, item, pointArt }: { n: NewsItem; no: number; item: Sto
   const tone = SECTION_TONE[n.section];
   const gloss = deckGlosser(n);
   const coverG = gloss([n.takeaway || n.title]);
-  const middles = n.cards.map((c, i) => <Middle key={i} c={c} art={item.cards[i] ?? ""} g={gloss(proseStrings(c))} />);
+  const middles = n.cards.map((c, i) => <Middle key={i} c={c} art={item.cards[i] ?? ""} badges={item.cardBadges[i] ?? []} g={gloss(proseStrings(c))} />);
   const pointG = n.point ? gloss([n.point]) : null;
   return (
     <section id={`item-${n.id}`} className="scroll-mt-36">
