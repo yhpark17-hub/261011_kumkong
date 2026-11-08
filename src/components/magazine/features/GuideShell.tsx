@@ -180,7 +180,7 @@ export function GuideShell({
     const t = tabs.current[ch];
     const bar = t?.parentElement;
     if (!t || !bar) return;
-    bar.scrollTo({ left: t.offsetLeft - bar.clientWidth / 2 + t.clientWidth / 2, behavior: "smooth" });
+    bar.scrollLeft = t.offsetLeft - bar.clientWidth / 2 + t.clientWidth / 2;
   }, [ch]);
   const go = useCallback(
     (i: number, reveal = false) => {
@@ -243,7 +243,7 @@ export function GuideShell({
                   type="button"
                   role="tab"
                   aria-selected={ch === i}
-                  onClick={() => go(i)}
+                  onClick={() => go(i, true)}
                   className={cn(
                     "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 type-caption font-semibold whitespace-nowrap",
                     anim,
