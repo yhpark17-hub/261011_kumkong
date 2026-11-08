@@ -171,15 +171,15 @@ function Question({ no, q, picked, counts, onPick }: { no: number; q: DrillView;
                   className={cn(
                     "relative flex w-full items-start gap-2.5 overflow-hidden rounded-2xl px-3.5 py-3 text-left text-[15px] leading-[1.55] ring-1 transition-colors [word-break:keep-all]",
                     !answered && "bg-[#ffffff] ring-[#2b3a7a]/15 hover:bg-[#f5f7ff] hover:ring-[#7f96e8] active:scale-[0.99]",
-                    answered && isAnswer && "bg-[#e6f5ec] font-semibold ring-[#56b37e]",
-                    answered && mine && !isAnswer && "bg-[#fdeaea] ring-[#e07a7a]",
+                    answered && isAnswer && "bg-[#dcf1e4] font-semibold ring-2 ring-[#56b37e]",
+                    answered && mine && !isAnswer && "bg-[#fbe2e2] ring-2 ring-[#e07a7a]",
                     answered && !isAnswer && !mine && "bg-[#fafbff] ring-[#2b3a7a]/10 opacity-75",
                   )}
                   style={{ color: C.ink }}
                 >
                   {/* 다른 독자들이 고른 비율 (5명부터) */}
                   {showRate && <span aria-hidden className={cn("absolute inset-y-0 left-0", isAnswer ? "bg-[#56b37e]/15" : "bg-[#2b3a7a]/[0.06]")} style={{ width: `${pct}%` }} />}
-                  <span className="relative shrink-0 font-bold" style={{ color: answered && isAnswer ? "#2f7d4f" : C.peri }}>
+                  <span className="relative shrink-0 text-[18px] leading-[1.35] font-bold" style={{ color: answered && isAnswer ? "#2f7d4f" : C.peri }}>
                     {CIRCLED[i]}
                   </span>
                   <span className="relative min-w-0 flex-1">{o}</span>
@@ -214,9 +214,9 @@ function Question({ no, q, picked, counts, onPick }: { no: number; q: DrillView;
             <p className="mt-2 text-[15px] leading-[1.75] whitespace-pre-line [word-break:keep-all]" style={{ color: C.body }}>
               {q.explain}
             </p>
-            {q.extra}
           </div>
         )}
+        {answered && q.extra}
       </div>
     </section>
   );

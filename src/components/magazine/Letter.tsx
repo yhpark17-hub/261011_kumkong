@@ -415,7 +415,8 @@ export function Letter({
       <article className="theme-light overflow-clip rounded-3xl bg-[#fffdf8] ring-1 ring-[#2b3a7a]/[0.06]">
         {issue.live && <ShareUrlSync path={letterShareHref(issue)} />}
         <LunchHeader issue={issue} minutes={minutes} count={issue.extras.drill.questions.length} />
-        <div className="space-y-6 px-3 pt-3 pb-10 sm:px-4 md:space-y-8 md:px-7">
+        {/* relative — 머리의 하늘색 번짐(absolute)이 아래 카드를 덮지 않게 */}
+        <div className="relative space-y-6 px-3 pt-3 pb-10 sm:px-4 md:space-y-8 md:px-7">
           <LunchBody issue={issue} content={content} morning={morningOf} />
           <LetterFooter issue={issue} around={around} box="ring-1 ring-[#2b3a7a]/10" />
         </div>

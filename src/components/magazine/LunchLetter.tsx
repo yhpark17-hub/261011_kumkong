@@ -82,14 +82,14 @@ const SHOW = 4;
 
 function RadarGroup({ icon: Icon, label, items, empty, tone }: { icon: typeof Megaphone; label: string; items: RadarItem[]; empty: string; tone: { soft: string; ink: string } }) {
   return (
-    <div className="rounded-2xl px-3 py-3" style={{ background: tone.soft }}>
+    <div className={cn("rounded-2xl px-3", items.length ? "py-3" : "py-2.5")} style={{ background: tone.soft }}>
       <p className="flex items-center gap-1.5 text-[13px] font-bold" style={{ color: tone.ink }}>
         <Icon className="h-4 w-4" strokeWidth={2.2} />
         {label}
-        <span className="ml-auto tabular font-semibold">{items.length ? `${items.length}곳` : "없음"}</span>
+        <span className="ml-auto tabular font-semibold">{items.length ? `${new Set(items.map((it) => it.companyId)).size}곳` : "없음"}</span>
       </p>
       {items.length === 0 ? (
-        <p className="mt-1.5 text-[13.5px] leading-[1.55] [word-break:keep-all]" style={{ color: C.body }}>
+        <p className="mt-1 text-[13px] leading-[1.5] [word-break:keep-all]" style={{ color: C.body }}>
           {empty}
         </p>
       ) : (
@@ -131,8 +131,8 @@ export function WeekRadarCard({ radar }: { radar: WeekRadar }) {
         </p>
       </div>
       <div className="mt-3 space-y-2">
-        <RadarGroup icon={FileClock} label="서류 마감" items={radar.deadlines} empty="이번 주에 서류를 마감하는 공고는 없어요." tone={{ soft: "#fdeee6", ink: "#b2502a" }} />
-        <RadarGroup icon={Megaphone} label="새 공고 (최근 7일)" items={radar.postings} empty="최근 7일 동안 새로 뜬 공고는 없어요. 새 공고가 뜨면 여기서 먼저 알려 드려요." tone={{ soft: "#e9f6ee", ink: "#2f7d4f" }} />
+        <RadarGroup icon={FileClock} label="서류 마감" items={radar.deadlines} empty="이번 주엔 서류 마감이 없어요." tone={{ soft: "#fdeee6", ink: "#b2502a" }} />
+        <RadarGroup icon={Megaphone} label="새 공고 (최근 7일)" items={radar.postings} empty="최근 7일 새 공고는 없어요. 뜨면 여기서 먼저 알려 드려요." tone={{ soft: "#e9f6ee", ink: "#2f7d4f" }} />
         <RadarGroup icon={CalendarCheck2} label="필기·면접·발표" items={radar.stages} empty="이번 주에 잡힌 필기·면접·발표 일정은 없어요." tone={{ soft: "#eef1fd", ink: "#3449a3" }} />
       </div>
       <p className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[12px] leading-[1.5]" style={{ color: C.mute }}>
@@ -186,7 +186,7 @@ function QuestionHead({ date, from, no, story }: { date: string; from: NewsItem 
 function PairNote({ term }: { term: NewsItem | undefined }) {
   if (!term) return null;
   return (
-    <div className="mt-4 rounded-xl bg-[#ffffff] px-4 py-3 ring-1 ring-[#2b3a7a]/[0.08]">
+    <div className="mt-3 rounded-2xl bg-[#ffffff] px-3.5 py-3.5 ring-1 ring-[#2b3a7a]/[0.1] [&_td]:!px-2.5 [&_td]:!py-2 [&_td]:!text-[13.5px] [&_td]:[word-break:keep-all] [&_th]:!px-2.5 [&_th]:[word-break:keep-all]">
       <p className="text-[13px] font-bold" style={{ color: C.navy }}>
         개념 정리 · {term.title}
       </p>

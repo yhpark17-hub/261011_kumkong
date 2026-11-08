@@ -269,6 +269,17 @@ export interface IssueExtras {
 /** 점심 3문제 보기 기호 */
 export const CIRCLED = ["①", "②", "③", "④", "⑤"] as const;
 
+/** 줄바꿈은 살리고 줄 안의 공백만 다듬기 (해설 문단) */
+const clipLines = (v: unknown, max: number) =>
+  typeof v === "string"
+    ? v
+        .split(/\r?\n/)
+        .map((l) => l.replace(/\s+/g, " ").trim())
+        .filter(Boolean)
+        .join("\n")
+        .slice(0, max)
+    : "";
+
 function parseDrill(v: unknown): IssueDrill | null {
   const o = (v && typeof v === "object" ? v : null) as Record<string, unknown> | null;
   if (!o) return null;
@@ -280,7 +291,7 @@ function parseDrill(v: unknown): IssueDrill | null {
       const kind = x.kind === "major" || x.kind === "deep" ? x.kind : "news";
       const stem = clip(x.stem, 300);
       if (!stem || options.length < 4 || !Number.isInteger(answer) || answer < 0 || answer >= options.length) return null;
-      return { kind, subject: clip(x.subject, 16), stem, options, answer, explain: clip(x.explain, 700), term: clip(x.term, 60), from: Number.isInteger(Number(x.from)) ? Number(x.from) : 0 };
+      return { kind, subject: clip(x.subject, 16), stem, options, answer, explain: clipLines(x.explain, 700), term: clip(x.term, 60), from: Number.isInteger(Number(x.from)) ? Number(x.from) : 0 };
     })
     .filter((q): q is DrillQuestion => q !== null)
     .slice(0, 4);

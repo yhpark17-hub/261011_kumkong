@@ -22,7 +22,7 @@ import {
   type ThumbStat,
 } from "@/lib/news-meta";
 import type { ThumbArt } from "@/lib/thumb-art";
-import { weekRadar, type WeekRadar } from "@/lib/week-radar";
+import { weekRadar, type RadarItem, type WeekRadar } from "@/lib/week-radar";
 import { arrangeLetter, issueItems } from "./briefing";
 import { TOPIC_W, captionFit, fitText, headlineFit, speechFit, topicFit } from "../og-text";
 import { BRAND_LOGO as LOGO, C, COSTUME_LOOK, OG_SIZE, juaFont, kongSvg, ogFonts, svgUri, type OgKong } from "./og";
@@ -621,14 +621,17 @@ function NoonDrillView({ issue, drill, radar }: { issue: BriefingIssue; drill: I
   const q = drill.questions[drill.share] ?? drill.questions[0];
   const k = DRILL_KINDS[q.kind];
   const hook = drill.hook || "이 문제, 풀 수 있어요?";
-  const stem = fitText(q.stem, [36, 33, 30, 28], 690, 3);
+  // 보기가 짧으면 두 칸 — 그만큼 문제를 네 줄까지
+  const two = q.options.every((o) => [...o].length <= 18);
+  const stem = fitText(q.stem, [36, 33, 30, 28, 26], 690, two ? 4 : 3);
   // 보기는 한 줄씩 — 길면 말줄임
   const opt = (t: string) => ([...t].length > 26 ? `${[...t].slice(0, 25).join("")}…` : t);
-  const two = q.options.every((o) => [...o].length <= 13);
-  const count = (types: string[]) => radar.stages.filter((s) => types.includes(s.type)).length;
+  // 기관 수 (한 기관의 1차·2차 면접은 한 곳)
+  const places = (list: RadarItem[]) => new Set(list.map((s) => s.companyId)).size;
+  const count = (types: string[]) => places(radar.stages.filter((s) => types.includes(s.type)));
   const board = [
-    { label: "서류 마감", n: radar.deadlines.length, tone: "#b2502a" },
-    { label: "새 공고", n: radar.postings.length, tone: "#2f7d4f" },
+    { label: "서류 마감", n: places(radar.deadlines), tone: "#b2502a" },
+    { label: "새 공고", n: places(radar.postings), tone: "#2f7d4f" },
     { label: "필기", n: count(["written"]), tone: "#3449a3" },
     { label: "면접", n: count(["interview1", "interview2"]), tone: "#3449a3" },
   ];
@@ -667,7 +670,7 @@ function NoonDrillView({ issue, drill, radar }: { issue: BriefingIssue; drill: I
         <Lines lines={stem.lines} style={{ marginTop: 14, fontSize: stem.size, fontWeight: 800, color: LUNCH.ink, lineHeight: 1.36, letterSpacing: -0.8 }} />
         <div style={{ display: "flex", flexWrap: "wrap", marginTop: "auto" }}>
           {q.options.map((o, i) => (
-            <div key={i} style={{ display: "flex", width: two ? "50%" : "100%", paddingTop: 6, fontSize: two ? 25 : 23, fontWeight: 700, color: LUNCH.body, whiteSpace: "nowrap" }}>
+            <div key={i} style={{ display: "flex", width: two ? "50%" : "100%", paddingTop: 6, fontSize: two ? 24 : 23, fontWeight: 700, color: LUNCH.body, whiteSpace: "nowrap" }}>
               <span style={{ color: LUNCH.peri, marginRight: 8 }}>{CIRCLED[i]}</span>
               {opt(o)}
             </div>
