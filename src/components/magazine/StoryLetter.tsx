@@ -147,7 +147,7 @@ function Flag({ code, className }: { code: FlagCode; className?: string }) {
 
 /** 표지 그림 위 표시 — 나라 국기·지수 시세·기관 로고·짧은 메모 */
 function Badge({ b }: { b: StoryBadge }) {
-  const base = "inline-flex items-center gap-1.5 rounded-full py-1 text-[12px] leading-none font-bold whitespace-nowrap shadow-[0_2px_8px_-2px_rgba(43,58,122,0.4)]";
+  const base = "inline-flex items-center gap-1.5 rounded-full py-1 text-[12px] leading-none font-bold whitespace-nowrap shadow-[0_2px_8px_-2px_rgba(43,58,122,0.4)] ring-2 ring-[#ffffff]";
   switch (b.kind) {
     case "flag":
       return (
@@ -291,18 +291,21 @@ function Cover({ n, art, badges, total, g }: { n: NewsItem; art: string; badges:
     <div className={SHELL}>
       <div className="relative">
         {art ? <Art src={art} className="aspect-[5/3.3]" /> : <div className="aspect-[5/3.3] bg-[linear-gradient(180deg,#dfe5fd,#f3ecfb)]" />}
-        <span className="absolute top-3 left-3 rounded-full px-2.5 py-1 text-[12px] font-bold shadow-[0_2px_6px_-2px_rgba(43,58,122,0.35)]" style={{ background: tone.soft, color: tone.ink }}>
-          {NEWS_SECTION_INFO[n.section].label}
-        </span>
-        {badges.length > 0 && (
-          <span className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
-            {badges.map((b, i) => (
-              <Badge key={i} b={b} />
-            ))}
+        {/* 분야 이름표와 한눈에 보는 표시는 그림 아래 경계에 걸쳐요 (그림 속 국기·글자를 가리지 않게) */}
+        <div className="absolute inset-x-3 bottom-0 flex translate-y-1/2 items-center justify-between gap-2">
+          <span className="shrink-0 rounded-full px-2.5 py-1 text-[12px] leading-none font-bold shadow-[0_2px_8px_-2px_rgba(43,58,122,0.4)] ring-2 ring-[#ffffff]" style={{ background: tone.soft, color: tone.ink }}>
+            {NEWS_SECTION_INFO[n.section].label}
           </span>
-        )}
+          {badges.length > 0 && (
+            <span className="flex min-w-0 flex-wrap justify-end gap-1.5">
+              {badges.map((b, i) => (
+                <Badge key={i} b={b} />
+              ))}
+            </span>
+          )}
+        </div>
       </div>
-      <div className="flex flex-1 flex-col px-5 pt-4 pb-4">
+      <div className="flex flex-1 flex-col px-5 pt-6 pb-4">
         <Kicker>무슨 일이에요?</Kicker>
         <p className="mt-2 text-[18px] leading-[1.48] font-bold tracking-[-0.02em] [word-break:keep-all]" style={{ color: C.ink }}>
           {glossed(g, n.takeaway || n.title)}
