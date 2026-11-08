@@ -21,7 +21,8 @@ const CH = { intro: 0, why: 1, money: 2, cycle: 3, now: 4, answer: 5, wrap: 6 } 
 /* ------------------------------------------------------------------ */
 
 /** 영상의 장 시작 시각(초) — 유튜브 설명란 챕터와 같아요 */
-const VIDEO_CHAPTERS = [0, 65, 138, 407, 537, 804, 844] as const;
+// 유튜브 설명란 챕터와 같은 초 (영상 쪽 시각을 내림한 값)
+const VIDEO_CHAPTERS = [0, 65, 138, 407, 536, 804, 843] as const;
 const VIDEO_LENGTH = "15:32";
 
 const VideoCtx = createContext<string | null>(null);
