@@ -1,6 +1,6 @@
 import { addDays, todayKST } from "@/lib/date";
 import { isDateKey, isIssueEdition } from "@/lib/news-meta";
-import { artConfigured, generateArt } from "@/lib/server/art-gen";
+import { artConfigured, generateArt, imageKind } from "@/lib/server/art-gen";
 import { automationAuthorized, json, unauthorized } from "@/lib/server/automation";
 import { db, dbConfigured } from "@/lib/server/db";
 import { saveFile, storageConfigured } from "@/lib/server/storage";
@@ -42,13 +42,14 @@ export async function POST(req: Request) {
   const used = Number((await client.execute({ sql: "SELECT COUNT(*) AS n FROM briefing_art WHERE issue_date = ?", args: [date] })).rows[0]?.n ?? 0);
   if (used >= DAILY_CAP) return json({ ok: false, errors: [`${date} 그림은 ${DAILY_CAP}장까지예요 — 이미 그린 그림을 써 주세요`] }, 429);
 
-  let png: Buffer;
+  let img: Buffer;
   try {
-    png = await generateArt(scene, { layout, id: b.id === true });
+    img = await generateArt(scene, { layout, id: b.id === true });
   } catch (e) {
     return json({ ok: false, errors: [`그림을 못 그렸어요: ${e instanceof Error ? e.message : String(e)} — 장면을 바꿔 한 번 더, 안 되면 기본 점심 그림(art)으로`] }, 502);
   }
-  const url = await saveFile("magazine", "png", "image/png", png);
+  const kind = imageKind(img);
+  const url = await saveFile("magazine", kind.ext, kind.mime, img);
   await client.execute({
     sql: "INSERT INTO briefing_art (issue_date, edition, name, url, prompt, created_at) VALUES (?, ?, ?, ?, ?, ?)",
     args: [date, edition, name, url, scene, Date.now()],

@@ -622,7 +622,8 @@ const LUNCH = { navy: "#2b3a7a", ink: "#27325f", body: "#3d4778", orange: "#f7a1
 /** 바탕 그림 — wide = 16:9 그림(그날 그린 그림)이라 위아래를 조금 잘라 채워요, 아니면 1200×630 그대로 */
 type NoonBg = { src: string; wide: boolean };
 
-const dataUri = (buf: Uint8Array, path: string) => `data:image/${/\.jpe?g$/.test(path) ? "jpeg" : "png"};base64,${Buffer.from(buf).toString("base64")}`;
+/** 형식은 파일 이름이 아니라 내용(첫 바이트)으로 — 그림 서비스가 PNG 대신 JPG 를 줄 때가 있어요 */
+const dataUri = (buf: Uint8Array) => `data:image/${buf[0] === 0xff && buf[1] === 0xd8 ? "jpeg" : "png"};base64,${Buffer.from(buf).toString("base64")}`;
 
 /** 그날 그린 그림 — 그림 그리기 API 가 저장한 파일(/api/files/…) 또는 사이트 안 /magazine/brief/… (next.config 로 함께 배포) */
 async function coverData(src: string): Promise<string | null> {
@@ -631,9 +632,9 @@ async function coverData(src: string): Promise<string | null> {
       const body = await readStoredFile(src.slice("/api/files/".length));
       if (!body) return null;
       const buf = body instanceof Uint8Array ? body : new Uint8Array(await new Response(body).arrayBuffer());
-      return dataUri(buf, src);
+      return dataUri(buf);
     }
-    return dataUri(await readFile(join(process.cwd(), "public", src)), src);
+    return dataUri(await readFile(join(process.cwd(), "public", src)));
   } catch {
     return null;
   }
@@ -642,7 +643,7 @@ async function coverData(src: string): Promise<string | null> {
 /** 기본 점심 그림 (그날 그림이 없을 때만 — public/magazine/brief/noon/*.jpg) */
 async function noonArtData(key: NoonArt): Promise<string | null> {
   const buf = await readFile(join(process.cwd(), "public", noonArtSrc(key, "jpg"))).catch(() => null);
-  return buf ? dataUri(buf, ".jpg") : null;
+  return buf ? dataUri(buf) : null;
 }
 
 /** 큰 글 줄 나누기 — ' / ' 가 있으면 거기서, 쉼표가 있으면 쉼표 뒤에서, 아니면 가운데 띄어쓰기에서 */

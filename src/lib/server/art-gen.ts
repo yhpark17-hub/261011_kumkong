@@ -48,8 +48,11 @@ async function styleRef() {
   return ref;
 }
 
+/** 그림 파일 형식 — 첫 바이트로 (Gemini 는 JPG 를 줄 때가 많아요) */
+export const imageKind = (buf: Uint8Array) => (buf[0] === 0xff && buf[1] === 0xd8 ? { ext: "jpg", mime: "image/jpeg" } : { ext: "png", mime: "image/png" });
+
 /**
- * 장면 설명(영어 권장) → PNG. layout "thumb" = 왼쪽 절반 비운 썸네일 바탕, "full" = 꽉 찬 그림.
+ * 장면 설명(영어 권장) → 그림 파일(JPG 또는 PNG — imageKind 로 확인). layout "thumb" = 왼쪽 절반 비운 썸네일 바탕, "full" = 꽉 찬 그림.
  * id = 장면에 적은 국기·짧은 영어 낱말(예: KOSPI)만 그려도 됨.
  */
 export async function generateArt(scene: string, { layout = "thumb", id = false }: { layout?: "thumb" | "full"; id?: boolean } = {}): Promise<Buffer> {

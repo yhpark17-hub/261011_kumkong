@@ -352,8 +352,8 @@ value·from·to 는 `1166억달러`, `137억4천만달러`, `9만5천명`, `3.43
    - `share` 문제의 내용을 한눈에 보여 주는 장면을 영어로 짧게 씁니다 — 누가(꼬마 취준생·꼬마 직장인 1~2명) · 어디서(점심시간의 옥상·카페·사무실 창가·공원 벤치·은행 앞 …) · **무엇을**(문제의 핵심을 물건으로: 예 ROE·ROA → 크기가 다른 유리병 두 개에 같은 동전 주머니, 금리와 채권값 → 시소, 환율 → 저울 위 달러·원화 동전 더미, 고용 → 구인 게시판과 줄 선 사람들) · 주인공 소품 하나(주황색이 될 물건)
      그림체·색·선·왼쪽 빈 하늘은 사이트가 붙여요. 장면에는 **무엇을 그릴지만** 써요. 실제 인물·로고·한글 글자는 그리지 않아요
    - 국기나 짧은 영어 낱말(예: `ROE`, `KOSPI`, `Fed`)이 꼭 필요하면 장면에 `a little tag that reads exactly "ROE"`처럼 적고 `"id": true`
-   - `scene.json`: `{ "edition": "noon", "name": "cover", "scene": "Lunch break on a sunny rooftop. On the right half: …", "id": true }` → `node scripts/automation/api.mjs art scene.json` → `{ "url": "/api/files/magazine/…png" }` 를 그대로 `drill.cover` 에
-   - 받은 그림을 `curl -s "$KUMKONG_SITE_URL<url>" -o /tmp/kk/cover.png` 로 받아 **눈으로 확인** — 문제와 안 맞거나 글자가 깨졌으면 장면을 고쳐 한 번 더(하루 8장까지)
+   - `scene.json`: `{ "edition": "noon", "name": "cover", "scene": "Lunch break on a sunny rooftop. On the right half: …", "id": true }` → `node scripts/automation/api.mjs art scene.json` → `{ "url": "/api/files/magazine/…jpg" }` 를 그대로 `drill.cover` 에
+   - 받은 그림을 `curl -s "$KUMKONG_SITE_URL<url>" -o /tmp/kk/cover.jpg` 로 받아 **눈으로 확인** — 문제와 안 맞거나 글자가 깨졌으면 장면을 고쳐 한 번 더(하루 8장까지)
    - 그림 키가 없다는 답(503)이나 실패가 계속되면 `cover` 없이 올려요 (기본 점심 그림으로 대신 그려져요) — 마지막 메시지에 남겨요
 
 ```json
@@ -368,7 +368,7 @@ value·from·to 는 `1166억달러`, `137억4천만달러`, `9만5천명`, `3.43
   "drill": {
     "hook": "*ROE와 ROA*, 직접 구해 볼까요?",
     "ask": "당기순이익 100억원, 자기자본 500억원, 부채 500억원인 A사의 ROE와 ROA는?",
-    "cover": "/api/files/magazine/20261109/(art 가 돌려준 url).png",
+    "cover": "(art 가 돌려준 url 그대로)",
     "share": 1,
     "questions": [
       { "kind": "news", "subject": "경제 시사", "from": 255, "stem": "…로 가장 알맞은 것은?", "options": ["…", "…", "…", "…", "…"], "answer": 3, "explain": "…", "basis": "(아침판 기사 문장 그대로)" },
