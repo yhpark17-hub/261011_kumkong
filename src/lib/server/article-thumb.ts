@@ -24,6 +24,7 @@ const CATEGORY_SCENE: Record<MagazineCategory, ArticleSceneKey> = {
   briefing: "knowledge",
   exam: "exam",
   deepdive: "knowledge",
+  industry: "knowledge",
   knowledge: "knowledge",
   starter: "starter",
   interview: "interview",

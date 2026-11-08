@@ -956,6 +956,8 @@ export function articleSceneSvg(key: ArticleSceneKey, prop: ScenePropKey = "doc"
           ? tworounds()
         : key === "crossing"
           ? crossing()
+        : key === "shipyard"
+          ? ""
         : key === "exam"
           ? exam()
           : key === "interview"

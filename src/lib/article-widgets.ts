@@ -24,6 +24,7 @@ export const ARTICLE_FEATURES = {
   "feature:kdb-written": { label: "인터랙티브 가이드 — 산은 경영 필기", hint: "글 전체가 범위·시간·컷을 눌러 보는 8장짜리 산은 필기 가이드로 바뀌어요 (본문 맨 위 한 줄)" },
   "feature:kdb-company": { label: "인터랙티브 가이드 — 산업은행 딥다이브 (돈의 여행·부서·면접)", hint: "글 전체가 11장짜리 산은 회사·면접 딥다이브로 바뀌어요 (본문 맨 위 한 줄)" },
   "feature:kexim-essay": { label: "인터랙티브 가이드 — 수은 논술 종합 (대미투자·방산·공급망·EDCF)", hint: "글 전체가 네 주제를 같은 틀로 정리한 9장짜리 수은 논술 가이드로 바뀌어요 (본문 맨 위 한 줄)" },
+  "feature:shipbuilding": { label: "인터랙티브 가이드 — 산업 A-Z 조선업 (영상 + 글)", hint: "글 전체가 영상과 같은 순서의 7장짜리 조선업 가이드로 바뀌어요. 둘째 줄에 {{youtube:영상 주소}} 를 적으면 영상 링크가 생겨요" },
   "feature:kexim-written": { label: "인터랙티브 가이드 — 수출입은행 경영 필기", hint: "글 전체가 1차·2차 구조를 눌러 보는 9장짜리 수은 필기 가이드로 바뀌어요 (본문 맨 위 한 줄)" },
 } as const;
 
@@ -46,6 +47,18 @@ export function articleFeatureIn(body: string): ArticleFeatureKey | null {
   const first = body.split(/\r?\n/).find((l) => l.trim());
   const m = first?.match(WIDGET_LINE);
   return m && isArticleFeature(m[1]) ? m[1] : null;
+}
+
+/** 함께 볼 유튜브 영상 — 본문의 한 줄 {{youtube:주소 또는 영상 ID}} (없으면 null) */
+export function articleVideoIn(body: string): string | null {
+  for (const line of body.split(/\r?\n/)) {
+    const m = line.match(/^\s*\{\{\s*youtube:\s*(\S+?)\s*\}\}\s*$/);
+    if (!m) continue;
+    const v = m[1];
+    const id = /^[A-Za-z0-9_-]{11}$/.test(v) ? v : (v.match(/(?:youtu\.be\/|[?&]v=|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{11})/)?.[1] ?? null);
+    if (id) return id;
+  }
+  return null;
 }
 
 /** 본문에 쓰인 블록 이름들 */

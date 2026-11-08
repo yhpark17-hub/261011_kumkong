@@ -91,7 +91,7 @@ function splitEmphasis(text: string): { pre: string; big: string; post: string }
 const plain = (t: string) => t.replace(/\*/g, "");
 
 /** 한 줄 안에서 강조할 말만 색을 바꿔요 */
-function EmLines({ lines, em, color, style }: { lines: string[]; em: string | null; color: string; style: CSSProperties }) {
+function EmLines({ lines, em, color, style, emStyle }: { lines: string[]; em: string | null; color: string; style: CSSProperties; emStyle?: CSSProperties }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", ...style }}>
       {lines.map((line, i) => {
@@ -103,7 +103,7 @@ function EmLines({ lines, em, color, style }: { lines: string[]; em: string | nu
             ) : (
               <>
                 {at > 0 && <span style={{ whiteSpace: "pre" }}>{line.slice(0, at)}</span>}
-                <span style={{ whiteSpace: "pre", color }}>{em}</span>
+                <span style={{ whiteSpace: "pre", color, ...emStyle }}>{em}</span>
                 {at + em.length < line.length && <span style={{ whiteSpace: "pre" }}>{line.slice(at + em.length)}</span>}
               </>
             )}
@@ -220,6 +220,20 @@ function fitByComma(text: string, sizes: number[], width: number, maxLines: numb
 }
 
 const GOLD = "#ffd84d";
+
+/** 글씨 테두리 — 그림자를 둘레로 여러 겹 (satori 는 text-stroke 대신 이걸로) */
+const ring = (c: string, w: number) =>
+  Array.from({ length: 16 }, (_, i) => {
+    const a = (i / 16) * Math.PI * 2;
+    return `${(Math.cos(a) * w).toFixed(1)}px ${(Math.sin(a) * w).toFixed(1)}px 0 ${c}`;
+  }).join(", ");
+
+/** 제목을 ' / ' 로 나눈 줄 그대로 (밝은 그림용) — 가장 긴 줄이 들어가는 크기로 */
+function fitByLines(text: string, sizes: number[], width: number): { size: number; lines: string[] } {
+  const lines = text.split(/\s*\/\s*/).filter(Boolean);
+  for (const size of sizes) if (lines.every((l) => !fitText(l, [size], width, 1).lines[0].endsWith("…") && fitText(l, [size], width, 1).lines.length === 1)) return { size, lines };
+  return fitText(lines.join(" "), sizes, width, 3);
+}
 const TEXT_W = 590;
 /** 큰 글씨 칸: 이름표 아래부터 아래 한 줄 위까지 */
 const BOLD_TOP = 118;
@@ -228,7 +242,9 @@ const BOLD_H = 384;
 /** 큰 글씨형 — 유튜브 썸네일처럼 왼쪽에 큰 글씨, 숫자·강조 말은 노랗게 크게 */
 function BoldView({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; photo: string | null }) {
   const em = splitEmphasis(plan.headline);
-  const giant = em && [...em.big].length <= 7 ? em : null;
+  // 밝은 그림(영상 그림) — 남색 글씨에 흰 테두리, 강조 말은 노랑에 남색 테두리 (영상 썸네일과 같은 모양)
+  const light = plan.scene === "shipyard";
+  const giant = em && [...em.big].length <= 7 && !light ? em : null;
   const cap = plan.sub ? fitText(plan.sub, [28, 26, 24, 22], 600, 1) : null;
   const dark = plan.scene === "fund" || plan.scene === "journey" || plan.scene === "tworounds" || plan.scene === "crossing";
   const shadow = "0 4px 18px rgba(0,0,0,0.35)";
@@ -248,9 +264,19 @@ function BoldView({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; p
       </Abs>
     );
   } else {
-    const head = fitText(plain(plan.headline), [80, 72, 64, 58, 52], TEXT_W, 3);
+    const head = light ? fitByLines(plain(plan.headline), [84, 76, 68, 60], TEXT_W) : fitText(plain(plan.headline), [80, 72, 64, 58, 52], TEXT_W, 3);
     const total = head.lines.length * head.size * 1.14;
-    block = (
+    block = light ? (
+      <Abs style={{ left: 56, top: 132, width: 660 }}>
+        <EmLines
+          lines={head.lines}
+          em={em?.big ?? null}
+          color={GOLD}
+          emStyle={{ textShadow: ring(C.ink, 5) }}
+          style={{ fontSize: head.size, fontWeight: 800, color: C.ink, lineHeight: 1.18, letterSpacing: -2, textShadow: ring(C.white, 5) }}
+        />
+      </Abs>
+    ) : (
       <Abs style={{ left: 56, top: BOLD_TOP + Math.max(0, (BOLD_H - total) / 2), width: 640 }}>
         <EmLines lines={head.lines} em={em?.big ?? null} color={GOLD} style={{ fontSize: head.size, fontWeight: 800, color: C.white, lineHeight: 1.14, letterSpacing: -2, textShadow: shadow }} />
       </Abs>
@@ -260,7 +286,8 @@ function BoldView({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; p
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", fontFamily: "Pretendard" }}>
       <SceneLayer plan={plan} logo={logo} photo={photo} />
-      {/* 왼쪽을 어둡게 — 그림 위에서도 글씨가 또렷하게 */}
+      {/* 왼쪽을 어둡게 — 그림 위에서도 글씨가 또렷하게 (밝은 그림은 글씨 테두리로) */}
+      {!light && (
       <Abs
         style={{
           left: 0,
@@ -272,9 +299,17 @@ function BoldView({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; p
             : "linear-gradient(90deg, rgba(10,14,48,0.95) 0%, rgba(10,14,48,0.86) 48%, rgba(10,14,48,0) 100%)",
         }}
       />
+      )}
       <BrandPill kicker={plan.kicker} />
       {block}
-      {cap && (
+      {cap && light && (
+        <Abs style={{ right: 48, bottom: 44, alignItems: "center", padding: "12px 22px 12px 16px", borderRadius: 16, background: "#ff0033", boxShadow: "0 8px 20px rgba(120,0,20,0.3)" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- 재생 세모 */}
+          <img src={svgUri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30"><path d="M7 4.5v15l12-7.5z" fill="#ffffff"/></svg>')} width={30} height={30} alt="" style={{ marginRight: 10 }} />
+          <div style={{ display: "flex", fontSize: cap.size, fontWeight: 800, color: C.white, letterSpacing: -0.4, whiteSpace: "nowrap" }}>{cap.lines[0]}</div>
+        </Abs>
+      )}
+      {cap && !light && (
         <Abs style={{ left: 56, bottom: 52, alignItems: "center", padding: "10px 18px", borderRadius: 14, background: "rgba(255,255,255,0.13)", border: "1.5px solid rgba(255,255,255,0.3)" }}>
           <div style={{ display: "flex", width: 8, height: 8, borderRadius: 99, background: GOLD, marginRight: 12 }} />
           <div style={{ display: "flex", fontSize: cap.size, fontWeight: 700, color: C.white, letterSpacing: -0.4, whiteSpace: "nowrap" }}>{cap.lines[0]}</div>
@@ -285,7 +320,7 @@ function BoldView({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; p
 }
 
 /** 사진을 까는 장면의 바탕 (next.config 의 outputFileTracingIncludes 로 함께 배포) */
-const SCENE_PHOTO: Partial<Record<ArticleThumbPlan["scene"], string>> = { crossing: "public/magazine/thumbs/crossing.jpg" };
+const SCENE_PHOTO: Partial<Record<ArticleThumbPlan["scene"], string>> = { crossing: "public/magazine/thumbs/crossing.jpg", shipyard: "public/magazine/thumbs/shipyard.jpg" };
 
 async function scenePhoto(scene: ArticleThumbPlan["scene"]): Promise<string | null> {
   const path = SCENE_PHOTO[scene];

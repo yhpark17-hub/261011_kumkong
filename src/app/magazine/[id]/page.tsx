@@ -37,7 +37,7 @@ import { dbConfigured } from "@/lib/server/db";
 import { companiesInArticle } from "@/lib/server/article-links";
 import { adjacentArticles, getArticle, relatedArticles } from "@/lib/server/magazine";
 import { isAdmin } from "@/lib/server/security";
-import { articleFeatureIn } from "@/lib/article-widgets";
+import { articleFeatureIn, articleVideoIn } from "@/lib/article-widgets";
 import { AD_SLOTS, SITE, pageOpenGraph } from "@/lib/site";
 
 function parseId(raw: string): number | null {
@@ -193,7 +193,7 @@ async function ArticleView({ rawId }: { rawId: string }) {
         <ReadingProgress targetId="article-body" />
         {ld}
         {admin && <div className="mx-auto max-w-[1200px] px-4 pt-6 md:px-6">{adminBar}</div>}
-        <ArticleFeature name={feature} title={a.title} />
+        <ArticleFeature name={feature} title={a.title} video={articleVideoIn(a.body)} />
         <div className={CONTAINER}>
           <div className="mx-auto max-w-[720px]">
             <ArticleLinks items={places} className="mb-10" />
