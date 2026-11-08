@@ -9,6 +9,7 @@ import {
   letterShareHref,
   volLabel,
   type BriefingIssue,
+  type IssueStory,
   type NewsItem,
 } from "@/lib/news-meta";
 import type { LetterContent } from "@/lib/server/briefing";
@@ -21,6 +22,7 @@ import { Markdown } from "./Markdown";
 import { ReadingProgress } from "./KongMascot";
 import { IssueLikeButton, ShareButton, ShareUrlSync, SourceLink } from "./interactive";
 import { NewsDeck, timetableItem } from "./NewsDeck";
+import { LunchBody, LunchHeader } from "./LunchLetter";
 import { StoryBody, StoryHeader } from "./StoryLetter";
 
 const anchor = (n: NewsItem) => `item-${n.id}`;
@@ -394,15 +396,31 @@ export function Letter({
   issue,
   content,
   around = { prev: null, next: null },
+  morningOf = { items: [], story: null },
 }: {
   issue: BriefingIssue;
   content: LetterContent;
   /** 발행 순서로 바로 앞뒤 호 (판 상관없이) */
   around?: { prev: BriefingIssue | null; next: BriefingIssue | null };
+  /** 점심 3문제: 같은 날 아침판 기사와 그림 (문제 위 그림·출처 기사) */
+  morningOf?: { items: NewsItem[]; story: IssueStory | null };
 }) {
   const minutes = briefingMinutes(issue, [...content.all, ...content.terms, ...content.questions]);
   const morning = issue.edition === "morning";
   const story = morning ? issue.extras.story : null;
+
+  // 점심 3문제 — 금공 필기형 문제 + 이번 주 금공 체크 + 면접 1문
+  if (!morning && issue.extras.drill)
+    return (
+      <article className="theme-light overflow-clip rounded-3xl bg-[#fffdf8] ring-1 ring-[#2b3a7a]/[0.06]">
+        {issue.live && <ShareUrlSync path={letterShareHref(issue)} />}
+        <LunchHeader issue={issue} minutes={minutes} count={issue.extras.drill.questions.length} />
+        <div className="space-y-6 px-3 pt-3 pb-10 sm:px-4 md:space-y-8 md:px-7">
+          <LunchBody issue={issue} content={content} morning={morningOf} />
+          <LetterFooter issue={issue} around={around} box="ring-1 ring-[#2b3a7a]/10" />
+        </div>
+      </article>
+    );
 
   // 그림 이야기 아침판 (시범) — 영상 그림체 그림 + 주아체 + 기사 사이 다리 글
   if (story)

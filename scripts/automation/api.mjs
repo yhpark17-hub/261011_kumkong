@@ -3,8 +3,8 @@
  *
  *   node scripts/automation/api.mjs inbox                      → 할 일 목록 JSON 출력
  *   node scripts/automation/api.mjs proposals <payload.json>    → 제안 올리기
- *   node scripts/automation/api.mjs issue <briefing.json>        → 데일리 브리핑 초안 한 호(아침판 또는 금콩 스터디=점심판) 올리기
- *   node scripts/automation/api.mjs today                      → 오늘 아침판 기사 보기 (금콩 스터디 만들 때)
+ *   node scripts/automation/api.mjs issue <briefing.json>        → 데일리 브리핑 한 호(아침판 또는 점심 3문제=점심판) 올리기
+ *   node scripts/automation/api.mjs today                      → 오늘 아침판 기사 보기 (점심 3문제 만들 때 — 기사 id 포함)
  *   node scripts/automation/api.mjs thumb-preview <art.json> <out.png> → 썸네일 그림 미리보기 (저장 안 함, PNG 로 받아 눈으로 확인)
  *   node scripts/automation/api.mjs thumb <art.json>            → 이미 올린 호의 썸네일 그림 바꾸기
  *   node scripts/automation/api.mjs articles <draft.json>       → 금융 블로그 자동 초안 올리기

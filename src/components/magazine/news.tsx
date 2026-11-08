@@ -306,13 +306,13 @@ export function FeatureItemCard({ section, n, today }: { section: "term" | "ques
           </span>
           <span className="mt-2 line-clamp-3 type-body-md leading-relaxed text-ink-secondary ko-justify">{n.summary}</span>
           <span className="mt-auto inline-flex items-center gap-1 pt-4 type-caption text-primary-text">
-            금콩 스터디에서 보기
+            점심 3문제에서 보기
             <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
           </span>
         </Link>
       ) : (
         <p className="mt-4 type-body-md text-ink-mute">
-          {section === "term" ? "금콩 스터디에서 그날 기사에 나온 용어를 풀어 드려요." : "금콩 스터디에서 그날 기사로 나올 법한 면접 질문을 드려요."}
+          {section === "term" ? "점심 3문제에서 그날 문제에 나온 용어를 풀어 드려요." : "점심 3문제에서 그날 기사로 나올 법한 면접 질문을 드려요."}
         </p>
       )}
     </section>
@@ -419,7 +419,7 @@ export function BriefingHeroCard({ issue }: { issue: BriefingIssue }) {
         {/* 오른쪽은 비워 둬요 — 첫 화면 넘기기 버튼(HeroSwitcher)이 이 줄 오른쪽에 와요 */}
         <span className="flex flex-wrap items-center gap-2 pr-28 type-caption">
           <span className={cn("rounded-full px-2.5 py-0.5 font-semibold text-brand-dark", EDITION_TONE[issue.edition].soft)}>
-            {issue.edition === "morning" ? "금콩 브리핑 · 오늘의 기사 브리핑" : "금콩 스터디 · 점심 시사 공부"}
+            {issue.edition === "morning" ? "금콩 브리핑 · 오늘의 기사 브리핑" : "점심 3문제 · 금공 필기형 문제"}
           </span>
           <span className="text-ink-mute">{volLabel(issue.vol)}</span>
         </span>

@@ -53,8 +53,8 @@ export const KIND_LABELS: Record<NewsKind, { title: string; summary: string; poi
 
 /** 발행 판 */
 export type NewsEdition = "morning" | "noon" | "";
-/** 판 이름 — 아침은 '금콩 브리핑', 점심은 '금콩 스터디' */
-export const EDITION_LABEL: Record<Exclude<NewsEdition, "">, string> = { morning: "금콩 브리핑", noon: "금콩 스터디" };
+/** 판 이름 — 아침은 '금콩 브리핑'(읽기), 점심은 '점심 3문제'(풀기 · 2026-11-08 전에는 '금콩 스터디') */
+export const EDITION_LABEL: Record<Exclude<NewsEdition, "">, string> = { morning: "금콩 브리핑", noon: "점심 3문제" };
 /** 올라오는 시간대 — 썸네일 스티커·부가 설명에 */
 export const EDITION_SLOT: Record<Exclude<NewsEdition, "">, string> = { morning: "아침판", noon: "점심판" };
 export const isEdition = (v: unknown): v is NewsEdition => v === "morning" || v === "noon" || v === "";
@@ -62,7 +62,7 @@ export const isEdition = (v: unknown): v is NewsEdition => v === "morning" || v 
 /** 판마다 무엇이 실리는지 — 아침판은 기사 브리핑, 금콩 스터디(점심)는 용어·논술·면접 공부 */
 export const EDITION_SCHEDULE: { key: Exclude<NewsEdition, "">; label: string; time: string; items: string[] }[] = [
   { key: "morning", label: "금콩 브리핑", time: "오전 6시", items: ["오늘의 그림", "카드뉴스 기사 브리핑"] },
-  { key: "noon", label: "금콩 스터디", time: "낮 12시 30분", items: ["오늘의 용어", "오늘의 면접 질문"] },
+  { key: "noon", label: "점심 3문제", time: "낮 12시 30분", items: ["금공 필기형 3문제", "면접 1문", "이번 주 금공 일정"] },
 ];
 
 export interface NewsItem {
@@ -222,11 +222,71 @@ export type StoryBadge =
 export const FLAG_CODES = ["us", "jp", "cn", "eu"] as const;
 export type FlagCode = (typeof FLAG_CODES)[number];
 
-/** 호마다 붙는 코너 (숫자·논술은 금콩 스터디, story 는 그림 이야기 아침판) */
+/**
+ * 점심 3문제 (2026-11-08~) — 금공 필기 형식 객관식 문제. 오늘 아침판 기사에서 출발해요.
+ * news: 시사·경제 흐름(쉬움) · major: 경제·경영 전공 개념·계산(보통) · deep: 두 기사를 잇거나 '옳지 않은 것' 고르기(어려움)
+ */
+export type DrillKind = "news" | "major" | "deep";
+export const DRILL_KINDS: Record<DrillKind, { label: string; level: string }> = {
+  news: { label: "시사", level: "쉬움" },
+  major: { label: "전공", level: "보통" },
+  deep: { label: "심화", level: "어려움" },
+};
+
+export interface DrillQuestion {
+  kind: DrillKind;
+  /** 과목 이름표 — 예: 경제학·경영학·금융상식·경제 시사 */
+  subject: string;
+  /** 문제 */
+  stem: string;
+  /** 보기 4~5개 */
+  options: string[];
+  /** 정답 번호 (0부터) */
+  answer: number;
+  /** 해설 — 왜 정답인지 + 오답 함정 + 시험·면접에서 어떻게 쓰는지 */
+  explain: string;
+  /** 해설 아래 '헷갈리는 짝꿍' — 이 판 용어(term) 제목 (그 용어의 뜻·짝꿍 표·출처를 보여 줘요) */
+  term: string;
+  /** 어느 아침판 기사에서 나온 문제인지 (기사 id — 그 기사의 그림·표시를 문제 위에 써요, 0 = 없음) */
+  from: number;
+}
+
+/** 점심 3문제 묶음 — share = 공유 썸네일에 싣는 문제 번호, hook = 공유 썸네일 맨 위 큰 글(20자 안, 비우면 기본 문구) */
+export interface IssueDrill {
+  questions: DrillQuestion[];
+  share: number;
+  hook: string;
+}
+
+/** 호마다 붙는 코너 (숫자·논술은 예전 금콩 스터디, story 는 그림 이야기 아침판, drill 은 점심 3문제) */
 export interface IssueExtras {
   numbers: NumberItem[];
   essay: EssayItem | null;
   story: IssueStory | null;
+  drill: IssueDrill | null;
+}
+
+/** 점심 3문제 보기 기호 */
+export const CIRCLED = ["①", "②", "③", "④", "⑤"] as const;
+
+function parseDrill(v: unknown): IssueDrill | null {
+  const o = (v && typeof v === "object" ? v : null) as Record<string, unknown> | null;
+  if (!o) return null;
+  const questions = (Array.isArray(o.questions) ? o.questions : [])
+    .map((x) => (x && typeof x === "object" ? (x as Record<string, unknown>) : {}))
+    .map((x): DrillQuestion | null => {
+      const options = (Array.isArray(x.options) ? x.options : []).map((t) => clip(t, 120)).filter(Boolean).slice(0, 5);
+      const answer = Number(x.answer);
+      const kind = x.kind === "major" || x.kind === "deep" ? x.kind : "news";
+      const stem = clip(x.stem, 300);
+      if (!stem || options.length < 4 || !Number.isInteger(answer) || answer < 0 || answer >= options.length) return null;
+      return { kind, subject: clip(x.subject, 16), stem, options, answer, explain: clip(x.explain, 700), term: clip(x.term, 60), from: Number.isInteger(Number(x.from)) ? Number(x.from) : 0 };
+    })
+    .filter((q): q is DrillQuestion => q !== null)
+    .slice(0, 4);
+  if (!questions.length) return null;
+  const share = Number(o.share);
+  return { questions, share: Number.isInteger(share) && share >= 0 && share < questions.length ? share : 0, hook: clip(o.hook, 20) };
 }
 
 const clip = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
@@ -302,7 +362,7 @@ export function parseExtras(raw: unknown): IssueExtras {
           evidence: (Array.isArray(e.evidence) ? e.evidence : []).map((x) => clip(x, 200)).filter(Boolean).slice(0, 5),
         }
       : null;
-  return { numbers, essay, story: parseStory(o.story) };
+  return { numbers, essay, story: parseStory(o.story), drill: parseDrill(o.drill) };
 }
 
 /* ------------------------------------------------------------------ */
@@ -599,7 +659,9 @@ export const MAX_MINUTES = 5;
 
 /** 예상 소요 시간 (한국어 약 500자/분, 3~5분) — 기사 본문 + 숫자·논술 코너 + 퀴즈 */
 export function briefingMinutes(issue: Pick<BriefingIssue, "quiz" | "extras">, items: Pick<NewsItem, "summary" | "point" | "body">[]): number {
-  const { numbers, essay } = issue.extras;
+  const { numbers, essay, drill } = issue.extras;
+  // 점심 3문제 — 문제마다 풀고 해설 읽는 데 2분 + 면접 1문 1분 (주말 논술은 따로)
+  if (drill) return Math.min(10, drill.questions.length * 2 + 1);
   const chars =
     items.reduce((s, n) => s + n.summary.length + n.point.length + n.body.length, 0) +
     numbers.reduce((s, n) => s + n.value.length + n.label.length + n.note.length, 0) +

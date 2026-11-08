@@ -21,7 +21,7 @@ import { cn } from "@/components/ui";
 export const metadata: Metadata = pageMetadata({
   title: `데일리 브리핑 — 오늘의 금융·경제·시사 뉴스와 용어·면접 질문 | ${MAGAZINE_NAME}`,
   description:
-    "매일 아침 그림과 카드뉴스로 넘겨 보는 기사 브리핑, 점심에는 금콩 스터디로 오늘의 용어·논술·면접 질문. 금융공기업 준비생이 알아야 할 금융·경제·정책·국제·공공기관 뉴스를 한 편의 브리핑으로.",
+    "매일 아침 그림과 카드뉴스로 넘겨 보는 기사 브리핑, 점심에는 그 뉴스로 푸는 금공 필기형 3문제와 이번 주 금공 일정. 금융공기업 준비생이 알아야 할 금융·경제·정책·국제·공공기관 뉴스를 한 편의 브리핑으로.",
   path: "/magazine",
   alternates: { types: { "application/rss+xml": "/magazine/rss.xml" } },
 });
@@ -134,7 +134,7 @@ async function BriefingFront({ sp }: { sp: SP }) {
             <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-hairline-input px-6 py-14 text-center md:min-h-[440px]">
               <Newspaper className="h-8 w-8 text-ink-mute-2" strokeWidth={1.5} />
               <p className="mt-3 type-heading-sm text-ink">첫 브리핑을 준비하고 있어요</p>
-              <p className="mt-1 type-body-md text-ink-mute">아침에는 기사 브리핑, 점심에는 금콩 스터디로 찾아올게요.</p>
+              <p className="mt-1 type-body-md text-ink-mute">아침에는 기사 브리핑, 점심에는 점심 3문제로 찾아올게요.</p>
             </div>
           )}
           <PopularNews items={popular} fill />

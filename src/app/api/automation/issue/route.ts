@@ -27,7 +27,15 @@ import { parseArt } from "@/lib/thumb-art";
  *     숫자·도표 카드(stat·bars·change·flow·quote·versus) 1장 이상. 카드 속 숫자는 전부 그 기사 글(제목·한 줄 요약·요약·포인트)에 있어야 하고,
  *     숫자+단위 칸(value·from·to)과 인물의 말(quote.text)은 글자 그대로 있어야 해요 — 아니면 거절
  *   - lede: 공유 미리보기·검색 설명 2~3문장 (화면에는 안 나와요)
- * 금콩 스터디 { edition: "noon", title, lede, closing?, numbers: [3개], items: [용어 2~3개, 면접 질문 1~2개], essay, quiz: [O/X 3문제] }
+ * 점심 3문제 (2026-11-08~) { edition: "noon", title, lede, items: [용어 1~3개, 면접 질문 1개], drill: { hook?, share?, questions: [3문제] }, essay?(토·일만) }
+ *   - 문제: { kind: "news"|"major"|"deep"(각 1개), subject, stem, options: [4~5개], answer(0부터), explain, from(아침판 기사 id), term?, basis }
+ *     news·deep 은 from(오늘 아침판 기사 id — GET 으로 받기) 필수. major 는 term(이 판 용어 제목) 필수 — 그 용어 카드(공식 자료 출처)가 해설 아래 붙어요
+ *     basis = 정답 근거 문장 — 오늘 아침판 기사(제목·요약·포인트·카드) 또는 이 판 용어·면접 질문 글에 그대로 있어야 해요
+ *     news·deep 은 문제·정답 보기·해설 속 숫자가 아침판 기사·이 판 글에 그대로 있어야 해요 (오답 보기의 숫자는 검사하지 않아요)
+ *   - 용어: { section: "term", title, summary, body(헷갈리는 짝꿍 표), point, sourceName, sourceUrl(공식 자료 — 필수) } — 최근 90일 안에 다룬 용어는 거절
+ *   - 면접: { section: "question", title, summary, body(답변 뼈대 3줄), point(답변 팁), sourceName, sourceUrl }
+ *   - 공유 썸네일은 문제(share 번호)와 이번 주 금공 일정으로 저절로 그려요 (thumb 는 보내지 않아도 돼요)
+ * 예전 금콩 스터디 (drill 없이) { edition: "noon", title, lede, closing?, numbers: [3개], items: [용어 2~3개, 면접 질문 1~2개], essay, quiz: [O/X 3문제] }
  *   - 숫자로 보는 오늘: { value: "7.57%", label: "15일 코스피 하락률", note? } — 아침판 기사에 나온 숫자만
  *   - 용어: { section: "term", title, summary, point, body(헷갈리는 짝꿍 비교 표, 마크다운), sourceName?, sourceUrl? } — 최근 90일 안에 다룬 용어는 거절
  *   - 질문: { section: "question", title, summary, body(답변 뼈대), point, sourceName?, sourceUrl? }
@@ -67,7 +75,7 @@ export async function GET(req: Request) {
   return json({
     date,
     morning: issue ? { title: issue.title, lede: issue.lede, status: issue.status === 1 ? "published" : "draft" } : null,
-    items: items.map((n) => ({ section: n.section, title: n.title, takeaway: n.takeaway, summary: n.summary, sourceName: n.sourceName, sourceUrl: n.sourceUrl })),
+    items: items.map((n) => ({ id: n.id, section: n.section, title: n.title, takeaway: n.takeaway, summary: n.summary, point: n.point, cards: n.cards, sourceName: n.sourceName, sourceUrl: n.sourceUrl })),
   });
 }
 
@@ -84,11 +92,13 @@ export async function POST(req: Request) {
   };
   const date = todayKST();
   const edition = b.edition;
-  if (!isIssueEdition(edition)) return json({ date, ok: false, errors: ['edition 은 "morning"(금콩 브리핑·아침판) 또는 "noon"(금콩 스터디·점심판)이에요'] }, 400);
+  if (!isIssueEdition(edition)) return json({ date, ok: false, errors: ['edition 은 "morning"(금콩 브리핑·아침판) 또는 "noon"(점심 3문제·점심판)이에요'] }, 400);
   const title = s(b.title, 120);
   const lede = s(b.lede, 1200);
   const closing = s(b.closing, 400);
   const raw = Array.isArray(b.items) ? (b.items as Raw[]).slice(0, 20) : [];
+  /** 점심 3문제 형식 (drill 을 보내면) — 아니면 예전 금콩 스터디 형식 */
+  const drillMode = edition === "noon" && b.drill !== undefined;
 
   const errors: string[] = [];
   if (title.length < 4) errors.push("title(목록·카드에 보이는 제목)이 필요해요");
@@ -122,7 +132,7 @@ export async function POST(req: Request) {
     if (row.title.length < (kind === "term" ? 2 : 4)) errors.push(`${where}: title 이 너무 짧아요`);
     if (row.summary.length < 20) errors.push(`${where}: summary 를 20자 이상 써 주세요`);
     if (edition === "morning") {
-      if (kind !== "news") errors.push(`${where}: 아침판에는 기사(finance·economy·policy·global·public)만 넣어요. 용어·면접 질문은 금콩 스터디에`);
+      if (kind !== "news") errors.push(`${where}: 아침판에는 기사(finance·economy·policy·global·public)만 넣어요. 용어·면접 질문은 점심판에`);
       if (!row.sourceUrl) errors.push(`${where}: 기사는 sourceUrl(직접 연 원문 링크)이 필요해요`);
       if (row.takeaway.length < 8) errors.push(`${where}: takeaway(한 줄 요약)가 필요해요`);
       if (row.point.length < 10) errors.push(`${where}: point(왜 중요할까·필기·면접 포인트)가 필요해요`);
@@ -150,8 +160,9 @@ export async function POST(req: Request) {
         headlines++;
       }
     } else {
-      if (kind === "news") errors.push(`${where}: 금콩 스터디에는 용어(term)·면접 질문(question)만 넣어요`);
+      if (kind === "news") errors.push(`${where}: 점심판에는 용어(term)·면접 질문(question)만 넣어요`);
       if (kind === "question" && row.body.length < 10) errors.push(`${where}: 면접 질문은 body(답변 뼈대)가 필요해요`);
+      if (drillMode && kind === "term" && !row.sourceUrl) errors.push(`${where}: 용어는 sourceUrl(뜻을 확인한 공식 자료)이 필요해요`);
     }
     return row;
   });
@@ -163,7 +174,7 @@ export async function POST(req: Request) {
   const quiz = parseQuiz(rawQuiz);
   if (quiz.length !== rawQuiz.length) errors.push("quiz: 질문·보기(2~4개)·정답 번호(answer, 0부터)를 확인해 주세요");
   if (quiz.some((q) => q.explain.length < 10)) errors.push("quiz: 문제마다 explain(해설)을 써 주세요");
-  const extras = edition === "noon" ? parseExtras({ numbers: b.numbers, essay: b.essay }) : parseExtras({});
+  const extras = drillMode ? parseExtras({ essay: b.essay, drill: b.drill }) : edition === "noon" ? parseExtras({ numbers: b.numbers, essay: b.essay }) : parseExtras({});
 
   // 퀴즈 근거 확인 — 문제마다 basis(근거 문장)가 이 판 본문에 그대로 있어야 해요.
   // 독자가 읽은 내용만으로 풀 수 있게, 본문에 없는 지식(예: 본문에 설명 없는 용어의 정의)으로 낸 문제를 막아요.
@@ -219,7 +230,7 @@ export async function POST(req: Request) {
     }
   }
   const thumbJson = JSON.stringify({ ...EMPTY_THUMB, ...thumb, checked: false });
-  rawQuiz.forEach((q, i) => {
+  (drillMode ? [] : rawQuiz).forEach((q, i) => {
     const basis = plain(s(q && typeof q === "object" ? (q as Raw).basis : "", 400));
     if (basis.length < 8) errors.push(`quiz[${i}]: basis(이 문제의 근거 문장 — ${where}에서 그대로 옮긴 문장)가 필요해요`);
     else if (!corpus.includes(basis)) errors.push(`quiz[${i}]: basis 가 ${where}에 없어요. 이 판 본문에 실린 내용으로만 문제와 해설을 써 주세요`);
@@ -228,6 +239,16 @@ export async function POST(req: Request) {
     const n = ok.length;
     if (n < LIMITS.morning.min || n > LIMITS.morning.max) errors.push(`아침판 기사는 ${LIMITS.morning.min}~${LIMITS.morning.max}건이에요 (지금 ${n}건)`);
     if (headlines !== 1) errors.push(`헤드라인(headline: true)은 정확히 1건이어야 해요 (지금 ${headlines}건)`);
+  } else if (drillMode) {
+    errors.push(...(await checkDrill(b.drill, extras, ok, date)));
+    if (sentQuiz.length || (Array.isArray(b.numbers) && b.numbers.length)) warnings.push("quiz·numbers: 점심 3문제는 drill 만 써서 뺐어요");
+    const e = extras.essay;
+    if (b.essay !== undefined && (!e || e.topic.length < 8 || e.intro.length < 10 || e.body.length < 10 || e.conclusion.length < 10))
+      errors.push("essay: 주말 논술을 보내려면 topic·intro·body·conclusion 을 모두 써 주세요 (평일에는 빼요)");
+    const terms = ok.filter((r) => r.section === "term");
+    const questions = ok.filter((r) => r.section === "question");
+    if (terms.length < 1 || terms.length > 3) errors.push(`용어는 1~3개예요 (지금 ${terms.length}개)`);
+    if (questions.length !== 1) errors.push(`면접 질문은 1개예요 (지금 ${questions.length}개)`);
   } else {
     const rawNumbers = Array.isArray(b.numbers) ? b.numbers : [];
     if (extras.numbers.length !== rawNumbers.length) errors.push("numbers: 숫자마다 value(숫자)와 label(무슨 숫자)을 써 주세요");
@@ -264,7 +285,7 @@ export async function POST(req: Request) {
     [
       {
         sql: "INSERT INTO briefing_issues (issue_date, edition, title, lede, closing, quiz, extras, thumb, status, origin, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'auto', ?, ?)",
-        args: [date, edition, title, lede, closing, JSON.stringify(quiz), JSON.stringify(extras), thumbJson, now, now],
+        args: [date, edition, title, lede, closing, JSON.stringify(drillMode ? [] : quiz), JSON.stringify(extras), thumbJson, now, now],
       },
       ...ok.map((r) => ({
         sql: `INSERT INTO news (edition_date, edition, section, title, summary, point, body, source_name, source_url, tier, position, takeaway, cards, short, pic, notes, headline, status, origin, created_at, updated_at)
@@ -285,4 +306,54 @@ export async function POST(req: Request) {
     revalidatePath("/");
   }
   return json({ date, edition, ok: true, issueId, published, items: ok.length, quiz: quiz.length, ...(warnings.length ? { warnings } : {}) });
+}
+
+/**
+ * 점심 3문제 검사 — 문제 3개(news·major·deep 하나씩), 보기 4~5개, 해설, 근거 문장(basis)이 아침판 기사·이 판 글에 그대로 있는지,
+ * news·deep 의 숫자(문제·정답 보기·해설)가 지어낸 게 아닌지.
+ */
+async function checkDrill(
+  raw: unknown,
+  extras: ReturnType<typeof parseExtras>,
+  rows: { section: string; title: string; summary: string; point: string; body: string }[],
+  date: string,
+): Promise<string[]> {
+  const errors: string[] = [];
+  const o = (raw && typeof raw === "object" ? raw : {}) as Raw;
+  const rawQs = Array.isArray(o.questions) ? (o.questions as Raw[]) : [];
+  const drill = extras.drill;
+  if (!drill || drill.questions.length !== rawQs.length) {
+    errors.push("drill.questions: 문제마다 kind·stem·options(4~5개)·answer(0부터, 보기 안)를 확인해 주세요");
+    return errors;
+  }
+  if (drill.questions.length !== 3) errors.push(`drill: 문제는 3개예요 (지금 ${drill.questions.length}개)`);
+  const kinds = drill.questions.map((q) => q.kind).sort().join(",");
+  if (kinds !== "deep,major,news") errors.push(`drill: kind 는 news(시사)·major(전공)·deep(심화)가 하나씩이에요 (지금 ${kinds})`);
+
+  const { items: morning } = await morningForAutomation(date);
+  const morningIds = new Set(morning.map((n) => n.id));
+  const morningText = plainCorpus(morning.map((n) => [n.title, n.takeaway, n.summary, n.point, ...n.cards.flatMap(cardTexts)].join(" ")).join(" "));
+  const noonText = plainCorpus(rows.map((r) => [r.title, r.summary, r.point, r.body].join(" ")).join(" "));
+  const corpus = morningText + noonText;
+  const terms = new Set(rows.filter((r) => r.section === "term").map((r) => r.title));
+
+  drill.questions.forEach((q, i) => {
+    const at = `drill.questions[${i}]`;
+    if (q.stem.length < 10) errors.push(`${at}: stem(문제)이 너무 짧아요`);
+    if (q.explain.length < 40) errors.push(`${at}: explain(해설)을 40자 이상 — 왜 정답인지·오답 함정·시험에서 쓰는 법`);
+    if (new Set(q.options).size !== q.options.length) errors.push(`${at}: 같은 보기가 두 번 있어요`);
+    if (q.kind !== "major" && !morningIds.has(q.from)) errors.push(`${at}: from 은 오늘 아침판 기사 id 예요 (GET /api/automation/issue 의 items[].id)`);
+    if (q.kind === "major" && q.from && !morningIds.has(q.from)) errors.push(`${at}: from 이 오늘 아침판 기사 id 가 아니에요`);
+    if (q.term && !terms.has(q.term)) errors.push(`${at}: term "${q.term}" 은 이 판 용어(items 의 term 제목)와 똑같이 써 주세요`);
+    if (q.kind === "major" && !q.term) errors.push(`${at}: 전공 문제는 term(이 판 용어 제목)이 필요해요 — 공식 자료로 확인한 뜻을 해설 아래 붙여요`);
+    const basis = plainCorpus(String((rawQs[i] ?? {}).basis ?? "").slice(0, 400));
+    if (basis.length < 8) errors.push(`${at}: basis(정답 근거 문장 — 아침판 기사나 이 판 용어·면접 글에서 그대로 옮긴 문장)가 필요해요`);
+    else if (!corpus.includes(basis)) errors.push(`${at}: basis 가 오늘 아침판 기사·이 판 글에 그대로 없어요`);
+    if (q.kind !== "major") {
+      const nums = [q.stem, q.options[q.answer] ?? "", q.explain].join(" ").match(/\d[\d,.]*/g) ?? [];
+      const missing = [...new Set(nums.map((n) => n.replace(/[.,]$/, "")))].filter((n) => n.length > 0 && !/^[1-5]$/.test(n) && !corpus.includes(n));
+      if (missing.length) errors.push(`${at}: 숫자 ${missing.join(", ")} 이 아침판 기사·이 판 글에 없어요 (지어낸 숫자 방지)`);
+    }
+  });
+  return errors;
 }

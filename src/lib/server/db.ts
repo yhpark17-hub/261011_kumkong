@@ -197,6 +197,16 @@ CREATE TABLE IF NOT EXISTS issue_likes (
   PRIMARY KEY (issue_id, voter)
 );
 
+-- 점심 3문제 답 (같은 사람은 문제마다 첫 답 한 번만 — 다른 독자 정답률 계산용)
+CREATE TABLE IF NOT EXISTS drill_answers (
+  issue_id INTEGER NOT NULL,
+  q INTEGER NOT NULL,
+  voter TEXT NOT NULL,
+  choice INTEGER NOT NULL,
+  at INTEGER NOT NULL,
+  PRIMARY KEY (issue_id, q, voter)
+);
+
 -- 자동 점검(클라우드 에이전트)이 올린 제안 — 운영자가 승인·거절해야 사이트에 반영
 -- status: 0 = 검토 대기, 1 = 승인(반영 대기), 2 = 반영 완료, 3 = 거절, 4 = 반영 실패
 CREATE TABLE IF NOT EXISTS proposals (

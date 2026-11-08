@@ -60,7 +60,7 @@ export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<Is
   const lede = str(fd, "lede", 1200);
   const closing = str(fd, "closing", 400);
   if (!isDateKey(date)) return { ok: false, error: "브리핑 날짜를 골라 주세요." };
-  if (!isIssueEdition(edition)) return { ok: false, error: "금콩 브리핑(아침판)·금콩 스터디(점심판) 중에 골라 주세요." };
+  if (!isIssueEdition(edition)) return { ok: false, error: "금콩 브리핑(아침판)·점심 3문제(점심판) 중에 골라 주세요." };
   if (title.length < 4) return { ok: false, error: "제목을 적어 주세요. (목록·카드에 쓰여요)" };
   if (lede.length < 20) return { ok: false, error: edition === "morning" ? "공유 미리보기 설명을 20자 이상 적어 주세요." : "오늘의 스터디를 20자 이상 적어 주세요." };
   // 아침판은 이제 퀴즈를 싣지 않아요 — 예전 호에 저장된 퀴즈는 그대로 둬요
@@ -71,13 +71,13 @@ export async function saveIssue(_prev: IssueFormState, fd: FormData): Promise<Is
   const client = await db();
   const now = Date.now();
   const clash = await client.execute({ sql: "SELECT id FROM briefing_issues WHERE issue_date = ? AND edition = ? AND id != ?", args: [date, edition, id ?? 0] });
-  if (clash.rows.length) return { ok: false, error: "그 날짜·판에는 이미 브리핑이 있어요. 하루에 금콩 브리핑·금콩 스터디 한 호씩만 낼 수 있어요." };
+  if (clash.rows.length) return { ok: false, error: "그 날짜·판에는 이미 브리핑이 있어요. 하루에 금콩 브리핑·점심 3문제 한 호씩만 낼 수 있어요." };
 
   if (id) {
     const prev = (await client.execute({ sql: "SELECT id, extras FROM briefing_issues WHERE id = ?", args: [id] })).rows[0];
     if (!prev) return { ok: false, error: "이미 지워진 브리핑이에요." };
-    // 그림 이야기(story)는 이 화면에서 고치지 않으니 저장된 것을 그대로 둬요
-    extras = { ...extras, story: parseExtras(prev.extras).story };
+    // 그림 이야기(story)·점심 3문제(drill)는 이 화면에서 고치지 않으니 저장된 것을 그대로 둬요
+    extras = { ...extras, story: parseExtras(prev.extras).story, drill: parseExtras(prev.extras).drill };
     await client.execute(
       edition === "noon"
         ? {

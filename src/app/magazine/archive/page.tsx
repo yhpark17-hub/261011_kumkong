@@ -33,7 +33,7 @@ import { ViewsLikes } from "@/components/magazine/Stats";
 
 export const metadata: Metadata = pageMetadata({
   title: `지난 브리핑 — 데일리 브리핑을 기간별로 | ${MAGAZINE_NAME}`,
-  description: "지난 데일리 브리핑(금콩 브리핑·금콩 스터디)을 기간으로 찾아보고, 카테고리(금융·경제·용어·면접 질문 등)를 고르면 기사별로 모아 볼 수 있어요.",
+  description: "지난 데일리 브리핑(금콩 브리핑·점심 3문제)을 기간으로 찾아보고, 카테고리(금융·경제·용어·면접 질문 등)를 고르면 기사별로 모아 볼 수 있어요.",
   path: "/magazine/archive",
 });
 
@@ -197,7 +197,7 @@ async function Archive({ sp }: { sp: SP }) {
                     {letters ? "호" : "건"}
                   </span>
                 </h3>
-                <p className="mt-0.5 type-caption text-ink-mute">{info ? `${info.label} · ${info.desc}` : "금콩 브리핑·금콩 스터디 — 최신 호부터"}</p>
+                <p className="mt-0.5 type-caption text-ink-mute">{info ? `${info.label} · ${info.desc}` : "금콩 브리핑·점심 3문제 — 최신 호부터"}</p>
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">

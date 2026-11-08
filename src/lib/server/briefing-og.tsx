@@ -1,17 +1,20 @@
 import "server-only";
 import { ImageResponse } from "next/og";
 import type { CSSProperties, ReactElement, ReactNode } from "react";
-import { formatDayHeading } from "@/lib/date";
+import { formatDayHeading, parseKey } from "@/lib/date";
 import {
   autoCostume,
   autoMood,
   autoScene,
+  CIRCLED,
+  DRILL_KINDS,
   dayIndex,
   parseStats,
   studyTopic,
   THUMB_LIMITS,
   type BriefingIssue,
   type CostumeKey,
+  type IssueDrill,
   type IssueLayout,
   type IssueThumb,
   type SceneKey,
@@ -19,9 +22,10 @@ import {
   type ThumbStat,
 } from "@/lib/news-meta";
 import type { ThumbArt } from "@/lib/thumb-art";
+import { weekRadar, type WeekRadar } from "@/lib/week-radar";
 import { arrangeLetter, issueItems } from "./briefing";
 import { TOPIC_W, captionFit, fitText, headlineFit, speechFit, topicFit } from "../og-text";
-import { BRAND_LOGO as LOGO, C, COSTUME_LOOK, OG_SIZE, kongSvg, ogFonts, svgUri, type OgKong } from "./og";
+import { BRAND_LOGO as LOGO, C, COSTUME_LOOK, OG_SIZE, juaFont, kongSvg, ogFonts, svgUri, type OgKong } from "./og";
 import { GAUGE, sceneSvg } from "./og-scenes";
 import { ArtView } from "./thumb-art";
 
@@ -602,6 +606,99 @@ function NoonStudy({ issue, topic, terms }: { issue: BriefingIssue; topic: strin
 }
 
 /* ------------------------------------------------------------------ */
+/* 점심 3문제 — 문제 한 개 + 이번 주 금공 숫자판 (단톡방 미리보기에서 문제가 바로 보이게)   */
+/* ------------------------------------------------------------------ */
+
+/** "11.8" */
+const shortDate = (key: string) => {
+  const { m, d } = parseKey(key);
+  return `${m}.${d}`;
+};
+
+const LUNCH = { ink: "#27325f", navy: "#2b3a7a", body: "#4a5280", mute: "#7a86b8", peri: "#7f96e8", orange: "#f7a14a", paper: "#fffdf8", yellow: "#ffd84d" } as const;
+
+function NoonDrillView({ issue, drill, radar }: { issue: BriefingIssue; drill: IssueDrill; radar: WeekRadar }) {
+  const q = drill.questions[drill.share] ?? drill.questions[0];
+  const k = DRILL_KINDS[q.kind];
+  const hook = drill.hook || "이 문제, 풀 수 있어요?";
+  const stem = fitText(q.stem, [36, 33, 30, 28], 690, 3);
+  // 보기는 한 줄씩 — 길면 말줄임
+  const opt = (t: string) => ([...t].length > 26 ? `${[...t].slice(0, 25).join("")}…` : t);
+  const two = q.options.every((o) => [...o].length <= 13);
+  const count = (types: string[]) => radar.stages.filter((s) => types.includes(s.type)).length;
+  const board = [
+    { label: "서류 마감", n: radar.deadlines.length, tone: "#b2502a" },
+    { label: "새 공고", n: radar.postings.length, tone: "#2f7d4f" },
+    { label: "필기", n: count(["written"]), tone: "#3449a3" },
+    { label: "면접", n: count(["interview1", "interview2"]), tone: "#3449a3" },
+  ];
+  return (
+    <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", fontFamily: "Pretendard", background: LUNCH.paper }}>
+      <Abs style={{ left: 0, top: 0, width: 1200, height: 260, backgroundImage: "linear-gradient(180deg,#dff1e6 0%,#eef1fd 60%,#fffdf8 100%)" }} />
+
+      {/* 맨 위 — 판 이름 + 날짜 */}
+      <Abs style={{ left: 48, top: 38, alignItems: "center" }}>
+        <div style={{ display: "flex", padding: "8px 20px", borderRadius: 999, background: LUNCH.navy, color: "#ffffff", fontFamily: "Jua", fontSize: 30 }}>점심 3문제</div>
+        <div style={{ display: "flex", marginLeft: 14, fontSize: 24, fontWeight: 700, color: LUNCH.mute }}>{`${formatDayHeading(issue.date)} · 금공 필기 실전`}</div>
+      </Abs>
+
+      {/* 큰 글 */}
+      <Abs style={{ left: 48, top: 104, fontFamily: "Jua", fontSize: 64, color: LUNCH.ink, letterSpacing: -1 }}>{hook}</Abs>
+
+      {/* 문제 카드 */}
+      <Abs
+        style={{
+          left: 40,
+          top: 202,
+          width: 770,
+          height: 388,
+          flexDirection: "column",
+          padding: "26px 30px",
+          borderRadius: 30,
+          background: "#ffffff",
+          border: "2px solid #dfe4f7",
+          boxShadow: "0 14px 30px -18px rgba(43,58,122,0.5)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <div style={{ display: "flex", padding: "5px 14px", borderRadius: 999, background: LUNCH.navy, color: "#ffffff", fontSize: 20, fontWeight: 800 }}>{`Q${drill.share + 1} · ${k.label}`}</div>
+          {q.subject && <div style={{ display: "flex", marginLeft: 8, padding: "5px 14px", borderRadius: 999, background: "#eef1fd", color: LUNCH.navy, fontSize: 20, fontWeight: 800 }}>{q.subject}</div>}
+        </div>
+        <Lines lines={stem.lines} style={{ marginTop: 14, fontSize: stem.size, fontWeight: 800, color: LUNCH.ink, lineHeight: 1.36, letterSpacing: -0.8 }} />
+        <div style={{ display: "flex", flexWrap: "wrap", marginTop: "auto" }}>
+          {q.options.map((o, i) => (
+            <div key={i} style={{ display: "flex", width: two ? "50%" : "100%", paddingTop: 6, fontSize: two ? 25 : 23, fontWeight: 700, color: LUNCH.body, whiteSpace: "nowrap" }}>
+              <span style={{ color: LUNCH.peri, marginRight: 8 }}>{CIRCLED[i]}</span>
+              {opt(o)}
+            </div>
+          ))}
+        </div>
+      </Abs>
+
+      {/* 이번 주 금공 숫자판 */}
+      <Abs
+        style={{ left: 840, top: 202, width: 320, height: 388, flexDirection: "column", padding: "24px 26px", borderRadius: 30, background: "#eef1fd", border: "2px solid #dfe4f7" }}
+      >
+        <div style={{ display: "flex", fontFamily: "Jua", fontSize: 32, color: LUNCH.ink }}>이번 주 금공</div>
+        <div style={{ display: "flex", marginTop: 4, fontSize: 19, fontWeight: 700, color: LUNCH.mute }}>{`${shortDate(radar.from)} ~ ${shortDate(radar.to)}`}</div>
+        <div style={{ display: "flex", flexDirection: "column", marginTop: 12 }}>
+          {board.map((b) => (
+            <div key={b.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 10, paddingBottom: 10, borderTop: "2px solid #dfe4f7" }}>
+              <div style={{ display: "flex", fontSize: 25, fontWeight: 800, color: LUNCH.body }}>{b.label}</div>
+              <div style={{ display: "flex", alignItems: "baseline", fontFamily: "Jua", fontSize: 40, color: b.n ? b.tone : "#a9b2d6" }}>
+                {b.n ? `${b.n}곳` : "없음"}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Abs>
+
+      <Abs style={{ left: 48, top: 598, fontSize: 19, fontWeight: 700, color: LUNCH.mute }}>정답·해설·다른 독자 정답률은 금콩에서 · 아침엔 읽고, 점심엔 풀어요</Abs>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 
 /**
  * 한 호의 공유 썸네일 — thumb 를 주면 저장된 값 대신 그걸로 (관리자 미리보기).
@@ -611,6 +708,11 @@ export async function briefingOgImage(
   issue: BriefingIssue,
   { thumb = issue.thumb, admin = false, headers, scale = 1 }: { thumb?: IssueThumb; admin?: boolean; headers?: HeadersInit; scale?: number } = {},
 ) {
+  // 점심 3문제 — 그날 문제 + 이번 주 금공 숫자판 (직접 그린 그림보다 먼저: 단톡방에서 문제가 보여야 해요)
+  if (issue.edition === "noon" && issue.extras.drill) {
+    const fonts = [...(await ogFonts()), await juaFont()];
+    return render(<NoonDrillView issue={issue} drill={issue.extras.drill} radar={weekRadar(issue.date)} />, { fonts, headers, scale });
+  }
   // 그날 뉴스에 맞춰 직접 그린 그림 — 정해진 틀 대신
   if (thumb.art) return artOgImage(issue, thumb.art, { headers, scale });
   const fonts = await ogFonts();

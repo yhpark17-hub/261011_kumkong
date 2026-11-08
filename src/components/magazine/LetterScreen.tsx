@@ -19,6 +19,7 @@ export function LetterScreen({
   popular,
   around,
   sibling,
+  morningItems = [],
 }: {
   issue: BriefingIssue;
   content: LetterContent;
@@ -29,6 +30,8 @@ export function LetterScreen({
   around: { prev: BriefingIssue | null; next: BriefingIssue | null };
   /** 같은 날 다른 판 (아침판이면 금콩 스터디) */
   sibling: BriefingIssue | null;
+  /** 점심 3문제: 같은 날 아침판 기사 (문제 위 출처 기사·그림) */
+  morningItems?: NewsItem[];
 }) {
   const nav = "inline-flex min-w-0 items-center gap-1.5 rounded-full border border-hairline px-3.5 py-2 type-caption text-ink-secondary hover:border-hairline-input";
   const isCurrent = (i: BriefingIssue) => i.date === issue.date && i.edition === issue.edition;
@@ -63,7 +66,12 @@ export function LetterScreen({
       <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0">
           <div className="mx-auto max-w-[760px]">
-            <Letter issue={issue} content={content} around={around} />
+            <Letter
+              issue={issue}
+              content={content}
+              around={around}
+              morningOf={{ items: morningItems, story: sibling?.edition === "morning" ? sibling.extras.story : null }}
+            />
           </div>
         </div>
 

@@ -111,7 +111,7 @@ export async function BriefingStrip() {
           <KongMascot className="h-7 w-7" />
           데일리 브리핑
         </h2>
-        <p className="mt-4 type-body-md text-ink-mute">매일 아침 기사 브리핑, 점심에는 금콩 스터디로 찾아올게요.</p>
+        <p className="mt-4 type-body-md text-ink-mute">매일 아침 기사 브리핑, 점심에는 점심 3문제로 찾아올게요.</p>
       </section>
     );
   }

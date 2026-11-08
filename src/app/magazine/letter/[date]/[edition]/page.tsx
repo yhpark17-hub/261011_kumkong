@@ -56,8 +56,30 @@ async function IssueView({ date, edition }: { date: string; edition: string }) {
   const other = edition === "morning" ? "noon" : "morning";
   const [issue, sibling] = await Promise.all([getIssue(date, edition, { admin }), getIssue(date, other)]);
   if (!issue) notFound();
-  const [items, around, popular, recent] = await Promise.all([issueItems(date, edition, { admin }), adjacentIssues(date, edition), popularNews(7, 5), recentIssues(8)]);
+  // 점심 3문제는 같은 날 아침판 기사(문제의 출처·그림)도 함께
+  const drill = edition === "noon" && issue.extras.drill;
+  const [items, around, popular, recent, morningItems] = await Promise.all([
+    issueItems(date, edition, { admin }),
+    adjacentIssues(date, edition),
+    popularNews(7, 5),
+    recentIssues(8),
+    drill ? arrangeMorning(date, admin) : Promise.resolve([]),
+  ]);
   return (
-    <LetterScreen issue={issue} content={arrangeLetter(items)} admin={admin} recent={recent} popular={popular} around={around} sibling={sibling} />
+    <LetterScreen
+      issue={issue}
+      content={arrangeLetter(items)}
+      admin={admin}
+      recent={recent}
+      popular={popular}
+      around={around}
+      sibling={sibling}
+      morningItems={morningItems}
+    />
   );
+}
+
+/** 아침판 기사 — 화면에 실리는 순서 그대로 (점심 3문제의 '아침판 n' 번호가 맞게) */
+async function arrangeMorning(date: string, admin: boolean) {
+  return arrangeLetter(await issueItems(date, "morning", { admin })).all;
 }

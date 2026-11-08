@@ -28,8 +28,8 @@ async function NewIssue() {
         <ArrowLeft className="h-4 w-4" strokeWidth={1.75} />
         데일리 브리핑
       </Link>
-      <AdminPageTitle title="브리핑 만들기" desc="평소에는 자동 점검이 아침 6시(금콩 브리핑)·낮 12시 30분(금콩 스터디)에 초안을 만들어요. 직접 낼 때만 여기서 만드세요. 같은 날짜·판의 기사가 이 브리핑에 묶여요." />
-      <IssueForm initial={{ id: null, date: todayKST(), edition: "morning", title: "", lede: "", closing: "", quiz: [], extras: { numbers: [], essay: null, story: null } }} />
+      <AdminPageTitle title="브리핑 만들기" desc="평소에는 자동 점검이 아침 6시(금콩 브리핑)·낮 12시 30분(점심 3문제)에 초안을 만들어요. 직접 낼 때만 여기서 만드세요. 같은 날짜·판의 기사가 이 브리핑에 묶여요." />
+      <IssueForm initial={{ id: null, date: todayKST(), edition: "morning", title: "", lede: "", closing: "", quiz: [], extras: { numbers: [], essay: null, story: null, drill: null } }} />
     </>
   );
 }

@@ -21,10 +21,10 @@ const SIZE = {
   sm: { box: "py-1.5 pr-4 pl-2", mascot: "-my-3 -ml-3 h-12 w-12", word: "text-[21px]", cap: "text-[8px]", sticker: "text-[12px]", icon: "h-3 w-3" },
 } as const;
 
-/** 판마다 로고 글씨 — 아침판은 '금콩 브리핑', 점심은 '금콩 스터디' */
+/** 판마다 로고 글씨 — 아침판은 '금콩 브리핑', 점심은 '점심 3문제' */
 const BRAND = {
   morning: { cap: "DAILY BRIEFING", word: "금콩 브리핑", sticker: "아침판" },
-  noon: { cap: "DAILY STUDY", word: "금콩 스터디", sticker: "점심판" },
+  noon: { cap: "LUNCH DRILL", word: "점심 3문제", sticker: "점심판" },
 } as const;
 
 /** 브리핑 로고 — 콩이(아침판 신문 · 금콩 스터디 안경 쓰고 책) + 로고 글씨 + 판 스티커 */

@@ -37,7 +37,7 @@ export function IssueForm({ initial }: { initial: IssueFormInitial }) {
           <span className="mb-1 block type-caption text-ink-secondary">판</span>
           <select name="edition" value={edition} onChange={(e) => setEdition(e.target.value as IssueEdition)} className="input w-full">
             <option value="morning">금콩 브리핑 (아침판) — 그림 + 카드뉴스 기사</option>
-            <option value="noon">금콩 스터디 (점심판) — 숫자·용어·논술·면접·퀴즈</option>
+            <option value="noon">점심 3문제 (점심판) — 문제는 자동 점검이 만들어요</option>
           </select>
         </label>
       </div>

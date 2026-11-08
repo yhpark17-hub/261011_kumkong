@@ -18,7 +18,7 @@ import { NewsDeck, timetableItem } from "./NewsDeck";
  */
 
 /* 영상 그림체 색 (industry-tube style.yaml 과 같은 색) */
-const C = {
+export const C = {
   ink: "#27325f",
   navy: "#2b3a7a",
   sky: "#a3baf6",
@@ -119,7 +119,7 @@ function Flag({ code, className }: { code: FlagCode; className?: string }) {
 }
 
 /** 표지 그림 위 표시 — 나라 국기·지수 시세·기관 로고·짧은 메모 */
-function Badge({ b }: { b: StoryBadge }) {
+export function Badge({ b }: { b: StoryBadge }) {
   const base = "inline-flex items-center gap-1.5 rounded-full py-1 text-[12px] leading-none font-bold whitespace-nowrap shadow-[0_2px_8px_-2px_rgba(43,58,122,0.4)] ring-2 ring-[#ffffff]";
   switch (b.kind) {
     case "flag":
@@ -225,7 +225,7 @@ function glossed(g: Glosser, s: string): React.ReactNode {
 }
 
 /** 카드 이름표 — 주아체 작은 띠 */
-function Kicker({ children, tone = "orange" }: { children: React.ReactNode; tone?: "orange" | "sky" }) {
+export function Kicker({ children, tone = "orange" }: { children: React.ReactNode; tone?: "orange" | "sky" }) {
   return (
     <span
       className={cn(jua.className, "inline-flex w-fit items-center rounded-full px-2.5 py-[3px] text-[13px] leading-none")}
@@ -236,7 +236,7 @@ function Kicker({ children, tone = "orange" }: { children: React.ReactNode; tone
   );
 }
 
-function Art({ src, className }: { src: string; className?: string }) {
+export function Art({ src, className }: { src: string; className?: string }) {
   return (
     <div className={cn("relative shrink-0 overflow-clip bg-[#e7ebfd]", className)}>
       {/* eslint-disable-next-line @next/next/no-img-element -- 그날 그린 그림 */}

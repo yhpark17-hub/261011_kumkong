@@ -53,8 +53,8 @@ async function NewsAdmin({ sp }: { sp: SP }) {
         title="데일리 브리핑"
         desc={
           autoOn
-            ? "금콩 브리핑(아침 6시 — 그림 + 카드뉴스 기사)과 금콩 스터디(낮 12시 30분 — 숫자·용어·논술·면접·퀴즈)가 매일 한 호씩, 자동 점검이 만들면 바로 발행돼요."
-            : "금콩 브리핑(아침판 — 그림 + 카드뉴스 기사)과 금콩 스터디(점심판 — 숫자·용어·논술·면접·퀴즈)가 매일 한 호씩 나가요. 자동 점검이 초안을 만들면 미리보기로 확인하고 '발행'을 누르세요."
+            ? "금콩 브리핑(아침 6시 — 그림 + 카드뉴스 기사)과 점심 3문제(낮 12시 30분 — 금공 필기형 3문제·용어·면접 1문)가 매일 한 호씩, 자동 점검이 만들면 바로 발행돼요."
+            : "금콩 브리핑(아침판 — 그림 + 카드뉴스 기사)과 점심 3문제(점심판 — 금공 필기형 3문제·용어·면접 1문)가 매일 한 호씩 나가요. 자동 점검이 초안을 만들면 미리보기로 확인하고 '발행'을 누르세요."
         }
         aside={
           <div className="flex flex-wrap gap-2">
@@ -176,7 +176,7 @@ function Row({ n }: { n: NewsItem }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <NewsSectionTag section={n.section} />
-          <span className="tag bg-canvas-soft text-ink-secondary">{kindOf(n.section) === "news" ? (n.edition === "morning" ? "금콩 브리핑" : "판 없음 · 안 실림") : "금콩 스터디"}</span>
+          <span className="tag bg-canvas-soft text-ink-secondary">{kindOf(n.section) === "news" ? (n.edition === "morning" ? "금콩 브리핑" : "판 없음 · 안 실림") : "점심 3문제"}</span>
           {n.status === 1 ? <span className="tag bg-ev-final-soft text-ev-final">공개</span> : <span className="tag bg-canvas-soft text-ink-secondary">초안</span>}
           {n.origin === "auto" && <span className="tag bg-canvas-cream text-lemon">자동</span>}
           {n.headline && (
