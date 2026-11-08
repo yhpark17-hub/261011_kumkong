@@ -71,7 +71,7 @@ export function ArticleMeta({ a, className }: { a: ArticleSummary; className?: s
 /**
  * 카드 표지 — 올린 표지가 없으면 주제 그림 + 제목으로 그린 썸네일 (기관 글은 그 기관 건물·로고).
  * 그린 썸네일은 600~2400폭 다섯 가지 — 화면에 보이는 크기·선명도에 가장 가까운 걸 브라우저가 골라요 (sizes = 화면에 보이는 폭).
- * 정사각 칸에서는 그림 쪽(오른쪽)이 보이게.
+ * 그림은 1200×630 이라 칸도 aspect-[40/21] 로 (16:9 칸이면 왼쪽 글씨가 잘려요). 정사각 칸에서는 그림 쪽(오른쪽)이 보이게.
  */
 export function ArticleCover({ a, className, sizes = "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" }: { a: ArticleSummary; className?: string; sizes?: string }) {
   if (a.coverUrl) {
@@ -98,7 +98,7 @@ export function ArticleCard({ a, priority = false, large = false }: { a: Article
   return (
     <Link href={articleHref(a.id)} className="group flex flex-col overflow-hidden rounded-xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
       <div className="relative">
-        <ArticleCover a={a} className="aspect-[16/9] w-full" />
+        <ArticleCover a={a} className="aspect-[40/21] w-full" />
         <ReadBadge id={a.id} className="absolute top-3 right-3" />
       </div>
       <div className={cn("flex flex-1 flex-col", large ? "p-6" : "p-5")}>

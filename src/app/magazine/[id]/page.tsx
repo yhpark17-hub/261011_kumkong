@@ -98,7 +98,7 @@ function ArticleSkeleton() {
       <div className="mt-8 h-6 w-20 rounded-full bg-canvas-soft" />
       <div className="mt-4 h-10 w-full rounded-md bg-canvas-soft" />
       <div className="mt-3 h-10 w-2/3 rounded-md bg-canvas-soft" />
-      <div className="mt-10 aspect-[16/9] rounded-xl bg-canvas-soft" />
+      <div className="mt-10 aspect-[40/21] rounded-xl bg-canvas-soft" />
       <div className="mt-10 space-y-3">
         {Array.from({ length: 6 }, (_, i) => (
           <div key={i} className="h-4 rounded bg-canvas-soft" />
@@ -324,7 +324,7 @@ async function ArticleView({ rawId }: { rawId: string }) {
           )}
 
           {a.coverUrl && !isWebtoon && (
-            <ArticleCover a={a} className="mt-8 aspect-[16/9] w-full rounded-xl border border-hairline" />
+            <ArticleCover a={a} className="mt-8 aspect-[40/21] w-full rounded-xl border border-hairline" />
           )}
 
           <div id="article-body" className="mt-10">

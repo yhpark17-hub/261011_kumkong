@@ -395,7 +395,7 @@ function Cover() {
   const thumb = (
     <>
       {/* eslint-disable-next-line @next/next/no-img-element -- 영상 썸네일 (public/magazine/ship) */}
-      <img src="/magazine/ship/video-thumb.webp" width={1280} height={720} alt="영상 썸네일 — 미국이 왜 한국에 부탁할까" className="block h-auto w-full" />
+      <img src="/magazine/ship/video-thumb.webp" width={1280} height={720} alt="영상 썸네일 — 미국이 한국 조선소에 목매는 진짜 이유" className="block h-auto w-full" />
       <span aria-hidden className="absolute inset-0 bg-linear-to-t from-[#0b1030]/45 via-transparent to-transparent" />
       <span className="absolute bottom-3 left-3 rounded-md bg-[#0b1030]/80 px-2 py-0.5 tabular type-caption font-bold text-on-primary">{VIDEO_LENGTH}</span>
     </>

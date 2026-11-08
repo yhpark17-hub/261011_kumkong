@@ -7,7 +7,7 @@ import type { ArticleSummary, ArticleThumb, ThumbScale } from "@/lib/magazine-me
 import { captionFit, fitText, headlineFit } from "../og-text";
 import { BOND_SIGN, BOND_TITLE, CROSSING_SIGN, CROSSING_STOPS, DOC_TAG, FUND_BADGE, JOURNEY_STOPS, ROUND_SHEETS, SHIP_SIGN, SIGN, articleSceneSvg } from "./article-scenes";
 import { articleThumbPlan, type ArticleThumbPlan } from "./article-thumb";
-import { C, OG_SIZE, companyLogo, ogFonts, svgUri } from "./og";
+import { C, OG_SIZE, companyLogo, juaFont, ogFonts, svgUri } from "./og";
 
 /**
  * 금융 블로그 글 썸네일 — 표지를 올리지 않은 글의 목록 카드·공유 미리보기(og:image)
@@ -221,19 +221,39 @@ function fitByComma(text: string, sizes: number[], width: number, maxLines: numb
 
 const GOLD = "#ffd84d";
 
-/** 글씨 테두리 — 그림자를 둘레로 여러 겹 (satori 는 text-stroke 대신 이걸로) */
-const ring = (c: string, w: number) =>
-  Array.from({ length: 16 }, (_, i) => {
-    const a = (i / 16) * Math.PI * 2;
-    return `${(Math.cos(a) * w).toFixed(1)}px ${(Math.sin(a) * w).toFixed(1)}px 0 ${c}`;
-  }).join(", ");
+/* 영상 썸네일 글씨 — industry-tube 의 thumbnail.py 와 같은 모양 (주아체 흰 글자 · 굵은 남색 테두리 · 오른쪽 아래로 비킨 그림자) */
+const VIDEO_NAVY = "#2b3a7a";
+const VIDEO_SHADE = "rgba(39,50,95,0.43)";
 
-/** 제목을 ' / ' 로 나눈 줄 그대로 (밝은 그림용) — 가장 긴 줄이 들어가는 크기로 */
-function fitByLines(text: string, sizes: number[], width: number): { size: number; lines: string[] } {
-  const lines = text.split(/\s*\/\s*/).filter(Boolean);
-  for (const size of sizes) if (lines.every((l) => !fitText(l, [size], width, 1).lines[0].endsWith("…") && fitText(l, [size], width, 1).lines.length === 1)) return { size, lines };
-  return fitText(lines.join(" "), sizes, width, 3);
+/** 주아체 글자 폭 (em) — 한글 0.92, 띄어쓰기 0.3, 숫자 0.52 쯤 (글꼴에서 잰 값) */
+function juaWidth(text: string, size: number) {
+  let w = 0;
+  for (const ch of text) w += /[가-힣]/.test(ch) ? 0.92 : ch === " " ? 0.3 : /[0-9]/.test(ch) ? 0.52 : /[A-Za-z]/.test(ch) ? 0.58 : /[,.]/.test(ch) ? 0.3 : 0.75;
+  return w * size;
 }
+
+/** 제목을 ' / ' 로 나눈 줄 그대로, 가장 긴 줄이 width 에 들어가는 가장 큰 크기로 */
+function fitJua(text: string, sizes: number[], width: number): { size: number; lines: string[] } {
+  const lines = text.split(/\s*\/\s*/).filter(Boolean);
+  const size = sizes.find((s) => lines.every((l) => juaWidth(l, s) <= width)) ?? sizes[sizes.length - 1];
+  return { size, lines };
+}
+
+function VideoHeadline({ lines, em, size, left, top }: { lines: string[]; em: string | null; size: number; left: number; top: number }) {
+  // 테두리는 글자 아래에 칠해져서(paint-order: stroke) 바깥으로 절반만 보여요 — 0.31em 이면 바깥 0.154em (영상: 104px 글자에 16px)
+  const base: CSSProperties = { fontFamily: "Jua", fontSize: size, fontWeight: 400, lineHeight: 1.2, WebkitTextStrokeWidth: size * 0.31, WebkitTextStrokeColor: VIDEO_NAVY };
+  return (
+    <>
+      <Abs style={{ left: left + size * 0.077, top: top + size * 0.096 }}>
+        <EmLines lines={lines} em={em} color={VIDEO_SHADE} style={{ ...base, color: VIDEO_SHADE, WebkitTextStrokeColor: VIDEO_SHADE }} />
+      </Abs>
+      <Abs style={{ left, top }}>
+        <EmLines lines={lines} em={em} color={GOLD} style={{ ...base, color: C.white }} />
+      </Abs>
+    </>
+  );
+}
+
 const TEXT_W = 590;
 /** 큰 글씨 칸: 이름표 아래부터 아래 한 줄 위까지 */
 const BOLD_TOP = 118;
@@ -242,7 +262,7 @@ const BOLD_H = 384;
 /** 큰 글씨형 — 유튜브 썸네일처럼 왼쪽에 큰 글씨, 숫자·강조 말은 노랗게 크게 */
 function BoldView({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; photo: string | null }) {
   const em = splitEmphasis(plan.headline);
-  // 밝은 그림(영상 그림) — 남색 글씨에 흰 테두리, 강조 말은 노랑에 남색 테두리 (영상 썸네일과 같은 모양)
+  // 밝은 그림(영상 그림) — 영상 썸네일과 같은 주아체 흰 글자에 남색 테두리, 강조 말은 노랑
   const light = plan.scene === "shipyard";
   const giant = em && [...em.big].length <= 7 && !light ? em : null;
   const cap = plan.sub ? fitText(plan.sub, [28, 26, 24, 22], 600, 1) : null;
@@ -264,18 +284,10 @@ function BoldView({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; p
       </Abs>
     );
   } else {
-    const head = light ? fitByLines(plain(plan.headline), [84, 76, 68, 60], TEXT_W) : fitText(plain(plan.headline), [80, 72, 64, 58, 52], TEXT_W, 3);
+    const head = light ? fitJua(plain(plan.headline), [100, 96, 88, 80, 72, 64], 800) : fitText(plain(plan.headline), [80, 72, 64, 58, 52], TEXT_W, 3);
     const total = head.lines.length * head.size * 1.14;
     block = light ? (
-      <Abs style={{ left: 56, top: 132, width: 660 }}>
-        <EmLines
-          lines={head.lines}
-          em={em?.big ?? null}
-          color={GOLD}
-          emStyle={{ textShadow: ring(C.ink, 5) }}
-          style={{ fontSize: head.size, fontWeight: 800, color: C.ink, lineHeight: 1.18, letterSpacing: -2, textShadow: ring(C.white, 5) }}
-        />
-      </Abs>
+      <VideoHeadline lines={head.lines} em={em?.big ?? null} size={head.size} left={50} top={126} />
     ) : (
       <Abs style={{ left: 56, top: BOLD_TOP + Math.max(0, (BOLD_H - total) / 2), width: 640 }}>
         <EmLines lines={head.lines} em={em?.big ?? null} color={GOLD} style={{ fontSize: head.size, fontWeight: 800, color: C.white, lineHeight: 1.14, letterSpacing: -2, textShadow: shadow }} />
@@ -306,7 +318,7 @@ function BoldView({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; p
         <Abs style={{ right: 48, bottom: 44, alignItems: "center", padding: "12px 22px 12px 16px", borderRadius: 16, background: "#ff0033", boxShadow: "0 8px 20px rgba(120,0,20,0.3)" }}>
           {/* eslint-disable-next-line @next/next/no-img-element -- 재생 세모 */}
           <img src={svgUri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30"><path d="M7 4.5v15l12-7.5z" fill="#ffffff"/></svg>')} width={30} height={30} alt="" style={{ marginRight: 10 }} />
-          <div style={{ display: "flex", fontSize: cap.size, fontWeight: 800, color: C.white, letterSpacing: -0.4, whiteSpace: "nowrap" }}>{cap.lines[0]}</div>
+          <div style={{ display: "flex", fontFamily: "Jua", fontSize: cap.size + 2, fontWeight: 400, color: C.white, whiteSpace: "nowrap" }}>{cap.lines[0]}</div>
         </Abs>
       )}
       {cap && !light && (
@@ -336,7 +348,13 @@ async function scenePhoto(scene: ArticleThumbPlan["scene"]): Promise<string | nu
 export async function articleOgImage(a: ArticleSummary, { thumb = a.thumb, headers, scale = 1 }: { thumb?: ArticleThumb; headers?: HeadersInit; scale?: ThumbScale } = {}) {
   const plan = articleThumbPlan(a, thumb);
   const needsLogo = (plan.scene === "company" || plan.scene === "fund" || plan.scene === "journey" || plan.scene === "tworounds" || plan.scene === "crossing") && plan.company;
-  const [fonts, logo, photo] = await Promise.all([ogFonts(), needsLogo && plan.company ? companyLogo(plan.company.id) : Promise.resolve(null), scenePhoto(plan.scene)]);
+  const [base, jua, logo, photo] = await Promise.all([
+    ogFonts(),
+    plan.scene === "shipyard" ? juaFont() : Promise.resolve(null),
+    needsLogo && plan.company ? companyLogo(plan.company.id) : Promise.resolve(null),
+    scenePhoto(plan.scene),
+  ]);
+  const fonts = jua ? [...base, jua] : base;
   const view = plan.layout === "bold" ? <BoldView plan={plan} logo={logo} photo={photo} /> : <CardView plan={plan} logo={logo} photo={photo} />;
   if (scale === 1) return new ImageResponse(view, { ...OG_SIZE, fonts, headers });
   return new ImageResponse(

@@ -376,7 +376,7 @@ export function IssueCard({ issue, top, count, view }: { issue: BriefingIssue; t
   }
   return (
     <Link href={letterHref(issue.date, issue.edition)} className="group flex flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
-      <IssueCover issue={issue} size="sm" className="aspect-[16/9] w-full" />
+      <IssueCover issue={issue} size="sm" className="aspect-[40/21] w-full" />
       <span className="flex flex-1 flex-col p-5">
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 type-caption text-ink-mute">
           <EditionBadge edition={issue.edition} />
@@ -413,7 +413,7 @@ export function BriefingHeroCard({ issue }: { issue: BriefingIssue }) {
       href={letterHref(issue.date, issue.edition)}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-level-1 transition-shadow hover:shadow-level-2"
     >
-      <IssueCover issue={issue} className="aspect-[16/9] w-full" sizes="(min-width: 1024px) 720px, 100vw" />
+      <IssueCover issue={issue} className="aspect-[40/21] w-full" sizes="(min-width: 1024px) 720px, 100vw" />
       <span className={cn("h-1.5 w-full", EDITION_TONE[issue.edition].bar)} aria-hidden />
       <span className="flex flex-1 flex-col p-5 md:p-6">
         {/* 오른쪽은 비워 둬요 — 첫 화면 넘기기 버튼(HeroSwitcher)이 이 줄 오른쪽에 와요 */}

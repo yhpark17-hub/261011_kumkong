@@ -46,6 +46,14 @@ export function ogFonts() {
   return fonts;
 }
 
+let jua: Promise<{ name: string; data: Buffer; weight: 400; style: "normal" }> | null = null;
+
+/** 주아체 — 산업 A-Z 영상 썸네일과 같은 글씨 (OFL, src/lib/server/fonts · 그 장면에서만 읽어요) */
+export function juaFont() {
+  jua ??= readFile(join(process.cwd(), "src/lib/server/fonts/Jua-Regular.ttf")).then((data) => ({ name: "Jua", data, weight: 400 as const, style: "normal" as const }));
+  return jua;
+}
+
 export const svgUri = (svg: string) => `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 
 /** 이름표 속 작은 금콩 로고 (사이트 왼쪽 위 로고와 같은 얼굴) */

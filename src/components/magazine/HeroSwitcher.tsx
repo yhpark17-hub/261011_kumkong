@@ -87,8 +87,8 @@ export function HeroSwitcher({ slides }: { slides: HeroSlide[] }) {
         ) : null,
       )}
 
-      {/* 썸네일(카드 위쪽 16:9) 바로 아래 — 카드 머리줄 오른쪽, 배지와 같은 높이에 (그림은 가리지 않게) */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[16/9]">
+      {/* 썸네일(카드 위쪽 40:21) 바로 아래 — 카드 머리줄 오른쪽, 배지와 같은 높이에 (그림은 가리지 않게) */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[40/21]">
         <div className="absolute top-full right-4 mt-6 flex items-center md:right-5">
           {many ? (
             <div className="pointer-events-auto flex items-center gap-0.5 rounded-full bg-brand-dark/85 p-0.5 shadow-level-1 md:p-1">
