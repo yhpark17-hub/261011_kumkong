@@ -249,9 +249,47 @@ export interface DrillQuestion {
   term: string;
   /** 어느 아침판 기사에서 나온 문제인지 (기사 id — 그 기사의 그림·표시를 문제 위에 써요, 0 = 없음) */
   from: number;
+  /** 점심 그림 (공유 썸네일 바탕 · 아침판 그림이 없을 때 문제 위 그림) — 비우면 과목·문제 글로 골라요 */
+  art: NoonArt | "";
 }
 
-/** 점심 3문제 묶음 — share = 공유 썸네일에 싣는 문제 번호, hook = 공유 썸네일 맨 위 큰 글(20자 안, 비우면 기본 문구) */
+/**
+ * 점심 그림 — 아침판 그림 이야기와 같은 그림체(파스텔 · 꼬마 취준생 · 점심 도시락 + 답안지)로 미리 그려 둔 장면.
+ * public/magazine/brief/noon/<이름>.webp(페이지) · .jpg(1200×630 공유 썸네일 바탕). 왼쪽 절반은 하늘이라 큰 글씨가 들어가요.
+ */
+export const NOON_ART = ["desk", "calc", "graph", "rate", "stock", "news", "bank", "world"] as const;
+export type NoonArt = (typeof NOON_ART)[number];
+export const NOON_ART_INFO: Record<NoonArt, string> = {
+  desk: "도시락 옆 답안지 (기본)",
+  calc: "큰 계산기 · 재무표 (회계·재무 계산)",
+  graph: "칠판 그래프 (경제학 · 수요·공급 · 물가·고용)",
+  rate: "계기판 바늘 · 중앙은행 (금리·채권·통화정책)",
+  stock: "주가 차트 화면 (주식·지수·증시)",
+  news: "신문 읽기 · 전구 (시사)",
+  bank: "은행 창구 · 돼지 저금통 (은행·예금·대출·보험)",
+  world: "지구본 · 배·비행기 (환율·무역·국제)",
+};
+
+/** 과목·문제 글로 고르는 순서 — 먼저 맞는 것 */
+const NOON_ART_RULES: [NoonArt, RegExp][] = [
+  ["calc", /계산|회계|재무|ROE|ROA|이익률|현금흐름|NPV|IRR|원가|감가상각|EPS|PER|PBR|자기자본|재무제표|듀레이션/],
+  ["rate", /금리|채권|통화정책|국채|수익률 곡선|연준|FOMC|한국은행|유동성|긴축|완화/],
+  ["world", /환율|달러|무역|수출|수입|관세|국제수지|경상수지|원화|엔화|위안/],
+  ["stock", /주가|증시|코스피|코스닥|주식|공매도|ETF|나스닥|밸류업|배당/],
+  ["bank", /은행|예금|대출|보험|금융지주|가계부채|DSR|LTV|BIS|건전성|핀테크|예금자보호/],
+  ["graph", /경제학|수요|공급|탄력성|GDP|물가|인플레|실업|고용|성장률|거시|미시|한계/],
+];
+
+/** 이 문제의 점심 그림 — 정해 둔 게 있으면 그것, 없으면 과목 → (시사 문제는 신문) → 문제 글 순서로 */
+export function noonArt(q: Pick<DrillQuestion, "art" | "subject" | "stem" | "kind">): NoonArt {
+  if (q.art) return q.art;
+  const pick = (text: string) => NOON_ART_RULES.find(([, re]) => re.test(text))?.[0];
+  return pick(q.subject) ?? (q.kind === "news" ? "news" : (pick(q.stem) ?? "desk"));
+}
+
+export const noonArtSrc = (key: NoonArt, ext: "webp" | "jpg" = "webp") => `/magazine/brief/noon/${key}.${ext}`;
+
+/** 점심 3문제 묶음 — share = 공유 썸네일에 싣는 문제 번호, hook = 공유 썸네일 큰 글(20자 안, *강조* 한 군데는 노랗게, 비우면 기본 문구) */
 export interface IssueDrill {
   questions: DrillQuestion[];
   share: number;
@@ -291,13 +329,14 @@ function parseDrill(v: unknown): IssueDrill | null {
       const kind = x.kind === "major" || x.kind === "deep" ? x.kind : "news";
       const stem = clip(x.stem, 300);
       if (!stem || options.length < 4 || !Number.isInteger(answer) || answer < 0 || answer >= options.length) return null;
-      return { kind, subject: clip(x.subject, 16), stem, options, answer, explain: clipLines(x.explain, 700), term: clip(x.term, 60), from: Number.isInteger(Number(x.from)) ? Number(x.from) : 0 };
+      const art = (NOON_ART as readonly string[]).includes(String(x.art)) ? (x.art as NoonArt) : "";
+      return { kind, subject: clip(x.subject, 16), stem, options, answer, explain: clipLines(x.explain, 700), term: clip(x.term, 60), from: Number.isInteger(Number(x.from)) ? Number(x.from) : 0, art };
     })
     .filter((q): q is DrillQuestion => q !== null)
     .slice(0, 4);
   if (!questions.length) return null;
   const share = Number(o.share);
-  return { questions, share: Number.isInteger(share) && share >= 0 && share < questions.length ? share : 0, hook: clip(o.hook, 20) };
+  return { questions, share: Number.isInteger(share) && share >= 0 && share < questions.length ? share : 0, hook: clip(o.hook, 24) };
 }
 
 const clip = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
@@ -596,7 +635,7 @@ export function studyTopic(thumb: IssueThumb, extras: IssueExtras): string {
 }
 
 /** 썸네일 그림 디자인 판 — 그리는 방식을 바꾸면 올려서, 이미 공유된 주소도 새 그림으로 가져가게 */
-export const OG_DESIGN = 6;
+export const OG_DESIGN = 7;
 
 /** 썸네일 버전 — 썸네일·제목을 고치거나 디자인 판이 바뀌면 달라져요 */
 export const thumbVersion = (issue: Pick<BriefingIssue, "updatedAt">) => `${issue.updatedAt.toString(36)}${OG_DESIGN}`;

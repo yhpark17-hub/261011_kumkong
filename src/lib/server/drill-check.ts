@@ -1,6 +1,6 @@
 import "server-only";
 import { cardTexts } from "@/lib/news-cards";
-import type { parseExtras } from "@/lib/news-meta";
+import { NOON_ART, type parseExtras } from "@/lib/news-meta";
 import { morningForAutomation } from "./briefing";
 import { plainCorpus } from "./thumb-check";
 
@@ -27,6 +27,14 @@ export async function checkDrill(
   if (drill.questions.length !== 3) errors.push(`drill: 문제는 3개예요 (지금 ${drill.questions.length}개)`);
   const kinds = drill.questions.map((q) => q.kind).sort().join(",");
   if (kinds !== "deep,major,news") errors.push(`drill: kind 는 news(시사)·major(전공)·deep(심화)가 하나씩이에요 (지금 ${kinds})`);
+  // 썸네일 큰 글 — 별표·줄 나눔 표시를 빼고 20자 안, 강조는 한 군데
+  const hook = typeof o.hook === "string" ? o.hook : "";
+  if ([...hook.replace(/\*/g, "").replace(/\s+\/\s+/g, " ").replace(/\s+/g, " ").trim()].length > 20) errors.push("drill.hook: 썸네일 큰 글은 20자 안이에요 (*강조*·' / ' 표시는 빼고 셈)");
+  if ((hook.match(/\*/g) ?? []).length > 2) errors.push("drill.hook: *강조* 는 한 군데만");
+  rawQs.forEach((x, i) => {
+    if (x.art !== undefined && x.art !== "" && !(NOON_ART as readonly unknown[]).includes(x.art))
+      errors.push(`drill.questions[${i}].art: 점심 그림은 ${NOON_ART.join("·")} 중 하나예요 (비우면 저절로)`);
+  });
 
   const { items: morning } = await morningForAutomation(date);
   const morningIds = new Set(morning.map((n) => n.id));

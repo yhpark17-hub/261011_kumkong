@@ -14,8 +14,8 @@ const nextConfig: NextConfig = {
   // 공유 썸네일(opengraph-image)이 그릴 때 읽는 글꼴·기관 로고를 서버 함수에 함께 담아요
   outputFileTracingIncludes: {
     "/reviews/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./public/logos/**/*.png"],
-    "/magazine/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./public/logos/**/*.png", "./public/magazine/thumbs/*.jpg", "./src/lib/server/fonts/Jua-Regular.ttf"],
-    "/admin/news/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./public/logos/**/*.png"],
+    "/magazine/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./public/logos/**/*.png", "./public/magazine/thumbs/*.jpg", "./public/magazine/brief/noon/*.jpg", "./src/lib/server/fonts/Jua-Regular.ttf"],
+    "/admin/news/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./public/logos/**/*.png", "./public/magazine/brief/noon/*.jpg", "./src/lib/server/fonts/Jua-Regular.ttf"],
     "/api/automation/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf"],
     // 앱 카드 그림 PNG (그림 속 이름띠 글자·기관 로고)
     "/api/app/**": ["./node_modules/pretendard/dist/public/static/Pretendard-{Light,Regular,Bold,ExtraBold,Black}.otf", "./public/logos/**/*.png"],

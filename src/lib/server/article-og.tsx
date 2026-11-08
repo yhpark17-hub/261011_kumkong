@@ -226,7 +226,7 @@ const VIDEO_NAVY = "#2b3a7a";
 const VIDEO_SHADE = "rgba(39,50,95,0.43)";
 
 /** 주아체 글자 폭 (em) — 한글 0.92, 띄어쓰기 0.3, 숫자 0.52 쯤 (글꼴에서 잰 값) */
-function juaWidth(text: string, size: number) {
+export function juaWidth(text: string, size: number) {
   let w = 0;
   for (const ch of text) w += /[가-힣]/.test(ch) ? 0.92 : ch === " " ? 0.3 : /[0-9]/.test(ch) ? 0.52 : /[A-Za-z]/.test(ch) ? 0.58 : /[,.]/.test(ch) ? 0.3 : 0.75;
   return w * size;
@@ -239,7 +239,7 @@ function fitJua(text: string, sizes: number[], width: number): { size: number; l
   return { size, lines };
 }
 
-function VideoHeadline({ lines, em, size, left, top }: { lines: string[]; em: string | null; size: number; left: number; top: number }) {
+export function VideoHeadline({ lines, em, size, left, top }: { lines: string[]; em: string | null; size: number; left: number; top: number }) {
   // 테두리는 글자 아래에 칠해져서(paint-order: stroke) 바깥으로 절반만 보여요 — 0.31em 이면 바깥 0.154em (영상: 104px 글자에 16px)
   const base: CSSProperties = { fontFamily: "Jua", fontSize: size, fontWeight: 400, lineHeight: 1.2, WebkitTextStrokeWidth: size * 0.31, WebkitTextStrokeColor: VIDEO_NAVY };
   return (
