@@ -20,7 +20,9 @@ import {
   type CostumeKey,
   type IssueDrill,
   type IssueLayout,
+  type FlagCode,
   type IssueStory,
+  type StoryBadge,
   type IssueThumb,
   type NoonArt,
   type SceneKey,
@@ -889,7 +891,126 @@ function JuaHeadline({ lines, size, left, top }: { lines: string[]; size: number
   );
 }
 
-function MorningStoryView({ issue, story, hero }: { issue: BriefingIssue; story: IssueStory; hero: string }) {
+/* 썸네일 오른쪽 위 — 헤드라인 기사의 표시(로고·국기·지수·메모)를 크게. 그림만 봐도 무슨 뉴스인지 알게 */
+
+/** 별 꼭짓점 (StoryLetter 국기와 같은 계산) */
+function starPts(cx: number, cy: number, r: number, deg = 0) {
+  return Array.from({ length: 10 }, (_, i) => {
+    const a = ((deg + i * 36) * Math.PI) / 180;
+    const rr = i % 2 ? r * 0.382 : r;
+    return `${(cx + rr * Math.sin(a)).toFixed(3)},${(cy - rr * Math.cos(a)).toFixed(3)}`;
+  }).join(" ");
+}
+
+/** 국기 SVG — [글, 가로:세로] */
+function flagSvg(code: FlagCode): [string, number] {
+  switch (code) {
+    case "us": {
+      const stars: string[] = [];
+      for (let r = 0; r < 9; r++) for (let c = 0; c < (r % 2 ? 5 : 6); c++) stars.push(`<polygon points="${starPts(0.063 * (r % 2 ? 2 * c + 2 : 2 * c + 1), 0.054 * (r + 1), 0.0308)}" fill="#fff"/>`);
+      const stripes = [1, 3, 5, 7, 9, 11].map((i) => `<rect y="${i / 13}" width="1.9" height="${1 / 13}" fill="#fff"/>`).join("");
+      return [`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1.9 1"><rect width="1.9" height="1" fill="#b22234"/>${stripes}<rect width="0.76" height="${7 / 13}" fill="#3c3b6e"/>${stars.join("")}</svg>`, 1.9];
+    }
+    case "jp":
+      return ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="#fff"/><circle cx="1.5" cy="1" r="0.6" fill="#bc002d"/></svg>', 1.5];
+    case "cn": {
+      const small = [
+        [10, 2],
+        [12, 4],
+        [12, 7],
+        [10, 9],
+      ]
+        .map(([x, y]) => `<polygon points="${starPts(x, y, 1, (Math.atan2(5 - x, -(5 - y)) * 180) / Math.PI)}" fill="#ff0"/>`)
+        .join("");
+      return [`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 20"><rect width="30" height="20" fill="#ee1c25"/><polygon points="${starPts(5, 5, 3)}" fill="#ff0"/>${small}</svg>`, 1.5];
+    }
+    case "eu": {
+      const stars = Array.from({ length: 12 }, (_, i) => {
+        const a = (i * Math.PI) / 6;
+        return `<polygon points="${starPts(1.5 + (2 / 3) * Math.sin(a), 1 - (2 / 3) * Math.cos(a), 1 / 9)}" fill="#fc0"/>`;
+      }).join("");
+      return [`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="#039"/>${stars}</svg>`, 1.5];
+    }
+  }
+}
+
+/** 로고 PNG → [data uri, 가로:세로] (PNG 머리글의 크기로) */
+async function logoData(src: string): Promise<[string, number] | null> {
+  const buf = await readFile(join(process.cwd(), "public", src)).catch(() => null);
+  if (!buf || buf.length < 24) return null;
+  const w = buf.readUInt32BE(16);
+  const h = buf.readUInt32BE(20);
+  return [`data:image/png;base64,${buf.toString("base64")}`, h ? w / h : 1];
+}
+
+type ThumbBadge =
+  | { kind: "img"; src: string; ratio: number; label: string; round: boolean }
+  | { kind: "imgs"; srcs: string[]; label: string }
+  | { kind: "ticker"; label: string; value: string; up: boolean }
+  | { kind: "note"; label: string };
+
+/** 헤드라인 기사의 표시 두 개까지 — 그림 파일을 미리 읽어 둬요 */
+async function thumbBadges(badges: StoryBadge[]): Promise<ThumbBadge[]> {
+  const out: ThumbBadge[] = [];
+  for (const b of badges.slice(0, 2)) {
+    if (b.kind === "flag") {
+      const [svg, ratio] = flagSvg(b.code);
+      out.push({ kind: "img", src: svgUri(svg), ratio, label: b.label, round: false });
+    } else if (b.kind === "logo") {
+      const d = await logoData(b.src);
+      if (d) out.push({ kind: "img", src: d[0], ratio: d[1], label: b.label, round: b.src.endsWith("-mark.png") });
+    } else if (b.kind === "logos") {
+      const srcs = (await Promise.all(b.srcs.slice(0, 5).map(logoData))).filter((d): d is [string, number] => d !== null).map((d) => d[0]);
+      if (srcs.length) out.push({ kind: "imgs", srcs, label: b.label });
+    } else if (b.kind === "ticker") out.push({ kind: "ticker", label: b.label, value: b.value.replace(/^[-+▲▼\s]+/, ""), up: b.dir === "up" });
+    else out.push({ kind: "note", label: b.label });
+  }
+  return out;
+}
+
+function ThumbBadgePill({ b }: { b: ThumbBadge }) {
+  const pill: CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    height: 64,
+    padding: "0 24px",
+    borderRadius: 999,
+    border: `4px solid ${LUNCH.navy}`,
+    fontFamily: "Jua",
+    fontSize: 32,
+    whiteSpace: "nowrap",
+    boxShadow: "4px 6px 0 rgba(39,50,95,0.25)",
+  };
+  if (b.kind === "ticker")
+    return (
+      <div style={{ ...pill, background: LUNCH.navy, color: "#ffffff" }}>
+        <span style={{ letterSpacing: 1 }}>{b.label}</span>
+        <span style={{ marginLeft: 12, color: b.up ? "#ff9db0" : "#9db8ff" }}>{`${b.up ? "▲" : "▼"} ${b.value}`}</span>
+      </div>
+    );
+  if (b.kind === "note") return <div style={{ ...pill, background: LUNCH.cream, color: LUNCH.navy }}>{b.label}</div>;
+  if (b.kind === "imgs")
+    return (
+      <div style={{ ...pill, background: "#ffffff", color: LUNCH.navy, paddingLeft: 12 }}>
+        {b.srcs.map((src, i) => (
+          // eslint-disable-next-line @next/next/no-img-element -- satori 로고
+          <img key={i} src={src} width={42} height={42} alt="" style={{ width: 42, height: 42, borderRadius: 99, background: "#ffffff", border: "2px solid #dfe4f7", marginLeft: i ? -10 : 0 }} />
+        ))}
+        {b.label && <span style={{ marginLeft: 12 }}>{b.label}</span>}
+      </div>
+    );
+  const h = b.round ? 42 : 34;
+  const w = Math.min(170, Math.round(h * b.ratio));
+  return (
+    <div style={{ ...pill, background: "#ffffff", color: LUNCH.navy, paddingLeft: b.label ? 16 : 24 }}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- satori 로고·국기 */}
+      <img src={b.src} width={w} height={h} alt="" style={{ width: w, height: h, objectFit: "contain", borderRadius: b.round ? 99 : 3 }} />
+      {b.label && <span style={{ marginLeft: 12 }}>{b.label}</span>}
+    </div>
+  );
+}
+
+function MorningStoryView({ issue, story, hero, badges }: { issue: BriefingIssue; story: IssueStory; hero: string; badges: ThumbBadge[] }) {
   const { m, d } = parseKey(issue.date);
   const lines = (story.hook || splitTitle(issue.title)[0]).split(/\s+\/\s+/).slice(0, 2);
   const W = 680;
@@ -905,6 +1026,15 @@ function MorningStoryView({ issue, story, hero }: { issue: BriefingIssue; story:
         </Abs>
       )}
       <JuaHeadline lines={lines} size={size} left={NOON_LEFT} top={top} />
+      {badges.length > 0 && (
+        <Abs style={{ right: 40, top: 40, flexDirection: "column", alignItems: "flex-end" }}>
+          {badges.map((b, i) => (
+            <div key={i} style={{ display: "flex", marginTop: i ? 12 : 0 }}>
+              <ThumbBadgePill b={b} />
+            </div>
+          ))}
+        </Abs>
+      )}
       <Abs style={{ left: NOON_LEFT - 4, bottom: 38, alignItems: "center" }}>
         <div
           style={{
@@ -950,8 +1080,9 @@ export async function briefingOgImage(
   // 그림 이야기 아침판 — 그날 그린 큰 그림 + 이름표 + 큰 글 (그림을 못 읽으면 아래 예전 틀로)
   const story = issue.edition === "morning" ? issue.extras.story : null;
   if (story?.hero) {
-    const [base, jua, hero] = await Promise.all([ogFonts(), juaFont(), coverData(story.hero)]);
-    if (hero) return render(<MorningStoryView issue={issue} story={story} hero={hero} />, { fonts: [...base, jua], headers, scale });
+    // 헤드라인 기사(맨 앞)의 표시 — 썸네일 오른쪽 위에 크게
+    const [base, jua, hero, badges] = await Promise.all([ogFonts(), juaFont(), coverData(story.hero), thumbBadges(story.items[0]?.badges ?? [])]);
+    if (hero) return render(<MorningStoryView issue={issue} story={story} hero={hero} badges={badges} />, { fonts: [...base, jua], headers, scale });
   }
   const fonts = await ogFonts();
   let view: ReactElement;

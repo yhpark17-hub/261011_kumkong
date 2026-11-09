@@ -23,6 +23,13 @@ const LEFT_EMPTY =
   "title text goes there. Everything important sits in the right half, large and clearly readable even as a small picture: the main " +
   "characters are about two thirds of the frame height.";
 
+/** 아침판 썸네일 바탕 — 비유 말고 뉴스 그 자체 (운영자 피드백 2026-11-09: '창밖 보는 사람' 그림은 주제와 멀다) */
+const NEWS_LITERAL =
+  "SUBJECT RULE (this is a news thumbnail): show the news literally and recognizably — the real kind of place, people and objects of the " +
+  "story (for example a central bank governor at a press podium in front of an interest-rate screen, a stock index board in a trading room, " +
+  "a currency exchange board, a container port). Never use a metaphor scene such as a lighthouse, theater, hospital or seesaw, and nobody " +
+  "just gazes out of a window. A viewer must guess the topic of the news from the picture alone.";
+
 const FULL = "The main subject is large and clearly readable even as a small picture: medium shot, it fills most of the frame.";
 
 const REF_NOTE =
@@ -53,12 +60,15 @@ export const imageKind = (buf: Uint8Array) => (buf[0] === 0xff && buf[1] === 0xd
 
 /**
  * 장면 설명(영어 권장) → 그림 파일(JPG 또는 PNG — imageKind 로 확인). layout "thumb" = 왼쪽 절반 비운 썸네일 바탕, "full" = 꽉 찬 그림.
- * id = 장면에 적은 국기·짧은 영어 낱말(예: KOSPI)만 그려도 됨.
+ * id = 장면에 적은 국기·짧은 영어 낱말(예: KOSPI)만 그려도 됨. literal = 비유 말고 뉴스 장면 그대로 (아침판 썸네일 바탕).
  */
-export async function generateArt(scene: string, { layout = "thumb", id = false }: { layout?: "thumb" | "full"; id?: boolean } = {}): Promise<Buffer> {
+export async function generateArt(
+  scene: string,
+  { layout = "thumb", id = false, literal = false }: { layout?: "thumb" | "full"; id?: boolean; literal?: boolean } = {},
+): Promise<Buffer> {
   const key = process.env.GEMINI_API_KEY?.trim();
   if (!key) throw new Error("GEMINI_API_KEY 가 없어요");
-  const text = [PREFIX, layout === "thumb" ? LEFT_EMPTY : FULL, REF_NOTE, scene, id ? ID_TEXT : NO_TEXT].join("\n\n");
+  const text = [PREFIX, layout === "thumb" ? LEFT_EMPTY : FULL, ...(literal ? [NEWS_LITERAL] : []), REF_NOTE, scene, id ? ID_TEXT : NO_TEXT].join("\n\n");
   const body = JSON.stringify({
     contents: [{ parts: [{ text }, { inline_data: { mime_type: "image/jpeg", data: await styleRef() } }] }],
     generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: "16:9" } },

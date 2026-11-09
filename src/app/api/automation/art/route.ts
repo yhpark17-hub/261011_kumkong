@@ -44,7 +44,8 @@ export async function POST(req: Request) {
 
   let img: Buffer;
   try {
-    img = await generateArt(scene, { layout, id: b.id === true });
+    // 아침판 썸네일 바탕(hero)은 뉴스를 그대로 — 비유 장면 금지
+    img = await generateArt(scene, { layout, id: b.id === true, literal: edition === "morning" && layout === "thumb" });
   } catch (e) {
     return json({ ok: false, errors: [`그림을 못 그렸어요: ${e instanceof Error ? e.message : String(e)} — 장면을 바꿔 한 번 더, 안 되면 기본 점심 그림(art)으로`] }, 502);
   }
