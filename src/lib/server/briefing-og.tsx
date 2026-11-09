@@ -999,8 +999,8 @@ function ThumbBadgePill({ b }: { b: ThumbBadge }) {
         {b.label && <span style={{ marginLeft: 12 }}>{b.label}</span>}
       </div>
     );
-  const h = b.round ? 42 : 34;
-  const w = Math.min(190, Math.round(h * b.ratio));
+  const h = b.round ? 42 : 40;
+  const w = Math.min(230, Math.round(h * b.ratio));
   // 글자 로고(넓은 그림)는 이름이 이미 들어 있어 이름표를 또 달지 않아요 (국기·심볼 로고만 이름표)
   const label = b.ratio > 2.2 ? "" : b.label;
   return (
