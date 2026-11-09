@@ -891,7 +891,7 @@ function JuaHeadline({ lines, size, left, top }: { lines: string[]; size: number
   );
 }
 
-/* 썸네일 오른쪽 위 — 헤드라인 기사의 표시(로고·국기·지수·메모)를 크게. 그림만 봐도 무슨 뉴스인지 알게 */
+/* 썸네일 큰 글 아래 — 헤드라인 기사의 표시(로고·국기·지수·메모)를 크게. 그림만 봐도 무슨 뉴스인지 알게 */
 
 /** 별 꼭짓점 (StoryLetter 국기와 같은 계산) */
 function starPts(cx: number, cy: number, r: number, deg = 0) {
@@ -1000,12 +1000,14 @@ function ThumbBadgePill({ b }: { b: ThumbBadge }) {
       </div>
     );
   const h = b.round ? 42 : 34;
-  const w = Math.min(170, Math.round(h * b.ratio));
+  const w = Math.min(190, Math.round(h * b.ratio));
+  // 글자 로고(넓은 그림)는 이름이 이미 들어 있어 이름표를 또 달지 않아요 (국기·심볼 로고만 이름표)
+  const label = b.ratio > 2.2 ? "" : b.label;
   return (
-    <div style={{ ...pill, background: "#ffffff", color: LUNCH.navy, paddingLeft: b.label ? 16 : 24 }}>
+    <div style={{ ...pill, background: "#ffffff", color: LUNCH.navy, paddingLeft: label ? 16 : 24 }}>
       {/* eslint-disable-next-line @next/next/no-img-element -- satori 로고·국기 */}
       <img src={b.src} width={w} height={h} alt="" style={{ width: w, height: h, objectFit: "contain", borderRadius: b.round ? 99 : 3 }} />
-      {b.label && <span style={{ marginLeft: 12 }}>{b.label}</span>}
+      {label && <span style={{ marginLeft: 12 }}>{label}</span>}
     </div>
   );
 }
@@ -1026,10 +1028,11 @@ function MorningStoryView({ issue, story, hero, badges }: { issue: BriefingIssue
         </Abs>
       )}
       <JuaHeadline lines={lines} size={size} left={NOON_LEFT} top={top} />
+      {/* 헤드라인 표시 — 큰 글 아래 빈 자리에 (그림을 가리지 않게) */}
       {badges.length > 0 && (
-        <Abs style={{ right: 40, top: 40, flexDirection: "column", alignItems: "flex-end" }}>
+        <Abs style={{ left: NOON_LEFT - 4, top: Math.round(top + lines.length * size * 1.2 + 22), alignItems: "center" }}>
           {badges.map((b, i) => (
-            <div key={i} style={{ display: "flex", marginTop: i ? 12 : 0 }}>
+            <div key={i} style={{ display: "flex", marginLeft: i ? 12 : 0 }}>
               <ThumbBadgePill b={b} />
             </div>
           ))}
@@ -1080,7 +1083,7 @@ export async function briefingOgImage(
   // 그림 이야기 아침판 — 그날 그린 큰 그림 + 이름표 + 큰 글 (그림을 못 읽으면 아래 예전 틀로)
   const story = issue.edition === "morning" ? issue.extras.story : null;
   if (story?.hero) {
-    // 헤드라인 기사(맨 앞)의 표시 — 썸네일 오른쪽 위에 크게
+    // 헤드라인 기사(맨 앞)의 표시 — 썸네일 큰 글 아래에 크게
     const [base, jua, hero, badges] = await Promise.all([ogFonts(), juaFont(), coverData(story.hero), thumbBadges(story.items[0]?.badges ?? [])]);
     if (hero) return render(<MorningStoryView issue={issue} story={story} hero={hero} badges={badges} />, { fonts: [...base, jua], headers, scale });
   }

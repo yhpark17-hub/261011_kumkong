@@ -18,9 +18,10 @@ const PREFIX =
 
 /** 썸네일 바탕 — 왼쪽 절반은 글씨 자리 */
 const LEFT_EMPTY =
-  "COMPOSITION RULE: one single continuous scene, never split into panels, boxes or seams. The left half is open soft pastel sky " +
-  "(or a plain soft wall) with a few fluffy clouds and only small distant shapes low near the bottom, calm and uncluttered, because big " +
-  "title text goes there. Everything important sits in the right half, large and clearly readable even as a small picture: the main " +
+  "COMPOSITION RULE: one single continuous scene, never split into panels, boxes or seams. The left half is calm, empty and uncluttered " +
+  "because big title text goes there: for an outdoor scene it is open soft pastel sky with a few fluffy clouds; for an indoor scene it is " +
+  "the same room's plain pastel wall continuing with soft light (never a patch of sky next to a room, no window frame edge running down " +
+  "the middle). Everything important sits in the right half, large and clearly readable even as a small picture: the main " +
   "characters are about two thirds of the frame height.";
 
 /** 아침판 썸네일 바탕 — 비유 말고 뉴스 그 자체 (운영자 피드백 2026-11-09: '창밖 보는 사람' 그림은 주제와 멀다) */
