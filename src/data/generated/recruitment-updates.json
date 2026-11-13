@@ -485,50 +485,52 @@
   },
   {
     "companyId": "geps",
-    "title": "2026년 공무원연금공단 사무직 신입직원(채용형 인턴) 채용",
-    "period": "2026 상반기 (2026 하반기 공고 없음)",
+    "title": "2026년 하반기 신입직원(전산직 및 장애·보훈) 채용",
+    "period": "2026 하반기",
     "status": "confirmed",
-    "headcount": 40,
+    "headcount": 15,
     "tracks": [
-      "5급 사무(일반) 30명(행정/법학 5·경영 10(제주지역인재 3 포함)·경제 5·통계 5·사회복지 3·보건 2)",
-      "5급 사무(제한경쟁) 8명(장애 4·보훈 3·자립준비청년 1)",
-      "7급 사무(고교졸업) 2명"
+      "5급 전산 8명(일반 5·제주지역인재 3)",
+      "5급 사무(제한경쟁) 5명(장애 2·보훈 3)",
+      "7급 전산(고교졸업) 2명"
     ],
     "events": [
       {
         "type": "posting",
-        "date": "2026-04-27",
+        "date": "2026-10-22",
         "time": "10:00"
       },
       {
         "type": "doc",
-        "date": "2026-05-11",
+        "date": "2026-11-05",
         "time": "18:00",
-        "note": "https://geps.applyin.co.kr"
+        "note": "https://geps.recruitcenter.kr 온라인 접수. 서류 합격발표 11.11 17:00"
       },
       {
         "type": "written",
-        "date": "2026-05-30",
-        "note": "서울(제주 거주자 제주 응시 선택 가능)"
+        "date": "2026-11-14",
+        "label": "실기(전산)·필기(사무 장애·보훈)",
+        "note": "전산: 코딩·SQL 실기 5문항 / 사무: NCS 60문항+전문지식 40문항. 장소·시간 별도 안내. 합격발표 11.17"
       },
       {
         "type": "interview1",
-        "date": "2026-06-02",
-        "endDate": "2026-06-04",
+        "date": "2026-11-17",
+        "endDate": "2026-11-19",
         "label": "1차 AI역량검사(온라인)",
-        "note": "6.2 18:00 ~ 6.4 14:00"
+        "note": "11.17 18:00 ~ 11.19"
       },
       {
         "type": "interview2",
-        "date": "2026-06-08",
-        "endDate": "2026-06-10",
+        "date": "2026-11-23",
+        "endDate": "2026-11-24",
         "label": "2차 본면접",
         "note": "서울. 종합역량면접 50% + 인바스켓 PT면접 50%"
       },
       {
         "type": "final",
-        "date": "2026-06-15",
-        "time": "17:00"
+        "date": "2026-11-27",
+        "time": "17:00",
+        "note": "임용 12.7 예정"
       }
     ],
     "essayQuestions": [
@@ -546,11 +548,11 @@
       }
     ],
     "essayRef": "문항은 공고 별첨(T1). 글자수 제한은 미확인(허용글자수 30% 미만 기재 시 불합격)",
-    "postingUrl": "https://job.alio.go.kr/recruitview.do?idx=299808",
-    "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=299808",
+    "postingUrl": "https://www.korea.kr/archive/recruitInfoView.do?dataId=397369",
+    "sourceUrl": "https://www.korea.kr/archive/recruitInfoView.do?dataId=397369",
     "confidence": "high",
-    "updatedAt": "2026-10-13",
-    "note": "2026 하반기 신입 공채는 10.13 기준 미게시(연 1회 상반기 채용). 채용형 인턴 약 4개월 후 정규직 전환(전환율 90% 내외, 10.30 예정). 서류발표 5.19, 필기 응시등록 5.19~5.22, 필기발표 6.2, 임용 6.22."
+    "updatedAt": "2026-11-13",
+    "note": "전산직·장애·보훈 대상 하반기 공고(일반 사무직은 상반기 채용). 일정은 진행상황에 따라 변동 가능(공고문)."
   },
   {
     "companyId": "haewoon",
