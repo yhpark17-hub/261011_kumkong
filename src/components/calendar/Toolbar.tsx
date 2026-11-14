@@ -80,7 +80,7 @@ export function CalendarHeader({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2">
       {/* 한 주의 시작 — 일요일 / 월요일 (목록 보기에는 필요 없어요) */}
       {onWeekStartChange && view !== "list" && (
         <div className="inline-flex items-center rounded-full border border-hairline bg-canvas-soft p-1" role="group" aria-label="한 주의 시작 요일">
@@ -128,7 +128,8 @@ export function CalendarHeader({
               view === v ? "bg-canvas text-ink shadow-level-1" : "text-ink-mute hover:text-ink",
             )}
           >
-            <Icon className="h-4 w-4" strokeWidth={1.75} />
+            {/* 휴대폰에서는 글자만 — '주 시작'과 한 줄에 들어가게 */}
+            <Icon className="h-4 w-4 max-sm:hidden" strokeWidth={1.75} />
             {label}
           </button>
         ))}
