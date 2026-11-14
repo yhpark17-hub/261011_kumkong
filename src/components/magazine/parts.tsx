@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   BookOpen,
   BriefcaseBusiness,
+  CalendarRange,
   Compass,
   Landmark,
   Lightbulb,
@@ -34,6 +35,7 @@ import { ReadBadge } from "./interactive";
 
 export const CATEGORY_ICON: Record<MagazineCategory, LucideIcon> = {
   briefing: Newspaper,
+  weekly: CalendarRange,
   exam: PencilLine,
   deepdive: Lightbulb,
   industry: Ship,

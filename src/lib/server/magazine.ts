@@ -160,7 +160,7 @@ export async function relatedArticles(a: ArticleSummary, limit = 3): Promise<Art
   const tags = a.category === "briefing" ? [] : a.tags.slice(0, 6);
   if (tags.length) {
     const res = await client.execute({
-      sql: `SELECT ${SUMMARY_COLS} FROM articles WHERE ${PUBLIC} AND category != 'briefing' AND id != ?
+      sql: `SELECT ${SUMMARY_COLS} FROM articles WHERE ${PUBLIC} AND category NOT IN ('briefing', 'weekly') AND id != ?
             AND (${tags.map(() => "(',' || REPLACE(tags, ', ', ',') || ',') LIKE ?").join(" OR ")})
             ORDER BY published_at DESC LIMIT ?`,
       args: [Date.now(), a.id, ...tags.map((t) => `%,${t},%`), limit],
@@ -173,11 +173,26 @@ export async function relatedArticles(a: ArticleSummary, limit = 3): Promise<Art
   if (picked.length >= limit) return picked;
   const exclude = [a.id, ...picked.map((x) => x.id)];
   const more = await client.execute({
-    sql: `SELECT ${SUMMARY_COLS} FROM articles WHERE ${PUBLIC} AND category != 'briefing' AND id NOT IN (${exclude.map(() => "?").join(",")})
+    sql: `SELECT ${SUMMARY_COLS} FROM articles WHERE ${PUBLIC} AND category NOT IN ('briefing', 'weekly') AND id NOT IN (${exclude.map(() => "?").join(",")})
           ORDER BY likes * 3 + views DESC LIMIT ?`,
     args: [Date.now(), ...exclude, limit - picked.length],
   });
   return [...picked, ...more.rows.map(toSummary)];
+}
+
+/** 가장 최근 주간 정리 — 운영자는 아직 공개 전인 초안도 (데일리 브리핑 첫 화면의 '이번 주 정리' 띠) */
+export async function latestWeekly(opts: { admin?: boolean } = {}): Promise<(ArticleDetail & { draft: boolean }) | null> {
+  const client = await db();
+  const res = await client.execute({
+    sql: opts.admin
+      ? `SELECT ${SUMMARY_COLS}, body FROM articles WHERE category = 'weekly' ORDER BY COALESCE(published_at, updated_at) DESC, id DESC LIMIT 1`
+      : `SELECT ${SUMMARY_COLS}, body FROM articles WHERE category = 'weekly' AND ${PUBLIC} ORDER BY published_at DESC, id DESC LIMIT 1`,
+    args: opts.admin ? [] : [Date.now()],
+  });
+  const r = res.rows[0];
+  if (!r) return null;
+  const a = { ...toSummary(r), body: String(r.body) };
+  return { ...a, draft: !a.live };
 }
 
 /** 많이 읽은 글 (최근 30일 발행 중) */
@@ -185,14 +200,14 @@ export async function popularArticles(limit = 5): Promise<ArticleSummary[]> {
   const client = await db();
   const now = Date.now();
   const res = await client.execute({
-    sql: `SELECT ${SUMMARY_COLS} FROM articles WHERE ${PUBLIC} AND category != 'briefing' AND published_at > ?
+    sql: `SELECT ${SUMMARY_COLS} FROM articles WHERE ${PUBLIC} AND category NOT IN ('briefing', 'weekly') AND published_at > ?
           ORDER BY likes * 3 + views DESC, published_at DESC LIMIT ?`,
     args: [now, now - 30 * 86_400_000, limit],
   });
   if (res.rows.length >= Math.min(3, limit)) return res.rows.map(toSummary);
   // 새 글이 적을 때는 기간 제한 없이
   const all = await client.execute({
-    sql: `SELECT ${SUMMARY_COLS} FROM articles WHERE ${PUBLIC} AND category != 'briefing' ORDER BY likes * 3 + views DESC, published_at DESC LIMIT ?`,
+    sql: `SELECT ${SUMMARY_COLS} FROM articles WHERE ${PUBLIC} AND category NOT IN ('briefing', 'weekly') ORDER BY likes * 3 + views DESC, published_at DESC LIMIT ?`,
     args: [now, limit],
   });
   return all.rows.map(toSummary);

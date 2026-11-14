@@ -7,6 +7,7 @@ export const MAGAZINE_PAGE_SIZE = 12;
 
 export type MagazineCategory =
   | "briefing"
+  | "weekly"
   | "exam"
   | "deepdive"
   | "industry"
@@ -39,6 +40,14 @@ export const MAGAZINE_CATEGORIES: CategoryInfo[] = [
     cover: "from-ev-written-soft",
     // 데일리 브리핑은 이제 뉴스 한 건씩(news 테이블)으로 운영 — 글 형식 브리핑은 숨김
     hidden: true,
+  },
+  {
+    // 금콩 주간 정리 — 데일리 브리핑 쪽에 있지만 따로 보이는 주 1회 영상 + 글 (lib/weekly.ts)
+    key: "weekly",
+    label: "주간 정리",
+    desc: "한 주의 경제를 영상과 글로 — 가장 큰 뉴스 하나는 깊게, 나머지는 짧게",
+    tone: "bg-[#1f2a5c] text-on-primary",
+    cover: "from-[#dfe4f7]",
   },
   {
     key: "exam",
@@ -118,15 +127,18 @@ export function isMagazineCategory(v: unknown): v is MagazineCategory {
 
 /** 사이트에 보이는 카테고리 */
 export const VISIBLE_CATEGORIES = MAGAZINE_CATEGORIES.filter((c) => !c.hidden);
-/** '금융 블로그' 섹션 = 브리핑을 뺀 보이는 카테고리 */
-export const BLOG_CATEGORIES = VISIBLE_CATEGORIES.filter((c) => c.key !== "briefing");
+/** 브리핑 쪽 카테고리 (데일리 브리핑 · 주간 정리) — 나머지는 금융 블로그 */
+const BRIEFING_SIDE: readonly MagazineCategory[] = ["briefing", "weekly"];
+
+/** '금융 블로그' 섹션 = 브리핑 쪽을 뺀 보이는 카테고리 */
+export const BLOG_CATEGORIES = VISIBLE_CATEGORIES.filter((c) => !BRIEFING_SIDE.includes(c.key));
 
 export function isVisibleCategory(v: unknown): v is MagazineCategory {
   return isMagazineCategory(v) && !CATEGORY_INFO[v].hidden;
 }
 
 export function isBlogCategory(v: unknown): v is MagazineCategory {
-  return isVisibleCategory(v) && v !== "briefing";
+  return isVisibleCategory(v) && !BRIEFING_SIDE.includes(v);
 }
 
 /** 매거진 안의 두 섹션 */
@@ -136,7 +148,7 @@ export const SECTION_INFO: Record<MagazineSection, { label: string; desc: string
   blog: { label: "금융 블로그", desc: "필기·면접·금공 지식까지, 준비에 바로 쓰는 깊이 있는 글", href: "/magazine/blog" },
 };
 
-export const sectionOf = (category: MagazineCategory): MagazineSection => (category === "briefing" ? "briefing" : "blog");
+export const sectionOf = (category: MagazineCategory): MagazineSection => (BRIEFING_SIDE.includes(category) ? "briefing" : "blog");
 
 /** 글 강조 표시 — 운영자가 글마다 골라요 (홈·블로그 목록에서 제목 앞 색 표시) */
 export const ARTICLE_BADGES = {
@@ -299,6 +311,8 @@ export function magazineHref({
   page?: number;
   q?: string | null;
 }): string {
+  // 주간 정리는 자기 목록으로
+  if (category === "weekly" && !q) return page && page > 1 ? `/magazine/weekly?page=${page}` : "/magazine/weekly";
   const sp = new URLSearchParams();
   const briefing = category === "briefing" && !q;
   if (category && !briefing) sp.set("c", category);

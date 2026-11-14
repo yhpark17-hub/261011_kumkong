@@ -9,6 +9,9 @@ import { DbSection } from "@/components/db/DbSection";
 import { Markdown, extractHeadings } from "@/components/magazine/Markdown";
 import { ArticleLinks } from "@/components/magazine/ArticleLinks";
 import { ArticleFeature } from "@/components/magazine/features";
+import { WeeklyRoundup } from "@/components/magazine/WeeklyRoundup";
+import { getWeekly } from "@/data/weekly";
+import { articleWeeklyIn } from "@/lib/weekly";
 import { articleWidgets } from "@/components/magazine/widgets";
 import {
   ArticleActions,
@@ -183,6 +186,44 @@ async function ArticleView({ rawId }: { rawId: string }) {
       </div>
     </section>
   );
+
+  // 주간 정리 — 남색 머리 + 영상 + 장(영상과 같은 순서), 아래에 도움돼요·이전·다음 주간 정리
+  const weekly = getWeekly(articleWeeklyIn(a.body));
+  if (weekly) {
+    return (
+      <>
+        {isPublic && <ViewRecorder id={a.id} />}
+        <ReadingProgress targetId="article-body" />
+        {ld}
+        {admin && <div className="mx-auto max-w-[1100px] px-4 pt-6 md:px-6">{adminBar}</div>}
+        <div id="article-body">
+          <WeeklyRoundup w={weekly} title={a.title} summary={points} video={articleVideoIn(a.body)} />
+        </div>
+        <div className={CONTAINER}>
+          <div className="mx-auto max-w-[720px]">
+            <div className="rounded-xl border border-hairline px-5 py-7 text-center">
+              <p className="type-heading-sm text-ink">이번 주 정리가 도움이 됐나요?</p>
+              <p className="mt-1 type-caption text-ink-mute">반응을 보고 다음 주 메인 주제를 고를게요.</p>
+              <div className="mt-5">
+                <ArticleActions id={a.id} title={a.title} category={a.category} initialLikes={a.likes} preview={!isPublic} />
+              </div>
+            </div>
+            {(adjacent.prev || adjacent.next) && (
+              <nav aria-label="이전·다음 주간 정리" className="mt-10 grid gap-3 sm:grid-cols-2">
+                {adjacent.prev ? <AdjacentLink a={adjacent.prev} dir="prev" briefing={false} /> : <span />}
+                {adjacent.next ? <AdjacentLink a={adjacent.next} dir="next" briefing={false} /> : <span />}
+              </nav>
+            )}
+            <p className="mt-10 text-center">
+              <Link href="/magazine" className="link type-caption">
+                오늘의 데일리 브리핑 보러 가기 →
+              </Link>
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   // 스크롤 스토리 글 — 화면 가득 장면, 그 아래에 도움돼요·다음 글·함께 읽을 글
   const feature = articleFeatureIn(a.body);
