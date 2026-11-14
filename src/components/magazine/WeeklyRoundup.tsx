@@ -316,7 +316,7 @@ export function WeeklyRoundup({ w, title, summary, video }: { w: WeeklyEdition; 
 
           {/* 금융 소식 */}
           <div className="mt-20">
-            <GroupHead eyebrow="금융 소식" title={`이번 주 금융 뉴스 ${w.finance.length}가지`} desc="메인 말고도 금공 준비생이 알아 두면 좋은 금융 뉴스예요." />
+            <GroupHead eyebrow="금융 소식" title={`이번 주 금융 뉴스 ${w.finance.length}가지`} desc="메인과 별개로, 이번 주에 따로 나온 금융 뉴스예요." />
             <div className="mt-10 space-y-14">
               {w.finance.map((s) => (
                 <Section key={s.id} s={s} video={video} />
@@ -326,7 +326,7 @@ export function WeeklyRoundup({ w, title, summary, video }: { w: WeeklyEdition; 
 
           {/* 시사 */}
           <div className="mt-20">
-            <GroupHead eyebrow="시사" title={`일반 시사 ${w.current.length}가지`} desc="돈 이야기와 이어지는 시사 뉴스예요." />
+            <GroupHead eyebrow="시사" title={`일반 시사 ${w.current.length}가지`} desc="메인과 별개로, 이번 주에 따로 나온 시사 뉴스예요." />
             <div className="mt-10 space-y-14">
               {w.current.map((s) => (
                 <Section key={s.id} s={s} video={video} />

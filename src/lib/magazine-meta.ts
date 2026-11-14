@@ -153,7 +153,7 @@ export const SECTION_INFO: Record<MagazineSection, { label: string; desc: string
  * 섹션 탭에 '주간 정리'를 세울지 — 첫 주간 정리를 공개하는 날 true 로 (그 전에는 빈 탭이 되니까).
  * false 일 때도 주간 정리 쪽(/magazine/weekly)에 들어가면 탭이 보여요 (운영자 미리 보기).
  */
-export const WEEKLY_TAB_LIVE = false;
+export const WEEKLY_TAB_LIVE = true;
 
 export const sectionOf = (category: MagazineCategory): MagazineSection => (category === "weekly" ? "weekly" : BRIEFING_SIDE.includes(category) ? "briefing" : "blog");
 
