@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useSyncExternalStore } from "react";
-import { todayKST } from "./date";
+import { WEEK_START_COOKIE, parseWeekStart, todayKST, type WeekStart } from "./date";
 
 /* ------------------------------------------------------------------ */
 /* 오늘 날짜 (KST)                                                     */
@@ -77,4 +77,32 @@ export function useFavorites() {
   );
 
   return { favorites, toggle };
+}
+
+/* ------------------------------------------------------------------ */
+/* 한 주의 시작 요일 (쿠키 — 서버의 홈 '이번 주' 칸도 같이 읽어요)          */
+/* ------------------------------------------------------------------ */
+
+const weekListeners = new Set<() => void>();
+
+function readWeekStart(): string {
+  const m = document.cookie.match(new RegExp(`(?:^|; )${WEEK_START_COOKIE}=([^;]*)`));
+  return m?.[1] ?? "0";
+}
+
+function subscribeWeek(cb: () => void) {
+  weekListeners.add(cb);
+  return () => {
+    weekListeners.delete(cb);
+  };
+}
+
+/** 달력의 한 주 시작 — [값, 바꾸기]. 처음 그릴 때(서버)는 일요일 */
+export function useWeekStart(): [WeekStart, (ws: WeekStart) => void] {
+  const ws = parseWeekStart(useSyncExternalStore(subscribeWeek, readWeekStart, () => "0"));
+  const set = useCallback((next: WeekStart) => {
+    document.cookie = `${WEEK_START_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
+    weekListeners.forEach((l) => l());
+  }, []);
+  return [ws, set];
 }

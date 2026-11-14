@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { buildEvents } from "@/lib/catalog-client";
 import { addDays, shiftMonth, ymOf, type YearMonth } from "@/lib/date";
-import { useFavorites, useTodayKey } from "@/lib/hooks";
+import { useFavorites, useTodayKey, useWeekStart } from "@/lib/hooks";
 import { AD_SLOTS } from "@/lib/site";
 import type { Catalog } from "@/lib/types";
 import { AdSlot } from "../ads/AdSlot";
@@ -22,6 +22,7 @@ const CompanyDrawer = dynamic(() => import("../company/CompanyDrawer").then((m) 
 export function HomeDashboard({ catalog, afterStatus }: { catalog: Catalog; afterStatus?: React.ReactNode }) {
   const today = useTodayKey();
   const { favorites } = useFavorites();
+  const [weekStart, setWeekStart] = useWeekStart();
   const allEvents = useMemo(() => buildEvents(catalog), [catalog]);
 
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
@@ -70,6 +71,8 @@ export function HomeDashboard({ catalog, afterStatus }: { catalog: Catalog; afte
               setSelectedDay(null);
             }}
             listCount={upcomingCount}
+            weekStart={weekStart}
+            onWeekStartChange={setWeekStart}
             day={activeDay}
             onShiftDay={(d) => {
               if (!activeDay) return;
@@ -90,6 +93,7 @@ export function HomeDashboard({ catalog, afterStatus }: { catalog: Catalog; afte
                 onSelectDay={setSelectedDay}
                 onOpenDay={setDayModal}
                 onOpenCompany={setOpenCompany}
+                weekStart={weekStart}
               />
             </>
           ) : view === "day" ? (
@@ -103,6 +107,7 @@ export function HomeDashboard({ catalog, afterStatus }: { catalog: Catalog; afte
                   setYmOverride(ymOf(d));
                 }}
                 onOpenCompany={setOpenCompany}
+                weekStart={weekStart}
               />
             )
           ) : (

@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { WEEKDAYS, addDays, dayOfWeek, formatDayHeading, parseKey } from "@/lib/date";
+import { WEEKDAYS, addDays, dayOfWeek, formatDayHeading, parseKey, weekStartOf, type WeekStart } from "@/lib/date";
 import { EVENT_FILTER_ORDER, EVENT_META } from "@/lib/meta";
 import type { CalendarEvent } from "@/lib/types";
 import { cn } from "../ui";
@@ -16,14 +16,16 @@ export function DayView({
   byDay,
   onSelect,
   onOpenCompany,
+  weekStart = 0,
 }: {
   day: string;
   today: string | null;
   byDay: Map<string, CalendarEvent[]>;
   onSelect: (day: string) => void;
   onOpenCompany: (companyId: string) => void;
+  weekStart?: WeekStart;
 }) {
-  const start = addDays(day, -dayOfWeek(day));
+  const start = weekStartOf(day, weekStart);
   const week = Array.from({ length: 7 }, (_, i) => addDays(start, i));
   const events = byDay.get(day) ?? [];
 

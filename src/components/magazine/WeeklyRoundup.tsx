@@ -4,6 +4,7 @@ import { ArrowDown, CalendarClock, ChevronDown, ChevronRight, ExternalLink, Ligh
 import { weeklyToc, youtubeAt, type WeeklyBlock, type WeeklyEdition, type WeeklySection, type WeeklySource } from "@/lib/weekly";
 import { cn } from "../ui";
 import { jua } from "./BriefingBrand";
+import { ViewsLikes } from "./Stats";
 import { SeekButton, WeeklyPlayer, WeeklyTimeline, WeeklyTocFloat } from "./WeeklyClient";
 
 /**
@@ -515,5 +516,86 @@ export function WeeklyStrip({ href, title, week, poster, draft = false }: { href
       </span>
       <ChevronRight className="h-5 w-5 shrink-0 text-[#c9d2f5] md:hidden" strokeWidth={2} />
     </Link>
+  );
+}
+
+export interface WeeklyArchiveItem {
+  id: number;
+  href: string;
+  title: string;
+  week: string;
+  range: string;
+  poster: string;
+  topics: string[];
+  videoLength: string;
+  views: number;
+  likes: number;
+  latest: boolean;
+  draft: boolean;
+}
+
+/** 주간 정리 모아 보기 — 회차를 달마다 묶어 한 줄씩 (데일리 브리핑의 '최근 브리핑'처럼). 회차가 적을 때는 다음 회차 자리를 비워 둬요 */
+export function WeeklyArchive({ items }: { items: WeeklyArchiveItem[] }) {
+  const months: { label: string; rows: WeeklyArchiveItem[] }[] = [];
+  for (const it of items) {
+    const label = it.week.match(/^\d{4}년\s*\d{1,2}월/)?.[0] ?? "그 밖의 회차";
+    const last = months.at(-1);
+    if (last && last.label === label) last.rows.push(it);
+    else months.push({ label, rows: [it] });
+  }
+  const placeholder = (
+    <li className="flex min-h-[104px] items-center gap-3 rounded-2xl border border-dashed border-hairline-input px-4 py-4 md:min-h-[132px]">
+      <CalendarClock className="h-6 w-6 shrink-0 text-ink-mute-2" strokeWidth={1.5} />
+      <span className="min-w-0">
+        <span className="block type-body-md font-semibold text-ink-secondary">다음 회차를 준비하고 있어요</span>
+        <span className="mt-0.5 block type-caption leading-relaxed text-ink-mute [word-break:keep-all]">매주 한 번 영상과 함께 올라오고, 지난 회차는 이곳에 차곡차곡 쌓여요.</span>
+      </span>
+    </li>
+  );
+  if (items.length === 0) return <ul className="grid gap-3 lg:grid-cols-2">{placeholder}</ul>;
+  return (
+    <div className="space-y-8">
+      {months.map((m, mi) => (
+        <section key={m.label} aria-label={m.label}>
+          <h3 className="type-heading-sm text-ink">{m.label}</h3>
+          <ul className="mt-3 grid gap-3 lg:grid-cols-2">
+            {m.rows.map((it) => (
+              <li key={it.id}>
+                <Link href={it.href} className="group flex h-full gap-3 rounded-2xl bg-canvas p-2.5 shadow-level-1 transition hover:shadow-level-2 md:gap-4 md:p-3">
+                  <span className="relative aspect-video w-32 shrink-0 self-start overflow-hidden rounded-xl bg-[#11183a] md:w-48">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- 영상 썸네일 */}
+                    <img src={it.poster} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+                    <span className="absolute right-1.5 bottom-1.5 inline-flex items-center gap-0.5 rounded-md bg-[#11183a]/85 px-1.5 py-0.5 text-[11px] leading-none font-bold text-[#ffffff]">
+                      <Play className="h-2.5 w-2.5 fill-current" strokeWidth={0} />
+                      {it.videoLength}
+                    </span>
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col py-0.5">
+                    <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                      <span className="type-caption font-bold text-[#2b3a7a]">{it.week.replace(/^\d{4}년\s*/, "")}</span>
+                      <span className="type-caption text-ink-mute">{it.range}</span>
+                      {it.latest && <span className="rounded-full bg-[#f7a14a] px-1.5 py-0.5 text-[11px] leading-none font-bold text-[#1f2a5c]">최신</span>}
+                      {it.draft && <span className="rounded-full bg-canvas-soft px-1.5 py-0.5 text-[11px] leading-none font-bold text-ink-mute">초안</span>}
+                    </span>
+                    <span className="mt-1 line-clamp-2 type-heading-sm text-ink [word-break:keep-all] group-hover:underline">{it.title}</span>
+                    {it.topics.length > 0 && (
+                      <span className="mt-2 hidden flex-wrap gap-1 sm:flex">
+                        {it.topics.slice(0, 5).map((t) => (
+                          <span key={t} className="rounded-full bg-[#eef1fd] px-2 py-0.5 text-[11px] leading-4 text-[#2b3a7a]">
+                            {t}
+                          </span>
+                        ))}
+                      </span>
+                    )}
+                    <ViewsLikes views={it.views} likes={it.likes} className="mt-auto pt-2 type-caption text-ink-mute" />
+                  </span>
+                </Link>
+              </li>
+            ))}
+            {mi === 0 && items.length < 3 && placeholder}
+          </ul>
+        </section>
+      ))}
+    </div>
   );
 }

@@ -195,6 +195,21 @@ export async function latestWeekly(opts: { admin?: boolean } = {}): Promise<(Art
   return { ...a, draft: !a.live };
 }
 
+/** 주간 정리 전체 회차 (최신 먼저) — 운영자는 공개 전 초안도. head 는 본문 첫 줄({{weekly:키}})을 읽으려고 */
+export async function weeklyArticles(opts: { admin?: boolean } = {}): Promise<(ArticleSummary & { head: string; draft: boolean })[]> {
+  const client = await db();
+  const res = await client.execute({
+    sql: opts.admin
+      ? `SELECT ${SUMMARY_COLS}, substr(body, 1, 60) AS head FROM articles WHERE category = 'weekly' ORDER BY COALESCE(published_at, updated_at) DESC, id DESC LIMIT 200`
+      : `SELECT ${SUMMARY_COLS}, substr(body, 1, 60) AS head FROM articles WHERE category = 'weekly' AND ${PUBLIC} ORDER BY published_at DESC, id DESC LIMIT 200`,
+    args: opts.admin ? [] : [Date.now()],
+  });
+  return res.rows.map((r) => {
+    const a = toSummary(r);
+    return { ...a, head: String(r.head ?? ""), draft: !a.live };
+  });
+}
+
 /** 많이 읽은 글 (최근 30일 발행 중) */
 export async function popularArticles(limit = 5): Promise<ArticleSummary[]> {
   const client = await db();

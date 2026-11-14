@@ -101,16 +101,31 @@ export function monthKey({ y, m }: YearMonth): string {
   return `${y}-${String(m).padStart(2, "0")}`;
 }
 
-/** 일요일 시작 6주(42칸) 달력 매트릭스 */
-export function monthMatrix({ y, m }: YearMonth): string[] {
+/** 한 주의 시작 요일 — 0 일요일(기본) · 1 월요일. 고른 값은 쿠키에 (서버의 홈 '이번 주' 칸도 같은 기준으로) */
+export type WeekStart = 0 | 1;
+export const WEEK_START_COOKIE = "kk_week_start";
+export const parseWeekStart = (v: string | null | undefined): WeekStart => (v === "1" ? 1 : 0);
+
+/** 그 날이 들어 있는 주의 첫날 */
+export function weekStartOf(key: string, ws: WeekStart = 0): string {
+  return addDays(key, -((dayOfWeek(key) - ws + 7) % 7));
+}
+
+/** 요일 순서 (0=일 … 6=토) — 월요일 시작이면 [1,2,3,4,5,6,0] */
+export function weekdayOrder(ws: WeekStart = 0): number[] {
+  return Array.from({ length: 7 }, (_, i) => (i + ws) % 7);
+}
+
+/** 6주(42칸) 달력 매트릭스 — 일요일 또는 월요일 시작 */
+export function monthMatrix({ y, m }: YearMonth, ws: WeekStart = 0): string[] {
   const first = toKey(y, m, 1);
-  const start = addDays(first, -dayOfWeek(first));
+  const start = weekStartOf(first, ws);
   return Array.from({ length: 42 }, (_, i) => addDays(start, i));
 }
 
 /** 해당 월에 필요한 주 수만큼만 (5주 또는 6주) */
-export function monthWeeks(ym: YearMonth): string[][] {
-  const cells = monthMatrix(ym);
+export function monthWeeks(ym: YearMonth, ws: WeekStart = 0): string[][] {
+  const cells = monthMatrix(ym, ws);
   const weeks: string[][] = [];
   for (let i = 0; i < 6; i++) {
     const week = cells.slice(i * 7, i * 7 + 7);

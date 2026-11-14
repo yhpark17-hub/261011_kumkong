@@ -2,12 +2,11 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { DbSection } from "@/components/db/DbSection";
-import { ArticleCard } from "@/components/magazine/parts";
 import { EmptyLine, MagazineShell } from "@/components/magazine/sections";
-import { WeeklyBand } from "@/components/magazine/WeeklyRoundup";
+import { WeeklyArchive, WeeklyBand, type WeeklyArchiveItem } from "@/components/magazine/WeeklyRoundup";
 import { getWeekly } from "@/data/weekly";
 import { MAGAZINE_NAME, articleHref, summaryLines } from "@/lib/magazine-meta";
-import { latestWeekly, listArticles } from "@/lib/server/magazine";
+import { weeklyArticles } from "@/lib/server/magazine";
 import { isAdmin } from "@/lib/server/security";
 import { pageMetadata } from "@/lib/site";
 import { articleWeeklyIn } from "@/lib/weekly";
@@ -33,50 +32,60 @@ export default function WeeklyListPage() {
 
 async function WeeklyList() {
   await connection();
-  // 맨 위는 가장 최근 호 (운영자는 공개 전 초안도 미리 보기), 아래는 지난 호
-  const [{ items: all }, first] = await Promise.all([listArticles({ category: "weekly", pageSize: 60 }), latestWeekly({ admin: await isAdmin() })]);
-  const firstWeekly = first ? getWeekly(articleWeeklyIn(first.body)) : null;
-  const rest = all.filter((a) => a.id !== first?.id);
-  const items = first ? [first, ...rest] : all;
+  // 회차 전체 (운영자는 공개 전 초안도) — 맨 위는 가장 최근 회차를 크게, 아래는 달마다 모아 보기
+  const rows = await weeklyArticles({ admin: await isAdmin() });
+  const items = rows.flatMap((a) => {
+    const w = getWeekly(articleWeeklyIn(a.head));
+    return w ? [{ a, w }] : [];
+  });
+  const first = items[0];
+  const archive: WeeklyArchiveItem[] = items.map(({ a, w }, i) => ({
+    id: a.id,
+    href: articleHref(a.id),
+    title: a.title,
+    week: w.week,
+    range: w.range,
+    poster: w.poster,
+    topics: w.topics,
+    videoLength: w.videoLength,
+    views: a.views,
+    likes: a.likes,
+    latest: i === 0,
+    draft: a.draft,
+  }));
   return (
     <div className="mt-8">
-      {items.length === 0 ? (
-        <div className="mt-8">
-          <EmptyLine text="첫 주간 정리를 준비하고 있어요. 매주 한 번 영상과 글로 찾아올게요." />
-        </div>
+      {first ? (
+        <section aria-label="가장 최근 주간 정리">
+          <p className="type-micro-cap text-primary-text">가장 최근 주간 정리</p>
+          <div className="mt-3">
+            <WeeklyBand
+              href={articleHref(first.a.id)}
+              title={first.a.title}
+              week={first.w.week}
+              poster={first.w.poster}
+              line={summaryLines(first.a.summary)[0] ?? first.w.question}
+              topics={first.w.topics}
+              draft={first.a.draft}
+            />
+          </div>
+        </section>
       ) : (
-        <>
-          {first && firstWeekly && (
-            <section aria-label="이번 주 정리">
-              <p className="type-micro-cap text-primary-text">가장 최근 주간 정리</p>
-              <div className="mt-3">
-                <WeeklyBand
-                  href={articleHref(first.id)}
-                  title={first.title}
-                  week={firstWeekly.week}
-                  poster={firstWeekly.poster}
-                  line={summaryLines(first.summary)[0] ?? firstWeekly.question}
-                  topics={firstWeekly.topics}
-                  draft={first.draft}
-                />
-              </div>
-            </section>
-          )}
-          {(firstWeekly ? rest : items).length > 0 && (
-            <h2 className="mt-12 type-heading-lg text-ink">
-              지난 주간 정리
-              <span className="ml-2 tabular type-body-md text-ink-mute">{(firstWeekly ? rest : items).length}편</span>
-            </h2>
-          )}
-          {(firstWeekly ? rest : items).length > 0 && (
-            <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {(firstWeekly ? rest : items).map((a) => (
-                <ArticleCard key={a.id} a={a} />
-              ))}
-            </div>
-          )}
-        </>
+        <EmptyLine text="첫 주간 정리를 준비하고 있어요. 매주 한 번 영상과 글로 찾아올게요." />
       )}
+
+      <section aria-labelledby="weekly-archive-title" className="mt-14">
+        <div className="border-b border-hairline pb-4">
+          <h2 id="weekly-archive-title" className="type-heading-lg text-ink">
+            주간 정리 모아 보기
+            <span className="ml-2 tabular type-body-md text-ink-mute">{archive.length}회</span>
+          </h2>
+          <p className="mt-0.5 type-caption text-ink-mute">지난 회차의 영상과 글을 다시 볼 수 있어요. 최신 회차가 맨 위예요.</p>
+        </div>
+        <div className="mt-6">
+          <WeeklyArchive items={archive} />
+        </div>
+      </section>
     </div>
   );
 }

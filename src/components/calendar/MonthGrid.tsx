@@ -1,6 +1,6 @@
 "use client";
 
-import { HOLIDAYS, WEEKDAYS, dayOfWeek, monthWeeks, parseKey, type YearMonth } from "@/lib/date";
+import { HOLIDAYS, WEEKDAYS, dayOfWeek, monthWeeks, parseKey, weekdayOrder, type WeekStart, type YearMonth } from "@/lib/date";
 import { EVENT_META } from "@/lib/meta";
 import type { CalendarEvent } from "@/lib/types";
 import { cn } from "../ui";
@@ -20,6 +20,7 @@ export function MonthGrid({
   onSelectDay,
   onOpenDay,
   onOpenCompany,
+  weekStart = 0,
 }: {
   ym: YearMonth | null;
   today: string | null;
@@ -28,20 +29,22 @@ export function MonthGrid({
   onSelectDay: (day: string) => void;
   onOpenDay: (day: string) => void;
   onOpenCompany: (companyId: string) => void;
+  /** 한 주의 시작 — 0 일요일 · 1 월요일 */
+  weekStart?: WeekStart;
 }) {
   return (
     // 휴대폰에서는 화면 끝까지 넓혀 칸마다 기관 이름이 들어갈 자리를 확보
     <div className="card overflow-hidden shadow-level-2 max-md:-mx-4 max-md:rounded-none max-md:border-x-0">
       <div className="grid grid-cols-7 border-b border-hairline bg-canvas-soft">
-        {WEEKDAYS.map((w, i) => (
+        {weekdayOrder(weekStart).map((dow) => (
           <div
-            key={w}
+            key={dow}
             className={cn(
               "py-2 text-center type-caption",
-              i === 0 ? "text-ruby" : i === 6 ? "text-primary-text" : "text-ink-mute",
+              dow === 0 ? "text-ruby" : dow === 6 ? "text-primary-text" : "text-ink-mute",
             )}
           >
-            {w}
+            {WEEKDAYS[dow]}
           </div>
         ))}
       </div>
@@ -53,7 +56,7 @@ export function MonthGrid({
           ))}
         </div>
       ) : (
-        monthWeeks(ym).map((week) => (
+        monthWeeks(ym, weekStart).map((week) => (
           <div key={week[0]} className="grid grid-cols-7 border-b border-hairline last:border-b-0">
             {week.map((day) => (
               <DayCell

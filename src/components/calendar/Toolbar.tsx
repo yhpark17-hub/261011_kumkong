@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CalendarDays, CalendarRange, ChevronLeft, ChevronRight, List, Plus, RotateCcw, Search, Star } from "lucide-react";
-import { formatDayHeading, type YearMonth } from "@/lib/date";
+import { formatDayHeading, type WeekStart, type YearMonth } from "@/lib/date";
 import { CATEGORY_META, CATEGORY_ORDER, EVENT_FILTER_ORDER, EVENT_META, MAJOR_META } from "@/lib/meta";
 import type { Category, EventType, MajorType } from "@/lib/types";
 import { PRIMARY_CATEGORIES } from "../CategoryChips";
@@ -21,6 +21,8 @@ export function CalendarHeader({
   listCount,
   day,
   onShiftDay,
+  weekStart = 0,
+  onWeekStartChange,
 }: {
   ym: YearMonth | null;
   view: View;
@@ -31,6 +33,9 @@ export function CalendarHeader({
   /** 일간 보기에서 고른 날 */
   day?: string | null;
   onShiftDay?: (delta: number) => void;
+  /** 한 주의 시작 (달력·일간 보기) */
+  weekStart?: WeekStart;
+  onWeekStartChange?: (ws: WeekStart) => void;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -75,6 +80,34 @@ export function CalendarHeader({
         )}
       </div>
 
+      <div className="flex flex-wrap items-center gap-2">
+      {/* 한 주의 시작 — 일요일 / 월요일 (목록 보기에는 필요 없어요) */}
+      {onWeekStartChange && view !== "list" && (
+        <div className="inline-flex items-center rounded-full border border-hairline bg-canvas-soft p-1" role="group" aria-label="한 주의 시작 요일">
+          <span className="pr-1 pl-2.5 type-caption text-ink-mute">주 시작</span>
+          {(
+            [
+              [0, "일"],
+              [1, "월"],
+            ] as const
+          ).map(([v, label]) => (
+            <button
+              key={v}
+              type="button"
+              aria-pressed={weekStart === v}
+              aria-label={v ? "월요일부터 보기" : "일요일부터 보기"}
+              onClick={() => onWeekStartChange(v)}
+              className={cn(
+                "inline-flex min-h-8 min-w-8 items-center justify-center rounded-full px-2.5 type-button-sm transition-colors",
+                weekStart === v ? "bg-canvas text-ink shadow-level-1" : "text-ink-mute hover:text-ink",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* 보기 전환 — pill 세그먼트 */}
       <div className="inline-flex rounded-full border border-hairline bg-canvas-soft p-1" role="tablist">
         {(
@@ -99,6 +132,7 @@ export function CalendarHeader({
             {label}
           </button>
         ))}
+      </div>
       </div>
     </div>
   );

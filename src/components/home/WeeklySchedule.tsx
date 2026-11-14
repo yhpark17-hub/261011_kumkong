@@ -1,12 +1,13 @@
+import { cookies } from "next/headers";
 import { connection } from "next/server";
 import { buildEvents } from "@/lib/catalog-client";
 import { buildCatalog } from "@/lib/data";
-import { addDays, dayOfWeek, todayKST } from "@/lib/date";
+import { WEEK_START_COOKIE, addDays, parseWeekStart, todayKST, weekStartOf, type WeekStart } from "@/lib/date";
 import { WeekCalendar, type WeekDay } from "./WeekCalendar";
 
-/** 이번 주·다음 주 (일~토) 칸 — 며칠에 걸친 일정(면접 기간 등)은 그 날짜마다 넣어요 */
-function buildWeeks(today: string): WeekDay[][] {
-  const start = addDays(today, -dayOfWeek(today));
+/** 이번 주·다음 주 칸 (일~토, 달력에서 월요일 시작을 고르면 월~일) — 며칠에 걸친 일정(면접 기간 등)은 그 날짜마다 넣어요 */
+function buildWeeks(today: string, ws: WeekStart): WeekDay[][] {
+  const start = weekStartOf(today, ws);
   const days: WeekDay[] = Array.from({ length: 14 }, (_, i) => ({ date: addDays(start, i), items: [] }));
   const last = days[13].date;
   const index = new Map(days.map((d, i) => [d.date, i]));
@@ -36,7 +37,8 @@ function buildWeeks(today: string): WeekDay[][] {
 export async function WeeklySchedule() {
   await connection();
   const today = todayKST();
-  return <WeekCalendar weeks={buildWeeks(today)} today={today} />;
+  const ws = parseWeekStart((await cookies()).get(WEEK_START_COOKIE)?.value);
+  return <WeekCalendar weeks={buildWeeks(today, ws)} today={today} />;
 }
 
 export function WeeklyScheduleSkeleton() {
