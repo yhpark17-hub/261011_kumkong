@@ -6,7 +6,7 @@ import type { CalendarEvent, Catalog } from "./types";
 export function buildEvents(catalog: Catalog): CalendarEvent[] {
   const companyMap = new Map(catalog.companies.map((c) => [c.id, c]));
   return catalog.recruitments
-    .flatMap((r) => {
+    .flatMap((r, ri) => {
       const company = companyMap.get(r.companyId);
       if (!company) return [];
       // 같은 기관의 신입 공고와 체험형 인턴 공고가 함께 있을 수 있어 id 에 구분을 넣어요
@@ -14,7 +14,7 @@ export function buildEvents(catalog: Catalog): CalendarEvent[] {
       return r.events.map((e, i) => ({
         ...e,
         ...(r.kind === "intern" ? { label: `인턴 ${e.label ?? EVENT_META[e.type].label}` } : {}),
-        id: `${r.companyId}${r.kind ? `-${r.kind}` : ""}-${e.type}-${i}`,
+        id: `${r.companyId}${r.kind ? `-${r.kind}${ri}` : ""}-${e.type}-${i}`,
         company,
         recruitment: r,
       }));
