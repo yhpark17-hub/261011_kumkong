@@ -13,14 +13,14 @@ import { jua } from "./BriefingBrand";
 const NAVY = "#1f2a5c";
 const ORANGE = "#f7a14a";
 
-/** **굵게** 를 강조로 */
-function Rich({ text }: { text: string }) {
+/** **굵게** 를 강조로 (어두운 바탕에서는 light) */
+function Rich({ text, light = false }: { text: string; light?: boolean }) {
   const parts = text.split(/(\*\*[^*]+\*\*)/).filter(Boolean);
   return (
     <>
       {parts.map((p, i) =>
         p.startsWith("**") && p.endsWith("**") ? (
-          <strong key={i} className="font-bold text-ink">
+          <strong key={i} className={cn("font-bold", light ? "text-[#ffd84d]" : "text-ink")}>
             {p.slice(2, -2)}
           </strong>
         ) : (
@@ -216,7 +216,7 @@ function Section({ s, video, wide = false }: { s: WeeklySection; video: string |
       </h3>
       {s.art && (
         // eslint-disable-next-line @next/next/no-img-element -- 영상에 쓴 장면 그림
-        <img src={s.art} alt={s.artAlt ?? ""} loading="lazy" decoding="async" className="mt-5 aspect-video w-full rounded-2xl object-cover" />
+        <img src={s.art} alt={s.artAlt ?? ""} loading="lazy" decoding="async" className="mt-5 aspect-[2/1] w-full rounded-2xl object-cover" />
       )}
       <div className="mt-5 space-y-5">
         {s.blocks.map((b, i) => (
@@ -293,6 +293,7 @@ export function WeeklyRoundup({ w, title, summary, video }: { w: WeeklyEdition; 
       <div className="mx-auto max-w-[1100px] px-4 md:px-6">
         {/* 영상 + 챕터 */}
         <section aria-label="영상으로 보기" className="-mt-6 grid gap-5 rounded-3xl bg-canvas p-4 shadow-level-2 md:-mt-10 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:p-5">
+          <div>
           <div className="relative aspect-video overflow-hidden rounded-2xl bg-[#11183a]">
             {video ? (
               <iframe
@@ -313,6 +314,12 @@ export function WeeklyRoundup({ w, title, summary, video }: { w: WeeklyEdition; 
                 </span>
               </>
             )}
+          </div>
+          <p className="mt-3 type-caption leading-relaxed text-ink-mute [word-break:keep-all]">
+            {video
+              ? "장 제목 옆 빨간 시각을 누르면 유튜브에서 그 장면부터 볼 수 있어요. 글은 영상과 같은 순서예요."
+              : "영상은 유튜브에 곧 올라와요. 올라오면 여기서 바로 볼 수 있고, 장마다 그 장면으로 가는 링크가 생겨요."}
+          </p>
           </div>
           <div className="min-w-0">
             <p className="type-micro-cap text-ink-mute">영상 순서 = 글 순서</p>
@@ -364,7 +371,7 @@ export function WeeklyRoundup({ w, title, summary, video }: { w: WeeklyEdition; 
                 한 문장으로 답하면
               </p>
               <p className="mt-1.5 type-body-lg leading-relaxed text-[#ffffff] ko-justify">
-                <Rich text={w.answer} />
+                <Rich text={w.answer} light />
               </p>
             </div>
             <div className="mt-12 space-y-16">
