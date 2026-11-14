@@ -214,7 +214,10 @@ async function ArticleView({ rawId }: { rawId: string }) {
                 {adjacent.next ? <AdjacentLink a={adjacent.next} dir="next" briefing={false} /> : <span />}
               </nav>
             )}
-            <p className="mt-10 text-center">
+            <p className="mt-10 flex flex-wrap justify-center gap-x-5 gap-y-2">
+              <Link href="/magazine/weekly" className="link type-caption">
+                지난 주간 정리 모아 보기 →
+              </Link>
               <Link href="/magazine" className="link type-caption">
                 오늘의 데일리 브리핑 보러 가기 →
               </Link>

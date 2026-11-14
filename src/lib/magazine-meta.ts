@@ -141,14 +141,21 @@ export function isBlogCategory(v: unknown): v is MagazineCategory {
   return isVisibleCategory(v) && !BRIEFING_SIDE.includes(v);
 }
 
-/** 매거진 안의 두 섹션 */
-export type MagazineSection = "briefing" | "blog";
+/** 매거진(시사 뉴스) 안의 섹션 — 매일(데일리 브리핑) · 매주(주간 정리) · 수시(금융 블로그) */
+export type MagazineSection = "briefing" | "weekly" | "blog";
 export const SECTION_INFO: Record<MagazineSection, { label: string; desc: string; href: string }> = {
   briefing: { label: "데일리 브리핑", desc: "아침에는 금콩 브리핑(카드뉴스 기사 브리핑), 점심에는 점심 3문제(금공 필기형 문제·면접 1문) — 금공 준비생의 하루를 여는 브리핑", href: "/magazine" },
+  weekly: { label: "주간 정리", desc: "매주 한 번, 한 주의 경제를 영상과 글로 — 가장 큰 뉴스 하나는 깊게, 금융·시사 뉴스는 짧게", href: "/magazine/weekly" },
   blog: { label: "금융 블로그", desc: "필기·면접·금공 지식까지, 준비에 바로 쓰는 깊이 있는 글", href: "/magazine/blog" },
 };
 
-export const sectionOf = (category: MagazineCategory): MagazineSection => (BRIEFING_SIDE.includes(category) ? "briefing" : "blog");
+/**
+ * 섹션 탭에 '주간 정리'를 세울지 — 첫 주간 정리를 공개하는 날 true 로 (그 전에는 빈 탭이 되니까).
+ * false 일 때도 주간 정리 쪽(/magazine/weekly)에 들어가면 탭이 보여요 (운영자 미리 보기).
+ */
+export const WEEKLY_TAB_LIVE = false;
+
+export const sectionOf = (category: MagazineCategory): MagazineSection => (category === "weekly" ? "weekly" : BRIEFING_SIDE.includes(category) ? "briefing" : "blog");
 
 /** 글 강조 표시 — 운영자가 글마다 골라요 (홈·블로그 목록에서 제목 앞 색 표시) */
 export const ARTICLE_BADGES = {

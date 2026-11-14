@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
@@ -11,10 +10,10 @@ import { NEWS_VIEW_COOKIE, ViewToggle } from "@/components/magazine/BlogControls
 import { HeroSwitcher } from "@/components/magazine/HeroSwitcher";
 import { ArchiveCallout, BriefingHeroCard, FeatureItemCard, IssueCard, NewsCategoryNav, PopularNews } from "@/components/magazine/news";
 import { EmptyLine, MagazineShell } from "@/components/magazine/sections";
-import { WeeklyBand } from "@/components/magazine/WeeklyRoundup";
+import { WeeklyStrip } from "@/components/magazine/WeeklyRoundup";
 import { getWeekly } from "@/data/weekly";
 import { addDays, formatDayHeading, todayKST } from "@/lib/date";
-import { MAGAZINE_NAME, articleHref, isBlogCategory, magazineHref, summaryLines } from "@/lib/magazine-meta";
+import { MAGAZINE_NAME, articleHref, isBlogCategory, kstDateKey, magazineHref } from "@/lib/magazine-meta";
 import { EDITION_SCHEDULE, briefingArchiveHref, isDateKey, isNewsSection, type NewsView } from "@/lib/news-meta";
 import { arrangeLetter, getIssue, issueItems, issuesBetween, latestIssue, listIssues, type IssueSummary } from "@/lib/server/briefing";
 import { latestWeekly } from "@/lib/server/magazine";
@@ -98,8 +97,9 @@ async function BriefingFront({ sp }: { sp: SP }) {
     listIssues({ pageSize: 1 }),
     latestWeekly({ admin }),
   ]);
-  // 이번 주 정리 (주 1회 영상 + 글) — 데일리 브리핑과 다르게 남색 띠로
-  const weekly = weeklyArticle ? getWeekly(articleWeeklyIn(weeklyArticle.body)) : null;
+  // 이번 주 정리 (주 1회 영상 + 글) — 맨 위에 얇은 남색 띠로. 공개한 지 9일이 지나면(다음 호가 안 나왔으면) 내려요
+  const weeklyFresh = weeklyArticle && (weeklyArticle.draft || (weeklyArticle.publishedAt != null && kstDateKey(weeklyArticle.publishedAt) >= addDays(today, -9)));
+  const weekly = weeklyArticle && weeklyFresh ? getWeekly(articleWeeklyIn(weeklyArticle.body)) : null;
   // 오늘 브리핑이 아직 없으면(이른 아침) 가장 최근 브리핑을 위에
   const heroDate = latest?.date ?? today;
   const [morningIssue, noonIssue] = latest ? await Promise.all([getIssue(heroDate, "morning"), getIssue(heroDate, "noon")]) : [null, null];
@@ -116,6 +116,12 @@ async function BriefingFront({ sp }: { sp: SP }) {
   return (
     <div className="mt-8">
       <NewsCategoryNav active={null} counts={counts} />
+
+      {weeklyArticle && weekly && (
+        <section aria-label="금콩 주간 정리" className="mt-6">
+          <WeeklyStrip href={articleHref(weeklyArticle.id)} title={weeklyArticle.title} week={weekly.week} poster={weekly.poster} draft={weeklyArticle.draft} />
+        </section>
+      )}
 
       <section aria-label="오늘의 브리핑" className="mt-8 space-y-6">
         <div>
@@ -155,25 +161,6 @@ async function BriefingFront({ sp }: { sp: SP }) {
           <FeatureItemCard section="question" n={question} today={today} />
         </div>
       </section>
-
-      {weeklyArticle && weekly && (
-        <section aria-label="금콩 주간 정리" className="mt-12">
-          <WeeklyBand
-            href={articleHref(weeklyArticle.id)}
-            title={weeklyArticle.title}
-            week={weekly.week}
-            poster={weekly.poster}
-            line={summaryLines(weeklyArticle.summary)[0] ?? weekly.question}
-            chapters={weekly.glance.map((g) => g.title).slice(0, 4)}
-            draft={weeklyArticle.draft}
-          />
-          <p className="mt-2 text-right">
-            <Link href="/magazine/weekly" className="link type-caption">
-              지난 주간 정리 모두 보기 →
-            </Link>
-          </p>
-        </section>
-      )}
 
       {/* 오른쪽 칸은 광고 자리뿐이라, 광고가 꺼져 있으면 칸을 두지 않고 위 상자들과 같은 폭으로 */}
       <div className={cn("mt-12 grid gap-10", sideAd && "lg:grid-cols-[minmax(0,1fr)_300px]")}>
