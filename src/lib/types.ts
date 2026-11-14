@@ -50,6 +50,10 @@ export interface EssayQuestion {
 
 export interface Recruitment {
   companyId: string;
+  /** 'intern' = 체험형 인턴 (src/data/interns.ts). 신입·채용형 인턴은 비워 둬요 */
+  kind?: "intern";
+  /** 체험형 인턴 근무 기간 (예: "2027년 1월 ~ 2월") — 공고에 적힌 대로 */
+  workPeriod?: string;
   /** 예: "2026년 하반기 신입직원 공개채용" */
   title: string;
   /** 예: "2026 하반기" */
@@ -150,6 +154,8 @@ export interface CatalogCompany {
 
 export interface CatalogRecruitment {
   companyId: string;
+  /** 'intern' = 체험형 인턴 — 달력에 '인턴' 표시, 채용 구분 거르기 */
+  kind?: "intern";
   title: string;
   status: DataStatus;
   events: ScheduleEvent[];

@@ -209,6 +209,16 @@ export function FilterBar({
             </option>
           ))}
         </select>
+        <select
+          value={filters.hire}
+          onChange={(e) => set({ hire: e.target.value as Filters["hire"] })}
+          className="input shrink-0"
+          aria-label="채용 구분"
+        >
+          <option value="all">신입 + 체험형 인턴</option>
+          <option value="new">신입 채용만</option>
+          <option value="intern">체험형 인턴만</option>
+        </select>
         <button
           type="button"
           onClick={() => set({ blindOnly: !filters.blindOnly })}

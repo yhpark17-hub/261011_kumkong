@@ -1,0 +1,109 @@
+import type { Recruitment } from "@/lib/types";
+
+/**
+ * 체험형 인턴 공고 — 정규직으로 이어지지 않는 체험형(청년)인턴만 (채용형 인턴은 신입 채용 recruitments.ts 쪽).
+ * 공고문·공식 채용 사이트로 확인한 일정만 넣어요. 날짜·인원·시각을 추측하지 않고,
+ * '11월 말 예정'처럼 날짜가 없는 단계는 events 가 아니라 note 로.
+ * 같은 기관에 여러 회차가 있으면 뒤쪽이 최신이에요. 달력에는 '인턴' 표시가 붙고, 채용 구분으로 거를 수 있어요.
+ */
+
+const U = "2026-11-14";
+
+export const INTERNS: Recruitment[] = [
+  {
+    companyId: "kamco",
+    title: "2026년도 체험형 인턴(2차)",
+    period: "2026 하반기",
+    status: "confirmed",
+    headcount: 142,
+    tracks: ["체험형 인턴(일반) 130명", "체험형 인턴(자립준비청년) 12명"],
+    workPeriod: "2026년 12월 중 ~ 2027년 6월 초 (약 6개월)",
+    events: [
+      { type: "posting", date: "2026-10-02" },
+      { type: "doc", date: "2026-10-16", time: "14:00" },
+    ],
+    essayQuestions: [],
+    postingUrl: "https://kamcointern.saramin.co.kr/service/kamcointern/4006/applicant/apply/recruit_default.asp",
+    sourceUrl: "https://job.alio.go.kr/recruitview.do?idx=305720",
+    confidence: "high",
+    updatedAt: U,
+    note: "서류 합격 발표(10월 28일) → AI면접(일반 전형만, 10월 말~11월 초) → 지역별 대면면접 11월 말 → 대면면접 합격자 발표 12월 초 예정이에요. 재계약·정규직 전환은 없어요.",
+  },
+  {
+    companyId: "kexim",
+    title: "2026년 하반기 장애인 청년인턴",
+    period: "2026 하반기",
+    status: "confirmed",
+    headcount: 25,
+    tracks: ["본점 22명", "부산지점·해양금융본부 3명"],
+    workPeriod: "2026년 12월 1일(예정) ~ 2027년 5월 31일",
+    events: [
+      { type: "posting", date: "2026-10-13" },
+      { type: "doc", date: "2026-10-27", time: "17:00" },
+    ],
+    essayQuestions: [],
+    postingUrl: "https://job.alio.go.kr/recruitview.do?idx=305968",
+    sourceUrl: "https://job.alio.go.kr/recruitview.do?idx=305968",
+    confidence: "high",
+    updatedAt: U,
+    note: "장애인만 지원할 수 있는 전형이에요(접수는 한국장애인고용공단 이메일). 면접(온라인 NCS 직업성격검사 포함)은 11월 중순 예정이고, 공고상 수료·우수인턴은 필기 우대가 있어요.",
+  },
+  {
+    companyId: "ibk",
+    title: "2027년 동계 체험형 청년인턴",
+    period: "2027 동계",
+    status: "confirmed",
+    headcount: 390,
+    tracks: ["금융 일반 340명", "디지털·IT 50명"],
+    workPeriod: "2027년 1월 4일 ~ 2월 12일 (예정)",
+    events: [
+      { type: "posting", date: "2026-10-27" },
+      { type: "doc", date: "2026-11-16", time: "10:00" },
+    ],
+    essayQuestions: [],
+    postingUrl: "https://ibk.incruit.com",
+    sourceUrl: "https://ibk1.incruit.com/hire/viewhire.asp?projectid=114",
+    confidence: "high",
+    updatedAt: U,
+    note: "서류접수 → AI역량검사(11월 중·하순, 개별 안내) → 서류심사 합격 발표 12월 초순 → 실기시험(발표·토론, 심층인터뷰) 12월 중순 → 최종 합격 12월 하순 예정이에요. AI역량검사를 보지 않으면 서류에서 불합격이에요.",
+  },
+  {
+    companyId: "kibo",
+    title: "2026년 하반기 체험형 청년인턴",
+    period: "2026 하반기",
+    status: "confirmed",
+    headcount: 6,
+    tracks: ["강서지점·인천기술혁신센터·인천기업구조혁신센터·해운대지점·경산지점·광주서지점 각 1명"],
+    workPeriod: "6개월 (채용 2026년 12월 28일 예정)",
+    events: [
+      { type: "posting", date: "2026-10-28", time: "14:00" },
+      { type: "doc", date: "2026-11-12", time: "14:00" },
+    ],
+    essayQuestions: [],
+    postingUrl: "https://kibo.saramin.co.kr/service/kibo/4026/applicant/apply/index.asp",
+    sourceUrl: "https://job.alio.go.kr/recruitview.do?idx=306440",
+    confidence: "high",
+    updatedAt: U,
+    note: "서류전형(5배수) 합격자 발표 11월 말, 면접(1배수) 합격자 발표 12월 초 예정이에요. 계약이 끝난 뒤 연장·정규직 전환은 없어요.",
+  },
+  {
+    companyId: "kdic",
+    title: "제28기 동계 대학생인턴",
+    period: "2027 동계",
+    status: "confirmed",
+    tracks: ["일반행정 27명 이내", "해외제도 리서치 8명 이내"],
+    workPeriod: "2027년 1월 4일 ~ 2월 19일 (7주)",
+    events: [
+      { type: "posting", date: "2026-11-06" },
+      { type: "doc", date: "2026-11-20", time: "17:00" },
+      { type: "interview1", date: "2026-12-10", note: "예정" },
+      { type: "final", date: "2026-12-15", time: "14:00", note: "14:00 이후 예정" },
+    ],
+    essayQuestions: [],
+    postingUrl: "https://www.kdic.or.kr/di/empm/selectPbcrEmpmPbancList.do",
+    sourceUrl: "https://job.alio.go.kr/recruitview.do?idx=306801",
+    confidence: "high",
+    updatedAt: U,
+    note: "대학교 2~4학년(수료 포함)·석사 1~2년차가 지원할 수 있어요. 서류전형 합격자 발표는 12월 4일 14:00 이후 예정이에요. 정규직 전환은 없지만, 수료·우수인턴은 수료일부터 3년 안에 신입직원(채용형 인턴 포함) 채용에서 서류전형 혜택을 받아요.",
+  },
+];

@@ -180,6 +180,7 @@ function DayCell({
                   expected ? "bg-canvas outline outline-1 -outline-offset-1 outline-dashed outline-hairline-input" : m.soft,
                 )}
               >
+                {ev.recruitment.kind === "intern" && <InternMark />}
                 {ev.company.shortName}
               </span>
             );
@@ -203,7 +204,7 @@ function EventChip({ ev, onClick }: { ev: CalendarEvent; onClick: () => void }) 
         e.stopPropagation();
         onClick();
       }}
-      title={`${ev.company.name} · ${ev.label ?? m.label}${ev.time ? ` ${ev.time}` : ""}${expected ? " (예상)" : ""}`}
+      title={`${ev.company.name} · ${ev.label ?? m.label}${ev.time ? ` ${ev.time}` : ""}${expected ? " (예상)" : ""}${ev.recruitment.kind === "intern" ? ` · ${ev.recruitment.title}` : ""}`}
       className={cn(
         "flex w-full items-center gap-1 rounded-xs border px-1 py-0.5 text-left transition-[filter] hover:brightness-95",
         expected ? cn("border-dashed bg-canvas", m.border) : cn("border-transparent", m.soft),
@@ -211,6 +212,16 @@ function EventChip({ ev, onClick }: { ev: CalendarEvent; onClick: () => void }) 
     >
       <span className={cn("shrink-0 type-micro-cap", m.text)}>{m.short}</span>
       <span className="truncate type-micro text-ink">{ev.company.shortName}</span>
+      {ev.recruitment.kind === "intern" && <span className="ml-auto shrink-0 rounded-[3px] bg-ink px-1 text-[9px] leading-[14px] font-bold text-on-primary">인턴</span>}
     </button>
+  );
+}
+
+/** 휴대폰 칸의 체험형 인턴 표시 — 이름 앞 작은 '인' */
+function InternMark() {
+  return (
+    <span aria-label="체험형 인턴" className="mr-0.5 inline-block rounded-[2px] bg-ink px-[2px] align-[1px] text-[8px] leading-[11px] font-bold text-on-primary">
+      인
+    </span>
   );
 }

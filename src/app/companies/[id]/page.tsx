@@ -21,6 +21,7 @@ import { FavoriteButton } from "@/components/client-ui";
 import { CompanyCommunity, CompanyCommunitySkeleton } from "@/components/company/CompanyCommunity";
 import { CompanyTalk } from "@/components/company/CompanyTalk";
 import { DbSection } from "@/components/db/DbSection";
+import { InternPostings } from "@/components/company/InternPostings";
 import { RecruitTimeline } from "@/components/company/RecruitTimeline";
 import {
   EssayList,
@@ -32,7 +33,7 @@ import {
   TracksDetail,
 } from "@/components/company/sections";
 import { BlindBadge, Card, CategoryBadge, CompanyAvatar } from "@/components/ui";
-import { COMPANIES, getCompany, getRecruitment, latestStat } from "@/lib/data";
+import { COMPANIES, getCompany, getInternPostings, getRecruitment, latestStat } from "@/lib/data";
 import { formatLong } from "@/lib/date";
 import { CATEGORY_META, MAJOR_META } from "@/lib/meta";
 import { AD_SLOTS, SITE, pageOpenGraph } from "@/lib/site";
@@ -94,6 +95,7 @@ function CompanyContent({ id }: { id: string }) {
   if (!company || !recruitment) notFound();
 
   const related = COMPANIES.filter((c) => c.category === company.category && c.id !== company.id).slice(0, 6);
+  const interns = getInternPostings(id);
   const postingHref = recruitment.postingUrl ?? company.recruitUrl;
 
   return (
@@ -185,6 +187,12 @@ function CompanyContent({ id }: { id: string }) {
             {recruitment.note && <p className="mt-4 type-caption text-ink-mute">※ {recruitment.note}</p>}
             <SourceNote recruitment={recruitment} />
           </Card>
+
+          {interns.length > 0 && (
+            <Card className="p-6 md:p-8">
+              <InternPostings items={interns} />
+            </Card>
+          )}
 
           <Card className="p-6 md:p-8">
             <SectionTitle icon={Layers}>전형 요약</SectionTitle>

@@ -35,7 +35,8 @@ export function CompanyTable({ catalog }: { catalog: Catalog }) {
   }, [catalog]);
 
   const recruitmentMap = useMemo(
-    () => new Map(catalog.recruitments.map((r) => [r.companyId, r])),
+    // 기관 표는 신입 채용 기준 (체험형 인턴 공고가 덮어쓰지 않게)
+    () => new Map(catalog.recruitments.filter((r) => !r.kind).map((r) => [r.companyId, r])),
     [catalog],
   );
 

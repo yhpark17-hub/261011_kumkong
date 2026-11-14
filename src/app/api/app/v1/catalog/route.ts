@@ -9,7 +9,8 @@ export function GET() {
   const catalog = buildCatalog();
   const data = {
     companies: catalog.companies.map((c) => ({ ...c, logo: absUrl(c.logo) })),
-    recruitments: catalog.recruitments,
+    // 앱은 아직 체험형 인턴 구분을 몰라요 — 신입 채용만 (기관당 하나로 읽는 화면이 있어서)
+    recruitments: catalog.recruitments.filter((r) => !r.kind),
   };
   return appJson({ version: contentVersion(data), ...data });
 }

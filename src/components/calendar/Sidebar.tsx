@@ -60,7 +60,8 @@ function PhaseSummary({ catalog, today }: { catalog: Catalog; today: string | nu
   const counts = useMemo(() => {
     if (!today) return null;
     const c = { open: 0, soon: 0, progress: 0, done: 0 };
-    for (const r of catalog.recruitments) c[recruitmentPhase(r, today).tone]++;
+    // 신입 채용 기준 (체험형 인턴은 세지 않아요)
+    for (const r of catalog.recruitments) if (!r.kind) c[recruitmentPhase(r, today).tone]++;
     return c;
   }, [catalog, today]);
 

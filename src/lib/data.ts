@@ -4,6 +4,7 @@
  */
 import { COMPANIES as CURATED_COMPANIES } from "@/data/companies";
 import { DATA_UPDATED_AT, RECRUITMENTS as CURATED_RECRUITMENTS } from "@/data/recruitments";
+import { INTERNS } from "@/data/interns";
 import generatedCompanies from "@/data/generated/companies.json";
 import generatedRecruitments from "@/data/generated/recruitments.json";
 import recruitmentUpdates from "@/data/generated/recruitment-updates.json";
@@ -41,6 +42,17 @@ export const RECRUITMENTS: Recruitment[] = [
 ];
 
 const companyMap = new Map(COMPANIES.map((c) => [c.id, c]));
+
+/**
+ * 체험형 인턴 공고 (src/data/interns.ts) — 신입 채용(RECRUITMENTS)과 따로 둬요.
+ * 달력·홈 '이번 주'·신규 공고 띠·기관 페이지의 '체험형 인턴' 칸에만 쓰고, 필기 후기·경쟁률·자소서와는 섞지 않아요.
+ */
+export const INTERN_RECRUITMENTS: Recruitment[] = INTERNS.filter((r) => companyMap.has(r.companyId)).map((r) => ({ ...r, kind: "intern" as const }));
+
+/** 그 기관의 체험형 인턴 공고 (최근 것 먼저) */
+export function getInternPostings(companyId: string): Recruitment[] {
+  return INTERN_RECRUITMENTS.filter((r) => r.companyId === companyId).reverse();
+}
 
 export function getCompany(id: string): Company | undefined {
   return companyMap.get(id);
@@ -128,8 +140,9 @@ export function buildCatalog(): Catalog {
         ratio: stat?.ratio != null ? { value: stat.ratio, label: stat.label ?? String(stat.year) } : undefined,
       };
     }),
-    recruitments: RECRUITMENTS.filter((r) => companyMap.has(r.companyId)).map((r) => ({
+    recruitments: [...RECRUITMENTS.filter((r) => companyMap.has(r.companyId)), ...INTERN_RECRUITMENTS].map((r) => ({
       companyId: r.companyId,
+      ...(r.kind ? { kind: r.kind } : {}),
       title: r.title,
       status: r.status,
       events: sortedEvents(r),

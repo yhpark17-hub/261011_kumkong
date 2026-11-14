@@ -8,6 +8,8 @@ export interface Filters {
   query: string;
   major: MajorType | "all";
   blindOnly: boolean;
+  /** 채용 구분 — 전체 · 신입(채용형 인턴 포함)만 · 체험형 인턴만 */
+  hire: "all" | "new" | "intern";
 }
 
 export const ALL_TYPES: EventType[] = ["doc", "written", "interview1", "interview2", "final", "posting"];
@@ -19,6 +21,7 @@ export const DEFAULT_FILTERS: Filters = {
   query: "",
   major: "all",
   blindOnly: false,
+  hire: "all",
 };
 
 export function isDefaultFilters(f: Filters): boolean {
@@ -28,7 +31,8 @@ export function isDefaultFilters(f: Filters): boolean {
     !f.favoritesOnly &&
     f.query.trim() === "" &&
     f.major === "all" &&
-    !f.blindOnly
+    !f.blindOnly &&
+    f.hire === "all"
   );
 }
 
@@ -49,6 +53,8 @@ export function applyFilters(
     if (f.favoritesOnly && !favorites.has(c.id)) return false;
     if (f.major !== "all" && c.majorType !== f.major) return false;
     if (f.blindOnly && c.blind !== "full") return false;
+    if (f.hire === "new" && ev.recruitment.kind === "intern") return false;
+    if (f.hire === "intern" && ev.recruitment.kind !== "intern") return false;
     if (q) {
       const hay = normalize(`${c.name}${c.shortName}`);
       if (!hay.includes(q)) return false;

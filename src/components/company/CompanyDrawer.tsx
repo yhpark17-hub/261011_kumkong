@@ -12,18 +12,20 @@ import {
   MessageSquareWarning,
   X,
 } from "lucide-react";
-import { getCompany, getRecruitment, PHASE_TONE_CLASS, recruitmentPhase } from "@/lib/data";
+import { getCompany, getInternPostings, getRecruitment, PHASE_TONE_CLASS, recruitmentPhase } from "@/lib/data";
 import { formatLong } from "@/lib/date";
 import { useTodayKey } from "@/lib/hooks";
 import { FeedbackButton } from "../feedback/Feedback";
 import { FavoriteButton } from "../client-ui";
 import { BlindBadge, CategoryBadge, CompanyAvatar, cn } from "../ui";
+import { InternPostings } from "./InternPostings";
 import { RecruitTimeline } from "./RecruitTimeline";
 import { EssayList, ExamDetail, QuickFacts, SectionTitle, SourceNote, TracksDetail } from "./sections";
 
 export function CompanyDrawer({ companyId, onClose }: { companyId: string; onClose: () => void }) {
   const company = getCompany(companyId);
   const recruitment = getRecruitment(companyId);
+  const interns = getInternPostings(companyId);
   const today = useTodayKey();
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -115,6 +117,12 @@ export function CompanyDrawer({ companyId, onClose }: { companyId: string; onClo
             {recruitment.note && <p className="mt-4 type-caption text-ink-mute">※ {recruitment.note}</p>}
             <SourceNote recruitment={recruitment} />
           </section>
+
+          {interns.length > 0 && (
+            <section>
+              <InternPostings items={interns} compact />
+            </section>
+          )}
 
           <section>
             <SectionTitle icon={Layers}>한눈에 보기</SectionTitle>

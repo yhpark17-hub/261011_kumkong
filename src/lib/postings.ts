@@ -1,4 +1,4 @@
-import { RECRUITMENTS, getCompany } from "./data";
+import { INTERN_RECRUITMENTS, RECRUITMENTS, getCompany } from "./data";
 import { addDays, diffDays } from "./date";
 import { EVENT_META } from "./meta";
 import type { EventType } from "./types";
@@ -15,6 +15,8 @@ export interface NewPosting {
   docTime: string | null;
   /** 이틀 안에 뜬 공고 */
   fresh: boolean;
+  /** 체험형 인턴 공고 */
+  intern?: boolean;
 }
 
 /**
@@ -23,7 +25,8 @@ export interface NewPosting {
  */
 export function newPostings(today: string, days = 21): NewPosting[] {
   const out: NewPosting[] = [];
-  for (const r of RECRUITMENTS) {
+  // 체험형 인턴 공고도 '새 공고'로 (제목에 체험형 인턴이 드러나요)
+  for (const r of [...RECRUITMENTS, ...INTERN_RECRUITMENTS]) {
     if (r.status !== "confirmed") continue;
     const posting = r.events
       .filter((e) => e.type === "posting" && e.date <= today)
@@ -48,6 +51,7 @@ export function newPostings(today: string, days = 21): NewPosting[] {
       docDate,
       docTime: doc?.time ?? null,
       fresh: age <= 2,
+      ...(r.kind === "intern" ? { intern: true } : {}),
     });
   }
   return out.sort((a, b) => (a.postedOn === b.postedOn ? (a.name < b.name ? -1 : 1) : a.postedOn < b.postedOn ? 1 : -1));
