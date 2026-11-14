@@ -6,8 +6,8 @@ import { mmss, type WeeklyTocGroup } from "@/lib/weekly";
 import { cn } from "../ui";
 
 /**
- * 주간 정리의 움직이는 부분 — 영상 칸, '이 장면부터' 단추, 떠 있는 목차.
- * 시각 단추를 누르면 위 영상이 그 장면부터 재생돼요 (유튜브로 나가지 않고 이 쪽 안에서).
+ * 주간 정리의 움직이는 부분 — 영상 칸, 영상 옆 타임라인, '이 장면부터' 단추, 떠 있는 목차.
+ * 타임라인·시각 단추를 누르면 영상이 그 장면부터 재생돼요 (유튜브로 나가지 않고 이 쪽 안에서).
  */
 
 const SEEK = "kumkong:weekly-seek";
@@ -22,7 +22,9 @@ export function WeeklyPlayer({ video, poster, title }: { video: string | null; p
     const on = (e: Event) => {
       const t = Math.max(0, Math.floor((e as CustomEvent<number>).detail || 0));
       setSeek((p) => ({ t, n: (p?.n ?? 0) + 1 }));
-      box.current?.scrollIntoView({ behavior: smooth(), block: "center" });
+      // 영상이 화면 밖일 때만 (영상 옆 타임라인을 누를 때는 화면이 움직이지 않게)
+      const r = box.current?.getBoundingClientRect();
+      if (r && (r.top < 64 || r.bottom > window.innerHeight)) box.current?.scrollIntoView({ behavior: smooth(), block: "center" });
     };
     window.addEventListener(SEEK, on);
     return () => window.removeEventListener(SEEK, on);
@@ -52,6 +54,43 @@ export function WeeklyPlayer({ video, poster, title }: { video: string | null; p
         </>
       )}
     </div>
+  );
+}
+
+/** 영상 타임라인 — '0:46 2주 동안 코스피에 무슨 일이 있었을까?' 줄을 누르면 영상이 그 장면부터 */
+export function WeeklyTimeline({ items, video }: { items: { at: number; q: string }[]; video: string | null }) {
+  const [on, setOn] = useState<number | null>(null);
+  return (
+    <ol className="divide-y divide-hairline">
+      {items.map((it) => {
+        const row = (
+          <>
+            <span className={cn("w-12 shrink-0 tabular type-body-md font-bold", video ? "text-[#b3261e]" : "text-ink-mute")}>{mmss(it.at)}</span>
+            <span className="min-w-0 flex-1 type-body-md text-ink [word-break:keep-all]">{it.q}</span>
+            {video && <Play className="mt-1 h-3.5 w-3.5 shrink-0 fill-current text-[#b3261e] opacity-0 transition-opacity group-hover:opacity-100" strokeWidth={0} />}
+          </>
+        );
+        return (
+          <li key={it.at}>
+            {video ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setOn(it.at);
+                  window.dispatchEvent(new CustomEvent(SEEK, { detail: it.at }));
+                }}
+                aria-label={`영상 ${mmss(it.at)}부터 보기: ${it.q}`}
+                className={cn("group flex w-full items-start gap-2 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-[#fff3f3]", on === it.at && "bg-[#ffe4e4]")}
+              >
+                {row}
+              </button>
+            ) : (
+              <div className="flex items-start gap-2 px-2 py-2.5">{row}</div>
+            )}
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -165,8 +204,8 @@ export function WeeklyTocFloat({ groups, anchorId, endId }: { groups: WeeklyTocG
                         it.id === active ? "bg-[#eef1fd] font-semibold text-[#1f2a5c]" : "text-ink hover:bg-canvas-soft",
                       )}
                     >
-                      <span className="w-10 shrink-0 tabular type-caption text-ink-mute">{it.onlyText ? "글" : it.at != null ? mmss(it.at) : ""}</span>
-                      <span className="min-w-0">{it.ask}</span>
+                      <span className="w-16 shrink-0 type-caption text-ink-mute [word-break:keep-all]">{it.label}</span>
+                      <span className="min-w-0">{it.title}</span>
                     </a>
                   </li>
                 ))}
@@ -188,7 +227,7 @@ export function WeeklyTocFloat({ groups, anchorId, endId }: { groups: WeeklyTocG
           <>
             <span aria-hidden className="h-3.5 w-px shrink-0 bg-[#ffffff]/30" />
             <span className="min-w-0 truncate type-caption text-[#dfe4f7]">
-              <span className="font-bold text-[#f7a14a]">{now.label}</span> {now.ask}
+              <span className="font-bold text-[#f7a14a]">{now.label}</span> {now.title}
             </span>
           </>
         )}

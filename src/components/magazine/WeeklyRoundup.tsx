@@ -1,15 +1,15 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowDown, CalendarClock, ChevronDown, ChevronRight, ExternalLink, Lightbulb, PenLine, Play, TriangleAlert } from "lucide-react";
-import { weeklyToc, youtubeAt, type WeeklyBlock, type WeeklyEdition, type WeeklySection, type WeeklySource, type WeeklyTocGroup } from "@/lib/weekly";
+import { weeklyToc, youtubeAt, type WeeklyBlock, type WeeklyEdition, type WeeklySection, type WeeklySource } from "@/lib/weekly";
 import { cn } from "../ui";
 import { jua } from "./BriefingBrand";
-import { SeekButton, WeeklyPlayer, WeeklyTocFloat } from "./WeeklyClient";
+import { SeekButton, WeeklyPlayer, WeeklyTimeline, WeeklyTocFloat } from "./WeeklyClient";
 
 /**
  * 금콩 주간 정리 — 데일리 브리핑과 다르게 보이도록 남색 머리 + 'WEEKLY' 도장 + 영상 칸.
- * 영상 → 목차(독자가 궁금해할 질문 + 한 줄 힌트 + 영상 시각) → 메인(깊게) → 금융 → 시사 → 다음 주 → 금공 준비생 코너 → 주의
- * 스크롤로 읽는 글이고, 목차를 지나면 아래에 떠 있는 목차 단추로 언제든 다른 장으로 갈 수 있어요.
+ * 영상 + 옆의 타임라인(누르면 그 장면부터 재생) → 메인(깊게) → 금융 → 시사 → 다음 주 → 금공 준비생 코너 → 주의
+ * 스크롤로 읽는 글이고, 영상 칸을 지나면 아래에 떠 있는 목차 단추로 언제든 다른 장으로 갈 수 있어요.
  */
 
 const NAVY = "#1f2a5c";
@@ -235,70 +235,21 @@ function GroupHead({ eyebrow, title, desc }: { eyebrow: string; title: string; d
   );
 }
 
-/** 목차 묶음마다 색 — 메인은 주황(가장 크게), 금융 파랑, 시사 초록, 다음 주 남색, 준비생 코너 회색 */
-const GROUP_TONE: Record<WeeklyTocGroup["key"], { chip: string; dot: string }> = {
-  main: { chip: "bg-[#f7a14a] text-[#3a2200]", dot: "bg-[#f7a14a]" },
-  finance: { chip: "bg-[#dfe6fb] text-[#2b3a7a]", dot: "bg-[#6f86d6]" },
-  current: { chip: "bg-[#e6f4ec] text-[#2f6b47]", dot: "bg-[#4f9a6d]" },
-  next: { chip: "bg-[#1f2a5c] text-[#ffffff]", dot: "bg-[#1f2a5c]" },
-  prep: { chip: "bg-canvas-soft text-ink-secondary", dot: "bg-ink-mute-2" },
-};
-
-/** 목차 한 묶음 — 시각 · 점 · 질문(누르면 글의 그 장) + 한 줄 힌트 */
-function TocGroupView({ g, video, spotIds, lead }: { g: WeeklyTocGroup; video: string | null; spotIds: Set<string>; lead?: string }) {
-  const tone = GROUP_TONE[g.key];
-  return (
-    <div>
-      <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className={cn("rounded-full px-2.5 py-1 type-caption font-bold", tone.chip)}>{g.title}</span>
-        {lead && <span className="type-body-md font-bold text-[#1f2a5c] [word-break:keep-all]">{lead}</span>}
-        {g.key === "prep" && <span className="type-caption text-ink-mute">영상엔 없고 글에만 있어요</span>}
-      </p>
-      <ol className="relative mt-2">
-        {/* 세로 줄 — 시각 칸과 질문 사이를 잇는 타임라인 */}
-        {g.items.length > 1 && <span aria-hidden className="absolute top-5 bottom-5 left-[71px] w-px bg-[#d5d9e8]" />}
-        {g.items.map((it) => {
-          const spot = spotIds.has(it.id);
-          return (
-            <li key={it.id} className="relative flex items-start">
-              <span className="flex w-16 shrink-0 justify-end pt-2.5">
-                {it.onlyText ? <span className="type-caption font-bold text-ink-mute-2">글</span> : it.at != null ? <SeekButton at={it.at} video={video} /> : null}
-              </span>
-              <span aria-hidden className="flex w-4 shrink-0 justify-center pt-[15px]">
-                <span className={cn("rounded-full ring-4 ring-canvas", spot ? "h-1.5 w-1.5 bg-ink-mute-2" : cn("h-2.5 w-2.5", tone.dot))} />
-              </span>
-              <a href={`#${it.id}`} className={cn("group min-w-0 flex-1 rounded-xl px-2.5 py-2 transition-colors hover:bg-canvas-soft", spot && "pl-5")}>
-                <span className={cn("flex items-start gap-1 text-ink [word-break:keep-all] group-hover:text-[#2b3a7a]", spot ? "type-body-md" : "type-body-md font-semibold")}>
-                  <span className="min-w-0">{it.ask}</span>
-                  <ChevronRight className="mt-1 h-3.5 w-3.5 shrink-0 text-ink-mute-2 transition-transform group-hover:translate-x-0.5" strokeWidth={2} />
-                </span>
-                <span className="mt-0.5 block type-caption leading-relaxed text-ink-mute [word-break:keep-all]">{it.hint}</span>
-              </a>
-            </li>
-          );
-        })}
-      </ol>
-    </div>
-  );
-}
-
 export function WeeklyRoundup({ w, title, summary, video }: { w: WeeklyEdition; title: string; summary: string[]; video: string | null }) {
   const toc = weeklyToc(w);
-  const group = (k: WeeklyTocGroup["key"]) => toc.find((g) => g.key === k)!;
-  const spotIds = new Set((w.spots ?? []).map((p) => p.id));
   return (
     <div className="bg-[#f7f6f2]">
       {/* 머리 — 남색 띠 + WEEKLY 도장 (데일리 브리핑의 파스텔 카드와 다르게) */}
       <header className="relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${NAVY} 0%, #2b3a7a 70%, #33448f 100%)` }}>
         <div aria-hidden className="absolute -top-24 -right-24 h-72 w-72 rounded-full opacity-20" style={{ background: ORANGE }} />
-        <div className="relative mx-auto max-w-[900px] px-4 pt-10 pb-14 md:px-6 md:pt-14 md:pb-20">
+        <div className="relative mx-auto max-w-[1100px] px-4 pt-10 pb-14 md:px-6 md:pt-14 md:pb-20">
           <div className="flex flex-wrap items-center gap-2">
             <span className={cn(jua.className, "rounded-lg px-2.5 py-1 text-[15px] leading-none tracking-[0.12em]")} style={{ background: ORANGE, color: NAVY }}>
               WEEKLY
             </span>
             <span className="type-caption font-bold text-[#c9d2f5]">금콩 주간 정리 · {w.week}</span>
           </div>
-          <h1 className={cn(jua.className, "mt-4 text-[30px] leading-[1.25] text-[#ffffff] [word-break:keep-all] md:text-[44px]")}>{title}</h1>
+          <h1 className={cn(jua.className, "mt-4 max-w-[860px] text-[30px] leading-[1.25] text-[#ffffff] [word-break:keep-all] md:text-[44px]")}>{title}</h1>
           {summary.length > 0 && (
             <ul className="mt-4 max-w-[760px] space-y-1.5">
               {summary.map((l, i) => (
@@ -323,37 +274,24 @@ export function WeeklyRoundup({ w, title, summary, video }: { w: WeeklyEdition; 
         </div>
       </header>
 
-      <div className="mx-auto max-w-[900px] px-4 md:px-6">
-        {/* 영상 */}
-        <section aria-label="영상으로 보기" className="-mt-8 rounded-3xl bg-canvas p-3 shadow-level-2 md:-mt-12 md:p-4">
-          <WeeklyPlayer video={video} poster={w.poster} title={title} />
-          <p className="mt-3 px-1 type-caption leading-relaxed text-ink-mute [word-break:keep-all]">
-            {video
-              ? "아래 목차에서 빨간 시각을 누르면 영상이 그 장면부터 재생돼요. 글은 영상과 같은 순서예요."
-              : "영상은 유튜브에 곧 올라와요. 올라오면 여기서 바로 볼 수 있고, 목차의 시각을 누르면 그 장면부터 재생돼요."}
-          </p>
-        </section>
-
-        {/* 목차 — '이거 궁금했는데' 하고 고를 수 있게 질문 + 한 줄 힌트 + 영상 시각 */}
-        <section id="weekly-toc" aria-labelledby="weekly-toc-title" className="mt-6 rounded-3xl bg-canvas px-4 py-6 shadow-level-1 md:px-7 md:py-7">
-          <p className="type-micro-cap" style={{ color: ORANGE }}>
-            목차
-          </p>
-          <h2 id="weekly-toc-title" className={cn(jua.className, "mt-1 text-[26px] leading-tight md:text-[30px]")} style={{ color: NAVY }}>
-            궁금한 질문부터 골라 보세요
-          </h2>
-          <p className="mt-1.5 type-body-md text-ink-mute [word-break:keep-all]">
-            질문을 누르면 글의 그 부분으로, {video ? "빨간 시각을 누르면 영상의 그 장면으로" : "시각은 영상에서 그 이야기가 나오는 곳이에요"}.
-          </p>
-          {/* 넓은 화면: 왼쪽 메인 · 오른쪽 금융·시사, 아래 줄에 다음 주 · 준비생 코너 (읽는 순서 그대로) */}
-          <div className="mt-6 grid gap-x-8 gap-y-7 md:grid-cols-2">
-            <TocGroupView g={group("main")} video={video} spotIds={spotIds} lead={w.question} />
-            <div className="space-y-7">
-              <TocGroupView g={group("finance")} video={video} spotIds={spotIds} />
-              <TocGroupView g={group("current")} video={video} spotIds={spotIds} />
+      <div className="mx-auto max-w-[1100px] px-4 md:px-6">
+        {/* 영상 + 타임라인 — 줄을 누르면 영상이 그 장면부터 */}
+        <section
+          id="weekly-watch"
+          aria-label="영상으로 보기"
+          className="relative -mt-8 grid gap-4 rounded-3xl bg-canvas p-3 shadow-level-2 md:-mt-12 md:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] md:gap-5 md:p-4"
+        >
+          <div className="min-w-0">
+            <WeeklyPlayer video={video} poster={w.poster} title={title} />
+            <p className="mt-3 px-1 type-caption leading-relaxed text-ink-mute [word-break:keep-all]">
+              {video ? "타임라인에서 궁금한 줄을 누르면 영상이 그 장면부터 재생돼요. 아래 글은 영상과 같은 순서예요." : "영상은 유튜브에 곧 올라와요. 올라오면 여기서 바로 볼 수 있고, 타임라인을 누르면 그 장면부터 재생돼요."}
+            </p>
+          </div>
+          <div className="min-w-0 md:py-1">
+            <p className="px-2 type-micro-cap text-ink-mute">타임라인 · 영상 {w.videoLength}</p>
+            <div className="mt-1">
+              <WeeklyTimeline items={w.timeline} video={video} />
             </div>
-            <TocGroupView g={group("next")} video={video} spotIds={spotIds} />
-            <TocGroupView g={group("prep")} video={video} spotIds={spotIds} />
           </div>
         </section>
 
@@ -399,9 +337,9 @@ export function WeeklyRoundup({ w, title, summary, video }: { w: WeeklyEdition; 
           {/* 다음 주 볼 날짜 */}
           <section id="next" aria-labelledby="next-title" className="mt-20 scroll-mt-24">
             <GroupHead eyebrow="다음 주" title="앞으로 볼 날짜" />
-            {w.nextToc.at != null && (
+            {w.nextAt != null && (
               <div className="mt-3">
-                <SeekButton at={w.nextToc.at} video={video} look="pill" />
+                <SeekButton at={w.nextAt} video={video} look="pill" />
               </div>
             )}
             <ol className="mt-6 space-y-3">
@@ -498,7 +436,7 @@ export function WeeklyRoundup({ w, title, summary, video }: { w: WeeklyEdition; 
         </div>
       </div>
       <div className="h-16" />
-      <WeeklyTocFloat groups={toc} anchorId="weekly-toc" endId="weekly-end" />
+      <WeeklyTocFloat groups={toc} anchorId="weekly-watch" endId="weekly-end" />
     </div>
   );
 }

@@ -28,15 +28,7 @@ export interface WeeklySource {
   url?: string;
 }
 
-/** 목차 한 줄 — 독자가 '이거 궁금했는데' 하고 고를 수 있게 질문과 한 줄 힌트로 */
-export interface WeeklyTocLine {
-  /** 독자가 궁금해할 질문 (예: 미국 선거가 왜 한국 반도체를 흔들었을까?) */
-  ask: string;
-  /** 그 장에서 알 수 있는 것 — 숫자·키워드 한 줄 */
-  hint: string;
-}
-
-export interface WeeklySection extends WeeklyTocLine {
+export interface WeeklySection {
   /** 쪽 안 주소 (#id) */
   id: string;
   /** 예: 메인 1 · 미국 물가 · 청해부대 */
@@ -63,18 +55,21 @@ export interface WeeklyEdition {
   videoLength: string;
   /** 영상이 아직 없을 때 보여 줄 썸네일 */
   poster: string;
-  /** 이번 주에 다룬 주제 — 브리핑 첫 화면 띠·목록의 칩 */
+  /** 이번 주에 다룬 주제 — 주간 정리 목록의 칩 */
   topics: string[];
-  /** 목차에 따로 세울 장 안의 지점 — after 장 바로 아래에 (블록 id 와 같은 id) */
-  spots?: (WeeklyTocLine & { id: string; after: string; at?: number })[];
+  /**
+   * 영상 타임라인 — 영상 옆에 '0:46 2주 동안 코스피에 무슨 일이?'처럼. 누르면 영상이 그 장면부터 재생돼요.
+   * 독자가 내용을 대략 알 수 있을 만큼만 (10개 안팎), 질문은 한 줄에 들어가게 짧게.
+   */
+  timeline: { at: number; q: string }[];
   /** 메인 질문과 한 문장 답 */
   question: string;
   answer: string;
   main: WeeklySection[];
   finance: WeeklySection[];
   current: WeeklySection[];
-  /** 다음 주 볼 날짜 (목차 줄 · 영상 시각 포함) */
-  nextToc: WeeklyTocLine & { at?: number };
+  /** 다음 주 볼 날짜 — nextAt 은 영상에서 이 부분이 시작하는 초 */
+  nextAt?: number;
   next: { when: string; what: string; why: string }[];
   nextSources?: WeeklySource[];
   /** 금공 준비생용 — 논술·면접 질문 (답할 재료). 영상에는 없고 글에만 있어요 */
@@ -96,40 +91,34 @@ export function articleWeeklyIn(body: string): string | null {
 export const mmss = (t: number) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
 export const youtubeAt = (id: string, t = 0) => `https://www.youtube.com/watch?v=${id}${t > 0 ? `&t=${Math.floor(t)}s` : ""}`;
 
-/** 목차 한 줄 (그릴 때 쓰는 꼴) — onlyText 는 영상엔 없고 글에만 있는 부분 */
-export interface WeeklyTocItem extends WeeklyTocLine {
+/** 떠 있는 목차(글 안에서 장 사이를 오가는 단추)의 한 줄 */
+export interface WeeklyTocItem {
   id: string;
-  /** 떠 있는 목차 단추에 보일 짧은 이름 */
+  /** 짧은 이름 (메인 1 · 미국 물가 …) */
   label: string;
-  at?: number;
-  onlyText?: boolean;
+  title: string;
 }
 
 export interface WeeklyTocGroup {
-  key: "main" | "finance" | "current" | "next" | "prep";
+  key: "main" | "finance" | "current" | "end";
   title: string;
   items: WeeklyTocItem[];
 }
 
-/** 목차 — 메인(장 안의 지점 포함) · 금융 · 시사 · 다음 주 · 준비생 코너 */
+/** 떠 있는 목차 — 메인 · 금융 · 시사 · 다음 주와 준비생 코너 */
 export function weeklyToc(w: WeeklyEdition): WeeklyTocGroup[] {
-  const line = (s: WeeklySection): WeeklyTocItem => ({ id: s.id, label: s.kicker, at: s.at, ask: s.ask, hint: s.hint });
-  const main: WeeklyTocItem[] = [];
-  for (const s of w.main) {
-    main.push(line(s));
-    for (const p of w.spots ?? []) if (p.after === s.id) main.push({ id: p.id, label: s.kicker, at: p.at, ask: p.ask, hint: p.hint });
-  }
+  const line = (s: WeeklySection): WeeklyTocItem => ({ id: s.id, label: s.kicker, title: s.title });
   return [
-    { key: "main", title: "메인 · 깊게", items: main },
-    { key: "finance", title: `금융 소식 ${w.finance.length}`, items: w.finance.map(line) },
-    { key: "current", title: `시사 ${w.current.length}`, items: w.current.map(line) },
-    { key: "next", title: "다음 주", items: [{ id: "next", label: "다음 주", ...w.nextToc }] },
+    { key: "main", title: "메인", items: w.main.map(line) },
+    { key: "finance", title: "금융 소식", items: w.finance.map(line) },
+    { key: "current", title: "시사", items: w.current.map(line) },
     {
-      key: "prep",
-      title: "금공 준비생 코너",
+      key: "end",
+      title: "다음 주 · 준비생 코너",
       items: [
-        { id: "prep", label: "논술·면접", ask: "논술·면접에선 이렇게 물을 수 있어요", hint: `질문 ${w.essays.length}개와 답할 때 쓸 재료`, onlyText: true },
-        { id: "quiz", label: "상식 체크", ask: "이번 주 상식, 다 맞힐 수 있을까?", hint: `눌러서 답을 확인하는 ${w.quiz.length}문제`, onlyText: true },
+        { id: "next", label: "다음 주", title: "앞으로 볼 날짜" },
+        { id: "prep", label: "논술·면접", title: "논술·면접에서 물을 만한 질문" },
+        { id: "quiz", label: "상식 체크", title: "이번 주 상식 체크" },
       ],
     },
   ];
