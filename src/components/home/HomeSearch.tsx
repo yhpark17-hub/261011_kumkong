@@ -43,13 +43,13 @@ export function HomeSearch({ companies }: { companies: SearchCompany[] }) {
     <form
       action="/companies"
       role="search"
-      className="relative mt-4 w-full max-w-[540px] md:mt-7"
+      className="relative mt-[18px] w-full max-w-[540px] md:mt-7"
       onSubmit={(e) => {
         e.preventDefault();
         go(matches[active] ?? matches[0]);
       }}
     >
-      <div className="flex h-12 overflow-hidden rounded-xl bg-canvas md:h-14">
+      <div className="flex h-[52px] items-center rounded-2xl border border-hairline bg-canvas p-[5px] shadow-level-2 focus-within:border-primary/50 md:h-[58px] md:p-1.5">
         <input
           name="q"
           type="search"
@@ -80,15 +80,15 @@ export function HomeSearch({ companies }: { companies: SearchCompany[] }) {
               setOpen(false);
             }
           }}
-          className="h-full min-w-0 flex-1 bg-transparent px-4 text-[15px] text-ink outline-none placeholder:text-ink-mute md:px-5 md:text-[16px] [&::-webkit-search-cancel-button]:hidden"
+          className="h-full min-w-0 flex-1 bg-transparent px-3 text-[15px] text-ink outline-none placeholder:text-ink-mute md:px-3.5 md:text-[16px] [&::-webkit-search-cancel-button]:hidden"
         />
-        <button type="submit" aria-label="찾기" className="flex w-[54px] shrink-0 items-center justify-center bg-accent text-[#1f2a5c] md:w-[62px]">
+        <button type="submit" aria-label="찾기" className="flex aspect-square h-full shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-[#7357ff] to-primary text-on-primary">
           <Search className="h-5 w-5" strokeWidth={2.6} />
         </button>
       </div>
 
       {show && (
-        <ul id={listId} role="listbox" aria-label="찾은 기관" className="absolute inset-x-0 top-full z-20 mt-2 overflow-hidden rounded-xl border border-hairline bg-canvas py-1.5 shadow-level-2">
+        <ul id={listId} role="listbox" aria-label="찾은 기관" className="absolute inset-x-0 top-full z-20 mt-2 overflow-hidden rounded-2xl border border-hairline bg-canvas py-1.5 shadow-level-2">
           {matches.length ? (
             matches.map((c, i) => (
               <li

@@ -263,8 +263,8 @@ export function MagazineSectionTabs({ active }: { active: MagazineSection }) {
     { key: "blog", Icon: BookOpen },
   ];
   return (
-    // 글자 아래 남색 밑줄 — 머리(MagazineShell)의 아래 선 위에 겹쳐요
-    <nav aria-label="매거진 섹션" className="-mb-px flex gap-5 sm:gap-7">
+    // 둥근 묶음 단추 — 고른 탭은 흰 알약 + 보라 글자
+    <nav aria-label="매거진 섹션" className="flex gap-1 rounded-full bg-canvas-soft p-1 ring-1 ring-hairline ring-inset max-sm:w-full">
       {tabs.map(({ key, Icon }) => {
         const on = key === active;
         return (
@@ -273,8 +273,8 @@ export function MagazineSectionTabs({ active }: { active: MagazineSection }) {
             href={SECTION_INFO[key].href}
             aria-current={on ? "page" : undefined}
             className={cn(
-              "flex h-12 items-center gap-1.5 border-b-[2.5px] text-[15px] whitespace-nowrap transition-colors sm:text-[16px]",
-              on ? "border-navy-text font-extrabold text-ink" : "border-transparent font-semibold text-ink-mute hover:text-ink",
+              "flex h-10 items-center justify-center gap-1.5 rounded-full px-3 text-[14px] whitespace-nowrap transition-colors max-sm:flex-1 sm:px-[18px] sm:text-[15px]",
+              on ? "bg-canvas font-extrabold text-brand-text shadow-level-1" : "font-semibold text-ink-mute hover:text-ink",
             )}
           >
             <Icon className="h-4 w-4 shrink-0 max-sm:hidden" strokeWidth={2} />

@@ -30,7 +30,7 @@ export const metadata: Metadata = pageMetadata({
 type SP = Record<string, string | string[] | undefined>;
 const one = (v: string | string[] | undefined) => ((Array.isArray(v) ? v[0] : v) ?? "").trim();
 
-/** 매거진 · 데일리 브리핑 첫 화면 — 오늘(아침 · 점심 나란히) → 한 주 몰아보기 띠 → 많이 본 기사 · 지난 브리핑. 호를 누르면 뉴스레터로 열려요 */
+/** 매거진 · 데일리 브리핑 첫 화면 — 오늘(아침 · 점심 나란히) → 한 주 몰아보기 띠 → 지난 브리핑(썸네일 카드) → 많이 본 기사. 호를 누르면 뉴스레터로 열려요 */
 export default function BriefingPage({ searchParams }: PageProps<"/magazine">) {
   return (
     <MagazineShell section="briefing">
@@ -45,9 +45,9 @@ function NewsSkeleton() {
   return (
     <div className="mt-6 animate-pulse space-y-5 md:mt-8">
       <div className="h-12 w-64 rounded-full bg-canvas-soft" />
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]">
-        <div className="h-[520px] rounded-3xl bg-canvas-soft" />
-        <div className="h-[520px] rounded-3xl bg-lavender" />
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <div className="h-[520px] rounded-[20px] bg-canvas-soft" />
+        <div className="h-[520px] rounded-[20px] bg-canvas-soft" />
       </div>
     </div>
   );
@@ -85,27 +85,24 @@ async function BriefingFront({ sp }: { sp: SP }) {
   // 아침판 기사 수 + 지난 브리핑(위 날짜 앞의 나흘) — 날짜별로 아침·점심 한 묶음
   const [heroRows, pastRows] = await Promise.all([issuesBetween(heroDate, heroDate), issuesBetween(addDays(heroDate, -4), addDays(heroDate, -1))]);
   const morningCount = heroRows.find((r) => r.issue.edition === "morning")?.count ?? 0;
-  const pastDays: { date: string; morning?: BriefingIssue; noon?: BriefingIssue }[] = [];
-  for (const r of pastRows) {
-    let d = pastDays.find((x) => x.date === r.issue.date);
-    if (!d) pastDays.push((d = { date: r.issue.date }));
-    d[r.issue.edition] = r.issue;
-  }
-  pastDays.sort((x, y) => (x.date < y.date ? 1 : -1));
+  // 지난 브리핑 카드: 최근 날짜부터, 같은 날은 아침 → 점심
+  const pastIssues: BriefingIssue[] = pastRows
+    .map((r) => r.issue)
+    .sort((x, y) => (x.date !== y.date ? (x.date < y.date ? 1 : -1) : x.edition === "morning" ? -1 : 1));
 
   return (
     <div className="mt-6 md:mt-8">
       <div>
-        <p className="text-[13px] leading-5 font-extrabold text-accent-text">{heroDate === today ? "오늘의 데일리 브리핑" : "가장 최근 브리핑"}</p>
+        <p className="text-[13px] leading-5 font-extrabold text-brand-text">{heroDate === today ? "오늘의 데일리 브리핑" : "가장 최근 브리핑"}</p>
         <p className="mt-0.5 font-display font-extrabold tracking-[-0.03em] text-[28px] leading-tight text-ink md:text-[40px]">{formatDayHeading(heroDate)}</p>
       </div>
 
       {/* 오늘: 아침 브리핑 · 점심 3문제 나란히 (번갈아 넘기지 않아요) */}
-      <section aria-label="오늘의 브리핑" className="mt-4 grid gap-4 md:gap-5 lg:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]">
+      <section aria-label="오늘의 브리핑" className="mt-4 grid gap-4 md:gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
         {morningIssue ? (
           <MorningTodayCard issue={morningIssue} count={morningCount} />
         ) : (
-          <div className="flex min-h-[300px] flex-col items-center justify-center rounded-3xl border border-dashed border-hairline-input px-6 py-14 text-center md:min-h-[440px]">
+          <div className="flex min-h-[300px] flex-col items-center justify-center rounded-[20px] border border-dashed border-hairline-input px-6 py-14 text-center md:min-h-[440px]">
             <Newspaper className="h-8 w-8 text-ink-mute-2" strokeWidth={1.5} />
             <p className="mt-3 type-heading-sm text-ink">첫 브리핑을 준비하고 있어요</p>
             <p className="mt-1 type-body-md text-ink-mute">아침에는 기사 브리핑, 점심에는 점심 3문제로 찾아올게요.</p>
@@ -126,10 +123,14 @@ async function BriefingFront({ sp }: { sp: SP }) {
         </section>
       )}
 
-      {/* 많이 본 기사 · 지난 브리핑 */}
-      <div className="mt-8 grid items-start gap-5 md:mt-10 md:gap-6 lg:grid-cols-2">
+      {/* 지난 브리핑 — 썸네일 카드 (조회수 같이) */}
+      <div className="mt-10 md:mt-12">
+        <PastBriefings issues={pastIssues} total={all.total} />
+      </div>
+
+      {/* 많이 본 기사 */}
+      <div className="mt-8 md:mt-10">
         <PopularNews items={popular} />
-        <PastBriefings days={pastDays} total={all.total} />
       </div>
 
       <AdSlot slot={AD_SLOTS.inArticle} variant="inarticle" className="mt-10" />

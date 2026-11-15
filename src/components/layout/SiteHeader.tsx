@@ -45,9 +45,9 @@ function NavItems({
         href={href}
         aria-current={isActive(pathname, href) ? "page" : undefined}
         className={cn(
-          // 지금 화면: 글자 아래 남색 밑줄 (위에도 같은 두께의 투명 선을 둬서 글자가 가운데에 오게)
-          "flex items-center border-y-[3px] border-transparent text-[16px] leading-5 whitespace-nowrap transition-colors",
-          isActive(pathname, href) ? "border-b-navy-text font-bold text-ink" : "font-semibold text-ink-mute-2 hover:text-ink",
+          // 지금 화면: 옅은 보라 알약
+          "rounded-full px-3.5 py-2 text-[15.5px] leading-5 whitespace-nowrap transition-colors",
+          isActive(pathname, href) ? "bg-tag-soft-bg font-extrabold text-brand-text" : "font-semibold text-ink-secondary hover:bg-canvas-soft hover:text-ink",
         )}
       >
         {label}
@@ -66,7 +66,7 @@ function NavItems({
               isActive(pathname, href) ? "font-bold text-ink" : "text-ink",
             )}
           >
-            {isActive(pathname, href) && <span aria-hidden className="h-4 w-[3px] rounded-full bg-navy-text" />}
+            {isActive(pathname, href) && <span aria-hidden className="h-4 w-[3px] rounded-full bg-brand-text" />}
             {label}
           </Link>
         </li>
@@ -93,6 +93,8 @@ export function SiteHeader() {
     <header
       data-app-hide
       data-site-header
+      // 홈 맨 위에서는 머리를 투명하게 (globals.css) — 내려가거나 메뉴를 열면 흰 머리
+      data-scrolled={scrolled || menuOpen ? "" : undefined}
       className={cn(
         "sticky top-0 z-30 border-b bg-canvas/95 backdrop-blur transition-colors duration-200",
         // 휴대폰은 맨 위에서 선 없이, 내려가면 선 — 컴퓨터는 늘 선
@@ -108,13 +110,13 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="hidden flex-1 items-stretch gap-6 md:flex lg:gap-8" aria-label="주요 메뉴">
+        <nav className="-ml-3.5 hidden flex-1 items-center gap-0.5 md:flex lg:gap-1" aria-label="주요 메뉴">
           <Suspense fallback={<NavItems pathname={null} variant="desktop" />}>
             <ActiveNavItems variant="desktop" />
           </Suspense>
         </nav>
 
-        <FeedbackButton kind="posting" className="btn btn-secondary btn-sm ml-auto hidden self-center lg:inline-flex">
+        <FeedbackButton kind="posting" className="btn btn-secondary btn-sm ml-auto hidden self-center shadow-level-1 lg:inline-flex">
           공고 제보하기
         </FeedbackButton>
 

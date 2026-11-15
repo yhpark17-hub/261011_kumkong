@@ -65,15 +65,15 @@ export default function BoardPage({ searchParams }: PageProps<"/board">) {
           </div>
 
           <aside className="space-y-4">
-            <Card className="p-6">
+            <section className="rounded-[20px] bg-linear-to-br from-tag-soft-bg to-ev-doc-soft p-6">
               <h2 className="type-heading-sm text-ink">필기 끝났다면, 30초 후기</h2>
               <p className="mt-2 type-body-md text-ink-secondary">
                 체감 난이도·어려웠던 과목을 터치 몇 번으로 남기고 다른 사람들의 결과를 바로 확인하세요.
               </p>
-              <Link href="/reviews" className="btn btn-secondary btn-sm mt-4">
+              <Link href="/reviews" className="btn btn-primary btn-sm mt-4">
                 필기 후기 보러 가기
               </Link>
-            </Card>
+            </section>
             <AdSlot slot={AD_SLOTS.sidebar} variant="rectangle" />
             <Card className="p-6">
               <h2 className="type-heading-sm text-ink">콩밭 이용 수칙</h2>

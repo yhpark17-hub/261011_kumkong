@@ -10,70 +10,73 @@
 :root,
 .theme-light {
   /*
-   * 2026-11-15 '단단한 금콩' — 밝은 회색 바탕 위 흰 판(1px 선, 그림자 없음), 남색 머리·버튼, 주황은 강조 한 군데.
-   * 그림은 글의 얼굴(썸네일)로만 — 사이트의 틀(머리·배너·메뉴)에는 넣지 않아요.
+   * 2026-11-15 6차 '보라 금콩' — 10월 처음 금콩의 보라(#533afd)·루비·마젠타·셔벗 주황·라벤더로 돌아가되,
+   * 5차의 깔끔한 배치는 그대로. 둥근 카드(20px)·알약 단추·아주 옅은 보랏빛 그림자로 딱딱함을 덜어요.
+   * 그림은 글의 얼굴(썸네일)로만 — 사이트의 틀에는 그림 대신 옅은 색 번짐(MeshGlow)만.
    */
   /* Brand & Accent */
-  --primary: #1f2a5c;
-  --primary-deep: #172048;
-  --primary-press: #10173a;
-  --primary-soft: #3b4a8f;
-  --primary-subdued: #c9d0ee;
-  --brand-dark: #1f2a5c;
-  --ruby: #c8364a;
-  --magenta: #b04fa6;
+  --primary: #533afd;
+  --primary-deep: #4434d4;
+  --primary-press: #2e2b8c;
+  --primary-soft: #665efd;
+  --primary-subdued: #b9b9f9;
+  /* 로고 타일·보라 그라데이션 판의 짙은 남보라 */
+  --brand-dark: #1c1e54;
+  --ruby: #e0245e;
+  --magenta: #f96bee;
   --lemon: #8a5a12;
-  --shadow-blue: #2b5c8a;
-  --sherbet: #f7a14a;
-  /* 주황은 강조 한 군데, 나머지는 옅은 바탕 */
-  --accent: #f7a14a;
-  --accent-text: #b4610f;
-  --accent-soft: #ffe9cc;
-  /* 댓글 수·'지금' 같은 눈에 띄는 숫자 */
-  --hot: #d9480f;
-  --butter: #fff4d9;
-  --lavender: #eef0fb;
-  --sky: #eaf2fd;
-  --lilac: #ece6f6;
+  --shadow-blue: #003770;
+  --sherbet: #ffa26b;
+  --accent: #ffa26b;
+  --accent-text: #b4520f;
+  --accent-soft: #fff1e6;
+  /* 댓글 수·참여가 많은 후기 같은 눈에 띄는 숫자 */
+  --hot: #e0245e;
+  --butter: #fff6e5;
+  --lavender: #f1efff;
+  --sky: #eef4fd;
+  --lilac: #f5eefc;
 
-  /* Surface — 페이지는 밝은 회색, 판·입력칸은 흰색(canvas) */
-  --page: #f3f4f6;
+  /* Surface — 페이지는 아주 옅은 회청색, 판·입력칸은 흰색(canvas) */
+  --page: #f6f9fc;
   --canvas: #ffffff;
-  --canvas-soft: #f4f5f8;
-  --canvas-cream: #fff4d9;
-  --hairline: #e3e6eb;
-  --hairline-input: #d2d7df;
+  --canvas-soft: #f3f6fb;
+  --canvas-cream: #fff6e5;
+  --hairline: #e6ebf1;
+  --hairline-input: #d5dce6;
+  /* 달력의 지난 날 음영 */
+  --past: #eef1f6;
 
-  /* Text — 남색이 살짝 도는 검정 */
-  --ink: #141a33;
-  --ink-secondary: #3c4358;
-  --ink-mute: #646b80;
-  --ink-mute-2: #4a5168;
+  /* Text — 남색 글자 */
+  --ink: #0d253d;
+  --ink-secondary: #425466;
+  --ink-mute: #64748d;
+  --ink-mute-2: #52627a;
   --on-primary: #ffffff;
   /* 링크·활성 텍스트 */
-  --primary-text: #3f4ab8;
-  /* 남색 글자 (번호·D-day·강조) — 다크 모드에서는 밝게 */
-  --navy-text: #1f2a5c;
+  --primary-text: #4434d4;
+  /* 보라 강조 글자 (머리말·번호·D-day·고른 메뉴) — 다크 모드에서는 밝게 */
+  --brand-text: #533afd;
 
   /* pill-tag-soft */
-  --tag-soft-bg: #eef0fb;
-  --tag-soft-text: #3f4ab8;
+  --tag-soft-bg: #efedff;
+  --tag-soft-text: #4434d4;
 
-  /* 일정 유형 (대시보드 UI 전용 의미 색) — 서류 빨강 · 필기 남보라 · 1차 자두 · 2차 겨자 · 발표 초록 */
-  --ev-posting: #646b80;
-  --ev-posting-soft: #eef0f3;
-  --ev-doc: #b42b40;
-  --ev-doc-soft: #fdebee;
-  --ev-written: #3f4ab8;
-  --ev-written-soft: #eef0fd;
-  --ev-interview1: #833a90;
-  --ev-interview1-soft: #f6eaf8;
-  --ev-interview2: #7a4f0e;
-  --ev-interview2-soft: #fff2d9;
-  --ev-final: #1c6b57;
-  --ev-final-soft: #e3f3ec;
+  /* 일정 유형 — 처음 금콩 색: 서류 루비 · 필기 보라 · 1차 자두 · 2차 갈색 · 발표 남색 */
+  --ev-posting: #64748d;
+  --ev-posting-soft: #eef2f7;
+  --ev-doc: #e0245e;
+  --ev-doc-soft: #fde9ef;
+  --ev-written: #533afd;
+  --ev-written-soft: #efedff;
+  --ev-interview1: #a8209b;
+  --ev-interview1-soft: #fdeefc;
+  --ev-interview2: #8a5a12;
+  --ev-interview2-soft: #f8eedd;
+  --ev-final: #003770;
+  --ev-final-soft: #e6eef7;
 
-  --mesh-opacity: 0;
+  --mesh-opacity: 1;
   color-scheme: light;
 }
 
@@ -82,60 +85,60 @@
   color: var(--ink);
 }
 
-/* 다크 모드 — 문서의 "dashboard track flips polarity to a dark-app shell" */
+/* 다크 모드 — 짙은 남보라 바탕, 보라는 한 단계 밝게 */
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary: #4c5bc4;
-    --primary-deep: #5a69d2;
-    --primary-press: #3a48a8;
-    --primary-soft: #6f7ee0;
-    --primary-subdued: #2e3770;
-    --primary-text: #aab6ff;
-    --navy-text: #c3ccff;
-    /* 어두운 바탕 위에서 선택 상태·남색 카드가 구분되도록 한 단계 밝은 남색 */
-    --brand-dark: #2e3a7a;
-    --ruby: #ff7a8c;
-    --magenta: #e89ae8;
+    --primary: #7a6bff;
+    --primary-deep: #8f82ff;
+    --primary-press: #5b4dea;
+    --primary-soft: #9a90ff;
+    --primary-subdued: #3a3380;
+    --primary-text: #b9b2ff;
+    --brand-text: #c4bdff;
+    --brand-dark: #2c2789;
+    --ruby: #ff5c8a;
+    --magenta: #f58cf0;
     --lemon: #e2b26a;
-    --shadow-blue: #7fb2e5;
-    --accent: #f7a14a;
-    --accent-text: #ffc58a;
-    --accent-soft: #3a2a14;
-    --hot: #ff8a5c;
+    --shadow-blue: #8ab8ec;
+    --accent: #ffa26b;
+    --accent-text: #ffc29b;
+    --accent-soft: #3a2414;
+    --hot: #ff6f95;
     --butter: #2c2616;
-    --lavender: #20264a;
+    --lavender: #221f4a;
     --sky: #182a44;
-    --lilac: #261f3e;
+    --lilac: #2a1f3e;
 
-    --page: #12172e;
-    --canvas: #1a2042;
-    --canvas-soft: #222a52;
+    --page: #0e1324;
+    --canvas: #161c33;
+    --canvas-soft: #1d2440;
     --canvas-cream: #2c2616;
-    --hairline: #2c3460;
-    --hairline-input: #424b80;
+    --hairline: #2a3150;
+    --hairline-input: #3b4468;
+    --past: #11172b;
 
-    --ink: #f4f1ea;
-    --ink-secondary: #d3d6e6;
-    --ink-mute: #a2a9c8;
-    --ink-mute-2: #b3b9d4;
+    --ink: #eef1f8;
+    --ink-secondary: #c9cfdf;
+    --ink-mute: #9aa3ba;
+    --ink-mute-2: #b0b8cc;
 
-    --tag-soft-bg: #2b3366;
-    --tag-soft-text: #c3ccff;
+    --tag-soft-bg: #2a2560;
+    --tag-soft-text: #c9c2ff;
 
-    --ev-posting: #a2a9c8;
-    --ev-posting-soft: #232a50;
-    --ev-doc: #ff8a9a;
-    --ev-doc-soft: #3a1a2a;
-    --ev-written: #a6b0ff;
-    --ev-written-soft: #232a5c;
-    --ev-interview1: #e8a2ea;
-    --ev-interview1-soft: #36193a;
-    --ev-interview2: #e8bd78;
-    --ev-interview2-soft: #33290f;
-    --ev-final: #74d6b4;
-    --ev-final-soft: #11342b;
+    --ev-posting: #a5afc4;
+    --ev-posting-soft: #222a40;
+    --ev-doc: #ff7a9c;
+    --ev-doc-soft: #3d1626;
+    --ev-written: #a99fff;
+    --ev-written-soft: #262150;
+    --ev-interview1: #eb94ea;
+    --ev-interview1-soft: #37173a;
+    --ev-interview2: #e2b26a;
+    --ev-interview2-soft: #33280f;
+    --ev-final: #8ab8ec;
+    --ev-final-soft: #13284a;
 
-    --mesh-opacity: 0;
+    --mesh-opacity: 0.35;
     color-scheme: dark;
   }
 }
@@ -153,9 +156,9 @@
   --radius-2xl: 24px;
   --radius-3xl: 28px;
 
-  /* Elevation — 판은 그림자 없이 1px 선으로 나눠요 (level-1 은 비워 둠). 떠 있는 창(목록·메뉴)만 level-2 */
-  --shadow-level-1: 0 0 #0000;
-  --shadow-level-2: 0 2px 4px rgba(20, 26, 51, 0.06), 0 12px 28px -10px rgba(20, 26, 51, 0.2);
+  /* Elevation — 아주 옅은 보랏빛 그림자 (Stripe 의 rgba(50,50,93) 계열) */
+  --shadow-level-1: 0 1px 2px rgba(13, 37, 61, 0.04), 0 12px 30px -24px rgba(50, 50, 93, 0.42);
+  --shadow-level-2: 0 2px 6px rgba(13, 37, 61, 0.06), 0 24px 48px -24px rgba(50, 50, 93, 0.5);
 }
 
 @theme inline {
@@ -165,7 +168,8 @@
   --color-primary-soft: var(--primary-soft);
   --color-primary-subdued: var(--primary-subdued);
   --color-primary-text: var(--primary-text);
-  --color-navy-text: var(--navy-text);
+  --color-brand-text: var(--brand-text);
+  --color-past: var(--past);
   --color-brand-dark: var(--brand-dark);
   --color-ruby: var(--ruby);
   --color-magenta: var(--magenta);
@@ -324,7 +328,7 @@
 
 /* ───────────── Components (DESIGN.md components) ───────────── */
 @layer components {
-  /* 버튼 — 모서리 8px, 굵은 글씨, 휴대폰은 44px 이상 터치 영역 */
+  /* 알약 버튼 — 굵은 글씨, 휴대폰은 44px 이상 터치 영역 */
   .btn {
     display: inline-flex;
     align-items: center;
@@ -333,7 +337,7 @@
     min-height: 44px;
     padding: 10px 18px;
     border: 1px solid transparent;
-    border-radius: 8px;
+    border-radius: 9999px;
     font-size: 15px;
     font-weight: 700;
     line-height: 1;
@@ -372,6 +376,7 @@
   .btn-primary {
     background: var(--primary);
     color: var(--on-primary);
+    box-shadow: 0 8px 18px -12px color-mix(in srgb, var(--primary) 85%, transparent);
   }
   .btn-primary:hover {
     background: var(--primary-deep);
@@ -388,8 +393,10 @@
   .btn-secondary:hover {
     background: var(--canvas-soft);
   }
+  /* 고른 칩·탭 — 보라로 채움 */
   .btn-on-dark {
-    background: var(--brand-dark);
+    background: var(--primary);
+    border-color: var(--primary);
     color: var(--on-primary);
   }
   /* 토글·필터: 흰 바탕 + 옅은 선 — 회색 바탕에서도, 흰 판 안에서도 보이게 (선택 시 btn-on-dark) */
@@ -404,12 +411,12 @@
     border-color: var(--hairline-input);
   }
 
-  /* 입력칸: 흰 바탕, 모서리 8px, 포커스 시 남색 테두리 */
+  /* 입력칸: 흰 바탕, 모서리 12px, 포커스 시 보라 테두리 */
   .input {
     min-height: 44px;
     padding: 10px 14px;
     border: 1px solid var(--hairline-input);
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--canvas);
     color: var(--ink);
     font-size: 15px;
@@ -428,31 +435,31 @@
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-text) 18%, transparent);
   }
 
-  /* 흰 판 — 1px 선, 모서리 12px, 그림자 없음 */
+  /* 흰 판 — 1px 선, 모서리 20px (옅은 그림자는 Card 가 shadow-level-1 로) */
   .card {
     background: var(--canvas);
     border: 1px solid var(--hairline);
-    border-radius: 12px;
+    border-radius: 20px;
   }
   /* 버터색 띠 */
   .card-cream {
     background: var(--canvas-cream);
-    border-radius: 12px;
+    border-radius: 20px;
   }
-  /* 남색 판 */
+  /* 보라 그라데이션 판 — 숫자를 크게 보여 주는 곳 (지금 채용 현황 등) */
   .card-featured {
-    background: var(--brand-dark);
-    color: var(--on-primary);
-    border-radius: 12px;
+    background: linear-gradient(135deg, #1c1e54 0%, #2c2789 55%, #533afd 100%);
+    color: #ffffff;
+    border-radius: 20px;
   }
 
-  /* 작은 꼬리표 — 모서리 4px */
+  /* 작은 꼬리표 — 알약 */
   .tag {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 7px;
-    border-radius: 4px;
+    padding: 3px 9px;
+    border-radius: 9999px;
     font-size: 11.5px;
     font-weight: 600;
     line-height: 1.2;
@@ -506,19 +513,22 @@
   }
 }
 
-/* 홈 — 바탕은 흰색, 휴대폰에서는 머리가 남색 첫 칸과 이어져요 (홈 첫 칸에 data-home-top) */
+/* 홈 — 바탕은 흰색. 맨 위에서는 머리를 투명하게 두어 첫 칸의 색 번짐이 머리 뒤까지 이어져요 (내려가면 흰 머리) */
 body:has([data-home-top]) {
   background: var(--canvas);
 }
-@media (max-width: 767.98px) {
-  body:has([data-home-top]) [data-site-header] {
-    background: var(--brand-dark);
-    border-color: transparent;
-    backdrop-filter: none;
-  }
-  body:has([data-home-top]) [data-site-header] [data-header-fg] {
-    color: var(--on-primary);
-  }
+body:has([data-home-top]) [data-site-header]:not([data-scrolled]) {
+  background: transparent;
+  border-color: transparent;
+  backdrop-filter: none;
+}
+
+/* 제목 한 구절만 보라 → 마젠타 → 루비 그라데이션 글자 */
+@utility text-grad {
+  background-image: linear-gradient(90deg, #533afd 0%, #9a3ee6 55%, #e0245e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* 가로로 넘기는 영역: 양 끝을 부드럽게 흐려 '잘린' 느낌 대신 '더 있음'을 알려 줌 (안쪽 여백 16px 은 그대로 보임) */

@@ -10,6 +10,7 @@ import type { Category } from "@/lib/types";
 import { AdSlot } from "../ads/AdSlot";
 import { CompanyAvatar, cn } from "../ui";
 import { DifficultyMeter } from "./DifficultyMeter";
+import { ParticipantCount } from "./ParticipantCount";
 import { useReviewsQuery } from "./ReviewsSearch";
 
 /** 목록에 필요한 만큼만 담은 시험 정보 */
@@ -65,10 +66,10 @@ function Status({ e, sum, activity, today }: { e: ExamCardData; sum?: ExamSummar
   if (sum?.mine) return <MineTag />;
   if (e.date === today)
     return (
-      <span className="shrink-0 text-right text-[13px] leading-4 font-bold text-lemon">
+      <span className="flex shrink-0 items-center gap-1.5 text-right text-[13px] leading-4 font-bold text-ruby">
         {n ? (
           <>
-            <span className="tabular">{n}명</span> 참여 중
+            <ParticipantCount n={n} /> 참여 중
           </>
         ) : (
           "첫 후기를 남겨 주세요"
@@ -79,14 +80,14 @@ function Status({ e, sum, activity, today }: { e: ExamCardData; sum?: ExamSummar
     return (
       <span className="inline-flex shrink-0 items-center gap-1 text-[13px] text-ink-mute">
         <Lock className="h-3.5 w-3.5" strokeWidth={2} />
-        {n ? <span className="tabular font-bold text-ink">{n}명</span> : null}
+        {n ? <ParticipantCount n={n} /> : null}
         {n ? " · " : ""}난이도 {publicDay(e.date)} 공개
       </span>
     );
   if (n)
     return (
-      <span className="shrink-0 text-[13px] text-ink-secondary">
-        <b className="tabular font-extrabold text-ink">{n}명</b> · {difficultyWord(sum?.avg ?? null)}
+      <span className="flex shrink-0 items-center gap-1.5 text-[13px] text-ink-secondary">
+        <ParticipantCount n={n} /> · {difficultyWord(sum?.avg ?? null)}
         {(activity?.today ?? 0) > 0 && (
           <span className="ml-1.5 inline-flex items-center gap-0.5 font-bold text-ruby">
             <Flame className="h-3 w-3" strokeWidth={2.2} />
@@ -98,7 +99,7 @@ function Status({ e, sum, activity, today }: { e: ExamCardData; sum?: ExamSummar
   return <span className="shrink-0 text-[13px] text-ink-mute">첫 후기를 기다려요</span>;
 }
 
-/** '지금 후기 받는 중' 한 줄 — 오늘 시험은 버터색 줄 */
+/** '지금 후기 받는 중' 한 줄 — 오늘 시험은 옅은 분홍 줄 */
 function NowRow({ e, sum, activity, today }: { e: ExamCardData; sum?: ExamSummary; activity?: Activity[string]; today: string }) {
   const isToday = e.date === today;
   return (
@@ -106,7 +107,7 @@ function NowRow({ e, sum, activity, today }: { e: ExamCardData; sum?: ExamSummar
       href={`/reviews/${e.id}`}
       className={cn(
         "group flex items-center gap-3 md:gap-3.5",
-        isToday ? "-mx-2 rounded-lg bg-accent-soft/50 px-3 py-3 md:-mx-3 md:px-4" : "px-1 py-3",
+        isToday ? "-mx-2 rounded-2xl bg-linear-to-r from-ev-doc-soft/70 to-transparent px-3 py-3 md:-mx-3 md:px-4" : "px-1 py-3",
       )}
     >
       <CompanyAvatar company={avatarOf(e)} />
@@ -114,7 +115,7 @@ function NowRow({ e, sum, activity, today }: { e: ExamCardData; sum?: ExamSummar
         <span className="flex items-center gap-1.5">
           <span className="truncate text-[15px] leading-5 font-bold text-ink group-hover:underline md:text-[16px]">{e.companyName}</span>
           {isToday && (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-canvas px-2 py-0.5 text-[11px] leading-4 font-extrabold text-ruby">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ev-doc-soft px-2 py-0.5 text-[11px] leading-4 font-extrabold text-ruby">
               <span className="h-1.5 w-1.5 rounded-full bg-ruby motion-safe:animate-pulse" aria-hidden />
               오늘 시험
             </span>
@@ -132,10 +133,7 @@ function NowRow({ e, sum, activity, today }: { e: ExamCardData; sum?: ExamSummar
         {sum?.mine ? (
           <MineTag />
         ) : (sum?.n ?? 0) > 0 ? (
-          <span className="tabular text-[13px] font-extrabold text-ink">
-            {sum!.n}
-            <span className="ml-0.5 font-medium text-ink-mute">명</span>
-          </span>
+          <ParticipantCount n={sum!.n} />
         ) : null}
       </span>
       <ChevronRight className="h-4 w-4 shrink-0 text-ink-mute/70 group-hover:text-ink" strokeWidth={2.2} />
@@ -143,7 +141,7 @@ function NowRow({ e, sum, activity, today }: { e: ExamCardData; sum?: ExamSummar
   );
 }
 
-/** 후기가 많이 모인 시험 카드 — 체감 한 단어(크게) · 막대 · 참여 수 */
+/** 후기가 많이 모인 시험 카드 — 체감 한 단어(크게) · 막대 · 참여 수 (많으면 루비 알약) */
 function TopCard({ e, sum }: { e: ExamCardData; sum: ExamSummary }) {
   return (
     <Link href={`/reviews/${e.id}`} className="group card flex flex-col gap-4 p-5 shadow-level-1 transition-shadow hover:shadow-level-2">
@@ -165,10 +163,7 @@ function TopCard({ e, sum }: { e: ExamCardData; sum: ExamSummary }) {
             <DifficultyMeter avg={sum.avg} className="w-[78px]" />
           </span>
         </span>
-        <span className="tabular text-[20px] leading-tight font-extrabold text-ink">
-          {sum.n}
-          <span className="ml-0.5 text-[13px] font-semibold text-ink-mute">명</span>
-        </span>
+        <ParticipantCount n={sum.n} size="lg" />
       </span>
     </Link>
   );
@@ -202,10 +197,7 @@ function ExamRow({ exam: e, sum, today }: { exam: ExamCardData; sum?: ExamSummar
       ) : upcoming ? (
         <span className="shrink-0 rounded-full bg-ev-written-soft px-2.5 py-1 tabular text-[12px] font-bold text-ev-written">{ddayLabel(diffDays(today, e.date))}</span>
       ) : n > 0 ? (
-        <span className="shrink-0 tabular text-[13px] font-extrabold text-ink">
-          {n}
-          <span className="ml-0.5 font-medium text-ink-mute">명</span>
-        </span>
+        <ParticipantCount n={n} />
       ) : null}
     </Link>
   );

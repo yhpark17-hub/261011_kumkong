@@ -20,8 +20,8 @@ export function useReviewsQuery() {
 export function ReviewsSearchInput() {
   const { query, setQuery } = useReviewsQuery();
   return (
-    <label className="relative flex h-12 w-full items-center gap-2.5 rounded-[10px] border-2 border-primary bg-canvas pr-1.5 pl-4 md:w-[340px]">
-      <Search className="h-5 w-5 shrink-0 text-navy-text" strokeWidth={2.2} />
+    <label className="relative flex h-12 w-full items-center gap-2.5 rounded-full border border-hairline bg-canvas pr-1.5 pl-[18px] shadow-level-1 focus-within:border-primary/50 md:w-[340px]">
+      <Search className="h-5 w-5 shrink-0 text-brand-text" strokeWidth={2.2} />
       <span className="sr-only">기관 이름으로 시험 찾기</span>
       <input
         type="search"

@@ -95,7 +95,7 @@ export async function HomeMagazine() {
   if (!items.length) return null;
 
   return (
-    <section aria-labelledby="home-magazine" className="mt-9 md:mt-[52px]">
+    <section aria-labelledby="home-magazine" className="mt-6 md:mt-12">
       <SectionHead
         id="home-magazine"
         title="금콩 매거진"
@@ -108,25 +108,25 @@ export async function HomeMagazine() {
         ]}
       />
       {/* 휴대폰: 옆으로 넘기는 카드 · 태블릿 2칸 · 컴퓨터 4칸 */}
-      <ul className="no-scrollbar -mx-4 mt-3.5 flex snap-x scroll-px-4 gap-3.5 overflow-x-auto px-4 md:mx-0 md:mt-[18px] md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:px-0 lg:grid-cols-4">
+      <ul className="no-scrollbar -mx-4 mt-3.5 flex snap-x scroll-px-4 gap-3.5 overflow-x-auto px-4 pb-3 md:mx-0 md:mt-5 md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-4">
         {items.map((it) => (
-          <li key={it.key} className="w-[236px] shrink-0 snap-start md:w-auto">
+          <li key={it.key} className="w-[240px] shrink-0 snap-start md:w-auto">
             <Link href={it.href} className="group block">
-              <span className="relative block aspect-[40/21] overflow-hidden rounded-xl bg-canvas-soft">
+              <span className="relative block aspect-[40/21] overflow-hidden rounded-2xl bg-canvas-soft shadow-level-1">
                 {it.thumb}
                 {it.video && (
-                  <span className="absolute bottom-2.5 left-2.5 inline-flex h-[26px] items-center gap-[5px] rounded-md bg-[#141a33]/85 px-[9px] text-[12px] font-bold text-[#ffffff]">
+                  <span className="absolute bottom-2.5 left-2.5 inline-flex h-[26px] items-center gap-[5px] rounded-full bg-[#0d253d]/80 px-2.5 text-[12px] font-bold text-[#ffffff]">
                     <Play className="h-3 w-3 fill-current" strokeWidth={0} />
                     영상 + 글
                   </span>
                 )}
               </span>
-              <span className="mt-3 block text-[12.5px] font-extrabold text-accent-text">
+              <span className="mt-3.5 block text-[12.5px] font-extrabold text-brand-text">
                 {it.kicker}
                 <span className="ml-1 font-semibold text-ink-mute">{it.sub}</span>
               </span>
-              <span className="mt-1 line-clamp-2 text-[15px] leading-[1.45] font-bold text-ink group-hover:underline md:text-[16px]">{it.title}</span>
-              <span className="mt-1.5 block tabular text-[12.5px] font-semibold text-ink-mute">{it.meta}</span>
+              <span className="mt-1.5 line-clamp-2 text-[15px] leading-[1.45] font-bold text-ink group-hover:underline md:text-[16px]">{it.title}</span>
+              <span className="mt-1.5 block tabular text-[12.5px] font-medium text-ink-mute">{it.meta}</span>
             </Link>
           </li>
         ))}
@@ -137,7 +137,7 @@ export async function HomeMagazine() {
 
 export function HomeMagazineSkeleton() {
   return (
-    <div className="mt-9 animate-pulse md:mt-[52px]">
+    <div className="mt-6 animate-pulse md:mt-12">
       <div className="h-7 w-36 rounded-md bg-canvas-soft" />
       <div className="mt-4 flex gap-3.5 overflow-hidden md:grid md:grid-cols-2 md:gap-6 lg:grid-cols-4">
         {Array.from({ length: 4 }, (_, i) => (

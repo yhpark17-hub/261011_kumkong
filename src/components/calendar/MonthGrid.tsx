@@ -34,8 +34,8 @@ export function MonthGrid({
 }) {
   return (
     // 휴대폰에서는 화면 끝까지 넓혀 칸마다 기관 이름이 들어갈 자리를 확보
-    <div className="card overflow-hidden max-md:-mx-4 max-md:rounded-none max-md:border-x-0">
-      <div className="grid grid-cols-7 border-b border-hairline bg-canvas-soft">
+    <div className="card overflow-hidden shadow-level-1 max-md:-mx-4 max-md:rounded-none max-md:border-x-0">
+      <div className="grid grid-cols-7 border-b border-hairline bg-canvas">
         {weekdayOrder(weekStart).map((dow) => (
           <div
             key={dow}
@@ -114,9 +114,8 @@ function DayCell({
       }}
       className={cn(
         "relative min-h-[76px] min-w-0 cursor-pointer border-r border-hairline p-0.5 last:border-r-0 md:min-h-32 md:cursor-default md:p-2",
-        !inMonth && "bg-canvas-soft",
-        // 지난 날: 옅은 베이지 바탕만 (빗금 없이) — 오늘·앞으로의 날과 한눈에 구분
-        isPast && inMonth && "bg-canvas-soft/80",
+        // 지난 날: 회청색 음영 — 오늘·앞으로의 날과 한눈에 구분 (다른 달의 앞으로의 날은 아주 옅게)
+        isPast ? "bg-past" : !inMonth && "bg-canvas-soft/60",
         isToday && "bg-ev-written-soft/60 shadow-[inset_0_0_0_2px_var(--primary)]",
         selected && "max-md:bg-ev-written-soft",
       )}
@@ -147,7 +146,7 @@ function DayCell({
       </div>
 
       {/* 데스크톱: 일정 칩 (hairline tag · rounded xs) */}
-      <div className={cn("mt-1 hidden flex-col gap-1 md:flex", isPast && "opacity-45 saturate-50")}>
+      <div className={cn("mt-1 hidden flex-col gap-1 md:flex", isPast && "opacity-50 saturate-[.35]")}>
         {events.slice(0, MAX_CHIPS).map((ev) => (
           <EventChip key={ev.id} ev={ev} onClick={() => onOpenCompany(ev.company.id)} />
         ))}
@@ -167,7 +166,7 @@ function DayCell({
 
       {/* 휴대폰: 기관 약칭을 전형 색으로 — 그날 어디가 무슨 일정인지 바로 */}
       {events.length > 0 && (
-        <div className={cn("mt-0.5 flex flex-col gap-px md:hidden", isPast && "opacity-45 saturate-50")}>
+        <div className={cn("mt-0.5 flex flex-col gap-px md:hidden", isPast && "opacity-50 saturate-[.35]")}>
           {events.slice(0, MOBILE_MAX).map((ev) => {
             const m = EVENT_META[ev.type];
             const expected = ev.recruitment.status === "expected";
@@ -206,7 +205,7 @@ function EventChip({ ev, onClick }: { ev: CalendarEvent; onClick: () => void }) 
       }}
       title={`${ev.company.name} · ${ev.label ?? m.label}${ev.time ? ` ${ev.time}` : ""}${expected ? " (예상)" : ""}${ev.recruitment.kind === "intern" ? ` · ${ev.recruitment.title}` : ""}`}
       className={cn(
-        "flex w-full items-center gap-1 rounded-xs border px-1 py-0.5 text-left transition-[filter] hover:brightness-95",
+        "flex w-full items-center gap-1 rounded-md border px-1.5 py-0.5 text-left transition-[filter] hover:brightness-95",
         expected ? cn("border-dashed bg-canvas", m.border) : cn("border-transparent", m.soft),
       )}
     >

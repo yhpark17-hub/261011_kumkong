@@ -307,6 +307,10 @@ export function FilterBar({
           <span className="h-3 w-6 rounded-xs border border-dashed border-ink-mute" />
           점선 = 예상 일정
         </span>
+        <span className="inline-flex shrink-0 items-center gap-2 type-micro text-ink-mute">
+          <span className="h-3 w-6 rounded-xs border border-hairline bg-past" />
+          회색 칸 = 지난 날
+        </span>
       </div>
     </div>
   );

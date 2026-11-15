@@ -23,7 +23,7 @@ export default function WeeklyListPage() {
     <MagazineShell section="weekly">
       {/* 이름만 보고 무엇인지 알게 — 무엇(한 주 경제) · 어떻게(영상으로 몰아보기) */}
       <div className="mt-7 md:mt-9">
-        <p className="text-[13.5px] font-extrabold text-accent-text">매주 영상 + 글</p>
+        <p className="text-[13.5px] font-extrabold text-brand-text">매주 영상 + 글</p>
         <h2 className="mt-1 text-[24px] leading-tight font-extrabold tracking-[-0.035em] text-ink md:text-[28px]">{SECTION_INFO.weekly.title}</h2>
         <p className="mt-1.5 type-body-md text-ink-secondary md:text-[15.5px]">{SECTION_INFO.weekly.desc}</p>
       </div>

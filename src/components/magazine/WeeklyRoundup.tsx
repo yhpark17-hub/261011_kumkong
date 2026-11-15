@@ -447,8 +447,8 @@ export function WeeklyBand({ href, title, week, poster, line, topics, draft = fa
   return (
     <Link
       href={href}
-      className="group grid overflow-hidden rounded-3xl shadow-level-1 transition hover:shadow-level-2 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]"
-      style={{ background: `linear-gradient(135deg, ${NAVY} 0%, #2b3a7a 100%)` }}
+      className="group grid overflow-hidden rounded-[22px] shadow-level-1 transition hover:shadow-level-2 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]"
+      style={{ background: `linear-gradient(118deg, ${NAVY} 0%, #2c2789 55%, #533afd 100%)` }}
     >
       <div className="relative aspect-video md:aspect-auto md:min-h-[260px]">
         {/* eslint-disable-next-line @next/next/no-img-element -- 영상 썸네일 */}
@@ -490,8 +490,8 @@ export function WeeklyStrip({ href, title, week, poster, draft = false }: { href
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-2xl p-2.5 pr-3 shadow-level-1 transition hover:shadow-level-2 md:gap-4 md:p-3 md:pr-5"
-      style={{ background: `linear-gradient(135deg, ${NAVY} 0%, #2b3a7a 100%)` }}
+      className="group flex items-center gap-3 rounded-[20px] p-2.5 pr-3 shadow-level-1 transition hover:shadow-level-2 md:gap-4 md:p-3 md:pr-5"
+      style={{ background: `linear-gradient(118deg, ${NAVY} 0%, #2c2789 55%, #533afd 100%)` }}
     >
       <span className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-xl md:w-36">
         {/* eslint-disable-next-line @next/next/no-img-element -- 영상 썸네일 */}

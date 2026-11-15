@@ -47,7 +47,7 @@ export function UrgentStrip({
     scroller.current?.scrollBy({ left: dir * 560, behavior: "smooth" });
 
   return (
-    <section aria-labelledby="urgent-title" className="card p-4 md:p-6">
+    <section aria-labelledby="urgent-title" className="card p-4 shadow-level-1 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ev-doc-soft text-ruby">
@@ -97,11 +97,11 @@ export function UrgentStrip({
       >
         {!today &&
           Array.from({ length: 5 }, (_, i) => (
-            <div key={i} className="h-[140px] w-[248px] shrink-0 rounded-md bg-canvas-soft" />
+            <div key={i} className="h-[140px] w-[248px] shrink-0 rounded-2xl bg-canvas-soft" />
           ))}
 
         {today && urgent.length === 0 && (
-          <p className="w-full rounded-md bg-canvas-soft px-4 py-8 text-center text-ink-mute">
+          <p className="w-full rounded-2xl bg-canvas-soft px-4 py-8 text-center text-ink-mute">
             {WINDOW_DAYS}일 안에 예정된 일정이 없어요. 아래 달력에서 다음 달 일정을 확인해 보세요.
           </p>
         )}
@@ -117,9 +117,10 @@ export function UrgentStrip({
                 type="button"
                 onClick={() => onOpen(ev.company.id)}
                 className={cn(
-                  "group flex w-[248px] shrink-0 snap-start flex-col rounded-md border p-4 text-left transition-shadow hover:shadow-level-2",
-                  hot ? "border-ruby/40 bg-ev-doc-soft" : "border-hairline bg-canvas",
-                  ev.recruitment.status === "expected" && "border-dashed",
+                  // 전형 색의 옅은 바탕 — 하루 안은 루비 테두리로 한 번 더
+                  "group flex w-[248px] shrink-0 snap-start flex-col rounded-2xl border p-4 text-left transition-shadow hover:shadow-level-2",
+                  m.soft,
+                  ev.recruitment.status === "expected" ? cn("border-dashed", m.border) : hot ? "border-ruby/40" : "border-transparent",
                 )}
               >
                 <div className="flex items-center justify-between">
@@ -152,7 +153,7 @@ function SummaryPill({ label, value, strong }: { label: string; value: number; s
     <span
       className={cn(
         "inline-flex items-center gap-1 rounded-full px-3 py-1 type-caption",
-        strong && value > 0 ? "bg-ruby text-on-primary" : "bg-canvas-soft text-ink-secondary",
+        strong && value > 0 ? "bg-ev-doc-soft font-bold text-ruby" : "border border-hairline bg-canvas text-ink-secondary",
       )}
     >
       {label}

@@ -35,7 +35,7 @@ function Tabs({ pathname }: { pathname: string | null }) {
               <Link
                 href={href}
                 aria-current={on ? "page" : undefined}
-                className={cn("flex h-14 flex-col items-center justify-center gap-1 text-[11px] leading-4", on ? "font-bold text-navy-text" : "font-medium text-ink-mute")}
+                className={cn("flex h-14 flex-col items-center justify-center gap-1 text-[11px] leading-4", on ? "font-bold text-brand-text" : "font-medium text-ink-mute")}
               >
                 {/* 지금 화면: 남색 굵은 아이콘 */}
                 <Icon className="h-[22px] w-[22px]" strokeWidth={on ? 2.4 : 1.75} />

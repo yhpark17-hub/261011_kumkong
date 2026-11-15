@@ -25,8 +25,8 @@ export function MagazineShell({ section, q = "", children }: { section: Magazine
       <h1 className="sr-only">
         {MAGAZINE_NAME} · {SECTION_INFO[section].title}
       </h1>
-      <header className="flex flex-wrap items-center gap-x-2.5 border-b border-hairline md:gap-x-4">
-        <div className="min-w-0 flex-1 self-end md:flex-none">
+      <header className="flex flex-wrap items-center gap-x-2.5 gap-y-3 md:gap-x-4">
+        <div className="min-w-0 flex-1 md:flex-none">
           <MagazineSectionTabs active={section} />
         </div>
         {/* 휴대폰: 검색창은 돋보기를 눌러야 열려요 (아래 체크박스로 열고 닫음) */}
@@ -34,9 +34,9 @@ export function MagazineShell({ section, q = "", children }: { section: Magazine
           <Search className="h-5 w-5" strokeWidth={2} />
         </label>
         <input id="mag-search-open" type="checkbox" className="peer sr-only" defaultChecked={Boolean(q)} tabIndex={-1} aria-hidden />
-        <form action="/magazine/blog" role="search" className="relative mb-3 hidden w-full peer-checked:block md:mb-0 md:ml-auto md:block md:w-72">
+        <form action="/magazine/blog" role="search" className="relative hidden w-full peer-checked:block md:ml-auto md:block md:w-80">
           <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-ink-mute" strokeWidth={2} />
-          <input name="q" defaultValue={q} placeholder="매거진 검색 (예: NCS, 기준금리)" className="input w-full !pl-10" maxLength={40} aria-label="매거진 검색" />
+          <input name="q" defaultValue={q} placeholder="매거진 검색 (예: NCS, 기준금리)" className="input w-full !rounded-full !pl-10 shadow-level-1" maxLength={40} aria-label="매거진 검색" />
         </form>
       </header>
       {children}

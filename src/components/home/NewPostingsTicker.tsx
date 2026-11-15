@@ -14,7 +14,7 @@ function Item({ p, today }: { p: NewPosting; today: string }) {
   const left = p.docDate ? diffDays(today, p.docDate) : null;
   return (
     <Link href={`/companies/${p.companyId}`} className="group inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap type-caption text-ink-secondary">
-      {p.fresh && <span className="rounded-[4px] bg-ruby px-1.5 py-px text-[10px] leading-4 font-bold text-on-primary">NEW</span>}
+      {p.fresh && <span className="rounded-full bg-ruby px-1.5 py-px text-[10px] leading-4 font-bold text-on-primary">NEW</span>}
       <span className="font-bold text-ink group-hover:underline">{p.name}</span>
       <span>{shortTitle(p.title)}</span>
       {p.docDate && left != null && left >= 0 && (
@@ -39,9 +39,9 @@ export async function NewPostingsTicker() {
 
   return (
     <section aria-label="신규 채용 공고" className="mx-auto max-w-[1200px] px-4 pt-4 md:px-6 md:pt-6">
-      <div className="flex items-center gap-3 overflow-hidden rounded-xl border border-hairline bg-canvas py-2.5 pr-1 pl-4">
-        <span className="inline-flex shrink-0 items-center gap-1.5 type-caption font-extrabold text-accent-text">
-          <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
+      <div className="flex items-center gap-3 overflow-hidden rounded-full border border-hairline bg-canvas py-2.5 pr-1 pl-5 shadow-level-1">
+        <span className="inline-flex shrink-0 items-center gap-1.5 type-caption font-extrabold text-brand-text">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
           새 공고 <span className="tabular">{items.length}</span>
         </span>
         <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-6 overflow-x-auto pr-8 [mask-image:linear-gradient(to_right,#000_calc(100%-40px),transparent)]">
@@ -57,7 +57,7 @@ export async function NewPostingsTicker() {
 export function NewPostingsTickerSkeleton() {
   return (
     <div aria-hidden className="mx-auto max-w-[1200px] px-4 pt-4 md:px-6 md:pt-6">
-      <div className="h-[44px] rounded-xl border border-hairline bg-canvas" />
+      <div className="h-[44px] rounded-full border border-hairline bg-canvas" />
     </div>
   );
 }

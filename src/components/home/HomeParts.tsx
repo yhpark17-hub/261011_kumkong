@@ -22,16 +22,20 @@ export function SectionHead({
       <h2 id={id} className="text-[19px] font-extrabold tracking-[-0.035em] text-ink md:text-[22px]">
         {title}
       </h2>
-      {meta && <span className="hidden text-[14px] font-semibold text-ink-mute md:inline">{meta}</span>}
+      {meta && <span className="hidden text-[14px] font-medium text-ink-mute md:inline">{meta}</span>}
       {more && (
         <Link href={more.href} className={cn("ml-auto flex items-center gap-0.5 text-[13.5px] font-bold text-ink-mute hover:text-ink md:text-[14px] md:text-ink-secondary", links && "md:hidden")}>
           {more.label ?? "전체"} <ChevronRight className="h-3.5 w-3.5" strokeWidth={2.6} />
         </Link>
       )}
       {links && (
-        <span className="ml-auto hidden gap-[18px] md:flex">
+        <span className="ml-auto hidden gap-2 md:flex">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} className="flex items-center gap-0.5 text-[14px] font-bold text-ink-secondary hover:text-ink">
+            <Link
+              key={l.href}
+              href={l.href}
+              className="flex h-[34px] items-center gap-0.5 rounded-full border border-hairline bg-canvas-soft px-3.5 text-[13.5px] font-bold text-ink-secondary transition-colors hover:border-primary/30 hover:text-brand-text"
+            >
               {l.label} <ChevronRight className="h-3.5 w-3.5" strokeWidth={2.6} />
             </Link>
           ))}
@@ -41,12 +45,12 @@ export function SectionHead({
   );
 }
 
-/** 목록 아래 옅은 회색 한 줄 링크 (후기 남기기 · 글쓰기) */
+/** 목록 아래 옅은 보라 한 줄 링크 (후기 남기기 · 글쓰기) */
 export function SoftLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <Link
       href={href}
-      className="mt-3.5 flex h-12 items-center justify-between gap-3 rounded-xl bg-canvas-soft px-[18px] text-[13.5px] font-bold text-ink-secondary transition-colors hover:bg-[color-mix(in_srgb,var(--canvas-soft)_60%,var(--hairline))] md:h-[50px] md:text-[14px]"
+      className="mt-3 flex h-[50px] items-center justify-between gap-3 rounded-2xl bg-tag-soft-bg px-[18px] text-[13.5px] font-semibold text-primary-text transition-colors hover:bg-[color-mix(in_srgb,var(--tag-soft-bg)_80%,var(--primary-subdued))] md:h-[52px] md:px-5 md:text-[14px]"
     >
       <span className="min-w-0 truncate">{children}</span>
       <ChevronRight className="h-4 w-4 shrink-0" strokeWidth={2.6} />

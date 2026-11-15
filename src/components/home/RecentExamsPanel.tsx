@@ -2,6 +2,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { ArrowRight, BarChart3 } from "lucide-react";
 import { DifficultyTag } from "@/components/reviews/DifficultyMeter";
+import { ParticipantCount } from "@/components/reviews/ParticipantCount";
 import { addDays, formatShort, todayKST } from "@/lib/date";
 import { examCounts, listExams } from "@/lib/server/reviews";
 import { Card, CompanyAvatar, cn } from "../ui";
@@ -57,10 +58,7 @@ export async function RecentExamsPanel({ limit = 4, large = false }: { limit?: n
                   {reviews > 0 ? (
                     <span className="flex shrink-0 items-center gap-2.5">
                       {avg != null && <DifficultyTag avg={avg} />}
-                      <span className="min-w-10 text-right">
-                        <span className="tabular type-heading-sm text-ink">{reviews}</span>
-                        <span className="ml-0.5 type-caption text-ink-mute">명</span>
-                      </span>
+                      <ParticipantCount n={reviews} className="min-w-10 text-right" />
                     </span>
                   ) : (
                     <span className="shrink-0 type-caption text-ink-mute">후기 받는 중</span>
