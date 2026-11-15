@@ -10,8 +10,8 @@
 :root,
 .theme-light {
   /*
-   * 2026-11-15 '그림책 금콩' — 브리핑 그림체(살구·버터·라벤더 + 남색 선)를 사이트 전체로.
-   * 보라(#533afd)·분홍 메시 대신 남색 버튼, 종이색 바탕, 흰 카드 + 부드러운 그림자.
+   * 2026-11-15 '단단한 금콩' — 밝은 회색 바탕 위 흰 판(1px 선, 그림자 없음), 남색 머리·버튼, 주황은 강조 한 군데.
+   * 그림은 글의 얼굴(썸네일)로만 — 사이트의 틀(머리·배너·메뉴)에는 넣지 않아요.
    */
   /* Brand & Accent */
   --primary: #1f2a5c;
@@ -25,39 +25,43 @@
   --lemon: #8a5a12;
   --shadow-blue: #2b5c8a;
   --sherbet: #f7a14a;
-  /* 그림책 팔레트 — 주황은 강조 한 군데, 나머지는 옅은 바탕 */
+  /* 주황은 강조 한 군데, 나머지는 옅은 바탕 */
   --accent: #f7a14a;
   --accent-text: #b4610f;
   --accent-soft: #ffe9cc;
+  /* 댓글 수·'지금' 같은 눈에 띄는 숫자 */
+  --hot: #d9480f;
   --butter: #fff4d9;
   --lavender: #eef0fb;
   --sky: #eaf2fd;
   --lilac: #ece6f6;
 
-  /* Surface — 페이지는 종이색, 카드·입력칸은 흰색(canvas) */
-  --page: #fbf8f3;
+  /* Surface — 페이지는 밝은 회색, 판·입력칸은 흰색(canvas) */
+  --page: #f3f4f6;
   --canvas: #ffffff;
-  --canvas-soft: #f6f2ec;
+  --canvas-soft: #f4f5f8;
   --canvas-cream: #fff4d9;
-  --hairline: #ece5da;
-  --hairline-input: #d6ccbd;
+  --hairline: #e3e6eb;
+  --hairline-input: #d2d7df;
 
-  /* Text */
-  --ink: #1f2a5c;
-  --ink-secondary: #3b4466;
-  --ink-mute: #646c8a;
-  --ink-mute-2: #4a5274;
+  /* Text — 남색이 살짝 도는 검정 */
+  --ink: #141a33;
+  --ink-secondary: #3c4358;
+  --ink-mute: #646b80;
+  --ink-mute-2: #4a5168;
   --on-primary: #ffffff;
   /* 링크·활성 텍스트 */
   --primary-text: #3f4ab8;
+  /* 남색 글자 (번호·D-day·강조) — 다크 모드에서는 밝게 */
+  --navy-text: #1f2a5c;
 
   /* pill-tag-soft */
   --tag-soft-bg: #eef0fb;
   --tag-soft-text: #3f4ab8;
 
   /* 일정 유형 (대시보드 UI 전용 의미 색) — 서류 빨강 · 필기 남보라 · 1차 자두 · 2차 겨자 · 발표 초록 */
-  --ev-posting: #646c8a;
-  --ev-posting-soft: #f1ece4;
+  --ev-posting: #646b80;
+  --ev-posting-soft: #eef0f3;
   --ev-doc: #b42b40;
   --ev-doc-soft: #fdebee;
   --ev-written: #3f4ab8;
@@ -87,6 +91,7 @@
     --primary-soft: #6f7ee0;
     --primary-subdued: #2e3770;
     --primary-text: #aab6ff;
+    --navy-text: #c3ccff;
     /* 어두운 바탕 위에서 선택 상태·남색 카드가 구분되도록 한 단계 밝은 남색 */
     --brand-dark: #2e3a7a;
     --ruby: #ff7a8c;
@@ -96,6 +101,7 @@
     --accent: #f7a14a;
     --accent-text: #ffc58a;
     --accent-soft: #3a2a14;
+    --hot: #ff8a5c;
     --butter: #2c2616;
     --lavender: #20264a;
     --sky: #182a44;
@@ -147,9 +153,9 @@
   --radius-2xl: 24px;
   --radius-3xl: 28px;
 
-  /* Elevation — 남색이 살짝 도는 부드러운 그림자 */
-  --shadow-level-1: 0 1px 2px rgba(31, 42, 92, 0.05), 0 8px 22px -12px rgba(31, 42, 92, 0.16);
-  --shadow-level-2: 0 1px 2px rgba(31, 42, 92, 0.05), 0 16px 36px -14px rgba(31, 42, 92, 0.24);
+  /* Elevation — 판은 그림자 없이 1px 선으로 나눠요 (level-1 은 비워 둠). 떠 있는 창(목록·메뉴)만 level-2 */
+  --shadow-level-1: 0 0 #0000;
+  --shadow-level-2: 0 2px 4px rgba(20, 26, 51, 0.06), 0 12px 28px -10px rgba(20, 26, 51, 0.2);
 }
 
 @theme inline {
@@ -159,6 +165,7 @@
   --color-primary-soft: var(--primary-soft);
   --color-primary-subdued: var(--primary-subdued);
   --color-primary-text: var(--primary-text);
+  --color-navy-text: var(--navy-text);
   --color-brand-dark: var(--brand-dark);
   --color-ruby: var(--ruby);
   --color-magenta: var(--magenta);
@@ -197,6 +204,7 @@
   --color-accent: var(--accent);
   --color-accent-text: var(--accent-text);
   --color-accent-soft: var(--accent-soft);
+  --color-hot: var(--hot);
   --color-butter: var(--butter);
   --color-lavender: var(--lavender);
   --color-sky: var(--sky);
@@ -205,8 +213,8 @@
   --font-sans:
     "Pretendard Variable", Pretendard, Inter, "SF Pro Display", -apple-system, BlinkMacSystemFont,
     "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  /* 큰 제목용 둥근 글씨 (브리핑 제목과 같은 주아체) — layout 에서 --font-jua 를 붙여요 */
-  --font-display: var(--font-jua), "Jua", "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", sans-serif;
+  /* 큰 제목 — 사이트는 프리텐다드 굵게 (주아체는 브리핑 안에서만 jua.className 으로) */
+  --font-display: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", sans-serif;
 }
 
 /* ───────────── Typography (DESIGN.md typography 토큰) ───────────── */
@@ -316,7 +324,7 @@
 
 /* ───────────── Components (DESIGN.md components) ───────────── */
 @layer components {
-  /* 알약 버튼 — 굵은 글씨, 휴대폰은 44px 이상 터치 영역 */
+  /* 버튼 — 모서리 8px, 굵은 글씨, 휴대폰은 44px 이상 터치 영역 */
   .btn {
     display: inline-flex;
     align-items: center;
@@ -324,8 +332,8 @@
     gap: 8px;
     min-height: 44px;
     padding: 10px 18px;
-    border: 1.5px solid transparent;
-    border-radius: 9999px;
+    border: 1px solid transparent;
+    border-radius: 8px;
     font-size: 15px;
     font-weight: 700;
     line-height: 1;
@@ -371,11 +379,11 @@
   .btn-primary:active {
     background: var(--primary-press);
   }
-  /* 남색 테두리 알약 */
+  /* 흰 바탕 + 회색 테두리 */
   .btn-secondary {
     background: var(--canvas);
     color: var(--ink);
-    border-color: var(--ink);
+    border-color: var(--hairline-input);
   }
   .btn-secondary:hover {
     background: var(--canvas-soft);
@@ -384,23 +392,24 @@
     background: var(--brand-dark);
     color: var(--on-primary);
   }
-  /* 토글·필터: 옅은 베이지 알약 (선택 시 btn-on-dark) */
+  /* 토글·필터: 흰 바탕 + 옅은 선 — 회색 바탕에서도, 흰 판 안에서도 보이게 (선택 시 btn-on-dark) */
   .btn-toggle {
-    background: var(--canvas-soft);
+    background: var(--canvas);
     color: var(--ink-secondary);
-    border-color: transparent;
+    border-color: var(--hairline);
     font-weight: 600;
   }
   .btn-toggle:hover {
-    background: color-mix(in srgb, var(--canvas-soft) 70%, var(--hairline-input));
+    background: var(--canvas-soft);
+    border-color: var(--hairline-input);
   }
 
-  /* 입력칸: 흰 바탕, 둥근 모서리, 포커스 시 남보라 테두리 */
+  /* 입력칸: 흰 바탕, 모서리 8px, 포커스 시 남색 테두리 */
   .input {
     min-height: 44px;
     padding: 10px 14px;
     border: 1px solid var(--hairline-input);
-    border-radius: 14px;
+    border-radius: 8px;
     background: var(--canvas);
     color: var(--ink);
     font-size: 15px;
@@ -419,31 +428,31 @@
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-text) 18%, transparent);
   }
 
-  /* 흰 카드 — 아주 옅은 테두리 + 부드러운 그림자 (shadow-level-1 은 Card 가 붙여요) */
+  /* 흰 판 — 1px 선, 모서리 12px, 그림자 없음 */
   .card {
     background: var(--canvas);
-    border: 1px solid color-mix(in srgb, var(--hairline) 70%, transparent);
-    border-radius: 24px;
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
   }
   /* 버터색 띠 */
   .card-cream {
     background: var(--canvas-cream);
-    border-radius: 24px;
+    border-radius: 12px;
   }
-  /* 남색 카드 */
+  /* 남색 판 */
   .card-featured {
     background: var(--brand-dark);
     color: var(--on-primary);
-    border-radius: 24px;
+    border-radius: 12px;
   }
 
-  /* 작은 알약 태그 */
+  /* 작은 꼬리표 — 모서리 4px */
   .tag {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 9px;
-    border-radius: 9999px;
+    padding: 3px 7px;
+    border-radius: 4px;
     font-size: 11.5px;
     font-weight: 600;
     line-height: 1.2;
@@ -494,6 +503,21 @@
   :focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
+  }
+}
+
+/* 홈 — 바탕은 흰색, 휴대폰에서는 머리가 남색 첫 칸과 이어져요 (홈 첫 칸에 data-home-top) */
+body:has([data-home-top]) {
+  background: var(--canvas);
+}
+@media (max-width: 767.98px) {
+  body:has([data-home-top]) [data-site-header] {
+    background: var(--brand-dark);
+    border-color: transparent;
+    backdrop-filter: none;
+  }
+  body:has([data-home-top]) [data-site-header] [data-header-fg] {
+    color: var(--on-primary);
   }
 }
 

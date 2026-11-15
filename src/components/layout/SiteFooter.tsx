@@ -26,12 +26,12 @@ const GROUPS = [
 /** footer-light: canvas, ink-mute, caption, 64px 24px */
 export function SiteFooter() {
   return (
-    <footer data-app-hide className="mt-24 border-t border-hairline bg-canvas-soft/60 type-caption text-ink-mute">
+    <footer data-app-hide className="mt-16 border-t border-hairline bg-canvas-soft type-caption text-ink-mute md:mt-20">
       <div className="mx-auto grid max-w-[1200px] gap-8 px-6 py-16 md:grid-cols-[2fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-2">
             <Logo className="h-7 w-7" />
-            <span className="type-heading-sm text-ink">금콩</span>
+            <span className="text-[19px] font-extrabold tracking-[-0.04em] text-ink">금콩</span>
           </div>
           <p className="mt-4 max-w-sm">
             금융공기업·공공기관·공제회·중앙회·시중은행 채용 일정을 한 달력에서 확인하는 취업 준비

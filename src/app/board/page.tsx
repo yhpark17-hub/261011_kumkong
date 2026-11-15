@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -9,6 +8,7 @@ import { CompanyFilter } from "@/components/board/CompanyFilter";
 import { Pagination, PostTable } from "@/components/board/parts";
 import { AdminBar } from "@/components/board/AdminBar";
 import { DbSection } from "@/components/db/DbSection";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CompanyAvatar, cn } from "@/components/ui";
 import { BOARD_CATEGORIES, BOARD_NAME, BOARD_TAGLINE, boardHref, isBoardCategory } from "@/lib/board-meta";
 import { companyOptions, getCompany } from "@/lib/data";
@@ -33,66 +33,63 @@ function one(v: string | string[] | undefined): string {
 
 export default function BoardPage({ searchParams }: PageProps<"/board">) {
   return (
-    <div className="mx-auto max-w-[1200px] px-4 pt-4 pb-12 md:px-6 md:pt-12">
-      <header className="flex items-center gap-5 rounded-[28px] bg-butter p-5 md:gap-7 md:rounded-[32px] md:px-10 md:py-8">
-        <Image src="/illust/tile-board.webp" alt="말풍선 두 개와 새싹 그림" width={132} height={132} priority className="hidden h-[116px] w-[116px] shrink-0 rounded-3xl object-cover sm:block md:h-[132px] md:w-[132px]" />
-        <div className="min-w-0 flex-1">
-          <h1 className="font-display text-[28px] leading-tight text-ink md:text-[40px]">{BOARD_NAME}</h1>
-          <p className="mt-1.5 type-body-md text-ink-secondary [word-break:keep-all] md:text-[16px]">
-            로그인 없이 닉네임과 비밀번호만으로 글을 쓸 수 있어요. 필기·면접 후기, 질문, 정보를 편하게 나눠 주세요.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link href="/board/write" className="btn btn-primary">
-              <PenLine className="h-4 w-4" strokeWidth={2} />
-              글쓰기
-            </Link>
-            <Link href="/board/policy" className="btn bg-canvas text-ink shadow-level-1 hover:bg-canvas-soft">
+    <>
+      <PageHeader
+        title={BOARD_NAME}
+        desc="로그인 없이 닉네임과 비밀번호만으로 글을 쓸 수 있어요. 필기·면접 후기, 질문, 정보를 편하게 나눠 주세요."
+        actions={
+          <>
+            <Link href="/board/policy" className="btn btn-secondary max-md:flex-1">
               <ShieldCheck className="h-4 w-4" strokeWidth={2} />
               이용 수칙
             </Link>
+            <Link href="/board/write" className="btn btn-primary max-md:flex-1">
+              <PenLine className="h-4 w-4" strokeWidth={2} />
+              글쓰기
+            </Link>
+          </>
+        }
+      />
+      <div className="mx-auto max-w-[1200px] px-4 pb-12 md:px-6">
+        <DbSection silent>
+          <Suspense fallback={null}>
+            <AdminBar className="mt-6" />
+          </Suspense>
+        </DbSection>
+
+        <div className="mt-6 grid gap-6 md:mt-8 lg:grid-cols-[minmax(0,1fr)_304px] lg:gap-8">
+          <div className="min-w-0">
+            <DbSection noticeTitle="콩밭(게시판)을 준비하고 있어요">
+              <Suspense fallback={<ListSkeleton />}>{searchParams.then((sp) => <BoardList sp={sp} />)}</Suspense>
+            </DbSection>
           </div>
+
+          <aside className="space-y-4">
+            <Card className="p-6">
+              <h2 className="type-heading-sm text-ink">필기 끝났다면, 30초 후기</h2>
+              <p className="mt-2 type-body-md text-ink-secondary">
+                체감 난이도·어려웠던 과목을 터치 몇 번으로 남기고 다른 사람들의 결과를 바로 확인하세요.
+              </p>
+              <Link href="/reviews" className="btn btn-secondary btn-sm mt-4">
+                필기 후기 보러 가기
+              </Link>
+            </Card>
+            <AdSlot slot={AD_SLOTS.sidebar} variant="rectangle" />
+            <Card className="p-6">
+              <h2 className="type-heading-sm text-ink">콩밭 이용 수칙</h2>
+              <ul className="mt-3 space-y-2 type-body-md text-ink-secondary">
+                <li>· 시험 문제 원문·복원 문항 공유 금지</li>
+                <li>· 특정인 비방·개인정보 노출 금지</li>
+                <li>· 신고가 쌓이면 자동으로 임시 숨김돼요</li>
+              </ul>
+              <Link href="/board/policy" className="link mt-3 inline-block type-caption">
+                운영정책 전체 보기
+              </Link>
+            </Card>
+          </aside>
         </div>
-      </header>
-
-      <DbSection silent>
-        <Suspense fallback={null}>
-          <AdminBar className="mt-6" />
-        </Suspense>
-      </DbSection>
-
-      <div className="mt-6 grid gap-6 md:mt-8 lg:grid-cols-[minmax(0,1fr)_304px] lg:gap-8">
-        <div className="min-w-0">
-          <DbSection noticeTitle="콩밭(게시판)을 준비하고 있어요">
-            <Suspense fallback={<ListSkeleton />}>{searchParams.then((sp) => <BoardList sp={sp} />)}</Suspense>
-          </DbSection>
-        </div>
-
-        <aside className="space-y-4">
-          <Card className="!border-transparent bg-lavender p-6">
-            <Image src="/illust/tile-exam.webp" alt="" width={64} height={64} className="h-16 w-16 rounded-2xl object-cover" />
-            <h2 className="mt-4 type-heading-sm text-ink">필기 끝났다면, 30초 후기</h2>
-            <p className="mt-2 type-body-md text-ink-secondary">
-              체감 난이도·어려웠던 과목을 터치 몇 번으로 남기고 다른 사람들의 결과를 바로 확인하세요.
-            </p>
-            <Link href="/reviews" className="btn btn-secondary btn-sm mt-4">
-              필기 후기 보러 가기
-            </Link>
-          </Card>
-          <AdSlot slot={AD_SLOTS.sidebar} variant="rectangle" />
-          <Card className="p-6">
-            <h2 className="type-heading-sm text-ink">콩밭 이용 수칙</h2>
-            <ul className="mt-3 space-y-2 type-body-md text-ink-secondary">
-              <li>· 시험 문제 원문·복원 문항 공유 금지</li>
-              <li>· 특정인 비방·개인정보 노출 금지</li>
-              <li>· 신고가 쌓이면 자동으로 임시 숨김돼요</li>
-            </ul>
-            <Link href="/board/policy" className="link mt-3 inline-block type-caption">
-              운영정책 전체 보기
-            </Link>
-          </Card>
-        </aside>
       </div>
-    </div>
+    </>
   );
 }
 

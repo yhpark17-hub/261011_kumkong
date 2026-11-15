@@ -187,7 +187,7 @@ async function ArticleView({ rawId }: { rawId: string }) {
     </section>
   );
 
-  // 주간 정리 — 남색 머리 + 영상 + 장(영상과 같은 순서), 아래에 도움돼요·이전·다음 주간 정리
+  // 한 주 경제 몰아보기 — 남색 머리 + 영상 + 장(영상과 같은 순서), 아래에 도움돼요·이전·다음 회
   const weekly = getWeekly(articleWeeklyIn(a.body));
   if (weekly) {
     return (
@@ -202,21 +202,21 @@ async function ArticleView({ rawId }: { rawId: string }) {
         <div className={CONTAINER}>
           <div className="mx-auto max-w-[720px]">
             <div className="rounded-xl border border-hairline px-5 py-7 text-center">
-              <p className="type-heading-sm text-ink">이번 주 정리가 도움이 됐나요?</p>
+              <p className="type-heading-sm text-ink">이번 주 몰아보기가 도움이 됐나요?</p>
               <p className="mt-1 type-caption text-ink-mute">반응을 보고 다음 주 메인 주제를 고를게요.</p>
               <div className="mt-5">
                 <ArticleActions id={a.id} title={a.title} category={a.category} initialLikes={a.likes} preview={!isPublic} />
               </div>
             </div>
             {(adjacent.prev || adjacent.next) && (
-              <nav aria-label="이전·다음 주간 정리" className="mt-10 grid gap-3 sm:grid-cols-2">
+              <nav aria-label="이전·다음 몰아보기" className="mt-10 grid gap-3 sm:grid-cols-2">
                 {adjacent.prev ? <AdjacentLink a={adjacent.prev} dir="prev" briefing={false} /> : <span />}
                 {adjacent.next ? <AdjacentLink a={adjacent.next} dir="next" briefing={false} /> : <span />}
               </nav>
             )}
             <p className="mt-10 flex flex-wrap justify-center gap-x-5 gap-y-2">
               <Link href="/magazine/weekly" className="link type-caption">
-                지난 주간 정리 모아 보기 →
+                지난 몰아보기 모두 보기 →
               </Link>
               <Link href="/magazine" className="link type-caption">
                 오늘의 데일리 브리핑 보러 가기 →

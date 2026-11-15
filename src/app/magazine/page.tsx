@@ -30,7 +30,7 @@ export const metadata: Metadata = pageMetadata({
 type SP = Record<string, string | string[] | undefined>;
 const one = (v: string | string[] | undefined) => ((Array.isArray(v) ? v[0] : v) ?? "").trim();
 
-/** 매거진 · 데일리 브리핑 첫 화면 — 오늘(아침 · 점심 나란히) → 주간 정리 띠 → 많이 본 기사 · 지난 브리핑. 호를 누르면 뉴스레터로 열려요 */
+/** 매거진 · 데일리 브리핑 첫 화면 — 오늘(아침 · 점심 나란히) → 한 주 몰아보기 띠 → 많이 본 기사 · 지난 브리핑. 호를 누르면 뉴스레터로 열려요 */
 export default function BriefingPage({ searchParams }: PageProps<"/magazine">) {
   return (
     <MagazineShell section="briefing">
@@ -74,7 +74,7 @@ async function BriefingFront({ sp }: { sp: SP }) {
     latestWeekly({ admin }),
     latestIssue("noon"),
   ]);
-  // 이번 주 정리 (주 1회 영상 + 글) — 오늘 브리핑 아래 얇은 남색 띠로. 공개한 지 9일이 지나면(다음 호가 안 나왔으면) 내려요
+  // 한 주 몰아보기 (주 1회 영상 + 글) — 오늘 브리핑 아래 얇은 남색 띠로. 공개한 지 9일이 지나면(다음 호가 안 나왔으면) 내려요
   const weeklyFresh = weeklyArticle && (weeklyArticle.draft || (weeklyArticle.publishedAt != null && kstDateKey(weeklyArticle.publishedAt) >= addDays(today, -9)));
   const weekly = weeklyArticle && weeklyFresh ? getWeekly(articleWeeklyIn(weeklyArticle.body)) : null;
   // 오늘 브리핑이 아직 없으면(이른 아침) 가장 최근 브리핑을 위에
@@ -97,7 +97,7 @@ async function BriefingFront({ sp }: { sp: SP }) {
     <div className="mt-6 md:mt-8">
       <div>
         <p className="text-[13px] leading-5 font-extrabold text-accent-text">{heroDate === today ? "오늘의 데일리 브리핑" : "가장 최근 브리핑"}</p>
-        <p className="mt-0.5 font-display text-[28px] leading-tight text-ink md:text-[40px]">{formatDayHeading(heroDate)}</p>
+        <p className="mt-0.5 font-display font-extrabold tracking-[-0.03em] text-[28px] leading-tight text-ink md:text-[40px]">{formatDayHeading(heroDate)}</p>
       </div>
 
       {/* 오늘: 아침 브리핑 · 점심 3문제 나란히 (번갈아 넘기지 않아요) */}
@@ -121,7 +121,7 @@ async function BriefingFront({ sp }: { sp: SP }) {
       </section>
 
       {weeklyArticle && weekly && (
-        <section aria-label="금콩 주간 정리" className="mt-5">
+        <section aria-label="한 주 경제 몰아보기" className="mt-5">
           <WeeklyStrip href={articleHref(weeklyArticle.id)} title={weeklyArticle.title} week={weekly.week} poster={weekly.poster} draft={weeklyArticle.draft} />
         </section>
       )}

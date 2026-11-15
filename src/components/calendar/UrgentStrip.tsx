@@ -47,7 +47,7 @@ export function UrgentStrip({
     scroller.current?.scrollBy({ left: dir * 560, behavior: "smooth" });
 
   return (
-    <section aria-labelledby="urgent-title" className="card shadow-level-2 p-4 md:p-6">
+    <section aria-labelledby="urgent-title" className="card p-4 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ev-doc-soft text-ruby">

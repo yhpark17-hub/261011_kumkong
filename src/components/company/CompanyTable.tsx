@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowDownWideNarrow, ChevronRight, Search } from "lucide-react";
 import { formatShort } from "@/lib/date";
 import { formatRatio } from "@/lib/format";
@@ -27,6 +27,13 @@ export function CompanyTable({ catalog }: { catalog: Catalog }) {
   const [category, setCategory] = useState<Category | "all" | "fav">("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<Sort>("upcoming");
+
+  // 홈 검색창에서 맞는 기관 없이 Enter → /companies?q=검색어 로 와요 (정적 화면이라 주소는 그린 뒤에 읽어요)
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q")?.trim().slice(0, 40);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 주소의 검색어를 한 번만 옮겨 담아요
+    if (q) setQuery(q);
+  }, []);
 
   const categoryCounts = useMemo(() => {
     const out: Partial<Record<Category, number>> = {};

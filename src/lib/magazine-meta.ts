@@ -42,9 +42,9 @@ export const MAGAZINE_CATEGORIES: CategoryInfo[] = [
     hidden: true,
   },
   {
-    // 금콩 주간 정리 — 데일리 브리핑 쪽에 있지만 따로 보이는 주 1회 영상 + 글 (lib/weekly.ts)
+    // 한 주 경제 몰아보기 (예전 이름 '주간 정리') — 데일리 브리핑 쪽에 있지만 따로 보이는 주 1회 영상 + 글 (lib/weekly.ts)
     key: "weekly",
-    label: "주간 정리",
+    label: "한 주 몰아보기",
     desc: "한 주의 경제를 영상과 글로 — 가장 큰 뉴스 하나는 깊게, 나머지는 짧게",
     tone: "bg-[#1f2a5c] text-on-primary",
     cover: "from-[#dfe4f7]",
@@ -127,7 +127,7 @@ export function isMagazineCategory(v: unknown): v is MagazineCategory {
 
 /** 사이트에 보이는 카테고리 */
 export const VISIBLE_CATEGORIES = MAGAZINE_CATEGORIES.filter((c) => !c.hidden);
-/** 브리핑 쪽 카테고리 (데일리 브리핑 · 주간 정리) — 나머지는 금융 블로그 */
+/** 브리핑 쪽 카테고리 (데일리 브리핑 · 한 주 몰아보기) — 나머지는 금융 블로그 */
 const BRIEFING_SIDE: readonly MagazineCategory[] = ["briefing", "weekly"];
 
 /** '금융 블로그' 섹션 = 브리핑 쪽을 뺀 보이는 카테고리 */
@@ -141,17 +141,19 @@ export function isBlogCategory(v: unknown): v is MagazineCategory {
   return isVisibleCategory(v) && !BRIEFING_SIDE.includes(v);
 }
 
-/** 매거진(시사 뉴스) 안의 섹션 — 매일(데일리 브리핑) · 매주(주간 정리) · 수시(금융 블로그) */
+/** 매거진(시사 뉴스) 안의 섹션 — 매일(데일리 브리핑) · 매주(한 주 경제 몰아보기) · 수시(금융 블로그) */
 export type MagazineSection = "briefing" | "weekly" | "blog";
-export const SECTION_INFO: Record<MagazineSection, { label: string; desc: string; href: string }> = {
-  briefing: { label: "데일리 브리핑", desc: "아침에는 금콩 브리핑(카드뉴스 기사 브리핑), 점심에는 점심 3문제(금공 필기형 문제·면접 1문) — 금공 준비생의 하루를 여는 브리핑", href: "/magazine" },
-  weekly: { label: "주간 정리", desc: "매주 한 번, 한 주의 경제를 영상과 글로 — 가장 큰 뉴스 하나는 깊게, 금융·시사 뉴스는 짧게", href: "/magazine/weekly" },
-  blog: { label: "금융 블로그", desc: "필기·면접·금공 지식까지, 준비에 바로 쓰는 깊이 있는 글", href: "/magazine/blog" },
+/** label: 탭·바로가기에 쓰는 짧은 이름 · title: 화면 제목·카드 머리말에 쓰는 온전한 이름 */
+export const SECTION_INFO: Record<MagazineSection, { label: string; title: string; desc: string; href: string }> = {
+  briefing: { label: "데일리 브리핑", title: "데일리 브리핑", desc: "아침에는 금콩 브리핑(카드뉴스 기사 브리핑), 점심에는 점심 3문제(금공 필기형 문제·면접 1문) — 금공 준비생의 하루를 여는 브리핑", href: "/magazine" },
+  // 예전 이름 '주간 정리' — 주소(/magazine/weekly)와 카테고리 키(weekly)는 그대로
+  weekly: { label: "한 주 몰아보기", title: "한 주 경제 몰아보기", desc: "한 주 동안 나온 경제 뉴스를 영상 한 편으로 이어서 봐요. 글로도 읽을 수 있어요.", href: "/magazine/weekly" },
+  blog: { label: "금융 블로그", title: "금융 블로그", desc: "필기·면접·금공 지식까지, 준비에 바로 쓰는 깊이 있는 글", href: "/magazine/blog" },
 };
 
 /**
- * 섹션 탭에 '주간 정리'를 세울지 — 첫 주간 정리를 공개하는 날 true 로 (그 전에는 빈 탭이 되니까).
- * false 일 때도 주간 정리 쪽(/magazine/weekly)에 들어가면 탭이 보여요 (운영자 미리 보기).
+ * 섹션 탭에 '한 주 몰아보기'를 세울지 — 첫 회를 공개하는 날 true 로 (그 전에는 빈 탭이 되니까).
+ * false 일 때도 /magazine/weekly 에 들어가면 탭이 보여요 (운영자 미리 보기).
  */
 export const WEEKLY_TAB_LIVE = true;
 
@@ -318,7 +320,7 @@ export function magazineHref({
   page?: number;
   q?: string | null;
 }): string {
-  // 주간 정리는 자기 목록으로
+  // 한 주 몰아보기는 자기 목록으로
   if (category === "weekly" && !q) return page && page > 1 ? `/magazine/weekly?page=${page}` : "/magazine/weekly";
   const sp = new URLSearchParams();
   const briefing = category === "briefing" && !q;

@@ -255,16 +255,16 @@ export function SectionHead({ title, desc, href, linkLabel = "더 보기" }: { t
   );
 }
 
-/** 매거진 섹션 탭: 데일리 브리핑 / 주간 정리 / 금융 블로그 (주간 정리는 WEEKLY_TAB_LIVE 부터) */
+/** 매거진 섹션 탭: 데일리 브리핑 / 한 주 몰아보기 / 금융 블로그 (몰아보기는 WEEKLY_TAB_LIVE 부터) */
 export function MagazineSectionTabs({ active }: { active: MagazineSection }) {
   const tabs: { key: MagazineSection; Icon: LucideIcon }[] = [
     { key: "briefing", Icon: Newspaper },
     ...(WEEKLY_TAB_LIVE || active === "weekly" ? [{ key: "weekly" as const, Icon: CalendarRange }] : []),
     { key: "blog", Icon: BookOpen },
   ];
-  const three = tabs.length === 3;
   return (
-    <nav aria-label="매거진 섹션" className={cn("grid gap-1 rounded-full bg-canvas-soft p-1 sm:inline-grid sm:w-auto", three ? "grid-cols-3" : "grid-cols-2")}>
+    // 글자 아래 남색 밑줄 — 머리(MagazineShell)의 아래 선 위에 겹쳐요
+    <nav aria-label="매거진 섹션" className="-mb-px flex gap-5 sm:gap-7">
       {tabs.map(({ key, Icon }) => {
         const on = key === active;
         return (
@@ -273,15 +273,12 @@ export function MagazineSectionTabs({ active }: { active: MagazineSection }) {
             href={SECTION_INFO[key].href}
             aria-current={on ? "page" : undefined}
             className={cn(
-              "flex min-h-10 items-center justify-center gap-1.5 rounded-full text-[14px] whitespace-nowrap transition-colors sm:min-h-11 sm:px-5 sm:text-[15px]",
-              three ? "px-1.5" : "px-4",
-              on ? "bg-canvas font-extrabold text-ink shadow-level-1" : "font-semibold text-ink-mute-2 hover:text-ink",
+              "flex h-12 items-center gap-1.5 border-b-[2.5px] text-[15px] whitespace-nowrap transition-colors sm:text-[16px]",
+              on ? "border-navy-text font-extrabold text-ink" : "border-transparent font-semibold text-ink-mute hover:text-ink",
             )}
           >
-            {/* 탭이 셋이면 휴대폰에서는 글자만 (한 줄에 들어가게) */}
-            <Icon className={cn("h-4 w-4 shrink-0", three && "max-md:hidden")} strokeWidth={2} />
+            <Icon className="h-4 w-4 shrink-0 max-sm:hidden" strokeWidth={2} />
             {SECTION_INFO[key].label}
-            {key === "weekly" && <span className="rounded bg-[#1f2a5c] px-1 py-px text-[9px] leading-none font-bold tracking-[0.08em] text-[#f7a14a] max-sm:hidden">WEEKLY</span>}
           </Link>
         );
       })}

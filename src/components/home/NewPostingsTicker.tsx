@@ -14,7 +14,7 @@ function Item({ p, today }: { p: NewPosting; today: string }) {
   const left = p.docDate ? diffDays(today, p.docDate) : null;
   return (
     <Link href={`/companies/${p.companyId}`} className="group inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap type-caption text-ink-secondary">
-      {p.fresh && <span className="rounded-full bg-ruby px-1.5 py-px text-[10px] leading-4 font-bold text-on-primary">NEW</span>}
+      {p.fresh && <span className="rounded-[4px] bg-ruby px-1.5 py-px text-[10px] leading-4 font-bold text-on-primary">NEW</span>}
       <span className="font-bold text-ink group-hover:underline">{p.name}</span>
       <span>{shortTitle(p.title)}</span>
       {p.docDate && left != null && left >= 0 && (
@@ -28,7 +28,7 @@ function Item({ p, today }: { p: NewPosting; today: string }) {
 }
 
 /**
- * 새로 뜬 채용 공고 — 버터색 한 줄 (홈·캘린더 맨 위).
+ * 새로 뜬 채용 공고 — 흰 판 한 줄 (채용 캘린더 머리 아래).
  * 예전엔 검은 띠가 흘러갔는데, 이제는 멈춰 있는 한 줄 · 넘치면 옆으로 밀어 봐요.
  */
 export async function NewPostingsTicker() {
@@ -38,9 +38,9 @@ export async function NewPostingsTicker() {
   if (!items.length) return null;
 
   return (
-    <section aria-label="신규 채용 공고" className="mx-auto max-w-[1200px] px-4 pt-3 md:px-6 md:pt-5">
-      <div className="flex items-center gap-3 overflow-hidden rounded-2xl bg-butter py-2.5 pr-1 pl-4">
-        <span className="inline-flex shrink-0 items-center gap-1.5 type-caption font-extrabold text-lemon">
+    <section aria-label="신규 채용 공고" className="mx-auto max-w-[1200px] px-4 pt-4 md:px-6 md:pt-6">
+      <div className="flex items-center gap-3 overflow-hidden rounded-xl border border-hairline bg-canvas py-2.5 pr-1 pl-4">
+        <span className="inline-flex shrink-0 items-center gap-1.5 type-caption font-extrabold text-accent-text">
           <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
           새 공고 <span className="tabular">{items.length}</span>
         </span>
@@ -56,8 +56,8 @@ export async function NewPostingsTicker() {
 
 export function NewPostingsTickerSkeleton() {
   return (
-    <div aria-hidden className="mx-auto max-w-[1200px] px-4 pt-3 md:px-6 md:pt-5">
-      <div className="h-[42px] rounded-2xl bg-butter" />
+    <div aria-hidden className="mx-auto max-w-[1200px] px-4 pt-4 md:px-6 md:pt-6">
+      <div className="h-[44px] rounded-xl border border-hairline bg-canvas" />
     </div>
   );
 }

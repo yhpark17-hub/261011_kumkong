@@ -106,7 +106,7 @@ function NowRow({ e, sum, activity, today }: { e: ExamCardData; sum?: ExamSummar
       href={`/reviews/${e.id}`}
       className={cn(
         "group flex items-center gap-3 md:gap-3.5",
-        isToday ? "-mx-2 rounded-2xl bg-butter px-3 py-3 md:-mx-3 md:px-4" : "px-1 py-3",
+        isToday ? "-mx-2 rounded-lg bg-accent-soft/50 px-3 py-3 md:-mx-3 md:px-4" : "px-1 py-3",
       )}
     >
       <CompanyAvatar company={avatarOf(e)} />
@@ -161,7 +161,7 @@ function TopCard({ e, sum }: { e: ExamCardData; sum: ExamSummary }) {
         <span>
           <span className="block text-[12px] font-bold text-ink-mute">체감</span>
           <span className="flex items-center gap-2.5">
-            <span className="font-display text-[24px] leading-tight text-ink">{difficultyWord(sum.avg)}</span>
+            <span className="font-display font-extrabold tracking-[-0.03em] text-[24px] leading-tight text-ink">{difficultyWord(sum.avg)}</span>
             <DifficultyMeter avg={sum.avg} className="w-[78px]" />
           </span>
         </span>
@@ -277,7 +277,7 @@ export function ExamBrowser({
           </button>
         </div>
         {hits.length === 0 ? (
-          <p className="mt-4 rounded-3xl bg-canvas-soft px-6 py-10 text-center type-body-md text-ink-mute">
+          <p className="mt-4 rounded-xl bg-canvas-soft px-6 py-10 text-center type-body-md text-ink-mute">
             찾는 기관이 없어요. 기관 이름을 줄여서(예: 수은, 기보) 찾아보세요.
           </p>
         ) : (

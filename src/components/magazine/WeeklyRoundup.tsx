@@ -8,7 +8,7 @@ import { ViewsLikes } from "./Stats";
 import { SeekButton, WeeklyPlayer, WeeklyTimeline, WeeklyTocFloat } from "./WeeklyClient";
 
 /**
- * 금콩 주간 정리 — 데일리 브리핑과 다르게 보이도록 남색 머리 + 'WEEKLY' 도장 + 영상 칸.
+ * 한 주 경제 몰아보기 (예전 이름 '주간 정리') — 데일리 브리핑과 다르게 보이도록 남색 머리 + 'WEEKLY' 도장 + 영상 칸.
  * 영상 + 옆의 타임라인(누르면 그 장면부터 재생) → 메인(깊게) → 금융 → 시사 → 다음 주 → 금공 준비생 코너 → 주의
  * 스크롤로 읽는 글이고, 영상 칸을 지나면 아래에 떠 있는 목차 단추로 언제든 다른 장으로 갈 수 있어요.
  */
@@ -248,7 +248,7 @@ export function WeeklyRoundup({ w, title, summary, video }: { w: WeeklyEdition; 
             <span className={cn(jua.className, "rounded-lg px-2.5 py-1 text-[15px] leading-none tracking-[0.12em]")} style={{ background: ORANGE, color: NAVY }}>
               WEEKLY
             </span>
-            <span className="type-caption font-bold text-[#c9d2f5]">금콩 주간 정리 · {w.week}</span>
+            <span className="type-caption font-bold text-[#c9d2f5]">한 주 경제 몰아보기 · {w.week}</span>
           </div>
           <h1 className={cn(jua.className, "mt-4 max-w-[860px] text-[30px] leading-[1.25] text-[#ffffff] [word-break:keep-all] md:text-[44px]")}>{title}</h1>
           {summary.length > 0 && (
@@ -442,7 +442,7 @@ export function WeeklyRoundup({ w, title, summary, video }: { w: WeeklyEdition; 
   );
 }
 
-/** 주간 정리 모아 보기 맨 위의 큰 띠 (가장 최근 호) */
+/** 몰아보기 목록 맨 위의 큰 띠 (가장 최근 회) */
 export function WeeklyBand({ href, title, week, poster, line, topics, draft = false }: { href: string; title: string; week: string; poster: string; line: string; topics: string[]; draft?: boolean }): ReactNode {
   return (
     <Link
@@ -463,7 +463,7 @@ export function WeeklyBand({ href, title, week, poster, line, topics, draft = fa
           <span className={cn(jua.className, "rounded-lg px-2 py-0.5 text-[14px] leading-tight tracking-[0.12em]")} style={{ background: ORANGE, color: NAVY }}>
             WEEKLY
           </span>
-          <span className="type-caption font-bold text-[#c9d2f5]">금콩 주간 정리 · {week}</span>
+          <span className="type-caption font-bold text-[#c9d2f5]">한 주 경제 몰아보기 · {week}</span>
           {draft && <span className="rounded-full bg-[#ffffff]/15 px-2 py-0.5 type-caption font-bold text-[#ffd84d]">초안 · 운영자에게만 보여요</span>}
         </div>
         <p className={cn(jua.className, "mt-3 text-[24px] leading-snug text-[#ffffff] [word-break:keep-all] group-hover:underline md:text-[28px]")}>{title}</p>
@@ -485,7 +485,7 @@ export function WeeklyBand({ href, title, week, poster, line, topics, draft = fa
   );
 }
 
-/** 데일리 브리핑 첫 화면 맨 위의 얇은 '이번 주 정리' 띠 — 오늘 브리핑을 밀어내지 않게 한 줄로 */
+/** 데일리 브리핑 첫 화면 맨 위의 얇은 '한 주 몰아보기' 띠 — 오늘 브리핑을 밀어내지 않게 한 줄로 */
 export function WeeklyStrip({ href, title, week, poster, draft = false }: { href: string; title: string; week: string; poster: string; draft?: boolean }) {
   return (
     <Link
@@ -506,7 +506,7 @@ export function WeeklyStrip({ href, title, week, poster, draft = false }: { href
           <span className={cn(jua.className, "rounded-md px-1.5 py-0.5 text-[12px] leading-none tracking-[0.12em]")} style={{ background: ORANGE, color: NAVY }}>
             WEEKLY
           </span>
-          <span className="type-caption font-bold text-[#c9d2f5]">이번 주 정리 · {week.replace(/^\d{4}년\s*/, "")}</span>
+          <span className="type-caption font-bold text-[#c9d2f5]">한 주 몰아보기 · {week.replace(/^\d{4}년\s*/, "")}</span>
           {draft && <span className="rounded-full bg-[#ffffff]/15 px-1.5 py-0.5 text-[11px] leading-none font-bold text-[#ffd84d]">초안</span>}
         </span>
         <span className={cn(jua.className, "mt-1 line-clamp-2 block text-[17px] leading-snug text-[#ffffff] [word-break:keep-all] group-hover:underline md:line-clamp-1 md:text-[22px]")}>{title}</span>
@@ -534,7 +534,7 @@ export interface WeeklyArchiveItem {
   draft: boolean;
 }
 
-/** 주간 정리 모아 보기 — 회차를 달마다 묶어 한 줄씩 (데일리 브리핑의 '최근 브리핑'처럼). 회차가 적을 때는 다음 회차 자리를 비워 둬요 */
+/** 몰아보기 지난 회 — 회차를 달마다 묶어 한 줄씩 (데일리 브리핑의 '최근 브리핑'처럼). 회차가 적을 때는 다음 회차 자리를 비워 둬요 */
 export function WeeklyArchive({ items }: { items: WeeklyArchiveItem[] }) {
   const months: { label: string; rows: WeeklyArchiveItem[] }[] = [];
   for (const it of items) {

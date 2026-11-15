@@ -109,7 +109,7 @@ async function BlogBody({ sp }: { sp: SP }) {
         <section aria-labelledby="editors-pick" className="mt-8">
           <div className="mb-4">
             <p className="text-[13px] leading-5 font-extrabold text-accent-text">Editor&apos;s Pick</p>
-            <h2 id="editors-pick" className="mt-0.5 font-display text-[26px] leading-tight text-ink md:text-[32px]">
+            <h2 id="editors-pick" className="mt-0.5 font-display font-extrabold tracking-[-0.03em] text-[26px] leading-tight text-ink md:text-[32px]">
               에디터 추천 · 먼저 읽어 보세요
             </h2>
           </div>
@@ -187,7 +187,7 @@ async function BlogBody({ sp }: { sp: SP }) {
                 {popular.map((a, i) => (
                   <li key={a.id}>
                     <Link href={articleHref(a.id)} className="group flex gap-3 py-3">
-                      <span className="w-5 shrink-0 font-display text-[19px] leading-6 text-accent-text">{i + 1}</span>
+                      <span className="w-5 shrink-0 font-display font-extrabold tracking-[-0.03em] text-[19px] leading-6 text-accent-text">{i + 1}</span>
                       <span className="min-w-0">
                         <span className="line-clamp-2 text-[15px] leading-snug font-bold text-ink [word-break:keep-all] group-hover:underline">{a.title}</span>
                         <span className="mt-0.5 block type-micro text-ink-mute">{CATEGORY_INFO[a.category].label}</span>

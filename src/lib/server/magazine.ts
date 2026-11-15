@@ -180,7 +180,7 @@ export async function relatedArticles(a: ArticleSummary, limit = 3): Promise<Art
   return [...picked, ...more.rows.map(toSummary)];
 }
 
-/** 가장 최근 주간 정리 — 운영자는 아직 공개 전인 초안도 (데일리 브리핑 첫 화면의 '이번 주 정리' 띠) */
+/** 가장 최근 한 주 경제 몰아보기 — 운영자는 아직 공개 전인 초안도 (데일리 브리핑 첫 화면 띠 · 홈 매거진 줄) */
 export async function latestWeekly(opts: { admin?: boolean } = {}): Promise<(ArticleDetail & { draft: boolean }) | null> {
   const client = await db();
   const res = await client.execute({
@@ -195,7 +195,7 @@ export async function latestWeekly(opts: { admin?: boolean } = {}): Promise<(Art
   return { ...a, draft: !a.live };
 }
 
-/** 주간 정리 전체 회차 (최신 먼저) — 운영자는 공개 전 초안도. head 는 본문 첫 줄({{weekly:키}})을 읽으려고 */
+/** 한 주 경제 몰아보기 전체 회차 (최신 먼저) — 운영자는 공개 전 초안도. head 는 본문 첫 줄({{weekly:키}})을 읽으려고 */
 export async function weeklyArticles(opts: { admin?: boolean } = {}): Promise<(ArticleSummary & { head: string; draft: boolean })[]> {
   const client = await db();
   const res = await client.execute({

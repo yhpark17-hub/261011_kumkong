@@ -8,7 +8,6 @@ import { FeedbackFab, FeedbackHost } from "@/components/feedback/Feedback";
 import { Tracker } from "@/components/analytics/Tracker";
 import { AdsenseScript } from "@/components/app-view";
 import { APP_MODE_SCRIPT } from "@/lib/app-view";
-import { jua } from "@/lib/fonts";
 import { ADSENSE_CLIENT, OG_IMAGE, SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -50,7 +49,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fbf8f3" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#12172e" },
   ],
 };
@@ -68,7 +67,7 @@ const jsonLd = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     // suppressHydrationWarning: 금콩 앱 웹뷰에서만 아래 스크립트가 data-app 을 붙여요
-    <html lang="ko" className={`h-full antialiased ${jua.variable}`} suppressHydrationWarning>
+    <html lang="ko" className="h-full antialiased" suppressHydrationWarning>
       <body className="relative isolate flex min-h-full flex-col">
         {/* 앱 웹뷰 표시 — 그리기 전에 붙여야 머리·탭이 깜빡이지 않아요 */}
         <script dangerouslySetInnerHTML={{ __html: APP_MODE_SCRIPT }} />

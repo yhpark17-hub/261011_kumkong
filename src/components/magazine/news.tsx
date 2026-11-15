@@ -164,7 +164,7 @@ export function PopularNews({ items, className, days = 7, fill = false }: { item
           {items.map((n, i) => (
             <li key={n.id} className={cn(stretch && "flex flex-1 flex-col justify-center")}>
               <Link href={itemHref(n)} className="group flex gap-3 py-3">
-                <span className="w-5 shrink-0 font-display text-[20px] leading-6 text-accent-text">{i + 1}</span>
+                <span className="w-5 shrink-0 font-display font-extrabold tracking-[-0.03em] text-[20px] leading-6 text-accent-text">{i + 1}</span>
                 <span className="min-w-0">
                   <span className="line-clamp-2 text-[15px] leading-snug font-bold text-ink [word-break:keep-all] group-hover:underline">{newsTitle(n)}</span>
                   <span className="mt-0.5 block type-caption text-ink-mute">{NEWS_SECTION_INFO[n.section].label}</span>
@@ -524,7 +524,7 @@ export function NoonTodayCard({
     <section aria-labelledby="today-noon" className="flex flex-col gap-3 rounded-3xl bg-lavender p-5 md:p-7">
       <div className="flex items-center gap-3 lg:flex-col lg:items-start">
         <KongMascot className="h-14 w-14 lg:h-[84px] lg:w-[84px]" hold="pencil" glasses />
-        <h2 id="today-noon" className="font-display text-[26px] leading-tight text-ink md:text-[32px]">
+        <h2 id="today-noon" className="font-display font-extrabold tracking-[-0.03em] text-[26px] leading-tight text-ink md:text-[32px]">
           점심 3문제
         </h2>
       </div>
@@ -600,7 +600,7 @@ export function PastBriefings({ days, total }: { days: { date: string; morning?:
           {days.map((d) => (
             <li key={d.date} className="flex gap-4 py-3.5">
               <span className="w-12 shrink-0">
-                <span className="block font-display text-[19px] leading-6 text-ink">
+                <span className="block font-display font-extrabold tracking-[-0.03em] text-[19px] leading-6 text-ink">
                   {Number(d.date.slice(5, 7))}.{Number(d.date.slice(8, 10))}
                 </span>
                 <span className="block type-caption text-ink-mute">{formatDayHeading(d.date).split(" ").at(-1)}</span>

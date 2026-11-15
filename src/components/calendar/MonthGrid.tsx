@@ -34,7 +34,7 @@ export function MonthGrid({
 }) {
   return (
     // 휴대폰에서는 화면 끝까지 넓혀 칸마다 기관 이름이 들어갈 자리를 확보
-    <div className="card overflow-hidden shadow-level-2 max-md:-mx-4 max-md:rounded-none max-md:border-x-0">
+    <div className="card overflow-hidden max-md:-mx-4 max-md:rounded-none max-md:border-x-0">
       <div className="grid grid-cols-7 border-b border-hairline bg-canvas-soft">
         {weekdayOrder(weekStart).map((dow) => (
           <div

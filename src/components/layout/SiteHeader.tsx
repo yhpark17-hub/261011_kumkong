@@ -16,7 +16,7 @@ const NAV = [
   { href: "/companies", label: "기관 정보·경쟁률" },
 ] as const;
 
-/* 스크롤 위치: 맨 위에서는 선 없이, 내려가면 아래 선을 그어 본문과 나눠요 */
+/* 스크롤 위치: 휴대폰은 맨 위에서 선 없이, 내려가면 아래 선을 그어 본문과 나눠요 */
 function subscribeScroll(cb: () => void) {
   window.addEventListener("scroll", cb, { passive: true });
   return () => window.removeEventListener("scroll", cb);
@@ -45,8 +45,9 @@ function NavItems({
         href={href}
         aria-current={isActive(pathname, href) ? "page" : undefined}
         className={cn(
-          "rounded-full px-3.5 py-2 text-[15px] leading-5 whitespace-nowrap transition-colors",
-          isActive(pathname, href) ? "bg-accent-soft font-bold text-ink" : "font-semibold text-ink-mute-2 hover:bg-canvas-soft hover:text-ink",
+          // 지금 화면: 글자 아래 남색 밑줄 (위에도 같은 두께의 투명 선을 둬서 글자가 가운데에 오게)
+          "flex items-center border-y-[3px] border-transparent text-[16px] leading-5 whitespace-nowrap transition-colors",
+          isActive(pathname, href) ? "border-b-navy-text font-bold text-ink" : "font-semibold text-ink-mute-2 hover:text-ink",
         )}
       >
         {label}
@@ -65,7 +66,7 @@ function NavItems({
               isActive(pathname, href) ? "font-bold text-ink" : "text-ink",
             )}
           >
-            {isActive(pathname, href) && <span aria-hidden className="h-2 w-2 rounded-full bg-accent" />}
+            {isActive(pathname, href) && <span aria-hidden className="h-4 w-[3px] rounded-full bg-navy-text" />}
             {label}
           </Link>
         </li>
@@ -91,33 +92,37 @@ export function SiteHeader() {
   return (
     <header
       data-app-hide
+      data-site-header
       className={cn(
-        "sticky top-0 z-30 transition-colors duration-200",
-        "border-b bg-page/95 backdrop-blur",
-        scrolled || menuOpen ? "border-hairline" : "border-transparent",
+        "sticky top-0 z-30 border-b bg-canvas/95 backdrop-blur transition-colors duration-200",
+        // 휴대폰은 맨 위에서 선 없이, 내려가면 선 — 컴퓨터는 늘 선
+        scrolled || menuOpen ? "border-hairline" : "border-transparent md:border-hairline",
       )}
     >
-      {/* 휴대폰은 위아래 여백을 줄여 61px (DESIGN-MOBILE.md 원칙 3) */}
-      <div className="mx-auto flex max-w-[1200px] items-center gap-8 px-4 py-2.5 md:px-6 md:py-4">
+      {/* 휴대폰 56px · 컴퓨터 68px */}
+      <div className="mx-auto flex h-14 max-w-[1200px] items-stretch gap-10 px-4 md:h-[68px] md:px-6">
         <Link href="/" className="flex items-center gap-2" aria-label="금콩 홈" onClick={close}>
           <Logo className="h-8 w-8" />
-          <span className="type-heading-lg text-ink">금콩</span>
+          <span data-header-fg className="text-[22px] leading-none font-extrabold tracking-[-0.04em] text-ink md:text-[23px]">
+            금콩
+          </span>
         </Link>
 
-        <nav className="hidden flex-1 items-center justify-center gap-0.5 md:flex lg:gap-1" aria-label="주요 메뉴">
+        <nav className="hidden flex-1 items-stretch gap-6 md:flex lg:gap-8" aria-label="주요 메뉴">
           <Suspense fallback={<NavItems pathname={null} variant="desktop" />}>
             <ActiveNavItems variant="desktop" />
           </Suspense>
         </nav>
 
-        <FeedbackButton kind="posting" className="btn btn-secondary btn-sm ml-auto hidden lg:inline-flex">
+        <FeedbackButton kind="posting" className="btn btn-secondary btn-sm ml-auto hidden self-center lg:inline-flex">
           공고 제보하기
         </FeedbackButton>
 
         {/* 모바일: 햄버거 내비 */}
         <button
           type="button"
-          className="btn btn-icon ml-auto text-ink hover:bg-canvas-soft md:hidden"
+          data-header-fg
+          className="btn btn-icon -mr-2 ml-auto self-center text-ink md:hidden"
           aria-label={menuOpen ? "메뉴 닫기" : "메뉴 열기"}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen(!menuOpen)}
@@ -127,7 +132,7 @@ export function SiteHeader() {
       </div>
 
       {menuOpen && (
-        <nav className="border-t border-hairline bg-page px-4 pt-2 pb-6 md:hidden" aria-label="모바일 메뉴">
+        <nav className="border-t border-hairline bg-canvas px-4 pt-2 pb-6 md:hidden" aria-label="모바일 메뉴">
           <Suspense fallback={<NavItems pathname={null} variant="mobile" onNavigate={close} />}>
             <ActiveNavItems variant="mobile" onNavigate={close} />
           </Suspense>
