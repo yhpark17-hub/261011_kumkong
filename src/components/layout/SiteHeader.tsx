@@ -16,7 +16,7 @@ const NAV = [
   { href: "/companies", label: "기관 정보·경쟁률" },
 ] as const;
 
-/* 스크롤 위치: 메시 위에서는 투명, 내려가면 canvas 배경 (nav-bar-on-mesh) */
+/* 스크롤 위치: 맨 위에서는 선 없이, 내려가면 아래 선을 그어 본문과 나눠요 */
 function subscribeScroll(cb: () => void) {
   window.addEventListener("scroll", cb, { passive: true });
   return () => window.removeEventListener("scroll", cb);
@@ -45,8 +45,8 @@ function NavItems({
         href={href}
         aria-current={isActive(pathname, href) ? "page" : undefined}
         className={cn(
-          "type-body-md whitespace-nowrap transition-colors",
-          isActive(pathname, href) ? "text-primary-text !font-normal" : "text-ink-mute-2 hover:text-ink",
+          "rounded-full px-3.5 py-2 text-[15px] leading-5 whitespace-nowrap transition-colors",
+          isActive(pathname, href) ? "bg-accent-soft font-bold text-ink" : "font-semibold text-ink-mute-2 hover:bg-canvas-soft hover:text-ink",
         )}
       >
         {label}
@@ -61,10 +61,11 @@ function NavItems({
             href={href}
             onClick={onNavigate}
             className={cn(
-              "flex min-h-12 items-center border-b border-hairline type-body-lg",
-              isActive(pathname, href) ? "text-primary-text" : "text-ink",
+              "flex min-h-12 items-center gap-2 border-b border-hairline type-body-lg",
+              isActive(pathname, href) ? "font-bold text-ink" : "text-ink",
             )}
           >
+            {isActive(pathname, href) && <span aria-hidden className="h-2 w-2 rounded-full bg-accent" />}
             {label}
           </Link>
         </li>
@@ -92,7 +93,8 @@ export function SiteHeader() {
       data-app-hide
       className={cn(
         "sticky top-0 z-30 transition-colors duration-200",
-        scrolled || menuOpen ? "border-b border-hairline bg-canvas" : "border-b border-transparent bg-transparent",
+        "border-b bg-page/95 backdrop-blur",
+        scrolled || menuOpen ? "border-hairline" : "border-transparent",
       )}
     >
       {/* 휴대폰은 위아래 여백을 줄여 61px (DESIGN-MOBILE.md 원칙 3) */}
@@ -102,13 +104,13 @@ export function SiteHeader() {
           <span className="type-heading-lg text-ink">금콩</span>
         </Link>
 
-        <nav className="hidden flex-1 items-center justify-center gap-6 md:flex lg:gap-8" aria-label="주요 메뉴">
+        <nav className="hidden flex-1 items-center justify-center gap-0.5 md:flex lg:gap-1" aria-label="주요 메뉴">
           <Suspense fallback={<NavItems pathname={null} variant="desktop" />}>
             <ActiveNavItems variant="desktop" />
           </Suspense>
         </nav>
 
-        <FeedbackButton kind="posting" className="btn btn-primary btn-sm ml-auto hidden lg:inline-flex">
+        <FeedbackButton kind="posting" className="btn btn-secondary btn-sm ml-auto hidden lg:inline-flex">
           공고 제보하기
         </FeedbackButton>
 
@@ -125,7 +127,7 @@ export function SiteHeader() {
       </div>
 
       {menuOpen && (
-        <nav className="border-t border-hairline bg-canvas px-4 pt-2 pb-6 md:hidden" aria-label="모바일 메뉴">
+        <nav className="border-t border-hairline bg-page px-4 pt-2 pb-6 md:hidden" aria-label="모바일 메뉴">
           <Suspense fallback={<NavItems pathname={null} variant="mobile" onNavigate={close} />}>
             <ActiveNavItems variant="mobile" onNavigate={close} />
           </Suspense>

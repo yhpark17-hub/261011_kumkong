@@ -9,8 +9,8 @@ export function DifficultyMeter({ avg, className }: { avg: number | null; classN
         <span
           key={v}
           className={cn(
-            "h-1.5 flex-1 rounded-full",
-            avg != null && avg >= v - 0.5 ? (v >= 4 ? "bg-ruby" : "bg-primary") : "bg-canvas-soft",
+            "h-2 flex-1 rounded-full",
+            avg != null && avg >= v - 0.5 ? "bg-accent" : "bg-canvas-soft",
           )}
         />
       ))}

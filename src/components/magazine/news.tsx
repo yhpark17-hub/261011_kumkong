@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, Lightbulb, Mail, Newspaper, TrendingUp } from "lucide-react";
+import { ArrowRight, Clock3, Lightbulb, Mail, Newspaper } from "lucide-react";
 import { formatDayHeading, formatShort } from "@/lib/date";
 import {
   BRIEFING_ARCHIVE,
+  EDITION_SCHEDULE,
   EDITION_LABEL,
   EDITION_SLOT,
   NEWS_SECTIONS,
@@ -24,6 +25,7 @@ import {
 } from "@/lib/news-meta";
 import { cn } from "../ui";
 import { BriefingCover } from "./BriefingBrand";
+import { KongMascot } from "./KongMascot";
 import { ViewsLikes } from "./Stats";
 import { MoreChips } from "./interactive";
 import { NEWS_ICON } from "./news-icons";
@@ -150,11 +152,10 @@ export function PopularNews({ items, className, days = 7, fill = false }: { item
   // fill: 옆 카드 높이만큼 줄 간격을 고르게 벌려 빈 곳이 없게 (기사가 4건 이상일 때)
   const stretch = fill && items.length >= 4;
   return (
-    <section aria-labelledby="popular-news" className={cn("flex flex-col rounded-2xl border border-hairline bg-canvas p-5", className)}>
-      <h2 id="popular-news" className="flex items-center gap-2 type-heading-sm text-ink">
-        <TrendingUp className="h-4 w-4 text-ruby" strokeWidth={2} />
+    <section aria-labelledby="popular-news" className={cn("card flex flex-col px-5 pt-5 pb-2 shadow-level-1 md:px-6 md:pt-6", className)}>
+      <h2 id="popular-news" className="flex items-baseline gap-2 type-heading-md text-ink">
         많이 본 기사
-        <span className="ml-auto type-micro font-normal text-ink-mute">최근 {days}일</span>
+        <span className="ml-auto type-caption font-normal text-ink-mute">최근 {days}일</span>
       </h2>
       {items.length === 0 ? (
         <p className="mt-4 type-caption text-ink-mute">기사가 쌓이면 많이 본 순서로 보여 드려요.</p>
@@ -163,10 +164,10 @@ export function PopularNews({ items, className, days = 7, fill = false }: { item
           {items.map((n, i) => (
             <li key={n.id} className={cn(stretch && "flex flex-1 flex-col justify-center")}>
               <Link href={itemHref(n)} className="group flex gap-3 py-3">
-                <span className={cn("w-5 shrink-0 tabular type-heading-sm", i < 3 ? "text-ruby" : "text-ink-mute")}>{i + 1}</span>
+                <span className="w-5 shrink-0 font-display text-[20px] leading-6 text-accent-text">{i + 1}</span>
                 <span className="min-w-0">
-                  <span className="line-clamp-2 type-body-md text-ink [word-break:keep-all] group-hover:underline">{newsTitle(n)}</span>
-                  <span className="mt-0.5 block type-micro text-ink-mute">{NEWS_SECTION_INFO[n.section].label}</span>
+                  <span className="line-clamp-2 text-[15px] leading-snug font-bold text-ink [word-break:keep-all] group-hover:underline">{newsTitle(n)}</span>
+                  <span className="mt-0.5 block type-caption text-ink-mute">{NEWS_SECTION_INFO[n.section].label}</span>
                 </span>
               </Link>
             </li>
@@ -338,7 +339,7 @@ export function EditionBadge({ edition, className }: { edition: BriefingIssue["e
  * 브리핑 표지 — 기본은 그날 썸네일(카톡 공유 그림과 같은 그림)이에요. 운영자가 판 색 표지나 직접 올린 그림으로 바꿀 수 있어요.
  * 그린 썸네일은 카드 크기에 맞는 배율을 브라우저가 골라요 (sizes = 화면에 보이는 폭).
  */
-function IssueCover({ issue, size, className, sizes = "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" }: { issue: BriefingIssue; size?: "sm"; className?: string; sizes?: string }) {
+export function IssueCover({ issue, size, className, sizes = "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" }: { issue: BriefingIssue; size?: "sm"; className?: string; sizes?: string }) {
   const t = issue.thumb;
   if (t.cover === "brand" || (t.cover === "upload" && !t.coverUrl))
     return <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`조회 ${issue.views.toLocaleString()}`} noteIcon="eye" size={size} className={className} />;
@@ -452,5 +453,167 @@ export function ArchiveCallout({ total, className }: { total: number; className?
       </span>
       <ArrowRight className="h-5 w-5 shrink-0 text-ink-mute transition-transform group-hover:translate-x-0.5" strokeWidth={1.75} />
     </Link>
+  );
+}
+
+/** 첫 화면 '오늘' 왼쪽 — 아침 브리핑 한 호 (그림 · 판 이름 · 공개 시각·기사 수 · 제목 · 읽기) */
+export function MorningTodayCard({ issue, count }: { issue: BriefingIssue; count: number }) {
+  const href = letterHref(issue.date, issue.edition);
+  return (
+    <article aria-labelledby="today-morning" className="card flex flex-col overflow-hidden shadow-level-1">
+      <Link href={href} tabIndex={-1} aria-hidden className="block">
+        <IssueCover issue={issue} className="aspect-[40/21] w-full" sizes="(min-width: 1024px) 760px, 100vw" />
+      </Link>
+      <div className="flex flex-1 flex-col p-5 md:p-7">
+        <p className="flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-accent-soft px-2.5 py-1 text-[12px] leading-none font-extrabold text-lemon">아침 브리핑</span>
+          <span className="type-caption text-ink-mute">
+            {EDITION_SCHEDULE[0].time}
+            {count > 0 && ` · 기사 ${count}건`} · {volLabel(issue.vol)}
+          </span>
+        </p>
+        <h2 id="today-morning" className="mt-2.5 text-[20px] leading-snug font-extrabold text-ink [word-break:keep-all] md:text-[25px] md:leading-[1.38]">
+          <Link href={href} className="hover:underline">
+            {issue.title}
+          </Link>
+        </h2>
+        <div className="mt-auto pt-5">
+          <Link href={href} className="btn btn-primary max-md:w-full">
+            브리핑 읽기
+            <ArrowRight className="h-4 w-4" strokeWidth={2} />
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/**
+ * 첫 화면 '오늘' 오른쪽 — 점심 3문제.
+ * 오늘 점심판이 나왔으면 제목 + 오늘의 용어·면접 질문, 아직이면 '12:30에 열려요' + 바로 전 점심판(어제 3문제).
+ */
+export function NoonTodayCard({
+  issue,
+  previous,
+  term,
+  question,
+  pending,
+}: {
+  issue: BriefingIssue | null;
+  previous: BriefingIssue | null;
+  term: NewsItem | null;
+  question: NewsItem | null;
+  /** 오늘 점심판을 기다리는 중 (위 날짜가 오늘일 때만 '12:30에 열려요') */
+  pending: boolean;
+}) {
+  return (
+    <section aria-labelledby="today-noon" className="flex flex-col gap-3 rounded-3xl bg-lavender p-5 md:p-7">
+      <div className="flex items-center gap-3 lg:flex-col lg:items-start">
+        <KongMascot className="h-14 w-14 lg:h-[84px] lg:w-[84px]" hold="pencil" glasses />
+        <h2 id="today-noon" className="font-display text-[26px] leading-tight text-ink md:text-[32px]">
+          점심 3문제
+        </h2>
+      </div>
+      {issue ? (
+        <>
+          <Link href={letterHref(issue.date, issue.edition)} className="text-[16px] leading-snug font-bold text-ink [word-break:keep-all] hover:underline md:text-[17px]">
+            {issue.title}
+          </Link>
+          {(term || question) && (
+            <ul className="space-y-1.5 type-caption text-ink-secondary">
+              {term && (
+                <li className="flex gap-2">
+                  <span className="shrink-0 rounded-md bg-canvas px-1.5 py-0.5 text-[11px] leading-4 font-extrabold text-primary-text">용어</span>
+                  <span className="min-w-0 truncate">{term.title}</span>
+                </li>
+              )}
+              {question && (
+                <li className="flex gap-2">
+                  <span className="shrink-0 rounded-md bg-canvas px-1.5 py-0.5 text-[11px] leading-4 font-extrabold text-primary-text">면접</span>
+                  <span className="line-clamp-2 min-w-0">{question.title}</span>
+                </li>
+              )}
+            </ul>
+          )}
+          <div className="mt-auto pt-2">
+            <Link href={letterHref(issue.date, issue.edition)} className="btn btn-primary max-md:w-full">
+              3문제 풀기
+              <ArrowRight className="h-4 w-4" strokeWidth={2} />
+            </Link>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="type-body-md text-ink-secondary [word-break:keep-all]">아침 기사로 만든 금공 필기형 3문제와 면접 질문 1개를 풀어요.</p>
+          {pending && (
+            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-canvas px-4 py-2 text-[14px] font-bold text-ink">
+              <Clock3 className="h-4 w-4 text-primary-text" strokeWidth={2.2} />
+              {EDITION_SCHEDULE[1].time}에 열려요
+            </span>
+          )}
+          {previous && (
+            <Link href={letterHref(previous.date, previous.edition)} className="group mt-auto block border-t border-primary-subdued/70 pt-4">
+              <span className="block text-[12px] font-extrabold text-primary-text">
+                {pending ? "기다리는 동안 · " : "가장 최근 · "}
+                {formatShort(previous.date)} 3문제
+              </span>
+              <span className="mt-1 block text-[15px] leading-snug font-bold text-ink [word-break:keep-all] group-hover:underline">{previous.title}</span>
+            </Link>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
+/** 지난 브리핑 — 날짜마다 한 묶음 (아침 · 점심 제목) */
+export function PastBriefings({ days, total }: { days: { date: string; morning?: BriefingIssue; noon?: BriefingIssue }[]; total: number }) {
+  return (
+    <section aria-labelledby="past-briefings" className="card flex flex-col px-5 pt-5 pb-2 shadow-level-1 md:px-6 md:pt-6">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="past-briefings" className="type-heading-md text-ink">
+          지난 브리핑
+        </h2>
+        <Link href={BRIEFING_ARCHIVE} className="inline-flex items-center gap-0.5 text-[13px] font-bold text-accent-text hover:underline">
+          {total.toLocaleString()}호 전체 보기
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.2} />
+        </Link>
+      </div>
+      {days.length === 0 ? (
+        <p className="py-6 type-body-md text-ink-mute">지난 브리핑이 쌓이면 여기서 날짜별로 볼 수 있어요.</p>
+      ) : (
+        <ul className="mt-1 divide-y divide-hairline">
+          {days.map((d) => (
+            <li key={d.date} className="flex gap-4 py-3.5">
+              <span className="w-12 shrink-0">
+                <span className="block font-display text-[19px] leading-6 text-ink">
+                  {Number(d.date.slice(5, 7))}.{Number(d.date.slice(8, 10))}
+                </span>
+                <span className="block type-caption text-ink-mute">{formatDayHeading(d.date).split(" ").at(-1)}</span>
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col gap-2">
+                {(["morning", "noon"] as const).map((ed) => {
+                  const it = d[ed];
+                  if (!it) return null;
+                  return (
+                    <Link key={ed} href={letterHref(it.date, it.edition)} className="group flex items-baseline gap-2">
+                      <span
+                        className={cn(
+                          "shrink-0 rounded-md px-1.5 py-0.5 text-[11px] leading-4 font-extrabold",
+                          ed === "morning" ? "bg-accent-soft text-lemon" : "bg-lavender text-primary-text",
+                        )}
+                      >
+                        {ed === "morning" ? "아침" : "점심"}
+                      </span>
+                      <span className="min-w-0 text-[14px] leading-snug font-semibold text-ink [word-break:keep-all] group-hover:underline">{it.title}</span>
+                    </Link>
+                  );
+                })}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

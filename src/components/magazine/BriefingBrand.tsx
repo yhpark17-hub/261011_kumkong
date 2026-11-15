@@ -1,11 +1,12 @@
-import { Jua } from "next/font/google";
 import { Clock3, Eye, Soup, Sunrise } from "lucide-react";
 import type { IssueEdition } from "@/lib/news-meta";
 import { cn } from "../ui";
 import { KongMascot } from "./KongMascot";
 
-/** 브리핑 로고 글씨 — 둥글고 귀여운 한글 글꼴 (로고·표지에만) */
-export const jua = Jua({ weight: "400", subsets: ["latin"], preload: false, display: "swap" });
+import { jua } from "@/lib/fonts";
+
+/** 브리핑 로고 글씨 — 둥글고 귀여운 한글 글꼴 (사이트 전체가 같은 글꼴을 써요: lib/fonts) */
+export { jua };
 
 export function Sparkle({ className }: { className?: string }) {
   return (

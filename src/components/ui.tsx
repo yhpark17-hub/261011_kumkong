@@ -89,7 +89,7 @@ export function CompanyAvatar({
     return (
       <span
         className={cn(
-          "inline-flex shrink-0 items-center justify-center overflow-hidden border border-hairline bg-[#ffffff]",
+          "inline-flex shrink-0 items-center justify-center overflow-hidden border border-hairline/70 bg-[#ffffff]",
           dims,
           size === "lg" ? "p-2" : size === "xs" ? "p-0.5" : "p-1",
         )}
@@ -131,7 +131,7 @@ export function Chip({ children, className }: { children: React.ReactNode; class
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border border-hairline bg-canvas px-3 py-1 type-caption text-ink-secondary",
+        "inline-flex items-center rounded-full bg-canvas-soft px-3 py-1 type-caption font-medium text-ink-secondary",
         className,
       )}
     >
@@ -159,7 +159,7 @@ export function Card({
   );
 }
 
-/** 섹션 위 작은 라벨 (micro-cap eyebrow) */
+/** 섹션 위 작은 라벨 — 주황 갈색 굵은 글씨 */
 export function Eyebrow({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <p className={cn("type-micro-cap text-primary-text", className)}>{children}</p>;
+  return <p className={cn("text-[13px] leading-5 font-extrabold text-accent-text", className)}>{children}</p>;
 }

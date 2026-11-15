@@ -9,55 +9,67 @@
 /* .theme-light — 다크 모드여도 밝은 종이처럼 보여야 하는 곳 (데일리 브리핑 본문·표지) */
 :root,
 .theme-light {
+  /*
+   * 2026-11-15 '그림책 금콩' — 브리핑 그림체(살구·버터·라벤더 + 남색 선)를 사이트 전체로.
+   * 보라(#533afd)·분홍 메시 대신 남색 버튼, 종이색 바탕, 흰 카드 + 부드러운 그림자.
+   */
   /* Brand & Accent */
-  --primary: #533afd;
-  --primary-deep: #4434d4;
-  --primary-press: #2e2b8c;
-  --primary-soft: #665efd;
-  --primary-subdued: #b9b9f9;
-  --brand-dark: #1c1e54;
-  --ruby: #ea2261;
-  --magenta: #f96bee;
-  --lemon: #9b6829;
-  --shadow-blue: #003770;
-  /* Gradient mesh 의 sherbet orange 스톱 (문서의 mesh 색 구성: cream/orange/lavender/indigo/ruby/magenta) */
-  --sherbet: #ffa26b;
+  --primary: #1f2a5c;
+  --primary-deep: #172048;
+  --primary-press: #10173a;
+  --primary-soft: #3b4a8f;
+  --primary-subdued: #c9d0ee;
+  --brand-dark: #1f2a5c;
+  --ruby: #c8364a;
+  --magenta: #b04fa6;
+  --lemon: #8a5a12;
+  --shadow-blue: #2b5c8a;
+  --sherbet: #f7a14a;
+  /* 그림책 팔레트 — 주황은 강조 한 군데, 나머지는 옅은 바탕 */
+  --accent: #f7a14a;
+  --accent-text: #b4610f;
+  --accent-soft: #ffe9cc;
+  --butter: #fff4d9;
+  --lavender: #eef0fb;
+  --sky: #eaf2fd;
+  --lilac: #ece6f6;
 
-  /* Surface */
+  /* Surface — 페이지는 종이색, 카드·입력칸은 흰색(canvas) */
+  --page: #fbf8f3;
   --canvas: #ffffff;
-  --canvas-soft: #f6f9fc;
-  --canvas-cream: #f5e9d4;
-  --hairline: #e3e8ee;
-  --hairline-input: #a8c3de;
+  --canvas-soft: #f6f2ec;
+  --canvas-cream: #fff4d9;
+  --hairline: #ece5da;
+  --hairline-input: #d6ccbd;
 
   /* Text */
-  --ink: #0d253d;
-  --ink-secondary: #273951;
-  --ink-mute: #64748d;
-  --ink-mute-2: #61718a;
+  --ink: #1f2a5c;
+  --ink-secondary: #3b4466;
+  --ink-mute: #646c8a;
+  --ink-mute-2: #4a5274;
   --on-primary: #ffffff;
-  /* 링크·활성 텍스트 (link-on-light) */
-  --primary-text: #533afd;
+  /* 링크·활성 텍스트 */
+  --primary-text: #3f4ab8;
 
   /* pill-tag-soft */
-  --tag-soft-bg: #b9b9f9;
-  --tag-soft-text: #4434d4;
+  --tag-soft-bg: #eef0fb;
+  --tag-soft-text: #3f4ab8;
 
-  /* 일정 유형 (대시보드 UI 전용 의미 색) */
-  --ev-posting: #64748d;
-  --ev-posting-soft: #eef2f7;
-  --ev-doc: #ea2261;
-  --ev-doc-soft: #fde9ef;
-  --ev-written: #533afd;
-  --ev-written-soft: #eeebff;
-  --ev-interview1: #a8209b; /* magenta 계열 — 작은 글씨 대비 확보용 진한 톤 */
-  --ev-interview1-soft: #fdeefc;
-  --ev-interview2: #9b6829; /* lemon */
-  --ev-interview2-soft: #f5e9d4; /* canvas-cream */
-  --ev-final: #003770; /* shadow-blue */
-  --ev-final-soft: #e6eef7;
+  /* 일정 유형 (대시보드 UI 전용 의미 색) — 서류 빨강 · 필기 남보라 · 1차 자두 · 2차 겨자 · 발표 초록 */
+  --ev-posting: #646c8a;
+  --ev-posting-soft: #f1ece4;
+  --ev-doc: #b42b40;
+  --ev-doc-soft: #fdebee;
+  --ev-written: #3f4ab8;
+  --ev-written-soft: #eef0fd;
+  --ev-interview1: #833a90;
+  --ev-interview1-soft: #f6eaf8;
+  --ev-interview2: #7a4f0e;
+  --ev-interview2-soft: #fff2d9;
+  --ev-final: #1c6b57;
+  --ev-final-soft: #e3f3ec;
 
-  --mesh-opacity: 0.9;
+  --mesh-opacity: 0;
   color-scheme: light;
 }
 
@@ -69,44 +81,55 @@
 /* 다크 모드 — 문서의 "dashboard track flips polarity to a dark-app shell" */
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary: #665efd;
-    --primary-deep: #533afd;
-    --primary-press: #4434d4;
-    --primary-text: #b9b9f9;
-    /* 어두운 canvas 위에서 선택 상태·featured 카드가 구분되도록 한 단계 밝은 남색 */
-    --brand-dark: #2e2b8c;
-    --ruby: #ff4d82;
-    --lemon: #d9a25c;
+    --primary: #4c5bc4;
+    --primary-deep: #5a69d2;
+    --primary-press: #3a48a8;
+    --primary-soft: #6f7ee0;
+    --primary-subdued: #2e3770;
+    --primary-text: #aab6ff;
+    /* 어두운 바탕 위에서 선택 상태·남색 카드가 구분되도록 한 단계 밝은 남색 */
+    --brand-dark: #2e3a7a;
+    --ruby: #ff7a8c;
+    --magenta: #e89ae8;
+    --lemon: #e2b26a;
     --shadow-blue: #7fb2e5;
+    --accent: #f7a14a;
+    --accent-text: #ffc58a;
+    --accent-soft: #3a2a14;
+    --butter: #2c2616;
+    --lavender: #20264a;
+    --sky: #182a44;
+    --lilac: #261f3e;
 
-    --canvas: #0b1d31;
-    --canvas-soft: #0f2640;
-    --canvas-cream: #2b2417;
-    --hairline: #1e3651;
-    --hairline-input: #3a5a7c;
+    --page: #12172e;
+    --canvas: #1a2042;
+    --canvas-soft: #222a52;
+    --canvas-cream: #2c2616;
+    --hairline: #2c3460;
+    --hairline-input: #424b80;
 
-    --ink: #f6f9fc;
-    --ink-secondary: #c9d6e5;
-    --ink-mute: #8fa3bb;
-    --ink-mute-2: #8fa3bb;
+    --ink: #f4f1ea;
+    --ink-secondary: #d3d6e6;
+    --ink-mute: #a2a9c8;
+    --ink-mute-2: #b3b9d4;
 
-    --tag-soft-bg: #2e2b8c;
-    --tag-soft-text: #b9b9f9;
+    --tag-soft-bg: #2b3366;
+    --tag-soft-text: #c3ccff;
 
-    --ev-posting: #8fa3bb;
-    --ev-posting-soft: #14304d;
-    --ev-doc: #ff4d82;
-    --ev-doc-soft: #3a1426;
-    --ev-written: #8f87ff;
-    --ev-written-soft: #221d5c;
-    --ev-interview1: #f58ff0;
-    --ev-interview1-soft: #3a1838;
-    --ev-interview2: #d9a25c;
-    --ev-interview2-soft: #2b2417;
-    --ev-final: #7fb2e5;
-    --ev-final-soft: #0f2a47;
+    --ev-posting: #a2a9c8;
+    --ev-posting-soft: #232a50;
+    --ev-doc: #ff8a9a;
+    --ev-doc-soft: #3a1a2a;
+    --ev-written: #a6b0ff;
+    --ev-written-soft: #232a5c;
+    --ev-interview1: #e8a2ea;
+    --ev-interview1-soft: #36193a;
+    --ev-interview2: #e8bd78;
+    --ev-interview2-soft: #33290f;
+    --ev-final: #74d6b4;
+    --ev-final-soft: #11342b;
 
-    --mesh-opacity: 0.38;
+    --mesh-opacity: 0;
     color-scheme: dark;
   }
 }
@@ -119,12 +142,14 @@
   --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-3xl: 28px;
 
-  /* Elevation */
-  --shadow-level-1: 0 1px 3px rgba(0, 55, 112, 0.08);
-  --shadow-level-2: 0 8px 24px rgba(0, 55, 112, 0.08), 0 2px 6px rgba(0, 55, 112, 0.04);
+  /* Elevation — 남색이 살짝 도는 부드러운 그림자 */
+  --shadow-level-1: 0 1px 2px rgba(31, 42, 92, 0.05), 0 8px 22px -12px rgba(31, 42, 92, 0.16);
+  --shadow-level-2: 0 1px 2px rgba(31, 42, 92, 0.05), 0 16px 36px -14px rgba(31, 42, 92, 0.24);
 }
 
 @theme inline {
@@ -168,9 +193,20 @@
   --color-ev-final: var(--ev-final);
   --color-ev-final-soft: var(--ev-final-soft);
 
+  --color-page: var(--page);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-butter: var(--butter);
+  --color-lavender: var(--lavender);
+  --color-sky: var(--sky);
+  --color-lilac: var(--lilac);
+
   --font-sans:
     "Pretendard Variable", Pretendard, Inter, "SF Pro Display", -apple-system, BlinkMacSystemFont,
     "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  /* 큰 제목용 둥근 글씨 (브리핑 제목과 같은 주아체) — layout 에서 --font-jua 를 붙여요 */
+  --font-display: var(--font-jua), "Jua", "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", sans-serif;
 }
 
 /* ───────────── Typography (DESIGN.md typography 토큰) ───────────── */
@@ -183,43 +219,43 @@
 
 @utility type-display-xxl {
   font-size: 56px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.03;
   letter-spacing: -1.4px;
 }
 @utility type-display-xl {
   font-size: 48px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.96px;
 }
 @utility type-display-lg {
   font-size: 32px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.64px;
 }
 @utility type-display-md {
   font-size: 26px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.12;
   letter-spacing: -0.26px;
 }
 @utility type-heading-lg {
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.3;
   letter-spacing: -0.02em;
 }
 @utility type-heading-md {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.4;
   letter-spacing: -0.01em;
 }
 @utility type-heading-sm {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.4;
   letter-spacing: 0;
 }
@@ -244,13 +280,13 @@
 }
 @utility type-button-md {
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0;
 }
 @utility type-button-sm {
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0;
 }
@@ -268,9 +304,9 @@
   letter-spacing: 0;
 }
 @utility type-micro-cap {
-  font-size: 10px;
-  font-weight: 400;
-  line-height: 1.15;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
   letter-spacing: 0.1px;
 }
 /* 숫자·금액·날짜에 tnum (문서: "Tabular figures for money") */
@@ -280,42 +316,49 @@
 
 /* ───────────── Components (DESIGN.md components) ───────────── */
 @layer components {
-  /* button-*-pill: 8px 16px, rounded pill, button-md(16px/400) — 모바일은 40px 이상 터치 영역 */
+  /* 알약 버튼 — 굵은 글씨, 휴대폰은 44px 이상 터치 영역 */
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 40px;
-    padding: 8px 16px;
-    border: 1px solid transparent;
+    min-height: 44px;
+    padding: 10px 18px;
+    border: 1.5px solid transparent;
     border-radius: 9999px;
-    font-size: 16px;
-    font-weight: 400;
+    font-size: 15px;
+    font-weight: 700;
     line-height: 1;
-    letter-spacing: 0;
+    letter-spacing: -0.01em;
     white-space: nowrap;
     cursor: pointer;
     transition:
       background-color 150ms,
       border-color 150ms,
-      color 150ms;
+      color 150ms,
+      box-shadow 150ms;
   }
   .btn-sm {
+    min-height: 40px;
+    padding: 8px 16px;
     font-size: 14px;
   }
   .btn-icon {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     padding: 0;
   }
   @media (min-width: 768px) {
     .btn {
-      min-height: 0;
+      min-height: 42px;
+    }
+    .btn-sm {
+      min-height: 38px;
     }
     .btn-icon {
-      width: 34px;
-      height: 34px;
+      width: 38px;
+      height: 38px;
+      min-height: 0;
     }
   }
   .btn-primary {
@@ -328,10 +371,11 @@
   .btn-primary:active {
     background: var(--primary-press);
   }
+  /* 남색 테두리 알약 */
   .btn-secondary {
     background: var(--canvas);
-    color: var(--primary-text);
-    border-color: var(--primary-text);
+    color: var(--ink);
+    border-color: var(--ink);
   }
   .btn-secondary:hover {
     background: var(--canvas-soft);
@@ -340,65 +384,70 @@
     background: var(--brand-dark);
     color: var(--on-primary);
   }
-  /* 토글·필터용 변형: button-secondary 형태에 hairline 테두리 (선택 시 btn-on-dark) */
+  /* 토글·필터: 옅은 베이지 알약 (선택 시 btn-on-dark) */
   .btn-toggle {
-    background: var(--canvas);
+    background: var(--canvas-soft);
     color: var(--ink-secondary);
-    border-color: var(--hairline);
+    border-color: transparent;
+    font-weight: 600;
   }
   .btn-toggle:hover {
-    border-color: var(--hairline-input);
+    background: color-mix(in srgb, var(--canvas-soft) 70%, var(--hairline-input));
   }
 
-  /* text-input: 8px 12px, rounded sm(6px), hairline-input 테두리, 포커스 시 primary */
+  /* 입력칸: 흰 바탕, 둥근 모서리, 포커스 시 남보라 테두리 */
   .input {
-    min-height: 40px;
-    padding: 8px 12px;
+    min-height: 44px;
+    padding: 10px 14px;
     border: 1px solid var(--hairline-input);
-    border-radius: 6px;
+    border-radius: 14px;
     background: var(--canvas);
     color: var(--ink);
     font-size: 15px;
-    font-weight: 300;
+    font-weight: 400;
     line-height: 1.4;
     outline: none;
+    transition:
+      border-color 150ms,
+      box-shadow 150ms;
   }
   .input::placeholder {
     color: var(--ink-mute);
   }
   .input:focus {
-    border-color: var(--primary);
+    border-color: var(--primary-text);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-text) 18%, transparent);
   }
 
-  /* card-feature-light / card-dashboard-mockup 공통 외형 */
+  /* 흰 카드 — 아주 옅은 테두리 + 부드러운 그림자 (shadow-level-1 은 Card 가 붙여요) */
   .card {
     background: var(--canvas);
-    border: 1px solid var(--hairline);
-    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--hairline) 70%, transparent);
+    border-radius: 24px;
   }
-  /* card-cream-band */
+  /* 버터색 띠 */
   .card-cream {
     background: var(--canvas-cream);
-    border-radius: 12px;
+    border-radius: 24px;
   }
-  /* card-pricing-featured (deep navy) */
+  /* 남색 카드 */
   .card-featured {
     background: var(--brand-dark);
     color: var(--on-primary);
-    border-radius: 12px;
+    border-radius: 24px;
   }
 
-  /* pill-tag-soft: micro-cap(10px/400), 4px 8px, pill */
+  /* 작은 알약 태그 */
   .tag {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 4px 8px;
+    padding: 3px 9px;
     border-radius: 9999px;
-    font-size: 10px;
-    font-weight: 400;
-    line-height: 1.15;
-    letter-spacing: 0.1px;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0;
     white-space: nowrap;
   }
   .tag-soft {
@@ -406,9 +455,9 @@
     color: var(--tag-soft-text);
   }
 
-  /* link-on-light */
   .link {
     color: var(--primary-text);
+    font-weight: 600;
   }
   .link:hover {
     text-decoration: underline;
@@ -431,7 +480,7 @@
 
   /* body: 15px/400(보통 굵기) + ss01 전역 — 2026-10-18 얇은 글씨(300)에서 바꿈, DESIGN-MOBILE.md */
   body {
-    background: var(--canvas);
+    background: var(--page);
     color: var(--ink);
     font-family: var(--font-sans);
     font-size: 15px;

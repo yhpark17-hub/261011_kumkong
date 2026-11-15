@@ -26,7 +26,7 @@ const GROUPS = [
 /** footer-light: canvas, ink-mute, caption, 64px 24px */
 export function SiteFooter() {
   return (
-    <footer data-app-hide className="mt-24 border-t border-hairline bg-canvas type-caption text-ink-mute">
+    <footer data-app-hide className="mt-24 border-t border-hairline bg-canvas-soft/60 type-caption text-ink-mute">
       <div className="mx-auto grid max-w-[1200px] gap-8 px-6 py-16 md:grid-cols-[2fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-2">
@@ -44,7 +44,7 @@ export function SiteFooter() {
         </div>
         {GROUPS.map((g) => (
           <div key={g.title}>
-            <h2 className="type-caption text-ink">{g.title}</h2>
+            <h2 className="type-caption font-bold text-ink">{g.title}</h2>
             <ul className="mt-4 space-y-2">
               {g.links.map((l) => (
                 <li key={l.label}>

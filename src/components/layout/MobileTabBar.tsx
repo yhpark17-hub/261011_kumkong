@@ -25,7 +25,7 @@ function Tabs({ pathname }: { pathname: string | null }) {
     <nav
       data-app-hide
       aria-label="하단 메뉴"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-canvas/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-page/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
     >
       <ul className="grid grid-cols-5">
         {TABS.map(({ href, label, Icon }) => {
@@ -35,9 +35,12 @@ function Tabs({ pathname }: { pathname: string | null }) {
               <Link
                 href={href}
                 aria-current={on ? "page" : undefined}
-                className={cn("flex h-14 flex-col items-center justify-center gap-0.5 text-[11px] leading-4", on ? "font-semibold text-primary-text" : "text-ink-mute")}
+                className={cn("flex h-14 flex-col items-center justify-center gap-0.5 text-[11px] leading-4", on ? "font-bold text-ink" : "font-medium text-ink-mute")}
               >
-                <Icon className="h-5 w-5" strokeWidth={on ? 2.2 : 1.75} />
+                {/* 지금 화면: 아이콘 뒤에 살구색 알약 */}
+                <span className={cn("inline-flex h-7 w-12 items-center justify-center rounded-full transition-colors", on && "bg-accent-soft")}>
+                  <Icon className="h-5 w-5" strokeWidth={on ? 2.3 : 1.75} />
+                </span>
                 {label}
               </Link>
             </li>
