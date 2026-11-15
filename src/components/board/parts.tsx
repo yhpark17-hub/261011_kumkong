@@ -165,7 +165,7 @@ function PostRow({ post: p, todayKey, pinned = false }: { post: PostSummary; tod
             )}
           </span>
         </span>
-        <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 type-micro text-ink-mute">
+        <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] leading-5 text-ink-mute">
           {company && <span className="rounded-full bg-canvas-soft px-2 py-0.5 type-caption text-ink-secondary">{company.shortName}</span>}
           <AuthorLabel nickname={p.nickname} ipPrefix={p.ipPrefix} isAdmin={p.isAdmin} className="type-caption" />
           <span>{time}</span>
