@@ -113,77 +113,72 @@ export function CompanyTable({ catalog }: { catalog: Catalog }) {
         </div>
       </div>
 
-      {/* 데스크톱 표 — 대시보드 목업 카드 */}
-      <div className="card mt-6 hidden overflow-hidden shadow-level-2 lg:block">
+      {/* 데스크톱 표 — 4칸: 기관 · 다음 일정 · 블라인드·필기·전공(꼬리표) · 최근 경쟁률 */}
+      <div className="card mt-6 hidden overflow-hidden shadow-level-1 lg:block">
         <table className="w-full">
-          <thead className="bg-canvas-soft type-caption text-ink-mute">
+          <thead className="border-b border-hairline type-caption text-ink-mute">
             <tr>
-              <th className="px-4 py-3 text-left font-normal">기관</th>
-              <th className="px-3 py-3 text-left font-normal">진행 상태</th>
-              <th className="px-3 py-3 text-left font-normal">다음 일정</th>
-              <th className="px-3 py-3 text-left font-normal">블라인드</th>
-              <th className="px-3 py-3 text-left font-normal">필기</th>
-              <th className="px-3 py-3 text-left font-normal">전공</th>
-              <th className="px-3 py-3 text-right font-normal">최근 경쟁률</th>
-              <th className="w-12" />
+              <th className="px-6 py-3.5 text-left font-semibold">기관</th>
+              <th className="px-3 py-3.5 text-left font-semibold">다음 일정</th>
+              <th className="px-3 py-3.5 text-left font-semibold">블라인드 · 필기 · 전공</th>
+              <th className="px-3 py-3.5 text-right font-semibold">최근 경쟁률</th>
+              <th className="w-14" />
             </tr>
           </thead>
           <tbody>
             {rows.map(({ c, r, stat, next, phase }) => (
-              <tr key={c.id} className="group border-t border-hairline hover:bg-canvas-soft">
-                <td className="px-4 py-3">
+              <tr key={c.id} className="group border-t border-hairline first:border-t-0 hover:bg-canvas-soft/60">
+                <td className="py-3.5 pr-3 pl-6">
                   <Link href={`/companies/${c.id}`} className="flex items-center gap-3">
-                    <CompanyAvatar company={c} size="sm" />
-                    <span>
-                      <span className="block type-body-md text-ink group-hover:text-primary-text">{c.name}</span>
-                      <span className="block type-caption text-ink-mute">
+                    <CompanyAvatar company={c} />
+                    <span className="min-w-0">
+                      <span className="block truncate text-[15px] leading-5 font-bold text-ink group-hover:underline">{c.name}</span>
+                      <span className="mt-0.5 block truncate type-caption text-ink-mute">
                         {CATEGORY_META[c.category].label}
                         {c.hq && ` · ${c.hq}`}
                       </span>
                     </span>
                   </Link>
                 </td>
-                <td className="px-3 py-3">
-                  {phase ? (
-                    <span className={cn("tag", PHASE_TONE_CLASS[phase.tone])}>{phase.label}</span>
-                  ) : (
-                    <span className="inline-block h-5 w-16 rounded-full bg-canvas-soft" />
-                  )}
-                  {r?.status === "expected" && r.events.length > 0 && (
-                    <span className="ml-1 type-micro text-ink-mute">예상</span>
-                  )}
-                </td>
-                <td className="px-3 py-3">
+                <td className="px-3 py-3.5">
                   {next ? (
-                    <span className="flex items-center gap-2">
-                      <span className="type-body-tabular whitespace-nowrap text-ink">
-                        <span className={EVENT_META[next.type].text}>{EVENT_META[next.type].short}</span>{" "}
-                        {formatShort(next.date)}
+                    <span className="flex flex-col gap-1">
+                      <span className="flex items-center gap-2 whitespace-nowrap">
+                        <span className={cn("text-[14px] font-bold", EVENT_META[next.type].text)}>{EVENT_META[next.type].label}</span>
+                        <span className="tabular text-[14px] text-ink">{formatShort(next.date)}</span>
+                        <DDayBadge date={next.date} endDate={next.endDate} size="sm" />
                       </span>
-                      <DDayBadge date={next.date} endDate={next.endDate} size="sm" />
+                      {phase && (
+                        <span className="flex items-center gap-1.5">
+                          <span className={cn("tag", PHASE_TONE_CLASS[phase.tone])}>{phase.label}</span>
+                          {r?.status === "expected" && r.events.length > 0 && <span className="type-micro text-ink-mute">예상</span>}
+                        </span>
+                      )}
                     </span>
+                  ) : phase ? (
+                    <span className={cn("tag", PHASE_TONE_CLASS[phase.tone])}>{phase.label}</span>
                   ) : (
                     <span className="text-ink-mute">{today ? "-" : ""}</span>
                   )}
                 </td>
-                <td className="px-3 py-3">
-                  <BlindBadge blind={c.blind} />
+                <td className="px-3 py-3.5">
+                  <span className="flex flex-wrap items-center gap-1.5">
+                    <BlindBadge blind={c.blind} />
+                    <span className="tag bg-canvas-soft text-ink-secondary">{c.ncsLabel}</span>
+                    <span className="tag bg-canvas-soft text-ink-secondary">{MAJOR_META[c.majorType].label}</span>
+                  </span>
                 </td>
-                <td className="px-3 py-3 type-caption text-ink-secondary">{c.ncsLabel}</td>
-                <td className="px-3 py-3 type-caption whitespace-nowrap text-ink-secondary">
-                  {MAJOR_META[c.majorType].label}
-                </td>
-                <td className="px-3 py-3 text-right type-body-tabular text-ink">
+                <td className="px-3 py-3.5 text-right whitespace-nowrap">
                   {stat?.ratio != null ? (
                     <>
-                      {formatRatio(stat.ratio)}
-                      <span className="ml-1 type-micro text-ink-mute">{stat.label}</span>
+                      <span className="block tabular text-[17px] leading-6 font-extrabold text-ink">{formatRatio(stat.ratio)}</span>
+                      <span className="block type-micro text-ink-mute">{stat.label}</span>
                     </>
                   ) : (
                     <span className="text-ink-mute">-</span>
                   )}
                 </td>
-                <td className="pr-3">
+                <td className="pr-4">
                   <FavoriteButton companyId={c.id} companyName={c.name} />
                 </td>
               </tr>

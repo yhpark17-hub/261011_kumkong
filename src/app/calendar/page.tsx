@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Suspense } from "react";
 import { HomeDashboard } from "@/components/calendar/HomeDashboard";
 import { DbSection } from "@/components/db/DbSection";
 import { RecentExamsPanel, RecentExamsPanelSkeleton } from "@/components/home/CommunityStrip";
 import { NewPostingsTicker, NewPostingsTickerSkeleton } from "@/components/home/NewPostingsTicker";
-import { Eyebrow } from "@/components/ui";
 import { buildCatalog } from "@/lib/data";
 import { pageMetadata } from "@/lib/site";
 
@@ -23,12 +23,26 @@ export default function CalendarPage() {
         <NewPostingsTicker />
       </Suspense>
 
-      <div className="mx-auto max-w-[1200px] px-4 pt-4 pb-4 md:px-6 md:pt-12 md:pb-8">
-        <Eyebrow className="max-md:hidden">2026 하반기 금융권 채용</Eyebrow>
-        <h1 className="type-heading-lg text-ink md:mt-3 md:type-display-lg lg:type-display-xl">금융공기업·공공기관 채용 캘린더</h1>
-        <p className="mt-4 max-w-2xl type-body-lg text-ink-secondary max-md:hidden">
-          서류 마감부터 필기·면접·최종 발표까지, 놓치면 안 되는 일정을 한 달력에서 확인하세요.
-        </p>
+      {/* 그림 배너 — 오른쪽 그림, 왼쪽 빈 벽 위에 제목 */}
+      <div className="mx-auto max-w-[1200px] px-4 pt-4 pb-5 md:px-6 md:pt-6 md:pb-7">
+        <section aria-labelledby="calendar-title" className="relative min-h-[150px] overflow-hidden rounded-[28px] bg-lilac md:min-h-[230px] md:rounded-[32px]">
+          <Image
+            src="/illust/calendar-banner.webp"
+            alt="책상 위 탁상 달력과 시계 그림"
+            fill
+            priority
+            sizes="(min-width: 1200px) 1152px, 100vw"
+            className="object-cover object-[88%_center] md:object-right"
+          />
+          <div className="relative max-w-[62%] p-5 md:max-w-[560px] md:px-11 md:py-10">
+            <h1 id="calendar-title" className="font-display text-[28px] leading-tight text-ink md:text-[42px]">
+              채용 캘린더
+            </h1>
+            <p className="mt-2 text-[13px] leading-relaxed text-ink-secondary [word-break:keep-all] md:text-[16px]">
+              서류 마감부터 필기·면접·최종 발표까지, 금융공기업·공공기관 일정을 한 달력에서 확인하세요.
+            </p>
+          </div>
+        </section>
       </div>
 
       <div className="mx-auto max-w-[1200px] px-4 pb-12 md:px-6">

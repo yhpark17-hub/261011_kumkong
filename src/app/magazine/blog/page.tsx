@@ -102,16 +102,16 @@ async function BlogBody({ sp }: { sp: SP }) {
   const Icon = category ? CATEGORY_ICON[category] : null;
 
   return (
-    <div className="mt-8">
+    <div className="mt-6">
       <MagazineCategoryNav active={category} counts={counts} />
 
       {showPick && (
         <section aria-labelledby="editors-pick" className="mt-8">
           <div className="mb-4">
-            <h2 id="editors-pick" className="type-heading-lg text-ink">
-              Editor&apos;s Pick
+            <p className="text-[13px] leading-5 font-extrabold text-accent-text">Editor&apos;s Pick</p>
+            <h2 id="editors-pick" className="mt-0.5 font-display text-[26px] leading-tight text-ink md:text-[32px]">
+              에디터 추천 · 먼저 읽어 보세요
             </h2>
-            <p className="mt-0.5 type-caption text-ink-mute">에디터 추천 · 먼저 읽어 보세요</p>
           </div>
           <FeatureCard a={pick} wide />
         </section>
@@ -176,7 +176,7 @@ async function BlogBody({ sp }: { sp: SP }) {
         </div>
 
         <aside className="space-y-4">
-          <section aria-labelledby="popular-title" className="rounded-xl border border-hairline p-5">
+          <section aria-labelledby="popular-title" className="card p-5 shadow-level-1">
             <h2 id="popular-title" className="type-heading-sm text-ink">
               많이 읽은 글
             </h2>
@@ -187,9 +187,9 @@ async function BlogBody({ sp }: { sp: SP }) {
                 {popular.map((a, i) => (
                   <li key={a.id}>
                     <Link href={articleHref(a.id)} className="group flex gap-3 py-3">
-                      <span className={cn("w-5 shrink-0 tabular type-heading-sm", i < 3 ? "text-primary-text" : "text-ink-mute")}>{i + 1}</span>
+                      <span className="w-5 shrink-0 font-display text-[19px] leading-6 text-accent-text">{i + 1}</span>
                       <span className="min-w-0">
-                        <span className="line-clamp-2 type-body-md text-ink [word-break:keep-all] group-hover:underline">{a.title}</span>
+                        <span className="line-clamp-2 text-[15px] leading-snug font-bold text-ink [word-break:keep-all] group-hover:underline">{a.title}</span>
                         <span className="mt-0.5 block type-micro text-ink-mute">{CATEGORY_INFO[a.category].label}</span>
                       </span>
                     </Link>
@@ -198,7 +198,7 @@ async function BlogBody({ sp }: { sp: SP }) {
               </ol>
             )}
           </section>
-          <div className="rounded-xl border border-hairline p-5">
+          <div className="card p-5 shadow-level-1">
             <p className="type-heading-sm text-ink">저장한 글</p>
             <div className="mt-2">
               <SavedArticles />

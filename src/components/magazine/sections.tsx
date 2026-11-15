@@ -159,7 +159,7 @@ export function FeatureCard({ a, wide = false }: { a: ArticleSummary; wide?: boo
     <Link
       href={articleHref(a.id)}
       className={cn(
-        "group flex flex-col overflow-hidden rounded-xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2",
+        "group flex flex-col overflow-hidden card shadow-level-1 transition-shadow hover:shadow-level-2",
         wide && "md:flex-row",
       )}
     >

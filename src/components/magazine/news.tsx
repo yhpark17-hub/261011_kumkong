@@ -106,7 +106,7 @@ function NewsCover({ n, className }: { n: NewsItem; className?: string }) {
 /** 카드 보기 */
 export function NewsCard({ n }: { n: NewsItem }) {
   return (
-    <Link href={itemHref(n)} className="group flex flex-col overflow-hidden rounded-xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
+    <Link href={itemHref(n)} className="group flex flex-col overflow-hidden card shadow-level-1 transition-shadow hover:shadow-level-2">
       <NewsCover n={n} className="aspect-[16/9] w-full" />
       <div className="flex flex-1 flex-col p-5 md:p-6">
         <span className="flex flex-wrap items-center gap-2">
@@ -339,16 +339,30 @@ export function EditionBadge({ edition, className }: { edition: BriefingIssue["e
  * 브리핑 표지 — 기본은 그날 썸네일(카톡 공유 그림과 같은 그림)이에요. 운영자가 판 색 표지나 직접 올린 그림으로 바꿀 수 있어요.
  * 그린 썸네일은 카드 크기에 맞는 배율을 브라우저가 골라요 (sizes = 화면에 보이는 폭).
  */
-export function IssueCover({ issue, size, className, sizes = "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" }: { issue: BriefingIssue; size?: "sm"; className?: string; sizes?: string }) {
+export function IssueCover({
+  issue,
+  size,
+  className,
+  sizes = "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw",
+  priority = false,
+}: {
+  issue: BriefingIssue;
+  size?: "sm";
+  className?: string;
+  sizes?: string;
+  /** 첫 화면 맨 위 그림 — 바로 받아요 */
+  priority?: boolean;
+}) {
+  const load = priority ? ({ loading: "eager", fetchPriority: "high" } as const) : ({ loading: "lazy" } as const);
   const t = issue.thumb;
   if (t.cover === "brand" || (t.cover === "upload" && !t.coverUrl))
     return <BriefingCover edition={issue.edition} date={formatShort(issue.date)} note={`조회 ${issue.views.toLocaleString()}`} noteIcon="eye" size={size} className={className} />;
   if (t.cover === "upload" || t.shareUrl)
     // eslint-disable-next-line @next/next/no-img-element -- 운영자가 올린 그림
-    return <img src={t.cover === "upload" ? t.coverUrl : shareImageUrl(issue)} alt="" loading="lazy" decoding="async" className={cn("bg-canvas-soft object-cover", className)} />;
+    return <img src={t.cover === "upload" ? t.coverUrl : shareImageUrl(issue)} alt="" {...load} decoding="async" className={cn("bg-canvas-soft object-cover", className)} />;
   return (
     // eslint-disable-next-line @next/next/no-img-element -- 그날 그린 썸네일
-    <img src={issueThumbUrl(issue)} srcSet={issueThumbSrcSet(issue)} sizes={sizes} alt="" loading="lazy" decoding="async" className={cn("bg-canvas-soft object-cover", className)} />
+    <img src={issueThumbUrl(issue)} srcSet={issueThumbSrcSet(issue)} sizes={sizes} alt="" {...load} decoding="async" className={cn("bg-canvas-soft object-cover", className)} />
   );
 }
 
@@ -376,7 +390,7 @@ export function IssueCard({ issue, top, count, view }: { issue: BriefingIssue; t
     );
   }
   return (
-    <Link href={letterHref(issue.date, issue.edition)} className="group flex flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
+    <Link href={letterHref(issue.date, issue.edition)} className="group flex flex-col overflow-hidden card shadow-level-1 transition-shadow hover:shadow-level-2">
       <IssueCover issue={issue} size="sm" className="aspect-[40/21] w-full" />
       <span className="flex flex-1 flex-col p-5">
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 type-caption text-ink-mute">
@@ -462,7 +476,7 @@ export function MorningTodayCard({ issue, count }: { issue: BriefingIssue; count
   return (
     <article aria-labelledby="today-morning" className="card flex flex-col overflow-hidden shadow-level-1">
       <Link href={href} tabIndex={-1} aria-hidden className="block">
-        <IssueCover issue={issue} className="aspect-[40/21] w-full" sizes="(min-width: 1024px) 760px, 100vw" />
+        <IssueCover issue={issue} className="aspect-[40/21] w-full" sizes="(min-width: 1024px) 760px, 100vw" priority />
       </Link>
       <div className="flex flex-1 flex-col p-5 md:p-7">
         <p className="flex flex-wrap items-center gap-2">

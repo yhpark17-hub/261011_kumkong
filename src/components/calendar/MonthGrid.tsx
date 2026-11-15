@@ -115,8 +115,8 @@ function DayCell({
       className={cn(
         "relative min-h-[76px] min-w-0 cursor-pointer border-r border-hairline p-0.5 last:border-r-0 md:min-h-32 md:cursor-default md:p-2",
         !inMonth && "bg-canvas-soft",
-        // 지난 날: 회색 바탕 + 옅은 빗금 — 오늘·앞으로의 날과 한눈에 구분
-        isPast && inMonth && "bg-canvas-soft bg-[repeating-linear-gradient(135deg,transparent_0_7px,var(--hairline)_7px_8px)]",
+        // 지난 날: 옅은 베이지 바탕만 (빗금 없이) — 오늘·앞으로의 날과 한눈에 구분
+        isPast && inMonth && "bg-canvas-soft/80",
         isToday && "bg-ev-written-soft/60 shadow-[inset_0_0_0_2px_var(--primary)]",
         selected && "max-md:bg-ev-written-soft",
       )}

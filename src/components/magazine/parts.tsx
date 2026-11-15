@@ -99,7 +99,7 @@ export function ArticleCover({ a, className, sizes = "(min-width: 1024px) 400px,
 export function ArticleCard({ a, priority = false, large = false }: { a: ArticleSummary; priority?: boolean; large?: boolean }) {
   const lines = summaryLines(a.summary);
   return (
-    <Link href={articleHref(a.id)} className="group flex flex-col overflow-hidden rounded-xl border border-hairline bg-canvas transition-shadow hover:shadow-level-2">
+    <Link href={articleHref(a.id)} className="group flex flex-col overflow-hidden card shadow-level-1 transition-shadow hover:shadow-level-2">
       <div className="relative">
         <ArticleCover a={a} className="aspect-[40/21] w-full" />
         <ReadBadge id={a.id} className="absolute top-3 right-3" />

@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { BarChart3, PenLine, Search, ShieldCheck, X } from "lucide-react";
+import { PenLine, Search, ShieldCheck, X } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { CompanyFilter } from "@/components/board/CompanyFilter";
 import { Pagination, PostTable } from "@/components/board/parts";
 import { AdminBar } from "@/components/board/AdminBar";
 import { DbSection } from "@/components/db/DbSection";
-import { Card, CompanyAvatar, Eyebrow, cn } from "@/components/ui";
+import { Card, CompanyAvatar, cn } from "@/components/ui";
 import { BOARD_CATEGORIES, BOARD_NAME, BOARD_TAGLINE, boardHref, isBoardCategory } from "@/lib/board-meta";
 import { companyOptions, getCompany } from "@/lib/data";
 import { todayKST } from "@/lib/date";
@@ -33,23 +34,23 @@ function one(v: string | string[] | undefined): string {
 export default function BoardPage({ searchParams }: PageProps<"/board">) {
   return (
     <div className="mx-auto max-w-[1200px] px-4 pt-4 pb-12 md:px-6 md:pt-12">
-      <header className="flex items-center justify-between gap-3 md:items-end md:gap-4">
-        <div>
-          <Eyebrow className="max-md:hidden">{BOARD_TAGLINE}</Eyebrow>
-          <h1 className="type-heading-lg text-ink md:mt-3 md:type-display-lg">{BOARD_NAME}</h1>
-          <p className="mt-3 max-w-2xl type-body-lg text-ink-secondary max-md:hidden">
+      <header className="flex items-center gap-5 rounded-[28px] bg-butter p-5 md:gap-7 md:rounded-[32px] md:px-10 md:py-8">
+        <Image src="/illust/tile-board.webp" alt="말풍선 두 개와 새싹 그림" width={132} height={132} priority className="hidden h-[116px] w-[116px] shrink-0 rounded-3xl object-cover sm:block md:h-[132px] md:w-[132px]" />
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display text-[28px] leading-tight text-ink md:text-[40px]">{BOARD_NAME}</h1>
+          <p className="mt-1.5 type-body-md text-ink-secondary [word-break:keep-all] md:text-[16px]">
             로그인 없이 닉네임과 비밀번호만으로 글을 쓸 수 있어요. 필기·면접 후기, 질문, 정보를 편하게 나눠 주세요.
           </p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/board/policy" className="btn btn-toggle btn-sm">
-            <ShieldCheck className="h-4 w-4" strokeWidth={1.75} />
-            이용 수칙
-          </Link>
-          <Link href="/board/write" className="btn btn-primary btn-sm">
-            <PenLine className="h-4 w-4" strokeWidth={1.75} />
-            글쓰기
-          </Link>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link href="/board/write" className="btn btn-primary">
+              <PenLine className="h-4 w-4" strokeWidth={2} />
+              글쓰기
+            </Link>
+            <Link href="/board/policy" className="btn bg-canvas text-ink shadow-level-1 hover:bg-canvas-soft">
+              <ShieldCheck className="h-4 w-4" strokeWidth={2} />
+              이용 수칙
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -59,7 +60,7 @@ export default function BoardPage({ searchParams }: PageProps<"/board">) {
         </Suspense>
       </DbSection>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_304px]">
+      <div className="mt-6 grid gap-6 md:mt-8 lg:grid-cols-[minmax(0,1fr)_304px] lg:gap-8">
         <div className="min-w-0">
           <DbSection noticeTitle="콩밭(게시판)을 준비하고 있어요">
             <Suspense fallback={<ListSkeleton />}>{searchParams.then((sp) => <BoardList sp={sp} />)}</Suspense>
@@ -67,10 +68,8 @@ export default function BoardPage({ searchParams }: PageProps<"/board">) {
         </div>
 
         <aside className="space-y-4">
-          <Card className="p-6">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-ev-written-soft text-ev-written">
-              <BarChart3 className="h-5 w-5" strokeWidth={1.75} />
-            </span>
+          <Card className="!border-transparent bg-lavender p-6">
+            <Image src="/illust/tile-exam.webp" alt="" width={64} height={64} className="h-16 w-16 rounded-2xl object-cover" />
             <h2 className="mt-4 type-heading-sm text-ink">필기 끝났다면, 30초 후기</h2>
             <p className="mt-2 type-body-md text-ink-secondary">
               체감 난이도·어려웠던 과목을 터치 몇 번으로 남기고 다른 사람들의 결과를 바로 확인하세요.
@@ -227,7 +226,7 @@ async function BoardList({ sp }: { sp: SP }) {
             className="input min-w-0 flex-1 md:w-56"
             aria-label="게시판 검색"
           />
-          <button type="submit" className="btn btn-toggle btn-icon !h-10 !w-10" aria-label="검색">
+          <button type="submit" className="btn btn-toggle btn-icon" aria-label="검색">
             <Search className="h-4 w-4" strokeWidth={1.75} />
           </button>
         </form>

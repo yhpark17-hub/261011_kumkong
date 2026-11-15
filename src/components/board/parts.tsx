@@ -62,8 +62,6 @@ export function CategoryTag({ category }: { category: BoardCategory }) {
 /* 글 목록 (디시 갤러리형 표 · 모바일은 2줄 리스트)                          */
 /* ------------------------------------------------------------------ */
 
-const COLS = "md:grid md:grid-cols-[52px_60px_104px_minmax(0,1fr)_136px_52px_44px_44px] md:items-center";
-
 export function PostTable({
   notices,
   posts,
@@ -80,30 +78,20 @@ export function PostTable({
   infeed?: ReactNode;
 }) {
   return (
-    <div className="border-t-2 border-ink">
-      <div className={cn("hidden border-b border-hairline py-2.5 text-center type-caption text-ink-mute", COLS)}>
-        <span>번호</span>
-        <span>말머리</span>
-        <span>기관</span>
-        <span>제목</span>
-        <span>글쓴이</span>
-        <span>작성일</span>
-        <span>조회</span>
-        <span>추천</span>
-      </div>
-      <ul>
+    <div className="card overflow-hidden px-4 shadow-level-1 md:px-6">
+      <ul className="divide-y divide-hairline">
         {notices.map((p) => (
           <PostRow key={`n${p.id}`} post={p} todayKey={todayKey} pinned />
         ))}
         {posts.map((p, i) => (
           <Fragment key={p.id}>
             <PostRow post={p} todayKey={todayKey} />
-            {infeed && i === 9 && posts.length > 12 && <li className="border-b border-hairline py-3">{infeed}</li>}
+            {infeed && i === 9 && posts.length > 12 && <li className="py-3">{infeed}</li>}
           </Fragment>
         ))}
       </ul>
       {!notices.length && !posts.length && (
-        <p className="border-b border-hairline py-16 text-center type-body-md text-ink-mute">{emptyText}</p>
+        <p className="py-16 text-center type-body-md text-ink-mute">{emptyText}</p>
       )}
     </div>
   );
@@ -123,9 +111,9 @@ function PostRow({ post: p, todayKey, pinned = false }: { post: PostSummary; tod
   const time = formatPostTime(p.createdAt, todayKey);
   const company = p.companyId ? getCompany(p.companyId) : undefined;
   return (
-    <li data-ak={p.authorKey || undefined} className={cn("border-b border-hairline", pinned && "bg-canvas-soft", !pinned && p.isAdmin && "bg-canvas-cream/50")}>
-      {/* 데스크톱 */}
-      <div className={cn("hidden min-h-11 py-2 text-center type-body-md", COLS)}>
+    <li data-ak={p.authorKey || undefined} className={cn((pinned || p.isAdmin) && "-mx-4 px-4 md:-mx-6 md:px-6", pinned && "bg-canvas-soft/70", !pinned && p.isAdmin && "bg-butter/60")}>
+      {/* 예전 표 칸 (지금은 쓰지 않아요 — 카드형 줄 하나로) */}
+      <div className={cn("hidden min-h-11 py-2 text-center type-body-md")}>
         <span className="tabular type-caption text-ink-mute">
           {pinned ? <span className="tag bg-brand-dark text-on-primary">공지</span> : p.id}
         </span>
@@ -162,11 +150,11 @@ function PostRow({ post: p, todayKey, pinned = false }: { post: PostSummary; tod
         <span className={cn("tabular type-caption", p.likes >= 5 ? "text-ruby" : "text-ink-mute")}>{p.likes}</span>
       </div>
 
-      {/* 모바일 */}
-      <Link href={href} className="block px-1 py-3 md:hidden">
+      {/* 카드형 줄: 말머리·기관 → 제목(+댓글) → 글쓴이 · 날짜 · 조회 · 추천 */}
+      <Link href={href} className="group block py-3.5 md:py-4">
         <span className="flex items-start gap-2">
           {pinned ? <span className="tag mt-0.5 bg-brand-dark text-on-primary">공지</span> : <CategoryTag category={p.category} />}
-          <span className={cn("min-w-0 flex-1 type-body-md text-ink", (pinned || p.isAdmin) && "!font-normal")}>
+          <span className={cn("min-w-0 flex-1 text-[15px] leading-snug font-semibold text-ink group-hover:underline md:text-[16px]", (pinned || p.isAdmin) && "font-bold")}>
             {p.title}
             <AttachmentMark post={p} className="ml-1 inline-block align-[-2px]" />
             {p.commentCount > 0 && (
