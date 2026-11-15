@@ -263,7 +263,7 @@ const BOLD_H = 384;
 function BoldView({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; photo: string | null }) {
   const em = splitEmphasis(plan.headline);
   // 밝은 그림(영상 그림) — 영상 썸네일과 같은 주아체 흰 글자에 남색 테두리, 강조 말은 노랑
-  const light = plan.scene === "shipyard";
+  const light = plan.scene === "shipyard" || plan.scene === "chip";
   const giant = em && [...em.big].length <= 7 && !light ? em : null;
   const cap = plan.sub ? fitText(plan.sub, [28, 26, 24, 22], 600, 1) : null;
   const dark = plan.scene === "fund" || plan.scene === "journey" || plan.scene === "tworounds" || plan.scene === "crossing";
@@ -332,7 +332,12 @@ function BoldView({ plan, logo, photo }: { plan: ArticleThumbPlan; logo: Logo; p
 }
 
 /** 사진을 까는 장면의 바탕 (next.config 의 outputFileTracingIncludes 로 함께 배포) */
-const SCENE_PHOTO: Partial<Record<ArticleThumbPlan["scene"], string>> = { crossing: "public/magazine/thumbs/crossing.jpg", shipyard: "public/magazine/thumbs/shipyard.jpg" };
+const SCENE_PHOTO: Partial<Record<ArticleThumbPlan["scene"], string>> = {
+  crossing: "public/magazine/thumbs/crossing.jpg",
+  shipyard: "public/magazine/thumbs/shipyard.jpg",
+  // 산업 A-Z 2편 반도체 — 영상 썸네일 a 의 바탕 그림 (글씨 없이)
+  chip: "public/magazine/thumbs/chip.jpg",
+};
 
 async function scenePhoto(scene: ArticleThumbPlan["scene"]): Promise<string | null> {
   const path = SCENE_PHOTO[scene];
@@ -350,7 +355,7 @@ export async function articleOgImage(a: ArticleSummary, { thumb = a.thumb, heade
   const needsLogo = (plan.scene === "company" || plan.scene === "fund" || plan.scene === "journey" || plan.scene === "tworounds" || plan.scene === "crossing") && plan.company;
   const [base, jua, logo, photo] = await Promise.all([
     ogFonts(),
-    plan.scene === "shipyard" ? juaFont() : Promise.resolve(null),
+    plan.scene === "shipyard" || plan.scene === "chip" ? juaFont() : Promise.resolve(null),
     needsLogo && plan.company ? companyLogo(plan.company.id) : Promise.resolve(null),
     scenePhoto(plan.scene),
   ]);

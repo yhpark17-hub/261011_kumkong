@@ -25,6 +25,7 @@ export const ARTICLE_FEATURES = {
   "feature:kdb-company": { label: "인터랙티브 가이드 — 산업은행 딥다이브 (돈의 여행·부서·면접)", hint: "글 전체가 11장짜리 산은 회사·면접 딥다이브로 바뀌어요 (본문 맨 위 한 줄)" },
   "feature:kexim-essay": { label: "인터랙티브 가이드 — 수은 논술 종합 (대미투자·방산·공급망·EDCF)", hint: "글 전체가 네 주제를 같은 틀로 정리한 9장짜리 수은 논술 가이드로 바뀌어요 (본문 맨 위 한 줄)" },
   "feature:shipbuilding": { label: "인터랙티브 가이드 — 산업 A-Z 조선업 (영상 + 글)", hint: "글 전체가 영상과 같은 순서의 7장짜리 조선업 가이드로 바뀌어요. 둘째 줄에 {{youtube:영상 주소}} 를 적으면 영상 링크가 생겨요" },
+  "feature:semiconductor": { label: "인터랙티브 가이드 — 산업 A-Z 반도체 (영상 + 글)", hint: "글 전체가 영상과 같은 순서의 6장짜리 반도체 가이드로 바뀌어요. 둘째 줄에 {{youtube:영상 주소}} 를 적으면 영상 링크가 생겨요" },
   "feature:kexim-written": { label: "인터랙티브 가이드 — 수출입은행 경영 필기", hint: "글 전체가 1차·2차 구조를 눌러 보는 9장짜리 수은 필기 가이드로 바뀌어요 (본문 맨 위 한 줄)" },
 } as const;
 

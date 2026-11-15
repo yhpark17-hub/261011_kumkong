@@ -215,6 +215,7 @@ export const ARTICLE_SCENES = [
   { key: "tworounds", label: "시험 두 번 (1차·2차 시험지 + 수출 화물선)" },
   { key: "crossing", label: "항로 위 네 주제 (함정 사진 + 금빛 항로 · 메달 넷)" },
   { key: "shipyard", label: "조선소의 LNG선 (산업 A-Z 영상 그림 · 밝은 글씨 · 영상 배지)" },
+  { key: "chip", label: "반도체 칩과 돋보기 (산업 A-Z 영상 그림 · 밝은 글씨 · 영상 배지)" },
   { key: "exam", label: "필기 시험지 · 시계" },
   { key: "interview", label: "면접장" },
   { key: "knowledge", label: "금융 지식 (책 · 차트)" },

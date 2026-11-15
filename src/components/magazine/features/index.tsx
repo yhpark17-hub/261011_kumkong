@@ -5,6 +5,7 @@ import { KdbCompanyGuide } from "./KdbCompanyGuide";
 import { KdbWrittenGuide } from "./KdbWrittenGuide";
 import { KeximEssayGuide } from "./KeximEssayGuide";
 import { KeximWrittenGuide } from "./KeximWrittenGuide";
+import { SemiconductorGuide } from "./SemiconductorGuide";
 import { ShipbuildingGuide } from "./ShipbuildingGuide";
 import { WrittenExamGuide } from "./WrittenExamGuide";
 
@@ -28,5 +29,7 @@ export function ArticleFeature({ name, title, video = null }: { name: ArticleFea
       return <KeximWrittenGuide title={title} />;
     case "feature:shipbuilding":
       return <ShipbuildingGuide title={title} video={video} />;
+    case "feature:semiconductor":
+      return <SemiconductorGuide title={title} video={video} />;
   }
 }
