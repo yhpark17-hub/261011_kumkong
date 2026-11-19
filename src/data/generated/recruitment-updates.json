@@ -3556,8 +3556,8 @@
   },
   {
     "companyId": "wooricap",
-    "title": "[우리금융캐피탈] 2026년 상반기 신입사원 채용",
-    "period": "2026 상반기",
+    "title": "[우리금융캐피탈] 2027년 정규직 신입사원 채용",
+    "period": "2027 상반기",
     "status": "confirmed",
     "tracks": [
       "경영일반",
@@ -3566,26 +3566,25 @@
     "events": [
       {
         "type": "posting",
-        "date": "2025-12-01",
-        "time": "09:00"
+        "date": "2026-11-13"
       },
       {
         "type": "doc",
-        "date": "2025-12-08",
-        "time": "23:00"
-      }
-    ],
-    "essayQuestions": [
+        "date": "2026-11-23",
+        "time": "23:59",
+        "note": "공고문 표기 '11.23.(월) 24:00'. 서류 합격 발표 12.03(목) 예정"
+      },
       {
-        "q": "우리금융캐피탈에 지원한 동기와 입사 후 본인이 이루고자 하는 목표를 구체적으로 작성해주시기 바랍니다.",
-        "limit": 1000
+        "type": "written",
+        "date": "2026-12-12",
+        "note": "예정 · 인성검사 + NCS직업기초능력평가 + 직무지식(금융일반·AI·경제학(경영일반)·IT일반(디지털/IT))"
       }
     ],
-    "essayRef": "T4 캐치(530067) 1번 문항만 공개, 나머지 문항 미확인.",
-    "postingUrl": "https://jrs.jobkorea.co.kr/woorifcapital",
-    "sourceUrl": "https://jrs.jobkorea.co.kr/woorifcapital",
+    "essayQuestions": [],
+    "postingUrl": "https://woorifcapital.incruit.com/hire/viewhire.asp?projectid=101",
+    "sourceUrl": "https://woorifcapital.incruit.com/hire/viewhire.asp?projectid=101",
     "confidence": "high",
-    "updatedAt": "2026-10-17",
-    "note": "접수기간은 공식 채용 사이트(jrs.jobkorea.co.kr/woorifcapital) 2025.12.01 09:00 ~ 12.08 23:00 기준. 2026-10-17 기준 후속(2027년 상반기) 공고 미확인. 과거 공고 시기: 2022.11.22~12.04, 2023.12.22~2024.01.04, 2024.11.12~11.25, 2025.12.01~12.08 → 통상 11~12월 게시. 전형 일정·인원 미확인."
+    "updatedAt": "2026-11-19",
+    "note": "전형: 서류 → 필기 → 1차 면접 → 2차 면접 → 건강검진 → 최종 합격. 서류전형 이후 세부 일정은 합격자에 한해 개별 통지(공고문). 모집 인원은 공고문에 없음. 근무지역 서울 및 전 지역(디지털/IT는 서울 테헤란로 본사). 졸업예정자는 2027년 2월 졸업 가능자(미졸업 시 합격 취소). 자기소개서 문항은 공식 공고문에 없어 미기재."
   }
 ]
